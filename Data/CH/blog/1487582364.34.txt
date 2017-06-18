@@ -1,0 +1,56 @@
+MFC中快速应用OpenCV教程论坛上看到非常经典的VS2008 &#43; OpenCV 2.0下的配置过程：
+
+
+   （这里用的是opencv2.0）
+
+
+
+1. 文件 | 项目 | MFC | MFC应用程序 |（新名称如MFCtest）|next
+
+2. 单文档，取消使用Unicode库选项，选中在静态库中使用MFC | next
+
+3. 取消ActiveX控件选项 | next | 完成
+
+4. 项目 | 属性 | 链接器 |
+
+输入(活动Debug) | 附加依赖项 |　cxcore200d.lib cv200d.lib highgui200d.lib
+
+
+
+   输入(Release) | 附加依赖项 |　cxcore200.lib cv200.lib highgui200.lib
+
+
+   《opencv1.0的话是cxcore.lib cv.lib ml.lib cvaux.lib highgui.lib》
+
+5.
+解决方案中 | MFCtestDoc.h 中增加 | include “highgui.h” |
+
+public 中增加 CImage m_image
+
+6. 类视图 | 右击 CMFCtestDoc | 增加 | 增加函数 | 增加函数名OnOpenDocument | 参数类型 LPCTSTR，参数lpszPathName | 添加 | 选中虚函数。|
+
+(注意：这里我直接用下来菜单中的bool（小写），编译会出错的，改为BOOL(大写)后编译通过，看了下自带的OnNewDocument的返回&#20540;也是BOOL（大写）)
+
+7. 在OnOpenDocument中增加代码：
+
+
+   if(!CDocument::OnOpenDocument(lpszPathName))  return false;
+m_image.Load(lpszPathName);
+return true;8. 同6，7步增加OnSaveDocument代码：
+
+
+   m_image.Save(lpszPathName);
+return true;9. 在CMFCtestView中的OnDraw中在原有代码基础上修改为：
+
+（注意首先把OnDraw的参数改为CDC* pDC）
+
+
+   CMFC_testDoc* pDoc = GetDocument();
+ASSERT_VALID(pDoc);
+if (!pDoc)
+   return;
+CImage &amp; img = pDoc -&gt;m_image;
+CRect r;
+GetClientRect (&amp;r);
+img.DrawToHDC(pDC-&gt;GetSafeHdc() ,r);
+10.运行正常

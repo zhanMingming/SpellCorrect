@@ -1,0 +1,39 @@
+timerfd使用总结timerfd是Linux为用户程序提供的一个定时器接口。这个接口基于文件描述符，通过文件描述符的可读事件进行超时通知，所以能够被用于select/poll的应用场景。timerfd是linux内核2.6.25版本中加入的借口。
+timerfd、eventfd、signalfd配合epoll使用，可以构造出一个零轮询的程序，但程序没有处理的事件时，程序是被阻塞的。这样的话在某些移动设备上程序更省电。
+
+clock_gettime函数可以获取系统时钟，精确到纳秒。需要在编译时指定库：-lrt。可以获取两种类型事件：
+CLOCK_REALTIME：相对时间，从1970.1.1到目前的时间。更改系统时间会更改获取的值。也就是，它以系统时间为坐标。
+CLOCK_MONOTONIC：与CLOCK_REALTIME相反，它是以绝对时间为准，获取的时间为系统重启到现在的时间，更改系统时间对齐没有影响。
+
+timerfd_create：
+
+生成一个定时器对象，返回与之关联的文件描述符。接收两个入参，一个是clockid，填写CLOCK_REALTIME或者CLOCK_MONOTONIC，参数意义同上。第二个可以传递控制标志：TFD_NONBLOCK（非阻塞），TFD_CLOEXEC（同O_CLOEXEC）
+
+
+
+注：timerfd的进度要比usleep要高。
+
+timerfd_settime：能够启动和停止定时器；可以设置第二个参数：flags，0表示是相对定时器，TFD_TIMER_ABSTIME表示是绝对定时器。
+第三个参数设置超时时间，如果为0则表示停止定时器。定时器设置超时方法：
+1、设置超时时间是需要调用clock_gettime获取当前时间，如果是绝对定时器，那么需要获取CLOCK_REALTIME，在加上要超时的时间。如果是相对定时器，要获取CLOCK_MONOTONIC时间。
+2、数据结构：
+ struct timespec {
+ time_t tv_sec; /* Seconds */ long tv_nsec; /* Nanoseconds */ }; struct itimerspec { struct timespec it_interval; /* Interval for periodic timer */ struct timespec it_value; /* Initial expiration */ };it_value是首次超时时间，需要填写从clock_gettime获取的时间，并加上要超时的时间。it_interval是后续周期性超时时间，是多少时间就填写多少。
+  注意一个容易犯错的地方：tv_nsec加上去后一定要判断是否超出1000000000（如果超过要秒加一），否则会设置失败。
+  
+  it_interval不为0则表示是周期性定时器。
+it_value和it_interval都为0表示停止定时器。
+
+注：timerfd_create第一个参数和clock_gettime的第一个参数都是CLOCK_REALTIME或者CLOCK_MONOTONIC，timerfd_settime的第二个参数为0（相对定时器）或者TFD_TIMER_ABSTIME，三者的关系：
+1、如果timerfd_settime设置为TFD_TIMER_ABSTIME（决定时间），则后面的时间必须用clock_gettime来获取，获取时设置CLOCK_REALTIME还是CLOCK_MONOTONIC取决于timerfd_create设置的值。
+2、如果timerfd_settime设置为0（相对定时器），则后面的时间必须用相对时间，就是：
+  new_value.it_value.tv_nsec = 500000000;
+ new_value.it_value.tv_sec = 3;
+ new_value.it_interval.tv_sec = 0;
+ new_value.it_interval.tv_nsec = 10000000;
+
+
+read函数可以读timerfd，读的内容为uint_64，表示超时次数。
+
+timerfd简单的性能测试：
+申请1000个定时器，超时间定位1s，每秒超时一次，发现cpu占用率在3.0G的cpu上大概为1%，10000个定时器的话再7%左右，而且不会出现同时超时两个的情况，如果有printf到前台，则一般会出现定时器超时多次（3-5）才回调。

@@ -1,0 +1,533 @@
+了解java的序列化与反序列化序列化是一种对象持久化的手段，普遍应用在网络传输、RMI等场景中。Java平台允许我们在内存中创建可复用的Java对象，但一般情况下，只有当JVM处于运行时，这些对象才可能存在，即：这些对象的生命周期不会比JVM的生命周期更长。但在现实应用中，就可能要求在JVM停止运行之后能够保存(持久化)指定的对象，并在将来重新读取被保存的对象。Java对象序列化就能够帮助我们实现该功能。使用Java对象序列化，在保存对象时，会把其状态保存为一组字节，在未来，再将这些字节组装成对象。必须注意：对象序列化保存的是对象的”状态”，即它的成员变量，对象序列化不会关注类中的静态变量。
+
+
+
+1. 如何序列化和反序列化？
+
+一个Java类必须实现java.io.Serializable接口，这个类的对象才可以被序列化。
+
+
+
+
+
+   package aty;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
+public class Student implements Serializable {
+
+	private int id;
+
+	private String name;
+
+	private int age;
+
+	private boolean sex;
+
+	public Student(int id, String name, int age, boolean sex) {
+		this.id = id;
+		this.name = name;
+		this.age = age;
+		this.sex = sex;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [id=&quot; + id + &quot;, name=&quot; + name + &quot;, age=&quot; + age
+				+ &quot;, sex=&quot; + sex + &quot;]&quot;;
+	}
+
+}
+
+
+
+
+
+
+之后我们可以通过ObjectOutputStream和ObjectInputStream对对象进行序列化及反序列化。
+
+
+
+   import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import aty.Student;
+
+public class Utils {
+
+	public static void main(String[] args) throws Exception {
+		String file = &quot;c:/stu.obj&quot;;
+		
+		Student stu = new Student(1, &quot;aty&quot;, 27, true);
+		
+		serialize(file, stu);
+		
+		Object o1 = deserialize(file);
+		
+		// Student [id=1, name=aty, age=27, sex=true]
+		System.out.println(o1);
+	}
+
+	public static void serialize(String filePath, Object object)
+			throws IOException {
+		FileOutputStream fout = new FileOutputStream(filePath);
+		ObjectOutputStream oos = new ObjectOutputStream(fout);
+		oos.writeObject(object);
+		oos.close();
+	}
+
+	public static Object deserialize(String filePath) throws Exception {
+		FileInputStream fis = new FileInputStream(filePath);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		Object result = ois.readObject();
+		ois.close();
+		return result;
+	}
+}
+
+
+2.serialVersionUID作用是什么？
+上面的Student实现了Serializable接口，但是没有添加serialVersionUID，在eclipse下会给出警告：
+
+
+
+   The serializable class Student does not declare a static final serialVersionUID field of type long
+
+
+
+
+
+解决这个警告很简单：让eclipse自动帮我们添加一个serialVersionUID。
+
+
+
+
+
+
+
+
+
+
+   // 默认的serialVersionUID
+private static final long serialVersionUID = 1L;
+   // eclipse按照一定算法生产的serialVersionUID
+private static final long serialVersionUID = 6990027678698020472L;
+
+
+
+
+
+我们平常一般都是用第一种方式来解决这个警告的。那serialVersionUID作用是什么呢？我们知道：如果我们将aty.Student这个类的对象序列号到c:/stu.obj文件中，那么当我们反序列化的时候，如果classpath没有这个类会报错：
+
+
+
+
+
+
+可以看到：在序列化和反序列化的时候， 类的全路径必须完全一致。现在我们做一个这样的实验：
+
+
+1.设置serialVersionUID=1后，将student对象序列化到文件中
+
+
+2.将serialVersionUID修改成2后，从文件中反序列化student对象。
+
+
+
+
+
+
+
+那么我们会遇到下面的异常：
+
+
+
+
+
+
+
+
+
+也就是说：在序列化和反序列化的过程中，类不仅路径要完全一致，serialVersionUID也必需相同。这就是这个字段的用处。
+
+
+
+
+
+
+3.transient关键字的作用是什么？
+
+我们知道可以使用transient关键字来修饰类的成员变量：
+
+
+
+   private transient int age;
+
+
+
+
+
+java序列化的时候不会保存类的静态字段的&#20540;，如果一个属性有transient关键字，那么这个属性的&#20540;会在序列化的时候被忽略。transient 关键字的作用是控制变量的序列化，在变量声明前加上该关键字，可以阻止该变量被序列化到文件中，在被反序列化后，transient 变量的&#20540;被设为初始&#20540;，如 int 型的是 0，对象型的是 null。
+
+
+
+
+
+
+4. 反序列化与构造函数
+
+在进行反序列化的时候，并没有调用类的构造方法，而是直接根据他们的序列化数据在内存中创建新的对象。java中创建一个对象并不一定非要调用构造函数，比如反序列化的时候，比如用Unsafe创建对象的时候。
+
+
+
+
+
+
+
+
+5. 序列化与继承
+
+如果A类继承了B类，如果A和B都实现了Serializable接口，那么序列化A对象的时候会自动将其父类中的字段也进行序列化。如果A实现了Serializable接口，而如果B没有实现Serializable接口，那么B一定要提供无参构造函数否则反序列的时候会报错：
+
+
+
+
+
+
+
+
+
+
+
+6. 反序列化单例对象与readResolve
+
+先看下面这个例子：
+
+
+
+   package aty;
+
+import java.io.Serializable;
+
+public class Student implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private int id;
+
+	private String name;
+
+	private Sides side;
+
+	public Student(int id, String name, Sides side) {
+		this.id = id;
+		this.name = name;
+		this.side = side;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [id=&quot; + id + &quot;, name=&quot; + name + &quot;, side=&quot; + side + &quot;]&quot;;
+	}
+
+	public Sides getSide() {
+		return side;
+	}
+}
+
+   package aty;
+
+import java.io.Serializable;
+
+public class Sides implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private int value;
+
+	private Sides(int newVal) {
+		value = newVal;
+	}
+
+	private static final int LEFT_VALUE = 1;
+	private static final int RIGHT_VALUE = 2;
+	private static final int TOP_VALUE = 3;
+	private static final int BOTTOM_VALUE = 4;
+
+	public static final Sides LEFT = new Sides(LEFT_VALUE);
+	public static final Sides RIGHT = new Sides(RIGHT_VALUE);
+	public static final Sides TOP = new Sides(TOP_VALUE);
+	public static final Sides BOTTOM = new Sides(BOTTOM_VALUE);
+
+	@Override
+	public String toString() {
+		switch (value) {
+		case 1:
+			return &quot;left&quot;;
+		case 2:
+			return &quot;right&quot;;
+		case 3:
+			return &quot;top&quot;;
+		case 4:
+			return &quot;bottom&quot;;
+		}
+
+		return &quot;error&quot;;
+	}
+
+}
+
+
+
+
+
+
+
+   import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import aty.Sides;
+import aty.Student;
+
+public class Utils {
+
+	public static void main(String[] args) throws Exception {
+
+		serialize(&quot;c:/1.obj&quot;, new Student(1, &quot;11&quot;, Sides.LEFT));
+		serialize(&quot;c:/2.obj&quot;, new Student(2, &quot;22&quot;, Sides.LEFT));
+
+		Student s1 = (Student) deserialize(&quot;c:/1.obj&quot;);
+		Student s2 = (Student) deserialize(&quot;c:/2.obj&quot;);
+
+		System.out.println(s1.getSide() == s2.getSide());
+	}
+
+	public static void serialize(String filePath, Object object)
+			throws IOException {
+		FileOutputStream fout = new FileOutputStream(filePath);
+		ObjectOutputStream oos = new ObjectOutputStream(fout);
+		oos.writeObject(object);
+		oos.close();
+	}
+
+	public static Object deserialize(String filePath) throws Exception {
+		FileInputStream fis = new FileInputStream(filePath);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		Object result = ois.readObject();
+		ois.close();
+		return result;
+	}
+}
+
+
+
+
+
+
+可以看到执行结果是false，也就是说反序列化单例对象的时候出现了问题。我们怎么样才能正确地反序列化单例对象呢？使用readResolve，该方法允许class在反序列化返回对象前替换、解析在流中读出来的对象。实现readResolve方法，一个class可以直接控制反序化返回的类型和对象引用。
+
+
+
+   package aty;
+
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
+public class Sides implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private int value;
+
+	private Sides(int newVal) {
+		value = newVal;
+	}
+
+	private static final int LEFT_VALUE = 1;
+	private static final int RIGHT_VALUE = 2;
+	private static final int TOP_VALUE = 3;
+	private static final int BOTTOM_VALUE = 4;
+
+	public static final Sides LEFT = new Sides(LEFT_VALUE);
+	public static final Sides RIGHT = new Sides(RIGHT_VALUE);
+	public static final Sides TOP = new Sides(TOP_VALUE);
+	public static final Sides BOTTOM = new Sides(BOTTOM_VALUE);
+
+	@Override
+	public String toString() {
+		switch (value) {
+		case 1:
+			return &quot;left&quot;;
+		case 2:
+			return &quot;right&quot;;
+		case 3:
+			return &quot;top&quot;;
+		case 4:
+			return &quot;bottom&quot;;
+		}
+
+		return &quot;error&quot;;
+	}
+
+	private Object readResolve() throws ObjectStreamException {
+		switch (value) {
+		case LEFT_VALUE:
+			return LEFT;
+		case RIGHT_VALUE:
+			return RIGHT;
+		case TOP_VALUE:
+			return TOP;
+		case BOTTOM_VALUE:
+			return BOTTOM;
+		}
+		return null;
+	}
+
+}
+我们添加了一个readResolve，当反序列化的时候，这个方法会自动被调用。
+
+
+
+
+
+7.writeObject和readObject定制序列化
+
+如果一个实现了Serializable接口的类，提供了writeObject 和 readObject方法，那么这2个方法会自动被java调用。
+
+
+
+   package aty;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class Student implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private int id;
+
+	private transient String name;
+
+	public Student(int id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [id=&quot; + id + &quot;, name=&quot; + name + &quot;]&quot;;
+	}
+
+	private void writeObject(ObjectOutputStream oos) throws IOException {
+		oos.defaultWriteObject();
+		oos.writeUTF(name);
+		System.out.println(&quot;serialized&quot;);
+	}
+
+	private void readObject(ObjectInputStream ois) throws IOException,
+			ClassNotFoundException {
+		ois.defaultReadObject();
+		name = ois.readUTF();
+		System.out.println(&quot;deserialized&quot;);
+	}
+}
+我们将name字段标记成transient的了，但是又通过代码将name序列化到文件中了。我们举的这个例子没有什么实际用处，最典型的应用莫过于JDK中的ArrayList了，可以参考这篇“深入分析Java的序列化与反序列化”文章。
+
+
+
+
+
+8.使用Externalizable
+
+上面我们看到可以使用writeObject和readObject来控制序列化的过程，Externalizable功能与之类&#20284;。使用readObject和writeObject，我们必须自己写函数签名。实现Externalizable接口，可以自动生成函数签名。
+
+
+
+   package aty;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+public class Student implements Externalizable {
+
+	private static final long serialVersionUID = 1L;
+
+	private int id;
+
+	private transient String name;
+
+	public Student() {
+	}
+
+	public Student(int id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [id=&quot; + id + &quot;, name=&quot; + name + &quot;]&quot;;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(id);
+		out.writeUTF(name);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		id = in.readInt();
+		name = in.readUTF();
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+参考文章：
+
+
+
+
+
+
+
+深入分析Java的序列化与反序列化http://ms.csdn.net/geek/54761
+
+
+
+
+
+
+
+
+
+序列化-理解readResolve()http://blog.csdn.net/haydenwang8287/article/details/5964130

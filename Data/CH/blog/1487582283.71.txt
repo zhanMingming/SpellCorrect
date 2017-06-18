@@ -1,0 +1,37 @@
+双系统 linux开机加载windows硬盘环境：
+
+   windows7 + ubuntu双系统， 用wubi装的linux
+
+   
+
+   问题：
+
+   默认打开linux， 不加载win7的硬盘；
+
+   1. GUI下倒是方便， 设备里点一下就可以加载上， 但是远程的时候点击显示“无法加载硬盘 Not Authorized”
+
+   2. 命令行下可以加载， sudo mount 就可以， 但是问题来了， 一是win7硬盘在哪里？ 二是能不能开机自动加载？每次都酱紫太麻烦。
+
+   
+
+   解决方案：
+
+   1. windows硬盘在哪里？
+
+     ls /dev/sda* 就是win7 硬盘藏身处， 可以依次sudo mount /dev/sda1,2,... 看加载上了哪个硬盘对应关系，比如我找到了
+
+   
+
+   2. 开机自动加载
+
+     vi /etc/fstab
+
+     最下方加入下面一行：
+
+         /dev/sda5  /media/diskD   ntfs  defaults,codepage=936,iocharset=cp936  0  0
+
+   
+
+     PS:ANSI代码页为1252，日文代码页为932，简体中文代码页为936
+
+     PS: 具体想看每个field啥意思的可以用man fstab看~

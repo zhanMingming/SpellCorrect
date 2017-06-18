@@ -1,0 +1,218 @@
+Kaka&#39;s Matrix Travels (最大费用流)Kaka's Matrix Travels
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:6 Accepted:3 
+
+
+   Description 
+
+
+   On an N &times; N chessboard with a non-negative number in each grid, Kaka starts his matrix travels with SUM = 0. For each travel, Kaka moves one rook from the left-upper grid to the right-bottom one, taking care that the rook moves only to the right or down. Kaka adds the number to SUM in each grid the rook visited, and replaces it with zero. It is not difficult to know the maximum SUM Kaka can obtain for his first travel. Now Kaka is wondering what is the maximum SUM he can obtain after his Kth travel. Note the SUM is accumulative during the K travels.
+
+
+   Input 
+
+
+   The first line contains two integers N and K (1 &le; N &le; 50, 0 &le; K &le; 10) described above. The following N lines represents the matrix. You can assume the numbers in the matrix are no more than 1000.
+
+
+   Output 
+
+
+   The maximum SUM Kaka can obtain after his Kth travel.
+
+
+   Sample Input 
+
+
+   
+
+   3 2
+1 2 3
+0 2 1
+1 4 2
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   15
+
+
+
+   
+
+
+   Source 
+
+
+   POJ Monthly--2007.10.06, Huang, Jinsong
+
+
+   
+
+
+   
+
+
+   #include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;cstdio&gt;
+#include &lt;queue&gt;
+#include&lt;memory.h&gt;
+using namespace std;
+#define M 51
+
+const int sz = 75000;
+const int INF = 200000000;
+
+struct Edge
+{
+	int v,w,capacity;
+	int next;	
+}adj[sz * 8];
+
+int head[sz],pre[sz],dist[sz],road[sz],src,dest,k;
+bool inq[sz];
+
+void init(const int &amp;n)
+{
+	src = 0;
+	dest = n;
+	k = 0;
+	fill(head,head+n+1,-1);
+}
+
+void add(const int &amp;v1,const int &amp;v2,const int &amp;w,const int &amp;capacity) {
+	adj[k].v = v2;
+	adj[k].w = w;
+	adj[k].capacity = capacity;
+	adj[k].next = head[v1];
+	head[v1] = k ++;
+}
+
+void addEdge(const int &amp;v1,const int &amp;v2,const int &amp;w,const int &amp;capacity)
+{
+	add(v1,v2,w,capacity);
+	add(v2,v1,-w,0);
+}
+
+bool SPFA(int n) 
+{
+	fill(dist,dist+n*n*2+1,INF);
+	fill(inq,inq+n*n*2+1,false);
+	inq[src] = true;
+	dist[src] = 0;
+	queue &lt; int &gt; q;
+	q.push(src);
+
+	while(!q.empty()) 
+	{
+		int t = q.front();
+		q.pop();
+		inq[t] = false;
+		int index = head[t];
+
+		while(index != -1)
+		{
+			if(adj[index].capacity &gt; 0 &amp;&amp; dist[t] + adj[index].w &lt; dist[adj[index].v]) 
+			{
+				dist[adj[index].v] = dist[t] + adj[index].w;
+				pre[adj[index].v] = t;
+				road[adj[index].v] = index;
+				if(!inq[adj[index].v])
+				{
+					q.push(adj[index].v);
+					inq[adj[index].v] = true;
+				}	
+			} 
+			index = adj[index].next;
+		}
+	}
+	return (dist[dest] != INF);
+}
+
+int minCostMaxFlow(int n)
+{
+	int minCost = 0,t,nowCost; 
+	while(SPFA(n))
+	{
+		int flow = INF;
+		for(t = dest ; t != src ; t = pre[t] ) 
+		{
+			if(adj[road[t]].capacity &lt; flow)
+				flow = adj[road[t]].capacity;	
+		}
+		nowCost=0;
+		for(t = dest ; t != src ; t = pre[t] ) 
+		{
+			adj[road[t]].capacity -= flow;//positive edge capacity -= flow
+			adj[road[t]^1].capacity += flow;//nagative edge capacity += flow
+			//	cout&lt;&lt;flow&lt;&lt;endl;
+			//	cout&lt;&lt;adj[road[t]].w&lt;&lt;endl;
+			nowCost += flow * adj[road[t]].w;
+		}
+		if (nowCost&lt;0) minCost+=nowCost;
+	}
+	return minCost;	
+}
+int a[M][M];
+int index[M][M];
+int main()
+{
+	int n,m,j,i;
+	while(~scanf("%d%d",&amp;n,&amp;m))
+	{
+		init(n*n*2);
+		int cnt=0;
+
+		for(i=1;i&lt;=n;i++)
+			for(j=1;j&lt;=n;j++)
+				scanf("%d",&amp;a[i][j]),
+				index[i][j]=++cnt;
+
+		for(i=1;i&lt;n;i++)
+		{
+			for(j=1;j&lt;n;j++)
+			{
+				int t=cnt+index[i][j];
+				addEdge(t,index[i+1][j],0,INF);
+				addEdge(t,index[i][j+1],0,INF);
+			}
+			addEdge(index[i][n]+cnt,index[i+1][n],0,INF);
+		}
+
+		for(i=1;i&lt;n;i++)
+		{
+			addEdge(index[n][i]+cnt,index[n][i+1],0,INF);
+		}
+
+		for(i=1;i&lt;=n;i++)
+		{
+			for(j=1;j&lt;=n;j++)
+			{
+				addEdge(index[i][j],index[i][j]+cnt,0,INF);
+				addEdge(index[i][j],index[i][j]+cnt,-a[i][j],1);
+			}
+		}
+		addEdge(0,index[1][1],0,m);
+		printf("%d/n",-minCostMaxFlow(n));
+	}
+	return 0;
+} 
+
+
+   
+
+
+   题目大意：给你一个n*n（1&lt;= n &lt;= 50）的矩阵，每一个格子里面有一个值array[i][j]。假设第i行第j列的坐标为(i,j)，那么点(i,j)只能走到点(i+1,j)和点(i,j+1)，即只能向右和向下走。问从点(1,1)到点(n,n)走K次能够获得的最大值，每一个格子只有在第一次走过的时候总值才会加。
+
+
+   解题思路：最大费用最大流。将每个格子看成一个点A，然后把这个点A拆成两个点A和A'。如果点B在点A的右侧或下侧，那么点A'就与点B连一条费用为0，容量为无穷大的边。对于每两个点A和A'，点A向点A'连一条费用为点A这个格子的值、容量为1的边和一条费用为0，容量为无穷大的边。再建立一个源点S。S与点C(1,1)连一条费用为0，容量为K的边，汇点定为点D'(n,n).然后可以求从点S到点D'(n,n)的最大费用最大流。

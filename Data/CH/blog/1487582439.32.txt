@@ -1,0 +1,22 @@
+令人头疼的不兼容问题~~~1&gt;正在编译...1&gt;dd.cpp1&gt;c:/users/zrq/documents/visual studio 2008/projects/w/w/dd.cpp : error C4335: 检测到 Mac 文件格式: 请将源文件转换为 DOS 格式或 UNIX 格式1&gt;c:/users/zrq/documents/visual studio 2008/projects/w/w/dd.cpp(1) : warning C4067: 预处理器指令后有意外标记 - 应输入换行符1&gt;生成日志保存在&ldquo;file://c:/Users/ZRQ/Documents/Visual Studio 2008/Projects/w/w/Debug/BuildLog.htm&rdquo;1&gt;w - 1 个错误，1 个警告========== 生成: 成功 0 个，失败 1 个，最新 0 个，跳过 0 个 ==========
+
+
+   
+
+
+   我找解决方法好辛苦!
+
+
+   还是张华哥哥太牛了!!!
+
+
+   一举搞定!
+
+
+   
+
+
+   该问题是由于两种编码格式不兼容,解决方法:
+
+
+    将.cpp中的代码copy到记事本里,然后另存为ANSI或者Unicode格式, 再把代码copy到编译器,就OK了!

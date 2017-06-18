@@ -1,0 +1,172 @@
+__declspec(dllexport)  and __declspec(dllimport)What Exporting Really 
+Means (dll导出的本质)
+
+
+   The only truly interesting thing I introduced in the previous section
+ was the __declspec(dllexport)
+
+ modifier. When Microsoft's C/C++ 
+compiler sees this modifier before a variable, function prototype, or C++ class, 
+it embeds some additional information in the resulting .obj file. The linker 
+parses this information when all the .obj files for the DLL are linked.
+
+
+   
+
+
+   当编译器在变量，函数原型，类前面发现有__declspec(dllexport)
+
+时，编译器会嵌入一些额外的信息到生成的obj文件里。
+
+
+   linker在link的时候会解析并处理这些额外的信息。
+
+
+   
+
+
+   
+
+
+
+
+
+   When the DLL is linked, the linker detects this embedded 
+information about the exported variable, function, or class and automatically 
+produces a .lib file. This .lib file contains the list of symbols exported by 
+the DLL.
+
+
+   
+
+
+   linker发现了编译器插入到这些导出变量的信息后，会根据这些信息生成一个.lib文件，.lib文件大家都很熟悉，这个文件主要存储的是
+
+
+   dll的导出符号表。
+
+
+   
+
+
+    This .lib file is, of course, required to link any executable module 
+that references this DLL's exported symbols. In addition to creating the .lib 
+file, the linker embeds a table of exported symbols in the resulting DLL file. 
+This export section
+ contains the list (in alphabetical 
+order) of exported variables, functions, and class symbols. The linker also 
+places the relative virtual address (RVA), indicating where each symbol can be 
+found in the DLL module.
+
+
+   
+
+
+   .lib文件在link的时候是必须的，此外，linker还嵌入了导出符号表 到生成的DLL文件里。这个导出块包含了这个dll所导出的变量，函数，类。linker还将每个符号的相对的虚拟偏移地址放到dll文件里，这样每个符号都可以从这个dll模块被找到。
+
+
+   
+
+
+   
+
+
+   Using the Microsoft Visual Studio DumpBin.exe utility (with the -exports
+
+ switch), you can see what a 
+DLL's export section looks like。
+
+
+   
+
+
+   使用vs的 dumpbin工具即可查看一个dll的导出块。
+
+
+   
+
+
+   
+
+
+
+What Importing Really 
+Means （导入的真正含义）
+
+
+   The previous section
+ 
+introduced the __declspec(dllimport)
+
+ 
+modifier. When you import a symbol, you do not have to use the __declspec(dllimport)
+
+ keyword&mdash;you can 
+simply use the standard C extern
+
+ 
+keyword.
+
+
+   实际上，当你想导入一个符号时，你不需要用到  __declspec(dllimport). 用extern就可以了。
+
+
+
+
+   
+
+
+    However, the compiler can produce slightly more efficient code if it 
+knows ahead of time that the symbol you are referencing will be imported from a 
+DLL's .lib file. So I highly recommend that you use the __declspec(dllimport)
+
+ keyword for imported function and 
+data symbols. Microsoft does this for you when you call any of the standard 
+Windows functions.
+
+
+   但是，如果用__declspec(dllimport)
+
+的话，编译器会生成更有效率的代码。
+
+
+   
+
+
+   When the linker resolves the imported symbols, it embeds a special 
+section called the import section
+ in the resulting 
+executable module. The import section lists the DLL modules required by this 
+module and the symbols referenced from each DLL module.
+
+
+   
+
+
+   linker解析导入符号时，会嵌入一个导入块到生成的可执行模块里。这个导入块包含了这个模块需要的所有dll和跟这些dll有联关的导入符号
+
+
+   
+
+
+   
+
+
+   
+
+
+
+
+
+   Using Visual Studio's DumpBin.exe utility (with the -imports
+
+ switch), you can see what a 
+module's import section looks like.
+
+
+   
+
+
+   用 DumpBin.exe 工具 (with the -imports
+
+ 选项), 你可以获得一个模块的导入块

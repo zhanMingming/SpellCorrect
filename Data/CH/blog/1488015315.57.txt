@@ -1,0 +1,60 @@
+ionic页面footer按钮右下方的小三角实现之前的这篇博客被问到，如何实现footer按钮右下方的小三角：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   下面给出html代码和css样式：
+
+
+   &lt;ion-footer-bar class=&quot;bar-footer bar-balanced&quot;&gt;
+	&lt;div class=&quot;button-bar&quot;&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group1&lt;/button&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group2&lt;/button&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group3&lt;/button&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group4&lt;/button&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group5&lt;/button&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group6&lt;/button&gt;
+		&lt;button class=&quot;button button-light&quot;&gt;group7&lt;/button&gt;
+	&lt;/div&gt;
+&lt;/ion-footer-bar&gt;
+
+   
+
+
+   
+
+
+
+对应样式：
+   &lt;style&gt;
+.bar-footer .button-bar .button, .sign-button {background-color: #fff; border-color: #b5b5b5; font-size: 16px;}
+.bar-footer .button-bar &gt; .button:first-child {border-radius:0px 0px 0px 0px; border-left:none;}
+.bar-footer {padding: 0 0 0 0;}
+.bar-footer .button:after {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0;
+    content: &#39; &#39;; 
+    background: url(&quot;triangle.png&quot;) no-repeat 90% 32px;
+}
+&lt;/style&gt;
+
+   
+
+
+   
+
+
+
+
+   这样就可以显示小三角了：

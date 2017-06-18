@@ -1,0 +1,47 @@
+launch failed.Binary not found in Linux/Ubuntu解决方案Linux下出现launch failed.Binary not found的解决方案：
+
+
+   首先当你把网上关于mingw的解决方案都看晕了的时候，告诉你，别看关于mingw的了。Linux下不用mingw，直接由Linux GCC完成
+
+
+   1、看你的Eclipse下面控制台Console输出，如果有g&#43;&#43; not found 的话，说明你的系统g&#43;&#43;没安装成功。
+
+
+   解决方案：Ctrl&#43;Alt&#43;t到terminal（控制台）模式，输入sudo apt-get install g&#43;&#43;
+
+
+   2、还不行？用大部分解决方案中都会讲的：
+
+
+   Project-&gt;Properties-&gt;C/C&#43;&#43;Build-&gt;Settings-&gt;Binary Parsers
+
+
+   勾选GNU Elf Parser和Elf Parser
+
+
+   然后千万千万别忘了Project-&gt;Build All (Ctrl&#43;B), 再run（Ctrl&#43;F11）
+
+
+   如果看到项目下面出来一项名为Binaries, Congradulations! 配置成功，可以run了！
+
+
+   3、还不行？
+
+
+   检查你的文件名是否为xxx.cpp? 而且xxx中不能含有“.”之类的符号
+
+
+   
+
+
+
+
+   Windows下最好用mingw吧……解决方案如下：
+
+
+   
+
+
+   
+
+http://hi.baidu.com/doctorjohnson/blog/item/2fafa2431187e11d9213c67e.html

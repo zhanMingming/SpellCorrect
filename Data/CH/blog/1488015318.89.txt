@@ -1,0 +1,155 @@
+spring配置文件中&lt;bean&gt;的id和name属性区别，以及identifier和aliasesEvery bean has one or more identifiers. These identifiers must be unique within the container that hosts the bean. A bean usually has only one identifier, but if it requires more than one, the extra ones can be considered aliases.这是spring
+ reference中的解释，标识符和别名本质上其实是相同的，都可以唯一地标识一个bean。
+
+
+   
+
+
+
+
+   In XML-based configuration metadata, you use the id and/or name attributes to specify the bean identifier(s). The id attribute allows you to specify exactly one id. If you want to introduce other aliases to the bean, you can
+ also specify them in the name attribute, separated by a comma (,), semicolon (;), or white space. 可以看出：id和name的本质区别：id只能定义1个identifier，而name可以定义多个aliases。
+
+
+
+
+   
+
+
+
+
+   1.配置一个bean的时候，我们可以不设置id，也可以不设置name，spring默认会使用类的全限定名作为bean的标识符。
+
+
+   &lt;bean class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+   // 没有设置id,也没有设置name, 默认用类的全限定名
+boolean same = ctx.getBean(C1.class) == ctx.getBean(C1.class
+		.getCanonicalName());
+System.out.println(same);//true
+
+2.如果使用id属性来设置bean的标识符，那么id在spring容器中必需唯一。
+
+   
+
+
+
+
+   3.如果使用name属性来设置，那么设置的其实就是bean的标识符，必需在容器中唯一。
+
+
+   &lt;bean name=&quot;c1&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+   ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+		&quot;first-spring.xml&quot;);
+System.out.println(ctx.getBean(&quot;c1&quot;,C1.class));
+ctx.close();
+
+   
+
+
+
+4.如果同时设置id和name，那么id设置的是标识符，name设置的是别名。
+   &lt;bean id=&quot;cid&quot; name=&quot;alias1&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+   ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+		&quot;first-spring.xml&quot;);
+
+String[] alias = ctx.getAliases(&quot;cid&quot;);
+
+for (String e : alias) {
+	System.out.println(e);//alias1
+}
+
+ctx.close();
+
+   
+
+
+
+如果id和name的&#20540;相同，那么spring容器会自动检测并消除冲突：让这个bean只有标识符，而没有别名。
+
+
+   &lt;bean id=&quot;cid&quot; name=&quot;cid&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+   ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+		&quot;first-spring.xml&quot;);
+
+String[] alias = ctx.getAliases(&quot;cid&quot;);
+
+System.out.println(alias.length);//0
+
+ctx.close();
+
+5.name属性设置多个&#20540;。不设置id，那么第一个被用作标识符，其他的被视为别名。如果设置了id，那么name的所有&#20540;都是别名。
+   &lt;bean name=&quot;a1,a2,a3&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+   ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+		&quot;first-spring.xml&quot;);
+
+String[] alias = ctx.getAliases(&quot;a1&quot;);
+
+System.out.println(Arrays.toString(alias));//[a2, a3]
+
+ctx.close();注意：不管是标识符，还是别名，在容器中必需唯一。因为标识符和别名，都是可以用来获取bean的，如果不唯一，显然不知道获取的到底是哪儿一个bean。
+
+   
+
+
+   &lt;bean id=&quot;c1&quot; name=&quot;alias&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;c2&quot; name=&quot;alias&quot; class=&quot;net.aty.spring.ioc.first.C2&quot;&gt;&lt;/bean&gt;
+
+   
+
+
+   
+
+
+
+6.使用&lt;alias&gt;标签指定别名，别名也必须在IoC容器中唯一。
+
+
+   &lt;bean id=&quot;c1&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+&lt;alias name=&quot;c1&quot; alias=&quot;1&quot;/&gt;
+&lt;alias name=&quot;c1&quot; alias=&quot;2&quot;/&gt;
+   ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+		&quot;first-spring.xml&quot;);
+
+String[] alias = ctx.getAliases(&quot;c1&quot;);
+
+System.out.println(Arrays.toString(alias));//[1,2]
+
+ctx.close();
+
+   
+
+
+
+
+   
+
+
+
+最后看一段配置和代码：
+   &lt;bean id=&quot;c1&quot; class=&quot;net.aty.spring.ioc.first.C1&quot;&gt;&lt;/bean&gt;
+&lt;alias name=&quot;c1&quot; alias=&quot;1&quot;/&gt;
+&lt;alias name=&quot;c1&quot; alias=&quot;2&quot;/&gt;
+   System.out.println(Arrays.toString(ctx.getAliases(&quot;c1&quot;)));//[1,2]
+System.out.println(Arrays.toString(ctx.getAliases(&quot;1&quot;)));//[c1,2]
+System.out.println(Arrays.toString(ctx.getAliases(&quot;2&quot;)));//[c1,1]
+
+System.out.println(ctx.getBean(&quot;c1&quot;) == ctx.getBean(&quot;1&quot;));//true
+System.out.println(ctx.getBean(&quot;c1&quot;) == ctx.getBean(&quot;2&quot;));//true
+
+   
+
+
+
+
+   可以看到：标识符和别名没有任何区别，所以id和name属性唯一的差别在于：id只能设置一个标识符，而name可以设置多个标识符separated by a comma (,), semicolon (;), or white space。
+
+
+   
+
+
+
+
+   参考文章：
+
+
+   http://jinnianshilongnian.iteye.com/blog/1413857

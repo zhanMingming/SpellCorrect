@@ -1,0 +1,232 @@
+Word Game hdu 2429 综合题Word Game
+
+   Time Limit: 5000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 592Accepted Submission(s): 155
+
+Problem Description
+
+It's a game with two players. Given a dictionary of words, a word S chosen from the dictionary to start with, and a word T also chosen from the dictionary as the winning word, which will be described below, the two players take turns to choose a word from the dictionary, satisfying that the first letter of the chosen word is the same as the last letter of previous word. Each word could be chosen more than once.Suppose they play exactly n rounds. At the last round, if the player (the first one if n is odd, the second one otherwise) chooses the winning word T, he wins. To your surprise that, the two players are not so clever that they choose words randomly.Here comes the question. How many different ways will the first player win if they play no more than N rounds, among all the possible ways satisfying all the conditions above?
+
+
+
+
+   
+
+Input
+
+An integer C, indicates the number of test cases.Then comes C blocks, formatted like this:An integer M, indicates the number of words in the dictionary, M &lt;= 30.M string consisting of only lowercase letters, represent the words in the dictionary. The length of each word is no more than 10. There are no duplicated words.String S, the word to start with.String T, the winning word.A positive integer N, indicates the maximum number of rounds to play. N fits in a signed 32-bit integer.
+
+
+
+
+   
+
+Output
+
+For each test case, print a line with an integer W, indicating how many possible ways the first player wins.Output the answer modulo 10001.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   1
+3
+abc
+cac
+cde
+abc
+cde
+3
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   2
+
+
+
+
+
+
+   
+
+Source
+
+2008 Asia Chengdu Regional Contest Online 
+
+
+
+
+   
+
+Recommend
+
+lcy
+
+玩儿接龙游戏，给出一系列单词和起始单词S，结束单词T，两个人轮流走，第一个人先从S走，求在有限步数k内第一个人到达T（到T便为胜）的可能方法数。
+
+我是这么想的，先给可达单词间建边，这样第一个人在k步内到达的方法数就是A1+A3+A5+...+An(Ai 表示矩阵A的i次方)的那个矩阵中[S][T]的位置的数字，之所以是奇数是因为第一个人先走，奇数步到达终点才胜。
+
+问题是n的范围很大，如果就这么矩阵乘法暴力加过去必然tle，那么采用快速幂，二分求解：
+
+解决过程如下：
+
+A1+A3+A5+A7+...+An(n是&lt;=k的最大奇数)
+
+=A1+A1*(A2+A4+A6+...+An-1)
+
+令T=A2;
+
+=A+A(T1+T2+...+T(n-1)/2)
+
+令Sm=T1+T2+...+Tm
+
+则Sm=(T1+T2+...+Tm/2)+(T(m/2+1)+...+Tm)（如果m是奇数还要加上最后一项）
+
+ =Sm/2*(E+T(m/2))(E是单位矩阵)
+
+剩下的就这么二分着递归下去吧&hellip;&hellip;
+
+
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include&lt;cmath&gt;
+using namespace std;
+#define MAXN 35
+#define MOD 10001
+
+struct mat
+{
+	int n,m;
+	int data[MAXN][MAXN];
+}A;
+int n;
+
+int mul(mat&amp; c,const mat&amp; a,const mat&amp; b)
+{
+	int i,j,k;
+	if (a.m!=b.n)
+		return 0;
+	c.n=a.n,c.m=b.m;
+	for (i=0;i&lt;c.n;i++)
+		for (j=0;j&lt;c.m;j++)
+			for (c.data[i][j]=k=0;k&lt;a.m;k++)
+			{
+				c.data[i][j]+=a.data[i][k]*b.data[k][j];		
+				c.data[i][j]%=MOD;
+			}
+	return 1;
+}
+
+bool fit(char s1[],char s2[])
+{
+	if(s1[strlen(s1)-1]==s2[0])
+		return true;
+	return false;
+}
+int sum=0;
+
+mat powmat(mat a,int k)
+{
+	int i,j;
+	mat res,tt=a,t1,t2;
+	if(k==1)
+	{
+		return a;
+	}
+	tt=powmat(a,k/2);
+	t1=tt;
+	mul(tt,t1,t1);
+	if(k&amp;1)
+		mul(res,a,tt);
+	else
+		res=tt;
+	return res;
+}
+
+mat plusmat(mat &amp; a,int k)//cal A1+A2+A3+...Ak
+{
+	int i,j;
+	mat res,tt;
+	if(k==1)
+		return a;
+	else
+	{
+		mat temp=powmat(a,k/2),pow2t;
+		if(k%2)
+		{
+			pow2t=powmat(temp,2);
+			mul(tt,pow2t,a);
+			pow2t=tt;
+		}
+		for(i=0;i&lt;n;i++)
+			temp.data[i][i]++;
+		mul(res,temp,plusmat(a,k/2));
+		if(k%2)
+			for(i=0;i&lt;n;i++)
+				for(j=0;j&lt;n;j++)
+					res.data[i][j]+=pow2t.data[i][j];
+		return res;
+	}
+}
+int main()
+{
+	char str[MAXN][15];
+	int T,i,j;
+	scanf("%d",&amp;T);
+	while(T--)
+	{
+		scanf("%d",&amp;n);
+		A.m=A.n=n;
+		for(i=0;i&lt;n;i++)
+			for(j=0;j&lt;n;j++)
+				A.data[i][j]=0;
+		for(i=0;i&lt;n;i++)
+			scanf("%s",str[i]);
+		//connect edge
+		for(i=0;i&lt;n;i++)
+		{
+			for(j=0;j&lt;n;j++)
+				if(fit(str[i],str[j]))
+					A.data[i][j]=1;
+		}
+		scanf("%s",str[i]);
+		for(j=0;j&lt;n;j++)
+			if(strcmp(str[i],str[j])==0)
+				break;
+		int start=j;
+		scanf("%s",str[++i]);
+		for(j=0;j&lt;n;j++)
+			if(strcmp(str[i],str[j])==0)
+				break;
+		int end=j;
+		int times;
+		scanf("%d",&times;);
+		//multiple matrix
+		mat ww=A,res;
+		mat pow2;
+		mul(pow2,A,A);
+		times--;
+		if(times/2&gt;0)
+		{
+			res=plusmat(pow2,times/2);
+			mul(ww,A,res);
+			printf("%d/n",ww.data[start][end]+A.data[start][end]);
+		}
+		else
+			printf("%d/n",A.data[start][end]);
+	}
+}

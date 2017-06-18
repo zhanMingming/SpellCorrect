@@ -1,0 +1,49 @@
+Guava Cache的Ticker缓存一般设置的都有过期时间，如果我们写单元测试代码需要验证这个功能（缓存过期，自动删除）。假如设置的过期时间是1个小时，我们来验证1h后缓存是否被删除，那我们总不能让单元测试代码运行1个小时吧。
+
+
+   
+
+
+   public class Demo{
+
+	public static void main(String[] args)  { 
+		// 自定义ticker
+		TestTicker testTicker = new TestTicker();
+
+ // 创建缓存,1小时没有访问则过期
+ Cache&lt;String, byte[]&gt; cache = CacheBuilder.newBuilder().ticker(testTicker).expireAfterAccess(1, TimeUnit.HOURS).build();
+ cache.put(&quot;id&quot;, new byte[1024 * 1024]);
+
+ // 模拟时间流逝
+ testTicker.addElapsedTime(TimeUnit.NANOSECONDS.convert(1, TimeUnit.HOURS));
+
+ System.out.println(cache.getIfPresent(&quot;id&quot;) == null);//true
+    }
+
+    private static class TestTicker extends Ticker {
+ private long start = Ticker.systemTicker().read();
+ private long elapsedNano = 0;
+
+ @Override
+ public long read() {
+     return start + elapsedNano;
+ }
+
+ public void addElapsedTime(long elapsedNano) {
+     this.elapsedNano = elapsedNano;
+ }
+    }
+}
+
+   
+
+
+   使用自定义ticker，我们可以达到随意改变当前时间的目的，就可以很快地验证缓存过期，而不是傻傻等1小时。如果创建cache的时候没有设置ticker，那么使用的是系统的ticker，依靠系统时钟来做时间判断。
+
+
+   
+
+
+
+
+   总之，ticker就是用来做测试用途，能够让我们改变时间源，模拟任何我们想要的时间流逝效果。

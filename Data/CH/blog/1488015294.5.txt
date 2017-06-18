@@ -1,0 +1,74 @@
+(十四)ng-if与ng-show、ng-hide指令的区别和注意事项angularJS中的ng-show、ng-hide、ng-if指令都可以用来控制dom元素的显示或隐藏。ng-show和ng-hide根据所给表达式的&#20540;来显示或隐藏HTML元素。当赋&#20540;给ng-show指令的&#20540;为false时元素会被隐藏，&#20540;为true时元素会显示。ng-hide功能类&#20284;，使用方式相反。元素的显示或隐藏是通过改变CSS的display属性&#20540;来实现的。
+
+
+   &lt;div ng-show=&quot;2 + 2 == 5&quot;&gt;
+2 + 2 isn&#39;t 5, don&#39;t show
+&lt;/div&gt;
+&lt;div ng-show=&quot;2 + 2 == 4&quot;&gt;
+2 + 2 is 4, do show
+&lt;/div&gt;
+
+ng-if指令可以根据表达式的&#20540;在DOM中生成或移除一个元素。如果赋&#20540;给ng-if的表达式的&#20540;是false，那对应的元素将会从DOM中移除，否则生成一个新的元素插入DOM中。ng-if同no-show和ng-hide指令最本质的区别是，它不是通过CSS显示或隐藏DOM节点，而是删除或者新增结点。
+
+
+
+
+   &lt;div ng-if=&quot;2+2===5&quot;&gt;
+Won&#39;t see this DOM node, not even in the source code
+&lt;/div&gt;
+&lt;div ng-if=&quot;2+2===4&quot;&gt;
+Hi, I do exist
+&lt;/div&gt;
+
+ng-if重新创建元素时用的是它们编译后的状态。如果ng-if内部的代码加载之后被jQuery修改过（例如用.addClass），那么当ng-if的表达式&#20540;为false时，这个DOM元素会被移除，表达式再次成为true时这个元素及其内部的子元素会被重新插入DOM，此时这些元素的状态会是它们的原始状态，而不是它们上次被移除时的状态。也就是说无论用jQuery的.addClass添加了什么类都不会存在了。而ng-show和ng-hide则可以保留dom元素上次修改后的状态。
+
+
+
+
+
+
+
+当一个元素被ng-if从DOM中移除，同它关联的作用域也会被销毁。而且当它重新加入DOM中时，会通过原型继承从它的父作用域生成一个新的作用域。也就是说ng-if会新建作用域，而ng-show和ng-hide则不会。
+
+
+
+
+   &lt;html ng-app&gt;
+&lt;head&gt;
+	&lt;script src=&quot;angular-1.2.25.js&quot;&gt;&lt;/script&gt;  
+	&lt;script&gt;
+		function myController($scope)
+		{
+			$scope.keyworld = &quot;&quot;;
+		}
+	&lt;/script&gt;
+&lt;/head&gt;
+&lt;body ng-controller=&quot;myController&quot;&gt;
+	&lt;input type=&quot;text&quot; ng-model=&quot;keyworld&quot;&gt;
+	&lt;input type=&quot;button&quot; value=&quot;clear&quot; ng-click=&quot;keyworld=&#39;&#39;&quot; ng-show=&quot;keyworld !=&#39;&#39; &quot;&gt;
+&lt;/body&gt;这段代码默认情况下clear按钮不显示；当在text中输入内容时，clear按钮会显示；点击clear按钮时，会清空text中的内容，同时隐藏clear按钮。可以看到使用ng-show和ng-hide功能完全正常。如果将ng-show改成ng-if，点击clear按钮的时候，不能清空text中的内容，也不能隐藏clear按钮。这是因为ng-if会新建或者销毁作用域，很类&#20284;于javascript的原型继承。可以参考这2篇文章：
+
+javascript读取和修改原型特别需要注意的事儿，因为原型的读写不具有对等性
+
+(十一)通过angularjs的ng-repeat指令看scope的继承关系
+
+
+
+
+
+StackOverflow上这篇文章，也有人提问ng-if和ng-show的差别。这里直接附上结论:
+
+
+
+ng-ifwill
+ remove elements from DOM. This means that all your handlers or anything else attached to those elements will be lost. For example, if you bound a click handler to one of child elements, whenng-ifevaluates
+ to false, that element will be removed from DOM and your click handler will not work any more, even afterng-iflater
+ evaluates to true and displays the element. You will need to reattach the handler.ng-show/ng-hidedoes
+ not remove the elements from DOM. It uses CSS styles to hide/show elements (note: you might need to add your own classes). This way your handlers that were attached to children will not be lost.ng-ifcreates
+ a child scope whileng-show/ng-hidedoes
+ not
+
+   
+Elements that are not in the DOM have less performance impact and your web app might appear to be faster when usingng-ifcompared
+ tong-show/ng-hide.
+ In my experience, the difference is negligible. Animations are possible when using both ng-show/ng-hide and ng-if, with examples for both in the Angular documentation.

@@ -1,0 +1,134 @@
+hdu 3792-浙大计算机研究生保研复试上机考试-2011年Twin Prime Conjecture
+Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)
+
+Total Submission(s): 974Accepted Submission(s): 286
+
+
+
+
+Problem Description
+
+
+If we define dn as: dn = p(n&#43;1)-p(n), where pi is the i-th prime. It is easy to see that d1 = 1 and dn=even for n&gt;1. Twin Prime Conjecture states that &quot;There are infinite consecutive primes differing by 2&quot;.
+
+Now given any positive integer N (&lt; 10^5), you are supposed to count the number of twin primes which are no greater than N.
+
+
+
+
+
+
+Input
+
+
+Your program must read test cases from standard input.
+
+The input file consists of several test cases. Each case occupies a line which contains one integer N. The input is finished by a negative N.
+
+
+
+
+
+
+Output
+
+
+For each test case, your program must output to standard output. Print in one line the number of twin primes which are no greater than N.
+
+
+
+
+
+
+Sample Input
+
+
+
+   1
+5
+20
+-2
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   0
+1
+4
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生保研复试上机考试-2011年
+
+
+
+
+
+
+
+
+   
+
+
+   关键在求prime时的效率，类&#20284;找朋友那道题的做法，把x的倍数标记为非素数即可。
+
+
+   
+
+
+
+
+   
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 100000
+bool prime[N+10];
+int twinp[N+10];
+
+int main()
+{
+    memset(prime,true,sizeof(prime));
+    prime[0]=prime[1]=false;
+    int i,j,n;
+    //initial prime array
+    for(i=2;i&lt;=(int)sqrt(1.0*N);i++)
+    {
+ for(j=2;i*j&lt;=N;j++)
+     prime[i*j]=false;
+    }
+    //calculate twin prime conjecture array
+    twinp[0]=twinp[1]=twinp[2]=twinp[3]=twinp[4]=0;
+    
+    for(i=5;i&lt;=N;i++)
+ if(prime[i]&amp;&amp;prime[i-2])
+     twinp[i]=twinp[i-1]+1;
+ else twinp[i]=twinp[i-1];
+    
+    while(cin&gt;&gt;n&amp;&amp;n&gt;=0)
+ printf(&quot;%d\n&quot;,twinp[n]);
+}

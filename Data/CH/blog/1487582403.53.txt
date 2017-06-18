@@ -1,0 +1,194 @@
+最短路径——优先队列优化版（其实稠密图不优化）Input 
+
+
+
+   输入包含多组，每组首先包含一个n（n&lt;=100），代表这组数据有n个点，然后是一个n*n的矩阵代表两两间的距离（s到t的距离可能不同于t到s的距离），一个点到自身的距离是0，任何一个数的不大于1000且是非负整数。数字地址从1到n标记。
+
+输完后有不定数目组s,t代表起始点地址和终点地址，以0 0 结束 
+
+n=0时代表结束，这组数据不需要任何输出。 
+
+
+
+
+
+
+   Output
+
+
+   每对s,t对应一个整数输出，表示s到t的最短距离。
+
+每组数据后加一个空行分隔。 
+
+
+
+
+   Sample Input
+
+
+   
+
+
+   5
+0 3 6 8 9
+5 0 6 9 4 
+1 3 0 84 1
+45 1 2 0 4
+1 4 5 8 0
+1 2
+1 3
+1 4
+5 4
+4 3
+4 1
+3 4
+0 0
+2
+0 1 
+1 0
+1 2
+1 1
+0 0
+0
+
+
+   
+
+
+   
+
+
+   Sample Output
+
+
+   
+
+
+   3
+6
+8
+8
+2
+3
+9
+
+1
+0
+
+
+
+
+   
+
+
+   
+
+
+   //写了一个小时……struct 对小于号的重载没搞清楚
+
+//minimal path use priority queue
+#include&lt;iostream&gt;
+#include&lt;queue&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+#define INF 1000000000
+#define MAXN 1100
+struct way
+{
+	int s;
+	int d;//distance
+	bool operator &lt;(const way k)const
+	{
+		return k.d&lt;d;//sort from small to big
+	}
+};
+
+int n;
+int map[MAXN][MAXN];
+int point[MAXN][MAXN];//point[i][j] means the minimal path from i to j
+
+void dijk(int endpoint)//dijk find minimal distance between each point to endpoint
+ {
+	priority_queue&lt;way&gt;Q;
+	bool flag[MAXN]={false};//flag[i]==1 means it is in the end point set
+	way temp,now;
+	now.s=endpoint;
+	now.d=0;
+	Q.push(now);
+	point[endpoint][endpoint]=0;
+
+	while(!Q.empty())
+	{
+		now=Q.top();
+		Q.pop();//use priority queue to ensure pop the point with minimal distance every time
+		if(flag[now.s])
+			continue;
+		flag[now.s]=1;
+		for(int i=1;i&lt;=n;i++)//从终点往回推
+		{
+			if(!flag[i]&amp;&amp;map[now.s][i]!=INF&amp;&amp;point[i][endpoint]&gt;point[now.s][endpoint]+map[i][now.s])
+			{
+				temp.s=i;
+				temp.d=point[now.s][endpoint]+map[i][now.s];
+				point[i][endpoint]=temp.d;
+				Q.push(temp);
+			}
+		}
+	}
+}
+
+void init()//初始化
+{
+	int i,j;
+	int a,b,c;
+	for(i=1;i&lt;=n;i++)
+	{
+		for(j=1;j&lt;=n;j++)
+			point[i][j]=INF;
+	}
+	for(i=1;i&lt;=n;i++)
+		for(j=1;j&lt;=n;j++)
+			scanf(&quot;%d&quot;,&amp;map[i][j]);
+}
+int main()
+{
+	int m;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF&amp;&amp;n!=0)
+	{
+		init();
+		for(int i=1;i&lt;=n;i++)
+			dijk(i);//find minimal distance between each point to endpoint
+		int a,b;
+		while(scanf(&quot;%d%d&quot;,&amp;a,&amp;b))
+		{
+			if(a==0&amp;&amp;b==0)
+			{
+				cout&lt;&lt;endl;
+				break;
+			}
+			else
+				printf(&quot;%d/n&quot;,point[a][b]);
+		}
+	}
+	return 0;
+}
+
+
+   
+
+
+
+
+   今天与一大牛while2聊到优先队列优化的问题，结论如下：
+
+
+   以上代码复杂度(v&#43;e)log(e), 由于优先队列存在冗余边，可用最小堆保存距离，即使复杂度降为vloge. 而Dijkstra的复杂度（非优化版）为O(n^2). 也就是说，即便该图稠密到e=v^2, 最小堆优化的优先队列还是跑不过简单Dijkstra。
+
+
+   因此以上代码不起优化作用！只是写起来方便而已。
+
+
+   另请参考while2的堆优化版本：
+
+
+   http://while2.blogcn.com/

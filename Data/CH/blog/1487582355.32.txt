@@ -1,0 +1,128 @@
+题目1013：开门人和关门人题目描述：
+ 每天第一个到机房的人要把门打开，最后一个离开的人要把门关好。现有一堆杂乱的机房签到、签离记录，请根据记录找出当天开门和关门的人。
+
+
+
+
+输入：
+
+   
+ 测试输入的第一行给出记录的总天数N ( N&gt; 0 )，下面列出了N天的记录。
+
+ 每天的记录在第一行给出记录的条目数M (M &gt; 0 )，下面是M行，每行的&#26684;式为
+
+
+
+ 证件号码 签到时间 签离时间
+
+
+
+ 其中时间按“小时:分钟:秒钟”（各占2位）给出，证件号码是长度不超过15的字符串。
+
+
+
+
+输出：
+
+   
+ 对每一天的记录输出1行，即当天开门和关门人的证件号码，中间用1空&#26684;分隔。
+
+ 注意：在裁判的标准测试输入中，所有记录保证完整，每个人的签到时间在签离时间之前，且没有多人同时签到或者签离的情况。
+
+
+
+
+样例输入：
+
+   3
+1
+ME3021112225321 00:00:00 23:59:59
+2
+EE301218 08:05:35 20:56:35
+MA301134 12:35:45 21:40:42
+3
+CS301111 15:30:28 17:00:10
+SC3021234 08:00:00 11:25:25
+CS301133 21:45:00 21:58:40
+
+
+
+样例输出：
+
+   ME3021112225321 ME3021112225321
+EE301218 MA301134
+SC3021234 CS301133
+
+
+
+
+   
+
+
+   
+
+
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+ 
+ struct Time
+{
+    int h,m,s;
+    bool operator &lt;(const Time a) const
+    { 
+ if(a.h==h&amp;&amp;a.m==m) return s&lt;a.s;
+ else if(a.h==h) return m&lt;a.m;
+ else return h&lt;a.h;
+    }
+};
+ 
+void Equal(Time src,Time des)
+{
+    des.h=src.h,des.m=src.m,des.s=src.s;
+}
+
+struct Peo
+{
+    char id[30];
+    Time t1,t2;  
+};
+
+int main()
+{
+    int cas,n;
+    scanf(&quot;%d&quot;,&amp;cas);
+    Peo p;
+    char id1[30],id2[30];
+    while(cas--)
+    {
+ scanf(&quot;%d&quot;,&amp;n);
+ Time maxx,minn;
+ scanf(&quot;%s %d:%d:%d %d:%d:%d&quot;,&amp;id1,&amp;minn.h,&amp;minn.m,&amp;minn.s,&amp;maxx.h,&amp;maxx.m,&amp;maxx.s);
+ strcpy(id2,id1);
+ while(--n)
+ {
+     scanf(&quot;%s %d:%d:%d %d:%d:%d&quot;,&amp;p.id,&amp;p.t1.h,&amp;p.t1.m,&amp;p.t1.s,&amp;p.t2.h,&amp;p.t2.m,&amp;p.t2.s);
+     if(p.t1&lt;minn)
+     {
+  Equal(p.t1,minn);
+  strcpy(id1,p.id);
+     }
+     if(maxx&lt;p.t2)
+     {
+  Equal(p.t2,maxx);
+  strcpy(id2,p.id);
+     }
+ }
+ printf(&quot;%s %s\n&quot;,id1,id2);
+    }
+}

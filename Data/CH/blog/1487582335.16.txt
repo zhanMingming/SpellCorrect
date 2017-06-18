@@ -1,0 +1,38 @@
+曲线拟合——最小二乘法曲线拟合方法有很多，从鲁棒性角度来看分为recursive, non-recursive，高斯噪声模型和其他噪声模型等，其中从最基本的是最小二乘法（也称最小平方法, least square fitting）。实现原理为：基于横坐标变换矩阵X（如[pow(x,2),x,1]）寻找一个参数矩阵A, 使得AX和Y最接近。
+
+
+   
+
+
+
+
+   实现方法伪代码如下：
+
+
+   Define Ai as 第i次迭代的参数矩阵
+
+
+   Define W(i,j) as 检测出的第i个点服从以Aj为参数矩阵的拟合方程的概率
+
+
+   1
+Initialize A0，j=1；
+
+
+   2
+for （i=1 to n）
+
+
+   calculate P(i,j)=
+
+
+   3
+解线性方程
+
+
+   4
+if (||A(j)-A(j-1)||&gt;Threshold)
+goto2
+
+
+   else 得到结果 A的估计&#20540;为Aj

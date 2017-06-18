@@ -1,0 +1,31 @@
+Microsoft VS 2008 过期解决方法电脑上的Microsoft Visual Studio 2008 Team System 试用版提示离过期还有**天。于是百度，搜索结果大多是以下两种解决方法：一：开始》控制面板》添加或删除程序 里找到VS2008，点&ldquo;更改/删除&rdquo;，维护窗口弹出后，或下一步，就会看到一个输入序列号的地方，把序列号输进去，点&ldquo;升级&rdquo;按钮即可，Team Suite和Professional通用。
+
+
+   以下是收集的序列号：
+
+
+   （1）Visual Studio 2008 Professional Edition：XMQ2Y-4T3V6-XJ48Y-D3K2V-6C4WT
+
+
+   （2）Visual Studio 2008 Team Test Load Agent：WPX3J-BXC3W-BPYWP-PJ8CM-F7M8T
+
+
+   （3）Visual Studio 2008 Team System：PYHYP-WXB3B-B2CCM-V9DX9-VDY8T
+
+
+   （4）Visual Studio 2008 Team Foundation Server：WPDW8-M962C-VJX9M-HQB4Q-JVTDM二：在安装目录找到Setup/Setup.sdb，把[Product Key]的值改成PYHYPWXB3BB2CCMV9DX9VDY8T第一种我电脑上直接就没有输入序列号的地方；第二种无效。于是继续百度，然后发现有少数声音在说：win7没有输入序列号的地方....莫非跟系统有关，于是改变搜索策略，找到一个名为&ldquo;显示Visual Studio试用版序列号输入框小程序&rdquo;的软件（单击链接可以转到下载地址），于是下载到本地，运行，界面如下：
+
+
+   <img style="cursor: hand;" onclick="function onclick()
+{
+window.open('http://blog.zjphoto.org//Profile/a459c5ec-19db-49ba-ade8-b0e8459e7000/Mypicture/l7f763b38-7315-4664-b86b-b9a69c7c51a2.jpg', '查看图片', 'toolbar=no,location=no,directories=no,menubar=no,scrollbars=yes,resizable=yes,status=no');
+}" src="http://blog.zjphoto.org//Profile/a459c5ec-19db-49ba-ade8-b0e8459e7000/Mypicture/j7f763b38-7315-4664-b86b-b9a69c7c51a2.jpg" alt="" />按它所说步骤执行，第4步下面的输入框就是输入vs2008维护窗口的名称，比如我的维护窗口如下：<img style="cursor: hand;" onclick="function onclick()
+{
+window.open('http://blog.zjphoto.org//Profile/a459c5ec-19db-49ba-ade8-b0e8459e7000/Mypicture/l3ff2bca5-c4a8-4a35-8100-a9162e2bfcf5.jpg', '查看图片', 'toolbar=no,location=no,directories=no,menubar=no,scrollbars=yes,resizable=yes,status=no');
+}" src="http://blog.zjphoto.org//Profile/a459c5ec-19db-49ba-ade8-b0e8459e7000/Mypicture/j3ff2bca5-c4a8-4a35-8100-a9162e2bfcf5.jpg" alt="" />
+
+
+   
+
+
+   我则输入&ldquo;Microsoft Visual Studio 2008 安装程序 - 维护页&rdquo;，然后单击&ldquo;Enable!&rdquo;，再切换到vs维护窗口就能看见序列号输入框了，赶紧输入PYHYP-WXB3B-B2CCM-V9DX9-VDY8T，稍等，成功！希望能给那些也纳闷于&ldquo;为啥我采用第一种方案没序列号输入框&rdquo;的童鞋们带来帮助。

@@ -1,0 +1,393 @@
+PRank的学习和理解PRank是一个pointwise的监督学习排序的方法，一般被用作baseline。我看了下论文&lt;PRank with ranking&gt;,然后动手写了个小实验，进行了理解。
+
+
+ 
+
+
+  其基本需求是：对于每个对象，会有不同角度的打分，现在需要一种方法融合这些打分来给他们一个排序。
+
+
+例如，给体操打分，会有不同的项目，空中姿态分，落地分，技术难度分等等，单向打分一般比较容易，规则是死的，落地没站住就扣0.2。。但是这些单向分打出来了，怎么融合成一个最终分数呢？或者如果我们甚至不需要分数，直接得到其排序呢？ 因为实际上，大家对具体的分数都不感兴趣，只感兴趣rank。
+
+
+
+
+
+
+  Prank是解决类&#20284;问题的一种方法，该方法假定了最后融合的分数一定是每个单向得分的加权求和，因此第一步需要知道每个单向分的权重，其次还要知道得到了分数后能排在什么座次上，应此需要学习一个座次区间，比如第一名是200-190分，第二名是190-170分。学习目标是一个权重向量和名次的区间向量。
+
+
+  实现比较简单。可以参考论文。
+
+
+  重点说一下文章的里面，循环1和循环2，其实负责找到预测rank和label rank的误差数量和正负号。如果预测名次靠前，实际标注名次靠后，则是负的累计错误。最后表现为w需要减去相应的x，也就是w*x向量要缩短。
+
+
+ 
+
+
+  我自己手写了一个toy data，10个学习样本学习，迭代1万次，最后预测这10个样本，顺序还都对，看了下权重
+
+
+  w[0] = -64
+
+
+  w[1] = -298
+
+
+  w[2] = -360
+
+
+
+
+
+
+  说明在这个排序逻辑中，忠诚是第一位的，其次是智力，最不可靠的是武力。
+
+
+
+
+
+
+   武力  智力  忠诚  排序
+
+
+诸葛亮 2    5    5    1
+
+关羽  5    4    5    2
+
+庞统  2    5    4    3
+
+张飞  5    3    5    4
+
+马超  5    4    4    5
+
+魏延  5    4    4    6
+
+周仓  3    3    4    7
+
+孟达  4    3    2    8
+
+糜竺  3    3    1    9
+
+黄浩  2    2    2    10
+
+
+ 
+
+
+  以下是实现代码，仅供参考
+
+
+
+
+
+
+
+#include &lt;stdio.h&gt;
+
+#include &lt;stdlib.h&gt;
+
+#include &lt;iostream&gt;
+
+#include &lt;vector&gt;
+
+#include &lt;string&gt;
+
+#include &quot;stdint.h&quot;
+
+using namespace std;
+
+
+
+
+
+
+
+
+
+void split(const char* str,const char split_char,vector&lt;uint32_t&gt;&amp; str_v)
+
+{
+
+    const char* term_head = str;
+
+    const char* term_tail = str;
+
+    for(;(term_head = term_tail )!='\0';)
+
+    {
+
+        string os ;
+
+        char buf[2];
+
+        buf[1]='\0';
+
+        for(term_tail = term_head; *term_tail != split_char&amp;&amp;*term_tail!='\0'&amp;&amp;*term_tail!='\n' ;term_tail&#43;&#43;)
+
+        {
+
+            buf[0] = *term_tail;
+
+            os.append(buf);
+
+        }
+
+        if(*term_tail == split_char)
+
+        {
+
+            str_v.push_back(atoi(os.c_str()));
+
+            term_tail&#43;&#43;;
+
+        }
+
+        else if(*term_tail == '\n')
+
+        {
+
+            str_v.push_back(atoi(os.c_str()));
+
+            return;
+
+        }
+
+        else if(*term_tail == '\0')
+
+        {
+
+            str_v.push_back(atoi(os.c_str()));
+
+            return;
+
+        }
+
+        else
+
+            return;
+
+    }
+
+};
+
+
+
+
+
+
+
+int main(int argc, char** argv)
+
+{
+
+    FILE * fp;
+
+    char * line = NULL;
+
+    size_t len = 0;
+
+    ssize_t read;
+
+
+
+
+
+    fp = fopen(argv[1], &quot;r&quot;);
+
+    if (fp == NULL)
+
+        exit(EXIT_FAILURE);
+
+    vector&lt; vector&lt;uint32_t&gt; &gt; map;
+
+    while ((read = getline(&amp;line, &amp;len, fp)) != -1) {
+
+        line[read-1] ='\0';
+
+        vector&lt;uint32_t&gt; u_v;
+
+        split(line,'\t',u_v);
+
+        map.push_back(u_v);
+
+    }
+
+    vector&lt;float&gt; w;
+
+    w.push_back(0);w.push_back(0);w.push_back(0);
+
+
+
+
+
+    float b[12] = {-1,0,0,0,0,0,0,0,0,0,0,1000000};
+
+    float index[12];
+
+    float tao[12];
+
+
+
+
+
+    for(int iter = 0; iter&lt;1000000;&#43;&#43;iter)
+
+    {
+
+        for(int i = 0;i&lt;map.size();&#43;&#43;i)
+
+        {
+
+            int predict_r = 1;
+
+
+
+
+
+            for(int r = 1;r&lt;=11;&#43;&#43;r)
+
+            {
+
+                if(w[0]*map[i][0] &#43; w[1]*map[i][1] &#43; w[2]*map[i][2] - b[r] &lt; 0)
+
+                {
+
+                    predict_r = r;
+
+                    break;
+
+                }
+
+
+
+
+}
+
+            int real_r = map[i][3];
+
+            if(real_r != predict_r)
+
+            {
+
+                for(int r = 1;r&lt;=10;&#43;&#43;r)
+
+                {
+
+                    if(real_r&lt;=r)
+
+                    {
+
+                        index[r] = -1;
+
+                    }
+
+                    else
+
+                    {
+
+                        index[r] = 1;
+
+                    }
+
+                }
+
+                float tao_sum = 0.0;
+
+                for(int r = 1;r&lt;=10;&#43;&#43;r)
+
+                {
+
+                    if((w[0]*map[i][0] &#43; w[1]*map[i][1] &#43; w[2]*map[i][2] - b[r])*index[r]&lt;=0)
+
+                    {
+
+                        tao[r] = index[r];
+
+                    }
+
+                    else
+
+                    {
+
+                        tao[r] = 0;
+
+                    }
+
+                    tao_sum &#43;= tao[r];
+
+                }
+
+                w[0] = w[0] &#43; tao_sum*map[i][0];
+
+                w[1] = w[1] &#43; tao_sum*map[i][1];
+
+                w[2] = w[2] &#43; tao_sum*map[i][2];
+
+
+
+
+                for(int r=1;r&lt;=10;&#43;&#43;r)
+
+                {
+
+                    b[r] = b[r] - tao[r];
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+
+
+
+    for(int i = 0;i&lt;map.size();&#43;&#43;i)
+
+    {
+
+        int predict_r = 1;
+
+        for(int r = 1;r&lt;=11;&#43;&#43;r)
+
+        {
+
+            if(w[0]*map[i][0] &#43; w[1]*map[i][1] &#43; w[2]*map[i][2] - b[r] &lt; 0)
+
+            {
+
+                predict_r = r;
+
+                break;
+
+            }
+
+        }
+
+        cout&lt;&lt;predict_r&lt;&lt;endl;
+
+    }
+
+    cout&lt;&lt;b[1]&lt;&lt;endl;
+
+    cout&lt;&lt;b[2]&lt;&lt;endl;
+
+    cout&lt;&lt;b[3]&lt;&lt;endl;
+
+
+
+
+
+    fclose(fp);
+
+    if (line)
+
+        free(line);
+
+    exit(EXIT_SUCCESS);
+
+}

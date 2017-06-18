@@ -1,0 +1,94 @@
+pku 3090 Visible Lattice Pointshttp://acm.pku.edu.cn/JudgeOnline/problem?id=3090
+
+
+   
+
+
+   题目大意：一个从(0,0)到(n,n)的坐标阵，问多少点能被点(0,0)看到。如果(0,0)到(i,j)的连线被点挡住就算看不到。
+
+
+   
+
+
+   画图可见，左上和右下两部分的对称性，考虑右下部分，as for a point(x,y) 
+
+
+   1.有x&gt;=y 
+
+
+   2.若gcd(x,y)&gt;1;(比如(6,2))则t=gcd(x,y),必存在比它小的(x/t,y/t)让它穿过去(e.g(3,1))
+
+
+   那么我们求的就是&lt;=num且与num互质的数的个数！=》欧拉函数
+
+
+   所以，ans(x)=2*sum(oula(y))+1;//y&lt;=x,1是对角线上那个数
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;cmath&gt;
+using namespace std;
+#define N 1005
+int ans[N];
+int pp[N];
+
+int prime[168] = 
+   {2,    3,    5,    7,   11,   13,   17,   19,   23,   29, 
+   31,   37,   41,   43,   47,   53,   59,   61,   67,   71, 
+   73,   79,   83,   89,   97,  101,  103,  107,  109,  113, 
+  127,  131,  137,  139,  149,  151,  157,  163,  167,  173, 
+  179,  181,  191,  193,  197,  199,  211,  223,  227,  229, 
+  233,  239,  241,  251,  257,  263,  269,  271,  277,  281, 
+  283,  293,  307,  311,  313,  317,  331,  337,  347,  349, 
+  353,  359,  367,  373,  379,  383,  389,  397,  401,  409, 
+  419,  421,  431,  433,  439,  443,  449,  457,  461,  463, 
+  467,  479,  487,  491,  499,  503,  509,  521,  523,  541, 
+  547,  557,  563,  569,  571,  577,  587,  593,  599,  601, 
+  607,  613,  617,  619,  631,  641,  643,  647,  653,  659, 
+  661,  673,  677,  683,  691,  701,  709,  719,  727,  733, 
+  739,  743,  751,  757,  761,  769,  773,  787,  797,  809, 
+  811,  821,  823,  827,  829,  839,  853,  857,  859,  863, 
+  877,  881,  883,  887,  907,  911,  919,  929,  937,  941, 
+  947,  953,  967,  971,  977,  983,  991,  997};
+
+int oula(int num)
+{
+	int i;
+	for(i=0;i&lt;168&amp;&amp;prime[i]&lt;=num;i++)
+		if(prime[i]==num)
+			return num-1;
+	int re = num,tt=num;
+	for(i=0;i&lt;168&amp;&amp;prime[i]&lt;=sqrt(tt*1.0)&amp;&amp;num!=1;i++)
+	{
+		bool flag=false;
+		while(num%prime[i]==0)
+		{
+			num/=prime[i];
+			flag=true;
+		}
+		if(flag)
+			re-=re/prime[i];
+	}
+	if(num!=1)
+		re-=re/num;
+	return re;
+}
+
+int main()
+{
+	int n,T,cnt;
+	memset(ans,0,sizeof(ans));
+	ans[1]=1;
+	for(int i=2;i&lt;=N;i++)
+		ans[i]=ans[i-1]+oula(i);
+	//ans[i]=sum(oula(j)),j&lt;=i;
+	scanf("%d",&amp;T);
+	for(cnt=1;cnt&lt;=T;cnt++)
+	{
+		scanf("%d",&amp;n);
+		printf("%d %d %d/n",cnt,n,ans[n]*2+1);
+	}
+}

@@ -1,0 +1,60 @@
+怎样在一个项目中引用另一个项目的文件有一个函数:
+
+ShellExecute Function
+
+
+   
+
+
+   Performs an operation on a specified file.
+
+
+   Syntax
+
+
+
+   HINSTANCEShellExecute(HWNDhwnd,
+LPCTSTRlpOperation,
+LPCTSTRlpFile,
+LPCTSTRlpParameters,
+LPCTSTRlpDirectory,
+INTnShowCmd
+);
+
+
+   Parameters
+
+hwnd [in]A handle to the owner window used for displaying a user interface (UI) or error messages. This value can be NULL if the operation is not associated with a window. lpOperation [in]A pointer to a null-terminated string, referred to in this case as a verb, that specifies the action to be performed. The set of available verbs depends on the particular file or folder. Generally, the actions available from an object's shortcut menu are available verbs. The following verbs are commonly used. edit Launches an editor and opens the document for editing. If lpFile is not a document file, the function will fail. explore Explores a folder specified by lpFile. find Initiates a search beginning in the directory specified by lpDirectory. open Opens the item specified by the lpFile parameter. The item can be a file or folder. print Prints the file specified by lpFile. If lpFile is not a document file, the function fails. NULL 
+
+   In systems prior to Microsoft Windows 2000, the default verb is used if it is valid and available in the registry. If not, the "open" verb is used.
+
+
+   In Windows 2000 and later, the default verb is used if available. If not, the "open" verb is used. If neither verb is available, the system uses the first verb listed in the registry.
+
+lpFile [in]A pointer to a null-terminated string that specifies the file or object on which to execute the specified verb. To specify a Shell namespace object, pass the fully qualified parse name. Note that not all verbs are supported on all objects. For example, not all document types support the "print" verb. If a relative path is used for the lpDirectory parameter do not use a relative path for lpFile. lpParameters [in]If lpFile specifies an executable file, this parameter is a pointer to a null-terminated string that specifies the parameters to be passed to the application. The format of this string is determined by the verb that is to be invoked. If lpFile specifies a document file, lpParameters should be NULL. lpDirectory [in]A pointer to a null-terminated string that specifies the default (working) directory for the action. If this value is NULL, the current working directory is used. If a relative path is provided at lpFile, do not use a relative path for lpDirectory. nShowCmd [in]The flags that specify how an application is to be displayed when it is opened. If lpFile specifies a document file, the flag is simply passed to the associated application. It is up to the application to decide how to handle it. SW_HIDE Hides the window and activates another window. SW_MAXIMIZE Maximizes the specified window. SW_MINIMIZE Minimizes the specified window and activates the next top-level window in the z-order. SW_RESTORE Activates and displays the window. If the window is minimized or maximized, Windows restores it to its original size and position. An application should specify this flag when restoring a minimized window. SW_SHOW Activates the window and displays it in its current size and position. SW_SHOWDEFAULT Sets the show state based on the SW_ flag specified in the STARTUPINFO structure passed to the CreateProcess function by the program that started the application. An application should call ShowWindow with this flag to set the initial show state of its main window. SW_SHOWMAXIMIZED Activates the window and displays it as a maximized window. SW_SHOWMINIMIZED Activates the window and displays it as a minimized window. SW_SHOWMINNOACTIVE Displays the window as a minimized window. The active window remains active. SW_SHOWNA Displays the window in its current state. The active window remains active. SW_SHOWNOACTIVATE Displays a window in its most recent size and position. The active window remains active. SW_SHOWNORMAL Activates and displays a window. If the window is minimized or maximized, Windows restores it to its original size and position. An application should specify this flag when displaying the window for the first time.
+
+   上面是MSDN里对ShellExecute()函数的解释~
+
+
+   
+
+
+   其中注意：
+
+
+   1. lpDirectory 和lpFile中只能有一个用相对路径，也就是说，如果把默认参数不加改动，都用NULL的话，那个lpFile一定要用绝对路径（不知道我理解的对不对，至少实验出来是这样的）。
+
+
+   2. 在写绝对路径的时候，每个/都要再加一个/，否则读取时会吃掉一个/导致读不出来
+
+
+   3. 举个例子：::ShellExecute(NULL,(CString)"open",(CString)"C://Documents and Settings//张睿卿//My Documents//Visual Studio 2008//Projects//whole//Cal.exe",NULL,NULL,SW_SHOWNORMAL); 
+
+
+   4. 张华哥哥教我的一种方法！嘻嘻！
+
+
+    把.exe文件放入要调用的工程文件夹里，然后把路径就可以改为..//Cal.exe了！
+
+
+   ::ShellExecute(NULL,(CString)"open",(CString)"..//Cal.exe",NULL,NULL,SW_SHOWNORMAL);

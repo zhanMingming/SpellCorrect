@@ -1,0 +1,342 @@
+MFC 多文档中同时打开多个文档MFC多文档中的打开继承自CWinAppEx中的函数OnFileOpen(),这一点在CXXX.cpp中可以看到。比如如下：
+
+
+   
+
+
+   // CCVMFCApp
+
+BEGIN_MESSAGE_MAP(CCVMFCApp, CWinAppEx)
+	ON_COMMAND(ID_APP_ABOUT, &amp;CCVMFCApp::OnAppAbout)
+	// 基于文件的标准文档命令
+	ON_COMMAND(ID_FILE_NEW, &amp;CWinAppEx::OnFileNew)
+	ON_COMMAND(ID_FILE_OPEN, &amp;CWinAppEx::OnFileOpen)
+	// 标准打印设置命令
+	ON_COMMAND(ID_FILE_PRINT_SETUP, &amp;CWinAppEx::OnFilePrintSetup)
+END_MESSAGE_MAP()
+
+中的 ON_COMMAND(ID_FILE_OPEN, &amp;CWinAppEx::OnFileOpen)
+
+   
+
+
+   它默认的只能打开一个文档，那如果想打开多个文档肿么办呢？
+
+
+   这里给一个辅助类MutiOpenDocManager，代码如下：
+
+
+   MutiOpenDocManager.h：
+
+
+   
+
+
+   // MutiOpenDocManager.h: interface for the CMutiOpenDocManager class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#if !defined(AFX_MUTIOPENDOCMANAGER_H__8E7F5957_C207_4C9E_BA92_979203C32025__INCLUDED_)
+#define AFX_MUTIOPENDOCMANAGER_H__8E7F5957_C207_4C9E_BA92_979203C32025__INCLUDED_
+
+#if _MSC_VER &gt; 1000
+#pragma once
+#endif // _MSC_VER &gt; 1000
+
+class CMutiOpenDocManager : public CDocManager  
+{
+public:
+	virtual BOOL DoPromptFileNames(CStringList&amp; fileNames,UINT nIDSTitle,DWORD lFlags,BOOL bOpenFileDialog,CDocTemplate* pTemplate);
+	virtual void OnFileOpen();
+	CMutiOpenDocManager();
+	virtual ~CMutiOpenDocManager();
+    void AppendFilterSuffix(CString &amp;filter, OPENFILENAME &amp;ofn, CDocTemplate *pTemplate, CString *pstrDefaultExt);
+
+};
+
+#endif // !defined(AFX_MUTIOPENDOCMANAGER_H__8E7F5957_C207_4C9E_BA92_979203C32025__INCLUDED_)
+
+
+MutiOpenDocManager.cpp：
+
+
+   
+
+
+   
+
+
+   // MutiOpenDocManager.cpp: implementation of the CMutiOpenDocManager class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include &quot;stdafx.h&quot;
+#include &quot;MutiOpenDocManager.h&quot;
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CMutiOpenDocManager::CMutiOpenDocManager()
+{
+
+}
+
+CMutiOpenDocManager::~CMutiOpenDocManager()
+{
+
+}
+
+void CMutiOpenDocManager::OnFileOpen()
+{
+	CStringList newNames;
+	if(!DoPromptFileNames(newNames,AFX_IDS_OPENFILE,OFN_HIDEREADONLY|OFN_FILEMUSTEXIST|OFN_ALLOWMULTISELECT,TRUE,NULL))
+		return;
+	POSITION pos=newNames.GetHeadPosition();
+	while(pos)
+	{
+		CString newName=newNames.GetNext(pos);
+		AfxGetApp()-&gt;OpenDocumentFile(newName);
+	}
+
+}
+
+BOOL CMutiOpenDocManager::DoPromptFileNames(CStringList&amp; fileNames, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate *pTemplate)
+{
+	CFileDialog dlgFile(bOpenFileDialog);
+
+	CString title;
+	VERIFY(title.LoadString(nIDSTitle));
+
+	dlgFile.m_ofn.Flags |= lFlags;
+
+	CString strFilter;
+	CString strDefault;
+	if (pTemplate != NULL)
+	{
+		ASSERT_VALID(pTemplate);
+		AppendFilterSuffix(strFilter, dlgFile.m_ofn, pTemplate, &amp;strDefault);
+	}
+	else
+	{
+		// do for all doc template
+		POSITION pos = m_templateList.GetHeadPosition();
+		BOOL bFirst = TRUE;
+		while (pos != NULL)
+		{
+			CDocTemplate* pTemplate = (CDocTemplate*)m_templateList.GetNext(pos);
+			AppendFilterSuffix(strFilter, dlgFile.m_ofn, pTemplate,
+				bFirst ? &amp;strDefault : NULL);
+			bFirst = FALSE;
+		}
+	}
+
+	// append the &quot;*.*&quot; all files filter
+	CString allFilter;
+	VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
+	strFilter += allFilter;
+	strFilter += (TCHAR)'\0';   // next string please
+    #ifndef _MAC
+	strFilter += _T(&quot;*.*&quot;);
+    #else
+	strFilter += _T(&quot;****&quot;);
+    #endif
+	strFilter += (TCHAR)'\0';   // last string
+	dlgFile.m_ofn.nMaxCustFilter++;
+	dlgFile.m_ofn.lpstrFilter = strFilter;
+
+	#ifndef _MAC
+	dlgFile.m_ofn.lpstrTitle = title;
+    #else
+	dlgFile.m_ofn.lpstrPrompt = title;
+    #endif
+
+	CString strFileNames;
+	dlgFile.m_ofn.lpstrFile=strFileNames.GetBuffer(2048);
+	dlgFile.m_ofn.nMaxFile=2048;
+	BOOL bResult=dlgFile.DoModal()==IDOK?TRUE:FALSE;
+	strFileNames.ReleaseBuffer();
+	if(!bResult)
+		return FALSE;//取消打开文件操作
+	//将文件名拷贝到一个字符串列表中
+	POSITION pos=dlgFile.GetStartPosition();
+	while(pos)
+	{
+		fileNames.AddTail(dlgFile.GetNextPathName(pos));
+	}
+	return
+		TRUE;
+}
+
+//下面的函数是DoPromptFileNames函数中需要调用的模块函数
+void CMutiOpenDocManager::AppendFilterSuffix(CString &amp;filter, OPENFILENAME &amp;ofn, CDocTemplate *pTemplate, CString *pstrDefaultExt)
+{
+	ASSERT_VALID(pTemplate);
+	ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+	CString strFilterExt, strFilterName;
+	if (pTemplate-&gt;GetDocString(strFilterExt, CDocTemplate::filterExt) &amp;&amp;
+	 !strFilterExt.IsEmpty() &amp;&amp;
+	 pTemplate-&gt;GetDocString(strFilterName, CDocTemplate::filterName) &amp;&amp;
+	 !strFilterName.IsEmpty())
+	{
+		// a file based document template - add to filter list
+		ASSERT(strFilterExt[0] == '.');
+		if (pstrDefaultExt != NULL)
+		{
+			// set the default extension
+			*pstrDefaultExt = ((LPCTSTR)strFilterExt) + 1;  // skip the '.'
+			ofn.lpstrDefExt = (LPTSTR)(LPCTSTR)(*pstrDefaultExt);
+			ofn.nFilterIndex = ofn.nMaxCustFilter + 1;  // 1 based number
+		}
+
+		// add to filter
+		filter += strFilterName;
+		ASSERT(!filter.IsEmpty());  // must have a file type name
+		filter += (TCHAR)'\0';  // next string please
+		filter += (TCHAR)'*';
+		filter += strFilterExt;
+		filter += (TCHAR)'\0';  // next string please
+		ofn.nMaxCustFilter++;
+	}
+}
+
+
+
+然后再在CXXX.cpp的一个位置插入一句话！至关重要：
+
+   
+
+
+   
+
+
+   BOOL CCVMFCApp::InitInstance()
+{
+	// 如果一个运行在 Windows XP 上的应用程序清单指定要
+	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
+	//则需要 InitCommonControlsEx()。否则，将无法创建窗口。
+	INITCOMMONCONTROLSEX InitCtrls;
+	InitCtrls.dwSize = sizeof(InitCtrls);
+	// 将它设置为包括所有要在应用程序中使用的
+	// 公共控件类。
+	InitCtrls.dwICC = ICC_WIN95_CLASSES;
+	InitCommonControlsEx(&amp;InitCtrls);
+
+	CWinAppEx::InitInstance();
+
+	// 初始化 OLE 库
+	if (!AfxOleInit())
+	{
+		AfxMessageBox(IDP_OLE_INIT_FAILED);
+		return FALSE;
+	}
+	AfxEnableControlContainer();
+	// 标准初始化
+	// 如果未使用这些功能并希望减小
+	// 最终可执行文件的大小，则应移除下列
+	// 不需要的特定初始化例程
+	// 更改用于存储设置的注册表项
+	// TODO: 应适当修改该字符串，
+	// 例如修改为公司或组织名
+	SetRegistryKey(_T(&quot;应用程序向导生成的本地应用程序&quot;));
+	LoadStdProfileSettings(4);  // 加载标准 INI 文件选项(包括 MRU)
+
+	InitContextMenuManager();
+
+	InitKeyboardManager();
+
+	InitTooltipManager();
+	CMFCToolTipInfo ttParams;
+	ttParams.m_bVislManagerTheme = TRUE;
+	theApp.GetTooltipManager()-&gt;SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
+		RUNTIME_CLASS(CMFCToolTipCtrl), &amp;ttParams);
+
+	// 注册应用程序的文档模板。文档模板
+	// 将用作文档、框架窗口和视图之间的连接
+	CMultiDocTemplate* pDocTemplate;
+	m_pDocManager = new CMutiOpenDocManager;//注意必须在此位置添加此句
+
+	pDocTemplate = new CMultiDocTemplate(IDR_CVMFCTYPE,
+		RUNTIME_CLASS(CCVMFCDoc),
+		RUNTIME_CLASS(CChildFrame), // 自定义 MDI 子框架
+		RUNTIME_CLASS(CCVMFCView));
+	if (!pDocTemplate)
+		return FALSE;
+	AddDocTemplate(pDocTemplate);
+
+	// 创建主 MDI 框架窗口
+	CMainFrame* pMainFrame = new CMainFrame;
+	if (!pMainFrame || !pMainFrame-&gt;LoadFrame(IDR_MAINFRAME))
+	{
+		delete pMainFrame;
+		return FALSE;
+	}
+	m_pMainWnd = pMainFrame;
+	// 仅当具有后缀时才调用 DragAcceptFiles
+	//  在 MDI 应用程序中，这应在设置 m_pMainWnd 之后立即发生
+
+
+	// 分析标准外壳命令、DDE、打开文件操作的命令行
+	CCommandLineInfo cmdInfo;
+	ParseCommandLine(cmdInfo);
+
+
+	// 调度在命令行中指定的命令。如果
+	// 用 /RegServer、/Register、/Unregserver 或 /Unregister 启动应用程序，则返回 FALSE。
+	if (!ProcessShellCommand(cmdInfo))
+		return FALSE;
+	// 主窗口已初始化，因此显示它并对其进行更新
+	pMainFrame-&gt;ShowWindow(m_nCmdShow);
+	pMainFrame-&gt;UpdateWindow();
+
+	return TRUE;
+}
+
+
+注意45行的那句话，这是因为在创建类实例的时候将文档类定义为MutiOpenDocManager类，就可以使用其中的打开函数了。
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   当然，如果工程是对话框就更好办了，直接把onopen函数写成这样即可打开多个文档：
+
+
+   
+
+
+   void CCFileDialogST_demoDlg::OnOpen() 
+{
+	CFileDialogST	dlg(TRUE, NULL, NULL, /*OFN_HIDEREADONLY | */OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT, _T(&quot;All files\0*.*\0&quot;), this);
+	CString			sPathName;
+	int				nRetValue;
+
+	nRetValue = dlg.DoModal();
+	if (nRetValue == IDOK)
+	{
+		POSITION	Pos;
+
+		Pos = dlg.GetStartPosition();
+		while (Pos != NULL)
+		{
+			sPathName = dlg.GetNextPathName(Pos);
+			MessageBox(sPathName, _T(&quot;GetNextPathName&quot;), MB_ICONINFORMATION);
+		} 
+	} // if
+} // End of OnOpen

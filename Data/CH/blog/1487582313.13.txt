@@ -1,0 +1,593 @@
+MFC 获得各类指针、句柄的方法最近有些人在问MFC编程一些要点，有一些句柄的获取、指针的获取是常见的问题，本文将对这些问题做以解释，参考了前人的笔录（见reference），希望能够帮助大家更方便地进行MFC程序开发。
+
+
+   
+
+
+    一般我们使用的框架是VC提供的Wizard生成的MFC App Wizard(exe)框架，无论是多文档还是单文档，都存在指针和句柄获取和操作问题。本文中将针对各类句柄的获得、指针的获得以及MFC中常见应用进行阐述并举例。
+
+
+   
+
+
+
+
+   本文内容索引：
+
+
+   =========================================================
+
+
+   MFC中获取常见类句柄&lt;视图类，文档类，框架类，应用程序类&gt;
+
+
+   MFC中获取窗口句柄及相关函数
+
+
+   MFC获取控件句柄
+
+
+   MFC各类中获取类指针详解
+
+
+   MSDN关于应用程序信息和管理的各个函数
+
+
+   ==========================================================
+
+
+   
+
+
+
+
+   MFC中获取常见类句柄&lt;视图类，文档类，框架类，应用程序类&gt;
+
+
+   
+
+
+   本节为VC中常用的文档类，视图类，框架类，应用程序类，自定义类中获取其它四个类的方法：
+GET App
+ AfxGetInstanceHandle()
+ AfxGetApp()
+GET Frame-&gt;View-&gt;Document
+  SDI  AfxGetMainWnd() -&gt; GetActiveView() -&gt; GetDocument()
+  MDI  AfxGetMainWnd() -&gt; MDIGetActive() -&gt; GetActiveView() -&gt; GetDocument()
+GET Menu
+  CMenu *pMenu=AfxGetApp()-&gt;m_pMainWnd-&gt;GetMenu();
+GET ToolBar，StatusBar
+   (CMainFrame *)GetParent()-&gt;m_wndToolBar;
+   (CMainFrame *)GetParent()-&gt;m_wndStatusBar;
+   CStatusBar * pStatusBa=(CStatusBar*)AfxGetMainWnd()-&gt;GetDescendantWindow(AFX_IDW_STATUS_BAR);
+   CToolBar * pToolBar=(CtoolBar*)AfxGetMainWnd()-&gt;GetDescendantWindow(AFX_IDW_TOOLBAR);
+Get View from Document
+   GetFirstViewPosition 和 GetNextView 函数得到指针。
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   MFC中获取窗口句柄及相关函数
+
+
+   首先，窗口句柄，在窗口类中直接使用成员变量m_hWnd，在窗口外最常见是用AfxGetMainWnd（获取主窗口指针，其成员变量m_hWnd为主窗口句柄）：
+
+
+
+
+   
+
+HWND hWnd = AfxGetMainWnd()-&gt;m_hWnd;
+
+
+   
+
+
+
+
+   与其相关的函数说明如下,这些函数对于获取窗口句柄非常有用：
+
+
+   GetTopWindow
+
+函数功能：该函数检查与特定父窗口相联的子窗口z序（Z序：垂直屏幕的方向，即叠放次序），并返回在z序顶部的子窗口的句柄。
+
+函数原型：HWND GetTopWindow（HWND hWnd）；
+
+参数：
+
+　　hWnd:被查序的父窗口的句柄。如果该参数为NULL，函数返回Z序顶部的窗口句柄。
+
+返回&#20540;：
+
+  如果函数成功，返回&#20540;为在Z序顶部的子窗口句柄。如果指定的窗口无子窗口，返回&#20540;为NULL。
+
+
+
+
+
+GetForegroundWindow
+
+函数功能：该函数返回当前系统的前台窗口的窗口句柄。
+
+函数原型：HWND GetForegroundWindow（VOID）　　
+
+返回&#20540;：函数返回前台窗回的句柄。
+
+
+
+
+
+☆☆☆
+ GetActiveWindow  获取当前窗口句柄
+
+
+   函数功能：该函数可以获得与调用该方法的线程的消息队列相关的活动窗口的窗口句柄（就是取得当前进程的活动窗口的窗口句柄）。
+
+函数原型：HWND GetActiveWindow（VOID）
+
+返回&#20540;：返回&#20540;是与调用线程的消息队列相关的活动窗口的句柄。否则，返回&#20540;为NULL。
+
+
+
+
+
+
+
+GetSafeHwnd
+
+函数功能：获取某个窗口对象（CWnd的派生对象）指针的句柄（HWND）时，最安全的方法是使用GetSafeHwnd()函数。
+
+通过下面的例子来看其理由：
+
+　　CWnd *pwnd = FindWindow(“ExploreWClass”,NULL); //希望找到资源管理器
+
+
+   CWnd *pwnd = FindWindow(“ExploreWClass”,NULL); //希望找到资源管理器
+　　HWND hwnd = pwnd-&gt;m_hwnd; //得到它的HWND
+
+      HWND
+ hwnd = pwnd-&gt;m_hwnd; //得到它的HWND
+
+　　这样的代码当开始得到的pwnd为空的时候就会出现一个“General protection error”,并关闭应用程序，因为一般不能对一个NULL指针访问其成员，如果用下面的代码：　　
+
+　　
+   CWnd *pwnd = FindWindow(“ExploreWClass”,NULL); //希望找到资源管理器
+　　HWND hwnd = pwnd-&gt;GetSafeHwnd(); //得到它的HWND
+
+　　就不会出现问题，因为尽管当pwnd是NULL时，GetSafeHwnd仍然可以用，只是返回NULL
+
+
+
+
+IsWindowVisible
+函数功能：该函数获得给定窗口的可视状态。
+函数原型：BOOL IsWindowVisible（HWND hWnd）；
+参数；
+　　hWnd：被测试窗口的句柄。
+返回&#20540;：
+  如果指定的窗口及其父窗口具有WS_VISIBLE风&#26684;，返回&#20540;为非零；如果指定的窗口及其父窗口不具有WS_VISIBLE风&#26684;，返回&#20540;为零。由于返回&#20540;表明了窗口是否具有Ws_VISIBLE风&#26684;，因此，即使该窗口被其他窗口遮盖，函数返回&#20540;也为非零。
+备注：
+  窗口的可视状态由WS_VISIBLE位指示。当设置了WS_VISIBLE位，窗口就可显示，而且只要窗口具有WS_VISIBLE风&#26684;，任何画在窗口的信息都将被显示。
+
+
+
+IsWindow：
+函数功能：该函数确定给定的窗口句柄是否标示一个已存在的窗口。　
+函数原型：BOOL IsWindow（HWND hWnd）；
+参数：
+  hWnd:被测试窗口的句柄。
+返回&#20540;：
+  如果窗口句柄标识了一个已存在的窗口，返回&#20540;为TURE；如果窗口句柄未标识一个已存在窗口，返回&#20540;为FALSE。
+
+
+
+
+
+FindWindow：
+HWND FindWindow(LPCSTR lpClassName,LPCSTR lpWindowName );
+参数：
+lpClassName
+
+   　　指向一个以null结尾的、用来指定类名的字符串或一个可以确定类名字符串的原子。如果这个参数是一个原子，那么它必须是一个在调用此函数前已经通过GlobalAddAtom函数创建好的全局原子。这个原子（一个16bit的&#20540;），必须被放置在lpClassName的低位字节中，lpClassName的高位字节置零。
+
+
+   
+
+
+
+
+   
+
+
+
+lpWindowName
+　　指向一个以null结尾的、用来指定窗口名（即窗口标题）的字符串。如果此参数为NULL，则匹配所有窗口名。
+返回&#20540;：
+如果函数执行成功，则返回&#20540;是拥有指定窗口类名或窗口名的窗口的句柄。
+
+   　　如果函数执行失败，则返回&#20540;为 NULL 。可以通过调用GetLastError函数获得更加详细的错误信息。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   来说个应用，窗口标题的改变，我们可以通过SetWindowText来实现：
+
+
+   注：如果窗口本身属性是不显示标题的，这个函数的调用不会影响窗口属性。
+
+
+
+
+   //Set title for application’s main frame window .
+AfxGetMainWnd ( ) -&gt; SetWindowText (_T(&quot;Application title&quot;) )
+//Set title for View’s MDI child frame window .
+GetParentFrame ( ) -&gt; SetWindowText (&quot;_T (&quot;MDI Child Frame new title&quot;) )
+//Set title for dialog’s push button control.
+GetDigitem (IDC_BUTTON) -&gt; SetWindowText (_T (&quot;Button new title &quot;) )
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   MFC获取控件句柄
+
+
+
+
+   SDI中的控件句柄获取：
+
+
+   
+   CWnd   *pWnd   =   GetDlgItem(ID_***); // 取得控件的指针
+HWND hwnd = pWnd-&gt;GetSafeHwnd();  // 取得控件的句柄
+
+
+   
+
+
+   取得CDC的指针是CDC* pdc = pwnd-&gt;GetWindowDC();
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   MFC各类中获取类指针详解
+
+
+   
+
+使用到的类需要包含响应的头文件。首先一般获得本类(视，文档，对话框都支持)实例指针 this，用this的目的，主要可以通过类中的函数向其他类或者函数中发指针，以便于在非本类中操作和使用本类中的功能。这其中的关键在于理解 m_pMainWnd，AfxGetApp()，AfxGetMainWnd()的意义！
+
+
+
+
+
+1）在View中获得Doc指针
+
+CYouSDIDoc *pDoc=GetDocument();一个视只能有一个文档。
+
+
+
+
+
+2) 在App中获得MainFrame指针
+
+CWinApp 中的 m_pMainWnd变量就是MainFrame的指针，也可以： CMainFrame *pMain =(CMainFrame*)AfxGetMainWnd();
+
+
+
+
+
+3) 在View中获得MainFrame指针
+
+CMainFrame *pMain=(CmaimFrame *)AfxGetApp()-&gt;m_pMainWnd;
+
+
+
+
+
+4) 获得View（已建立）指针
+
+CMainFrame *pMain=(CmaimFrame *)AfxGetApp()-&gt;m_pMainWnd;
+
+CyouView *pView=(CyouView *)pMain-&gt;GetActiveView();
+
+
+
+
+
+5) 获得当前文档指针
+
+CDocument * pCurrentDoc =(CFrameWnd *)m_pMainWnd-&gt;GetActiveDocument();
+
+
+
+
+
+6) 获得状态栏与工具栏指针
+
+CStatusBar * pStatusBar＝(CStatusBar *)AfxGetMainWnd()-&gt;GetDescendantWindow(AFX_IDW_STATUS_BAR);
+
+CToolBar * pToolBar=(CtoolBar*)AfxGetMainWnd()-&gt;GetDescendantWindow(AFX_IDW_TOOLBAR);
+
+
+
+
+
+7) 如果框架中加入工具栏和状态栏变量还可以这样
+
+(CMainFrame *)GetParent()-&gt;m_wndToolBar;
+
+(CMainFrame *)GetParent()-&gt;m_wndStatusBar;
+
+
+
+
+
+8) 在Mainframe获得菜单指针
+
+CMenu *pMenu=m_pMainWnd-&gt;GetMenu();
+
+
+
+
+
+9) 在任何类中获得应用程序类
+
+AfxGetInstanceHandle 得到句柄，AfxGetApp得到指针
+
+
+
+
+
+最后提醒大家，在提取到各个句柄之后，因为初次提取的都是标准类句柄，所以，在使用时要注意将标准句柄转换成自己的类的句柄。
+
+如：
+
+AfxGetApp();//得到的是WinApp类的句柄，
+
+所以操作前记得转换成自己定义的类的句柄。
+
+如：
+
+((CMyApp*)AfxGetApp())-&gt;XXXX（）；//这的xxxx()就是你定义的类中间的成员。
+
+
+
+
+
+
+
+
+
+
+
+MSDN关于应用程序信息和管理的各个函数
+
+
+
+
+
+When you write an application, you create a single CWinApp-derived object. Attimes, you may want to get information about this object from outside theCWinApp-derived
+ object.
+
+The Microsoft Foundation Class Library provides the following global functionsto help you accomplish these tasks:
+
+Application Information and Management Functions
+
+AfxFreeLibrary
+
+Decrements the reference count of the loaded dynamic-link library (DLL) module;when the reference count reaches zero, the module is unmapped.
+
+
+
+
+
+AfxGetApp
+
+Returns a pointer to the application's single CWinApp object.
+
+
+
+
+
+AfxGetAppName
+
+Returns a string containing the application's name.
+
+
+
+
+
+AfxGetInstanceHandle
+
+Returns an HINSTANCE representing this instance of the application.
+
+
+
+
+
+AfxGetMainWnd
+
+Returns a pointer to the current &quot;main&quot; window of a non-OLEapplication, or the in-place frame window of a server application.
+
+
+
+
+
+AfxGetResourceHandle
+
+Returns an HINSTANCE to the source of the application's default resources. Usethis to access the application's resources directly.
+
+
+
+
+
+AfxInitRichEdit
+
+Initializes the version 1.0 rich edit control for the application.
+
+
+
+
+
+AfxInitRichEdit2
+
+Initializes the version 2.0 and later rich edit control for the application.
+
+
+
+
+
+AfxLoadLibrary
+
+Maps a DLL module and returns a handle that can be used to get the address of aDLL function.
+
+
+
+
+
+AfxRegisterWndClass
+
+Registers a Windows window class to supplement those registered automaticallyby MFC.
+
+
+
+
+
+AfxSocketInit
+
+Called in a CWinApp::InitInstance override to initialize Windows Sockets.
+
+
+
+
+
+AfxSetResourceHandle
+
+Sets the HINSTANCE handle where the default resources of the application areloaded.
+
+
+
+
+
+AfxRegisterClass
+
+Registers a window class in a DLL that uses MFC.
+
+
+
+
+
+AfxBeginThread
+
+Creates a new thread.
+
+
+
+
+
+AfxEndThread
+
+Terminates the current thread.
+
+
+
+
+
+AfxGetThread
+
+Retrieves a pointer to the current CWinThread object.
+
+
+
+
+
+AfxWinInit
+
+Called by the MFC-supplied WinMain function, as part of the CWinAppinitialization of a GUI-based application, to initialize MFC. Must be calleddirectly for console applications
+ using MFC.
+
+
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   Reference：
+
+
+   1.http://www.cppblog.com/eday/archive/2006/11/18/15375.html
+
+
+   2.http://support.microsoft.com/KB/141003
+
+
+   3.http://blog.csdn.net/zhifeiya/article/details/7402667
+
+
+   
+
+
+
+
+   
+
+
+
+
+   如有其他MFC常见问题请在下方留言或在新浪微博Sophia_qing上与我联系，我将继续补充

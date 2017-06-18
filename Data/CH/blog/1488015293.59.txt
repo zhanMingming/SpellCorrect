@@ -1,0 +1,92 @@
+guava-retrying重试工具库: AttemptTimeLimiterAttemptTimeLimiter和guava的TimeLimiter基本是一样的，是为了限制某个任务的执行时间。比如我希望一个Callable任务执行时间不超过5s，如果超过抛异常TimeoutException。
+
+
+   
+   import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+public class TestTimeLimiter {
+
+    public static void main(String[] args) throws Exception {
+ TimeLimiter timeLimiter = new SimpleTimeLimiter();
+
+ timeLimiter.callWithTimeout(buildTask(), 5, TimeUnit.SECONDS, false);
+    }
+
+    private static Callable&lt;Boolean&gt; buildTask() {
+ return new Callable&lt;Boolean&gt;() {
+     @Override
+     public Boolean call() throws Exception {
+  long start = System.currentTimeMillis();
+  long end = start;
+  while (end - start &lt;= 10 * 1000) {
+      end = System.currentTimeMillis();
+  }
+
+  return true;
+     }
+ };
+    }
+}
+
+
+
+
+
+
+   
+
+
+
+
+   AttemptTimeLimiter功能与之类&#20284;，保证某次重试的执行时间不超过特定&#20540;。
+
+
+
+
+   
+   public class TestLimit {
+
+    private static SimpleDateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss,SSS&quot;);
+
+    public static void main(String[] args) throws Exception {
+
+ Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+  .retryIfException()
+  .retryIfResult(Predicates.equalTo(false))
+  .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(1, TimeUnit.SECONDS))
+  .withStopStrategy(StopStrategies.stopAfterAttempt(5))
+  .build();
+
+ System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+ try {
+     retryer.call(buildTask());
+ } catch (Exception e) {
+     System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+ }
+
+ System.out.println(&quot;end...&quot; + df.format(new Date()));
+
+    }
+
+    private static Callable&lt;Boolean&gt; buildTask() {
+ return new Callable&lt;Boolean&gt;() {
+     @Override
+     public Boolean call() throws Exception {
+  System.out.println(&quot;called&quot;);
+  long start = System.currentTimeMillis();
+  long end = start;
+  while (end - start &lt;= 10 * 1000) {
+      end = System.currentTimeMillis();
+  }
+
+  return true;
+     }
+ };
+    }
+
+}

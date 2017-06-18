@@ -1,0 +1,148 @@
+eval()、window.eval()和witheval()和window.eval()都可以用来动态执行javascript代码，能给js编程带来很大的灵活性，两者唯一的差别在于执行上下文不同。
+
+
+   function testEval() {
+	eval(&quot;var strEval = &#39;local&#39;;&quot;);
+}
+
+function testWindowEval() {
+	window.eval(&quot;var strWindowEval = &#39;global&#39;;&quot;);
+}
+
+testEval();
+testWindowEval();
+alert(strWindowEval); //global
+alert(strEval); //Uncaught ReferenceError: strEval is not defined
+
+可以看到：window.eval()的执行上下文是“全局对象”，而eval()的执行上下文则是“调用eval的上下文环境”。现在我们看下，与eval有关的代码。
+
+   
+
+
+   代码1：
+
+
+   var str = &quot;global&quot;;
+
+function test() {
+	alert(str); //undefined
+	var str = &quot;local&quot;;
+}
+
+test();
+alert(str); //global如果你了解var关键字的&quot;提前声明&quot;特性，上面这段代码的执行结果很好理解。如果不明白，可以参考这篇文章。
+
+
+
+
+   
+
+
+   代码2：
+
+
+   var str = &quot;global&quot;;
+
+function test() {
+	alert(str); //global
+	eval(&quot;var str=&#39;local&#39;;&quot;);
+	//var str = &quot;local&quot;;
+	alert(str); //local
+}
+
+test();
+alert(str); //global
+
+   
+
+
+   
+
+
+
+eval和window.eval也存在浏览器兼容性问题，这里直接附上结论，摘录自这篇文章。
+   IE6/7/8中，eval和window.eval一样，写在自定义函数内是局部闭包，否则是全局闭包。
+IE9/Firefox/Safari/Chrome/Opera中，eval同以上IE6/7/8，
+window.eval即使写在自定义函数内使用的也是全局闭包。
+
+下面介绍下with，with为一条或一组语句指定默认对象，通常用来缩短代码量。
+   var obj = {name:&quot;aty&quot;,age:&quot;25&quot;};
+with(obj)
+{
+	alert(&quot;name=&quot;+name+&quot;,age=&quot;+age);
+}
+
+   
+
+
+   
+
+
+
+
+   最近我在搞JsonSQL的时候，学习到了with另一个很重要的性质：改变with内语句的执行上下文。
+
+
+   举个例子：假如我们有一个data数组，一个condition语句(js语句)，现在需要按照condition过滤data。
+
+
+   var data = [
+	{name:&quot;aa&quot;,age:20},
+	{name:&quot;bb&quot;,age:40},
+	{name:&quot;cc&quot;,age:10}];
+
+var condition = &quot;name==&#39;bb&#39; || age == 20&quot;;
+
+var filter = [];
+var counter = 0;
+
+for(var i=0; i &lt; data.length; i++)
+{
+	with(data[i])
+	{
+		if(eval(condition))
+		{
+			filter[counter++] = data[i];
+		}
+	}
+}
+
+alert(JSON.stringify(filter));
+
+你可以细细品味下上面这段代码，我觉得这是eval和with很经典的一个配合。
+
+   
+
+
+
+
+   再看下面代码，了解下with执行过程中，作用域链的创建和恢复。
+
+
+   function withTest() {
+	var name = &quot;aty&quot;;
+	
+	var obj = {name : &quot;temp&quot;};
+	//暂时修改作用域链
+	with (obj) {
+		alert(name);//temp
+	}//with内的语句执行完之后，作用域链恢复原状
+
+	alert(name);//aty
+}
+withTest();
+
+参考文章：
+
+   
+
+
+   eval与window.eval的差别
+
+http://www.cnblogs.com/snandy/archive/2011/03/16/1986055.html
+
+
+
+javascript的eval和with使用小结
+
+http://www.cnblogs.com/jeffwongishandsome/archive/2009/07/14/1509780.html

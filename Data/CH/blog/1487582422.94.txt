@@ -1,0 +1,89 @@
+stack实现queue ; list实现stack//栈实现队列
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;stack&gt;
+using namespace std;
+//implement queue use stack
+template&lt;class T&gt;class Queue
+{
+	stack&lt;T&gt;st1,st2;
+public :
+	void enqueue(T el)
+	{
+		st1.push(el);
+	}
+	T pop()//取栈顶，并弹出
+	{
+		while(!st1.empty())
+		{
+			st2.push(st1.top());
+			st1.pop();
+		}
+		T w=st2.top();
+		st2.pop();
+		while(!st2.empty())
+		{
+			st1.push(st2.top());
+			st2.pop();
+		}
+		return w;
+	}
+};
+
+int main()
+{
+	Queue&lt;int&gt; q;
+	for(int i=1;i&lt;=8;i++)
+	{
+		q.enqueue(i);
+	}
+	cout&lt;&lt;q.pop()&lt;&lt;endl;
+} 
+
+
+   
+
+
+   
+
+
+   //链表实现栈
+
+
+   
+
+
+   //implement stack by linked list
+#include&lt;iostream&gt;
+#include&lt;list&gt;
+using namespace std;
+
+template&lt;class T&gt;class Stack
+{
+	list&lt;T&gt;li;
+public :
+	void push(T el)
+	{
+		li.push_front(el);
+	}
+	T pop()
+	{
+		T ele=li.front();
+		li.pop_front();
+		return ele;
+	}
+};
+
+int main()
+{
+	Stack&lt;int&gt;t;
+	for(int i=1;i&lt;=8;i++)
+	{
+		t.push(i);
+	}
+	cout&lt;&lt;t.pop()&lt;&lt;endl;
+}

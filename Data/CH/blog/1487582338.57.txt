@@ -1,0 +1,104 @@
+opencv 彩色图像对比度增强一般地，图像对比度都是在灰度图上进行增强，这在我的一篇文章中已经给出了实现方法（http://blog.csdn.net/abcjennifer/article/details/7401921），最通常的办法就是直方图均衡化，而彩色图像的对比度增强其实道理相同。这里给出我的实现方法：
+
+
+   首先将RGB图像转到YCbCr分量，然后对Y分量上的图像进行直方图均衡化，最后进行图像合成。详见代码~(*^__^*)
+
+
+   
+
+
+
+
+   
+
+
+   /*
+*@Function: Color image contrast enhancement
+*@Date: 2012-4-5
+*@Author: 张睿卿
+*/
+
+int ImageStretchByHistogram(IplImage *src1,IplImage *dst1)
+/*************************************************
+Function:      通过直方图变换进行图像增强，将图像灰度的域值拉伸到0-255
+src1: 单通道灰度图像    
+dst1:同样大小的单通道灰度图像 
+*************************************************/
+{
+	assert(src1-&gt;width==dst1-&gt;width);
+	double p[256],p1[256],num[256];
+
+	memset(p,0,sizeof(p));
+	memset(p1,0,sizeof(p1));
+	memset(num,0,sizeof(num));
+	int height=src1-&gt;height;
+	int width=src1-&gt;width;
+	long wMulh = height * width;
+
+	//statistics
+	for(int x=0;x&lt;src1-&gt;width;x++)
+	{
+		for(int y=0;y&lt;src1-&gt; height;y++){
+			uchar v=((uchar*)(src1-&gt;imageData + src1-&gt;widthStep*y))[x];
+			num[v]++;
+		}
+	}
+	//calculate probability
+	for(int i=0;i&lt;256;i++)
+	{
+		p[i]=num[i]/wMulh;
+	}
+
+	//p1[i]=sum(p[j]);	j&lt;=i;
+	for(int i=0;i&lt;256;i++)
+	{
+		for(int k=0;k&lt;=i;k++)
+			p1[i]+=p[k];
+	}
+
+	// histogram transformation
+	for(int x=0;x&lt;src1-&gt;width;x++)
+	{
+		for(int y=0;y&lt;src1-&gt; height;y++){
+			uchar v=((uchar*)(src1-&gt;imageData + src1-&gt;widthStep*y))[x];
+			((uchar*)(dst1-&gt;imageData + dst1-&gt;widthStep*y))[x]= p1[v]*255+0.5;     
+		}
+	}
+	return 0;
+}
+
+void CCVMFCView::OnYcbcrY()
+{
+	IplImage* Y = cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,1);
+	IplImage* Cb= cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,1);
+	IplImage* Cr = cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,1);
+	IplImage* Compile_YCbCr= cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,3);
+	IplImage* dst1=cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,3);
+
+	int i;
+	cvCvtColor(workImg,dst1,CV_BGR2YCrCb);
+	cvSplit(dst1,Y,Cb,Cr,0);
+
+ 	ImageStretchByHistogram(Y,dst1);
+ 
+ 	for(int x=0;x&lt;workImg-&gt;height;x++)
+ 	{
+ 		for(int y=0;y&lt;workImg-&gt;width;y++)
+ 		{
+ 			CvMat* cur=cvCreateMat(3,1,CV_32F);
+ 			cvmSet(cur,0,0,((uchar*)(dst1-&gt;imageData+x*dst1-&gt;widthStep))[y]);
+ 			cvmSet(cur,1,0,((uchar*)(Cb-&gt;imageData+x*Cb-&gt;widthStep))[y]);
+ 			cvmSet(cur,2,0,((uchar*)(Cr-&gt;imageData+x*Cr-&gt;widthStep))[y]);
+ 
+ 			for(i=0;i&lt;3;i++)
+ 			{
+ 				double xx=cvmGet(cur,i,0);
+ 				((uchar*)Compile_YCbCr-&gt;imageData+x*Compile_YCbCr-&gt;widthStep)[y*3+i]=xx;
+ 			}
+ 		}
+ 	}
+ 
+	cvCvtColor(Compile_YCbCr,workImg,CV_YCrCb2BGR);
+ 	m_ImageType=3;
+ 	Invalidate();
+}

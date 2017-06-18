@@ -1,0 +1,478 @@
+maven构建spring4 WebSocket应用, 不使用Spring MVCSpring4 reference中websocket的使用是建立在Spring MVC之上的，其实spring websocket并不依赖于Spring MVC。
+
+
+   The above is for use in Spring MVC applications and should be included 
+in the configuration of a DispatcherServlet. 
+However, Spring’s WebSocket support does not depend on Spring MVC. 
+It is relatively simple to integrate a WebSocketHandler into other HTTP serving environments 
+with the help of WebSocketHttpRequestHandler.
+
+   
+
+
+   
+
+
+
+这篇文章我们就看下，如何在不引入Spring MVC的情况下，使用Spring Websocket。整个项目的目录结构如下：
+
+   
+
+
+
+
+   
+
+
+
+
+   pom.xml配置如下：
+
+
+   &lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+	&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+	&lt;groupId&gt;net.aty.websocket&lt;/groupId&gt;
+	&lt;artifactId&gt;SpringWebsocketDemo&lt;/artifactId&gt;
+	&lt;packaging&gt;war&lt;/packaging&gt;
+	&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+	&lt;name&gt;SpringWebsocketDemo Maven Webapp&lt;/name&gt;
+	&lt;url&gt;http://maven.apache.org&lt;/url&gt;
+
+	&lt;properties&gt;
+		&lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+		&lt;spring.version&gt;4.2.4.RELEASE&lt;/spring.version&gt;
+	&lt;/properties&gt;
+
+	&lt;dependencies&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;org.springframework&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-websocket&lt;/artifactId&gt;
+			&lt;version&gt;${spring.version}&lt;/version&gt;
+		&lt;/dependency&gt;
+		
+		&lt;dependency&gt;
+			&lt;groupId&gt;javax.servlet&lt;/groupId&gt;
+			&lt;artifactId&gt;javax.servlet-api&lt;/artifactId&gt;
+			&lt;version&gt;3.1.0&lt;/version&gt;
+			&lt;scope&gt;provided&lt;/scope&gt;
+		&lt;/dependency&gt;
+	&lt;/dependencies&gt;
+
+	&lt;build&gt;
+		&lt;finalName&gt;SpringWebsocketDemo&lt;/finalName&gt;
+	&lt;/build&gt;
+&lt;/project&gt;
+
+
+   
+
+
+   
+
+
+
+
+   web.xml配置如下：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+
+	&lt;context-param&gt;
+		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+		&lt;param-value&gt;/WEB-INF/spring/root-context.xml&lt;/param-value&gt;
+	&lt;/context-param&gt;
+
+	&lt;listener&gt;
+		&lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+	&lt;/listener&gt;
+
+	&lt;servlet&gt;
+		&lt;servlet-name&gt;websocket&lt;/servlet-name&gt;
+		&lt;servlet-class&gt;net.aty.websocket.MyServlet&lt;/servlet-class&gt;
+		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+	&lt;/servlet&gt;
+	&lt;servlet-mapping&gt;
+		&lt;servlet-name&gt;websocket&lt;/servlet-name&gt;
+		&lt;url-pattern&gt;/websocket.connection&lt;/url-pattern&gt;
+	&lt;/servlet-mapping&gt;
+
+&lt;/web-app&gt;
+
+
+   
+
+
+   
+
+
+
+
+   root-context.xml配置如下：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+	xsi:schemaLocation=&quot;
+ http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd
+ http://www.springframework.org/schema/context
+ http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
+
+	&lt;bean id=&quot;myHandler&quot; class=&quot;net.aty.websocket.MyHandler&quot; /&gt;
+	
+	&lt;bean id=&quot;myInterceptor&quot; class=&quot;net.aty.websocket.MyWebSocketHandshakeInterceptor&quot; /&gt;
+
+&lt;/beans&gt;
+
+   
+
+
+
+
+   
+
+
+
+MyHandler.java代码如下：
+   package net.aty.websocket;
+
+import java.util.Map;
+
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+public class MyHandler extends TextWebSocketHandler {
+
+	@Override
+	public void afterConnectionEstablished(WebSocketSession session)
+			throws Exception {
+		System.out.println(&quot;connection established&quot;);
+		WebSocketSessionUtil.add(getUserNameFromSession(session), session);
+	}
+
+	@Override
+	public void handleTextMessage(WebSocketSession session, TextMessage message)
+			throws Exception {
+		System.out.println(&quot;receive a message.&quot; + message);
+
+		WebSocketSessionUtil.broadcast(message);
+	}
+
+	@Override
+	public void handleTransportError(WebSocketSession session,
+			Throwable exception) throws Exception {
+		WebSocketSessionUtil.remove(getUserNameFromSession(session));
+	}
+
+	@Override
+	public void afterConnectionClosed(WebSocketSession session,
+			CloseStatus closeStatus) throws Exception {
+		System.out.println(&quot;conection closed.&quot; + closeStatus);
+
+		WebSocketSessionUtil.add(getUserNameFromSession(session), session);
+	}
+
+	@Override
+	public boolean supportsPartialMessages() {
+		return false;
+	}
+
+	private String getUserNameFromSession(WebSocketSession session) {
+		Map&lt;String, Object&gt; params = session.getAttributes();
+
+		return params.get(&quot;userName&quot;).toString();
+	}
+
+}
+
+
+   
+
+
+   
+
+
+
+MyWebSocketHandshakeInterceptor.java代码如下：
+   package net.aty.websocket;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
+
+public class MyWebSocketHandshakeInterceptor extends
+		HttpSessionHandshakeInterceptor {
+
+	@Override
+	public boolean beforeHandshake(ServerHttpRequest serverHttpRequest,
+			ServerHttpResponse serverHttpResponse, WebSocketHandler wsHandler,
+			Map&lt;String, Object&gt; attributes) throws Exception {
+
+		System.out.println(&quot;hi get request.&quot;);
+
+		ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) serverHttpRequest;
+		HttpServletRequest request = servletRequest.getServletRequest();
+
+		String userName = request.getParameter(&quot;userName&quot;);
+		attributes.put(&quot;userName&quot;, userName);
+
+		System.out.println(&quot;a client userName=&quot; + userName);
+
+		super.beforeHandshake(serverHttpRequest, serverHttpResponse, wsHandler,
+				attributes);
+
+		return true;
+	}
+
+	@Override
+	public void afterHandshake(ServerHttpRequest request,
+			ServerHttpResponse response, WebSocketHandler wsHandler,
+			Exception ex) {
+		super.afterHandshake(request, response, wsHandler, ex);
+	}
+
+}
+
+
+   
+
+
+   
+
+
+
+WebSocketSessionUtil.java代码如下：
+   package net.aty.websocket;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+public class WebSocketSessionUtil {
+
+	private static Map&lt;String, WebSocketSession&gt; clients = new ConcurrentHashMap&lt;&gt;();
+
+	public static void add(String userName, WebSocketSession session) {
+		clients.put(userName, session);
+	}
+
+	public static WebSocketSession get(String userName) {
+		return clients.get(userName);
+	}
+
+	public static void remove(String userName) {
+		clients.remove(userName);
+	}
+
+	public static void broadcast(TextMessage message)
+			throws Exception {
+
+		Set&lt;String&gt; allUsers = clients.keySet();
+
+		for (String name : allUsers) {
+			WebSocketSession session = clients.get(name);
+			session.sendMessage(message);
+		}
+	}
+}
+
+
+   
+
+
+   
+
+
+
+MyServlet.java代码如下：
+   package net.aty.websocket;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
+
+public class MyServlet extends HttpServlet {
+
+	private static final long serialVersionUID = 1954401864181530442L;
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		this.doPost(req, resp);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		ApplicationContext context = WebApplicationContextUtils
+				.getWebApplicationContext(req.getServletContext());
+
+		WebSocketHttpRequestHandler handler = new WebSocketHttpRequestHandler(
+				context.getBean(&quot;myHandler&quot;, MyHandler.class));
+
+		List&lt;HandshakeInterceptor&gt; interceptors = new ArrayList&lt;HandshakeInterceptor&gt;();
+		interceptors.add(context.getBean(&quot;myInterceptor&quot;,
+				MyWebSocketHandshakeInterceptor.class));
+
+		handler.setHandshakeInterceptors(interceptors);
+
+		handler.handleRequest(req, resp);
+	}
+}
+
+
+   
+
+
+
+这个Servlet使用了Spring中的WebSocketHttpRequestHandler，和客户端建立websocket连接。
+
+   
+
+
+
+
+   websocket.html代码如下：
+
+
+   &lt;head&gt;
+&lt;script src=&quot;js/jquery-1.11.1.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+	$(function() {
+
+		// 浏览器上的websocket对象,用来和服务端通信.
+		var socket = null;
+
+		$(&quot;#login&quot;).click(
+				function() {
+					var userName = $(&quot;#userName&quot;).val();
+					if ($.trim(userName) == &quot;&quot;) {
+						return;
+					}
+
+					// 创建websocket对象
+					socket = new WebSocket(
+							&#39;ws://localhost:8080/SpringWebsocketDemo/websocket.connection?userName=&#39;
+									+ userName);
+					registerEvent();
+				});
+
+		$(&quot;#logout&quot;).click(function() {
+			socket.close();
+		});
+
+		$(&quot;#send&quot;).click(function() {
+			socket.send($(&quot;#message&quot;).val());
+		});
+
+		function registerEvent() {
+			socket.onopen = function(event) {
+				$(&quot;#messagePanel&quot;).append(
+						&quot;&lt;div&gt;websocket open successfully.&lt;/div&gt;&quot;);
+			}
+
+			socket.onmessage = function(event) {
+				$(&quot;#messagePanel&quot;).append(&quot;&lt;div&gt;msg=&quot; + event.data + &quot;&lt;/div&gt;&quot;);
+			};
+
+			socket.onclose = function(event) {
+				$(&quot;#messagePanel&quot;).append(
+						&quot;&lt;div&gt;websocket close successfully.&lt;/div&gt;&quot;);
+			};
+		}
+
+	});
+&lt;/script&gt;
+&lt;style&gt;
+.card {
+	margin: 20px;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;div class=&quot;card&quot;&gt;
+		userName:&lt;input id=&quot;userName&quot; value=&quot;&quot; placeholder=&quot;input your name&quot; /&gt;
+		&lt;button id=&quot;login&quot;&gt;login&lt;/button&gt;
+		&lt;button id=&quot;logout&quot;&gt;logout&lt;/button&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;card&quot;&gt;
+		message:&lt;input id=&quot;message&quot; value=&quot;&quot; placeholder=&quot;input your message&quot; /&gt;
+		&lt;button id=&quot;send&quot;&gt;send&lt;/button&gt;
+	&lt;/div&gt;
+
+	&lt;div class=&quot;card&quot; id=&quot;messagePanel&quot;&gt;&lt;/div&gt;
+&lt;/body&gt;
+
+
+
+
+
+war包部署到Tomcat7.0.62下，可以看到2个chrome客户端能够收到彼此的信息。
+
+   
+
+
+
+
+
+
+
+
+
+
+   后台的Tomcat也打印出了相应的日志：
+
+
+   
+
+
+
+
+   
+
+
+
+我们在没有引入Spring MVC的情况下，实现了Spring WebSocket编程，但是却比较麻烦体现在2个方面：
+
+
+   1.我们必须记录所有的websocket客户端，然后将消息广播给所有客户端。
+
+
+   2.必须手动创建WebSocketHandler和HandshakeInterceptor等对象，无法在spring.xml中配置。
+
+
+   
+
+
+
+
+   所以我们还是使用SpringMVC&#43;Websocket吧，会给编程带来很大的便利。

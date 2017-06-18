@@ -1,0 +1,54 @@
+linux编程的108种奇淫巧计-1(FALSE SHARING)我打算开个长篇系列博客，预计108篇吧，但愿能在1-2年内完成。
+
+
+   
+
+
+    注：考虑到我本人长期使用linux系统做开发，因此有些代码在windows环境下无法编译或者会有问题，建议大家都使用linux环境做实验，最好是2.6内核的，处理器需要是多核。很多读者说我是纸上谈兵，这个确实不好，从本系列开始基本都是50行左右的代码。本系列不代表任何学术或业界立场，仅我个人兴趣爱好，由于水平有限，错误难免，请不要有过分期望。
+
+
+   
+
+
+    废话不多说，今天就写第一篇如下：
+
+
+   
+
+
+    以下一段代码分别编译成两个程序，仅仅是变量定义的差别，执行时间差距巨大，这是什么原因呢？
+
+
+    本博客暂不解密，等数天后，我把后半部写上，希望读者朋友们踊跃实验，并回答。
+
+
+   
+
+
+   #include &lt;stdio.h&gt;#include &lt;pthread.h&gt;#include &lt;string.h&gt;#include &lt;stdlib.h&gt;#ifdef FSsize_t cnt_1;size_t cnt_2;#endif#ifdef NONFSsize_t __attribute__((aligned(64))) cnt_1;size_t __attribute__((aligned(64))) cnt_2;#endifvoid* sum1(void*){ for(int i=0;i &lt; 10000000;++i) { cnt_1 += 1; }};void* sum2(void*){ for(int i=0;i &lt; 10000000;++i) { cnt_2 += 1; }};int main(){ pthread_t* thread = (pthread_t*) malloc(2*sizeof( pthread_t)); pthread_create(&amp;thread[0],NULL,sum1,NULL);//创建2个线程分别求和 pthread_create(&amp;thread[1],NULL,sum2,NULL); pthread_join(thread[0],NULL);//等待2个线程结束计算。 pthread_join(thread[1],NULL);   free(thread); printf("cnt_1:%d,cnt_2:%d",cnt_1,cnt_2);}编译方法：g++ fs.cpp -o test_nfs -g -D NONFS &ndash;lpthreadg++ fs.cpp -o test_fs -g -D FS &ndash;lpthread
+
+
+   用time ./test_nfs 和 time ./test_fs会发现执行时间差别很大，请读者踊跃跟帖作答，谢谢。
+
+
+   
+
+
+   续篇参见：http://blog.csdn.net/pennyliang/archive/2010/10/26/5966433.aspx
+
+
+   
+
+
+   
+
+
+   网友linyai做了实验，大家可以参考一下，以下来自跟帖。
+
+
+   
+
+
+   
+
+linyai发表于Thu Oct 21 2010 10:11:22 GMT+0800 (China Standard Time)举报回复删除fs: 0m0.083s nfs: 0m0.043s fs: 0m0.130s nfs: 0m0.034s fs: 0m0.084s nfs: 0m0.037s fs: 0m0.086s nfs: 0m0.042s

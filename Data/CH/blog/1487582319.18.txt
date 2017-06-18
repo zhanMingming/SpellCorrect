@@ -1,0 +1,371 @@
+特征提取方法 SIFT,PCA-SIFT,GLOH,SURF在前面的blog中，我们已经讲了SIFT的原理，这里我们再详细讲解SIFT的变体：PCA-SIFT和GLOH。
+
+
+
+   – Scale invariant feature transform (SIFT): Lowe, 2004.
+
+
+   – PCA-SIFT: SIFT: Ke and Sukthankar 2004 Ke and Sukthankar, 2004.
+
+
+   – Gradient location-orientation histogram (GLOH): Mikolajczyk and Schmid 2005 
+
+
+   – SURF(Speeded Up Robust Features), Bay, 2006回顾前面讲过的SIFT算法，可以很好地应对旋转和尺度不变，光强不变，位置遮挡不变（http://blog.csdn.net/abcjennifer/article/details/7639681），其过程分为四步：
+
+
+   – Detection of scale-space extreme 构建尺度空间
+
+– Accurate keypoint localization 关键点检测
+
+– Orientation assignment 指定方向
+
+– The local image descriptor 局部图像描述子
+
+
+   David G. Lowe, &quot;Distinctive image features from scale-invariant keypoints,&quot; International Journal of Computer Vision, 60, 2 (2004), pp. 91-110
+
+
+   
+
+
+   /***************************************************PCA-SIFT*****************************************************/
+
+
+   PCA(Principle component analysis) SIFT 描述子将在所有描述子中提取出更有区分度，更robust to image deformations的特征。其方法：
+
+
+   – 在第四步中，不用原先的4*4*8个描述子，而是在41*41的图像块上计算39*39*2（x,y方向）个梯度导数，然后使用PCA将得到的3042维向量降到36维。
+
+
+   Y. Ke and R. Sukthankar, “PCA-SIFT: A More Distinctive Representation for Local Image 15 Descriptors,” Computer Vision and Pattern Recognition, 2004.
+
+
+   
+
+
+
+
+   
+
+
+   当然，上图只是PCA-SIFT作者的一面之词，Mikolajczyk and Schmid（2005）的描述子测评显示还是SIFT比较靠谱。
+
+
+   
+
+
+   /***************************************************GLOH*****************************************************/
+
+
+   Mikolajczyk and Schmid（2005）提出了一种SIFT变体的描述子，使用对数极坐标分级结构替代Lowe（2004）使用的4象限。空间上取半径6，11，15，角度上分八个区间（除中间区域）,然后将272（17*16）维的histogram在一个大数据库上训练，用PCA投影到一个128维向量。
+
+
+   
+
+
+
+
+   
+
+
+   
+
+
+   K. Mikolajczyk and C. Schmid,“A performance evaluation of local descriptors ,” IEEE Transactions on Pattern Analysis and Machine Intelligence, Vol. 27, No. 10, pp. 1615-1630,
+ Oct. 2005
+
+
+   /***************************************************SURF*****************************************************/
+
+
+   SURF与SIFT稍有不同，
+
+
+   -SIFT建立一幅图像的金字塔，在每一层进行高斯滤波并求取图像差（DOG）进行特征点的提取，而SURF用的是hessian matrix黑森矩阵。
+
+
+   -SIFT特征建立图像金字塔处理尺度不变特性，而SURF特征将高斯核近&#20284;为一个方波滤波，SURF金字塔仅仅用来作特征点的检测。
+
+
+   下文来自《A Comparison of SIFT, PCA-SIFT and SURF》
+
+
+   SIFT and SURF algorithms employ slightly different ways of detecting features [9]. SIFT builds an image
+
+pyramids, filtering each layer with Gaussians of increasing sigma values and taking the difference. On the
+
+other hand, SURF creates a “stack” without 2:1 down sampling for higher levels in the pyramid resulting
+
+in images of the same resolution [9]. Due to the use of integral images, SURF filters the stack using a box
+
+filter approximation of second-order Gaussian partial derivatives, since integral images allow the
+
+computation of rectangular box filters in near constant time [3]. 
+
+
+
+In keypoint matching step, the nearest neighbor is defined as the keypoint with minimum Euclidean
+
+distance for the invariant descriptor vector. Lowe used a more effective measurement that obtained by
+
+comparing the distance of the closest neighbor to that second-closest neighbor [1] so the author of this
+
+paper decided to choose 0.5 as distance ratio like Lowe did in SIFT. 
+
+
+   Herbert
+ Bay, Andreas Ess, Tinne Tuytelaars, Luc Van Gool&quot;SURF:
+ Speeded Up Robust Features&quot;, Computer Vision and Image Understanding (CVIU), Vol. 110, No. 3, pp. 346--359, 2008
+
+
+
+
+   ftp://ftp.vision.ee.ethz.ch/publications/articles/eth_biwi_00517.pdf
+
+
+
+
+   
+
+
+   /***************************************************COMPARISON*****************************************************/
+
+
+
+   论文：A comparison of SIFT, PCA-SIFT and SURF 对三种方法给出了性能上的比较，源图片来源于Graffiti dataset，对原图像进行尺度、旋转、模糊、亮度变化、仿射变换等变化后，再与原图像进行匹配，统计匹配的效果。效果以可重复出现性为评价指标。
+
+
+   对以上三种方法进行比较：
+
+
+
+
+
+
+
+   method
+
+
+
+
+   Time
+
+
+
+
+   Scale
+
+
+
+
+   Rotation
+
+
+
+
+   Blur
+
+
+
+
+   Illumination
+
+
+
+
+   Affine
+
+
+
+
+
+
+
+   Sift
+
+
+
+
+   common
+
+
+
+
+   best
+
+
+
+
+   best
+
+
+
+
+   common
+
+
+
+
+   common
+
+
+
+
+   good
+
+
+
+
+
+
+
+   PCA-sift
+
+
+
+
+   good
+
+
+
+
+   good
+
+
+
+
+   good
+
+
+
+
+   best
+
+
+
+
+   good
+
+
+
+
+   best
+
+
+
+
+
+
+
+   Surf 
+
+
+
+
+   best
+
+
+
+
+   common
+
+
+
+
+   common
+
+
+
+
+   good
+
+
+
+
+   best
+
+
+
+
+   good
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   由此可见，SIFT在尺度和旋转变换的情况下效果最好，SURF在亮度变化下匹配效果最好，在模糊方面优于SIFT，而尺度和旋转的变化不及SIFT，旋转不变上比SIFT差很多。速度上看，SURF是SIFT速度的3倍。
+
+
+   
+
+
+
+
+   采用最近邻作为匹配策略的特征描述子性能测评结果：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   Reference:
+
+
+   
+
+http://blog.csdn.net/abcjennifer/article/details/7365651
+
+   http://www.cscjournals.org/csc/manuscript/Journals/IJIP/volume3/Issue4/IJIP-51.pdf
+
+
+
+
+   http://www.cnblogs.com/mysunnyday/archive/2011/08/31/2160298.html
+
+
+
+
+   http://140.115.156.251/vclab/teacher/2011AIP/Feature%20Detection%20and%20Matching%20(Part%20II).pdf

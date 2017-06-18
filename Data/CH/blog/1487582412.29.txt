@@ -1,0 +1,88 @@
+The Twin TowersDescription 
+
+
+   Twin towers we see you standing tall, though a building's lost our faith will never fall. Twin towers the world hears your call, though you're gone it only strengthens our resolve. We couldn't make it through this without you Lord, through hard times we come together more. ... Twin Towers - A Song for America In memory of the tragic events that unfolded on the morning of September 11, 2001, five-year-old Rosie decids to rebuild a tallest Twin Towers by using the crystals her brother has collected for years. Will she succeed in building the two towers of the same height? 
+
+
+   Input 
+
+
+   There are mutiple test cases. One line forms a test case. The first integer N (N &lt; 100) tells you the number of crystals her brother has collected. Then each of the next N integers describs the height of a certain crystal. A negtive N indicats the end. Note that all crytals are in cube shape. And the total height of crystals is smaller than 2000. 
+
+
+   Output 
+
+
+   If it is impossible, you would say "Sorry", otherwise tell her the height of the Twin Towers.
+
+
+   Sample Input 
+
+
+   
+
+   4 11 11 11 11
+4 1 11 111 1111 
+-1
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   22
+Sorry
+
+
+
+
+   #include &lt;iostream&gt;
+using namespace std;
+int main()
+{
+	int n,t;
+	int i,j;
+	int a,b;
+	int dp[2][2005];//dp[0][h]preserve the statue, dp[1][h]=k presents two towers with height difference h which lower tower's height is k
+	while(cin&gt;&gt;n &amp;&amp; n&gt;=0)
+	{
+		memset(dp,-1,sizeof(dp));
+		dp[0][0]=0;
+		for(i=0;i&lt;n;i++)
+		{
+			cin&gt;&gt;t;//new tower's height
+			memcpy(dp[1],dp[0],sizeof(dp[0]));
+			for(j=2000;j&gt;=0;j--)
+			{
+				if(dp[1][j]!=-1)//two towers with a difference of j already have a result
+				{
+					a=dp[1][j];//lower height
+					b=dp[1][j]+j;//higher height
+					if(a+t&lt;=b)//give new tower to the lower one,and is higher than the origin higher one
+					{
+						if(dp[0][b-a-t]&lt;a+t)
+							dp[0][b-a-t]=a+t;
+					}
+					else//give new tower to the lower one,and is still lower than the origin higher one
+					{
+						if(dp[0][a+t-b]&lt;b)
+							dp[0][a+t-b]=b;
+					}
+					if(dp[0][j+t]&lt;a)//give new tower to the higher one
+						dp[0][j+t]=a;
+				}
+			}
+		}
+		if(dp[0][0]==0)
+			cout&lt;&lt;"Sorry"&lt;&lt;endl;
+		else
+			cout&lt;&lt;dp[0][0]&lt;&lt;endl;
+	}
+    return 0;
+}

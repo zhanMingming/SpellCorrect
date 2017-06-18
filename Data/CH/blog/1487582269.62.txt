@@ -1,0 +1,109 @@
+python 调用 C++ code本文以实例code讲解python 调用 C++的方法。 
+
+1.  如果没有参数传递从python传递至C++，python调用C++的最简单方法是将函数声明为C可用函数，然后作为C code被python调用，如这里三楼所示； 
+
+2. 有参数传递至C++函数，swig是最便捷的调用方法，以下面这个工程所示为例；
+
+
+
+
+
+   rachel.i (swig文件):
+
+
+
+
+
+   %module rachel
+%{
+#include "rachel.h"
+%}
+
+extern int linear(int x, int w, int b);
+
+
+
+   C++ code 部分：
+
+
+
+   rachel.h:
+
+
+
+
+
+   #include&lt;stdio.h&gt;   
+#include&lt;Python.h&gt;  
+
+int linear(int x, int w, int b);  
+
+
+   rachel.cpp:
+
+
+
+
+
+   #include "rachel.h"
+
+int linear(int x, int w, int b){ 
+    int res = w * x + b;  
+    printf("%d\n", res);  
+    return res;    
+}    
+
+
+
+   执行命令：
+
+
+
+
+
+   swig -c++ -python rachel.i
+g++ -c -fPIC rachel_wrap.cxx -I/home/zhangruiqing01/.jumbo/include/python2.7 -I./include
+g++ -shared rachel.o rachel_wrap.o -o _rachel.so
+
+
+
+   第一句swig生成rachel_warp.cxx （如果是C，则用swig -python rachel.i生成rachel_warp.c文件）； 
+
+最后一句生成动态链接库_rachel.so供python调用（如果是C，则用ld -shared rachel.o rachel_warp.o -o _rachel.so）；
+
+
+
+   python 调用部分：
+
+
+
+
+
+   &gt;&gt;&gt; import _rachel
+&gt;&gt;&gt; _rachel.linear(1,2,5)
+7
+
+
+   最后看一下本文中程序的结构： 
+
+
+ 
+
+ 
+
+
+   
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

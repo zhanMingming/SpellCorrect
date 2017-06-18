@@ -1,0 +1,326 @@
+log4j入门贴apache log4j是项目很常用的日志框架，这篇文章我们来学习下log4j。我使用的是1.2.17版本的log4j。log4j没有第三方依赖，直接将这个jar加入到项目的build path中就可以使用了。java代码中使用log4j很容易，如下：
+
+
+   package aty.log;
+
+import org.apache.log4j.Logger;
+
+public class HelloLog4j 
+{
+
+	private static Logger logger = Logger.getLogger(HelloLog4j.class);
+
+	public static void main(String[] args) 
+	{
+		logger.debug(&quot;This is debug message.&quot;);
+		logger.info(&quot;This is info message.&quot;);
+		logger.error(&quot;This is error message.&quot;);
+		logger.fatal(&quot;This is fatal message.&quot;);	
+	}
+}
+
+在classpath下建立一个log4j.properties，log4j会自动加载classpath下的log4j.properties文件。
+
+   
+
+
+
+
+   
+
+
+
+
+   我们主要看下log4j的配置，这个才是log4j入门最需要掌握的东西。log4j主要由三大类组件构成：logger、appender和layout。logger决定什么级别的日志可以输出，什么级别的日志不能输出。appender决定日志输出的目的地。layout用来对输出的日志进行&#26684;式化。一个logger可以有多个appender，但是每个appende只能对应一个layout。
+
+
+   
+
+
+
+
+   例子1：将日志输出到控制台
+
+
+   log4j.rootLogger=debug, console
+
+#配置实现类
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+
+#ConsoleAppender的配置
+log4j.appender.console.Threshold=warn
+log4j.appender.console.ImmediateFlush=true
+log4j.appender.console.Target=System.err
+
+#日志输出格式
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern= %d{yyyy-MM-dd HH:mm:ss,SS}-[%t]-[%l]-%p %m%n
+
+   
+
+
+
+例子2：日志输出到文件中
+   log4j.rootLogger=debug, file
+
+#配置实现类
+log4j.appender.file=org.apache.log4j.FileAppender
+
+#FileAppender的配置
+log4j.appender.file.Threshold=warn
+log4j.appender.file.ImmediateFlush=true
+log4j.appender.file.File=c:/app.log
+log4j.appender.file.Append=true
+
+#日志输出格式
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SS}-[%t]-[%l]-%p %m%n
+
+
+   
+
+
+   例子3：日志同时输出到控制台和文件
+
+
+   log4j.rootLogger=debug, console, file
+
+#配置实现类
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+
+#ConsoleAppender的配置
+log4j.appender.console.Threshold=warn
+log4j.appender.console.ImmediateFlush=true
+log4j.appender.console.Target=System.err
+
+#日志输出格式
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern= %d{yyyy-MM-dd HH:mm:ss,SS}-[%t]-[%l]-%p %m%n
+
+
+#配置实现类
+log4j.appender.file=org.apache.log4j.FileAppender
+
+#FileAppender的配置
+log4j.appender.file.Threshold=warn
+log4j.appender.file.ImmediateFlush=true
+log4j.appender.file.File=c:/app.log
+log4j.appender.file.Append=true
+
+#日志输出格式
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SS}-[%t]-[%l]-%p %m%n
+
+   
+
+
+
+（一）配置logger：
+   log4j.rootLogger=debug, console, file配置显示什么级别的日志、以及日志要输出到哪里。这里我们定义了2个目的地：console和file，这是appender的名称，后面配置具体的appender和layout的时候需要用。
+
+   
+
+
+   
+
+
+
+
+   （二）配置appender：
+
+
+   log4j提供了多种appender，不同的appender将日志输出到不同的目的地。比较常用的有4个：ConsoleAppender、FileAppender、DailyRollingFileAppender、RollingFileAppender。不同的appender，有着不同的类名，不同的配置属性。
+
+
+   1.ConsoleAppender的配置：
+
+
+   #配置ConsoleAppender的全类名
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+
+#设置输出日志的最低级别。如果没有设置，那么使用log4j.rootLogger中配置的级别。
+log4j.appender.console.Threshold=warn
+
+#默认值是true,意谓着所有的消息都会被立即输出。如果设置成false，那么当缓存区达到一定大小才会输出。
+log4j.appender.console.ImmediateFlush=true
+
+#设置输出控制台，默认情况下是：System.out
+log4j.appender.console.Target=System.err
+
+   
+
+
+
+2.FileAppender配置：
+   log4j.appender.file=org.apache.log4j.FileAppender
+log4j.appender.file.Threshold=warn
+log4j.appender.file.ImmediateFlush=true
+
+#设置日志输出到app.log文件中
+log4j.appender.file.File=c:/app.log
+
+#默认值是true,即将消息增加到指定文件中，false指将消息覆盖指定的文件内容。
+log4j.appender.file.Append=true
+
+3.DailyRollingFileAppender配置：
+   log4j.appender.DailyRollingFileAppender=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.DailyRollingFileAppender.Threshold=warn
+log4j.appender.DailyRollingFileAppender.ImmediateFlush=true
+log4j.appender.DailyRollingFileAppender.File=c:/app.log
+
+#经过我的实验,如果想要按照不同频率产生新文件,append一定要设置成true
+log4j.appender.DailyRollingFileAppender.Append=true
+
+#设置是按照什么频率产生新文件
+#&#39;.&#39;yyyy-MM: 每月
+#&#39;.&#39;yyyy-ww: 每周 
+#&#39;.&#39;yyyy-MM-dd: 每天
+#&#39;.&#39;yyyy-MM-dd-a: 每天两次
+#&#39;.&#39;yyyy-MM-dd-HH: 每小时
+#&#39;.&#39;yyyy-MM-dd-HH-mm: 每分钟
+log4j.appender.DailyRollingFileAppender.DatePattern=&#39;.&#39;yyyy-MM-dd-HH-mm
+
+4.RollingFileAppender配置
+   log4j.appender.RollingFileAppender=org.apache.log4j.RollingFileAppender
+log4j.appender.RollingFileAppender.Threshold=warn
+log4j.appender.RollingFileAppender.ImmediateFlush=true
+log4j.appender.RollingFileAppender.File=c:/app.log
+log4j.appender.RollingFileAppender.Append=true
+
+#后缀可以是KB,MB或者是GB.在日志文件到达该大小时，将会自动滚动，即将原来的内容移到app.log.1文件。
+log4j.appender.RollingFileAppender.MaxFileSize=10KB
+#设置可以产生的滚动文件的最大数。
+log4j.appender.RollingFileAppender.MaxBackupIndex=5
+
+
+
+（三）配置layout
+
+
+   
+
+
+   layout设置日志输出的&#26684;式，常见的有HTMLLayout、PatternLayout、SimpleLayout、TTCCLayout。项目中使用的都是PatternLayout，其他三种layout输出日志信息太简单，不能满足定位问题的需要。我们主要看下PatternLayout。
+
+
+   log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS}-[%t]-[%l]-%p %m%nConversionPattern配置采用什么样的&#26684;式输出日志。
+
+%p: 输出日志信息优先级，即DEBUG，INFO，WARN，ERROR，FATAL。
+
+   %d: 输出日志时间点的时间.比如：%d{yyyy-MM-dd HH:mm:ss,SSS}，输出类&#20284;：2015-12-23 15:41:13,933。
+
+
+
+
+   %t: 输出产生该日志事件的线程名。
+
+
+
+
+   %m: 输出代码中指定的消息,产生的日志具体信息。
+
+
+
+
+   %n: 输出一个回车换行符，Windows平台为&quot;\r\n&quot;，Unix平台为&quot;\n&quot;输出日志信息换行。
+
+
+
+
+   %l: 输出日志事件的发生位置，包括类名、方法名、文件名以及在代码中的行数。
+
+
+
+
+   %x: 输出和当前线程相关联的NDC。
+
+
+
+
+   %X:输出和当前线程相关的MDC。
+
+
+   当然ConversionPattern还有别的&#26684;式可以设置，比如%r、%c等。不过上面介绍的几个&#26684;式，就已经能够满足项目使用了。现在我们介绍下MDC和NDC。我们知道对于servlet这种应用来说，日志里面仅仅打印%t线程名是不够的。因为tomcat等容器会建立一个线程池，复用这些线程处理不同的客户端请求。那么就会出现：处理A请求和B请求的是同一个线程，这样就会导致日志文件中不能按照请求来搜索。如果按照线程名来搜索，那么A和B这2个不同请求的日志合在一起了，需要程序员自己去辨别：哪儿些是A请求的日志，哪儿些是B请求的日志。
+
+
+   实际上不同的请求肯定是有差别的，比如IP不同、session不同或者是业务上的主键不同。我们就可以使用NDC或者MDC将这些能够唯一区分请求的信息，写入日志文件。这样找某个请求的日志就简单多了。
+
+
+   使用NDC：
+
+
+   package aty.log;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
+
+public class HelloLog4j {
+
+	private static Logger logger = Logger.getLogger(HelloLog4j.class);
+
+	public static void main(String[] args) {
+		// 模拟从客户端获得IP地址的例子
+		String[] ips = { &quot;192.168.0.10&quot;, &quot;192.168.0.27&quot; };
+
+		for (int i = 0; i &lt; ips.length; i++) {
+			NDC.push(ips[i]);
+			logger.error(&quot;print ip in log.&quot;);
+			NDC.pop();
+		}
+
+	}
+}
+   log4j.rootLogger=debug, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.Threshold=warn
+log4j.appender.console.ImmediateFlush=true
+log4j.appender.console.Target=System.err
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS}-[%x]-[%t]-[%l]-%p %m%n
+
+
+
+
+
+   
+
+
+   使用MDC：
+
+
+   package aty.log;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
+
+public class HelloLog4j {
+
+	private static Logger logger = Logger.getLogger(HelloLog4j.class);
+
+	public static void main(String[] args) {
+		// 模拟从客户端获得IP地址的例子
+		String[] ips = { &quot;192.168.0.10&quot;, &quot;192.168.0.27&quot; };
+
+		for (int i = 0; i &lt; ips.length; i++) {
+			MDC.put(&quot;ip&quot;, ips[i]);
+			logger.error(&quot;print ip in log.&quot;);
+			MDC.remove(&quot;ip&quot;);
+		}
+
+	}
+}
+
+   log4j.rootLogger=debug, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.Threshold=warn
+log4j.appender.console.ImmediateFlush=true
+log4j.appender.console.Target=System.err
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS}-[%X{ip}]-[%t]-[%l]-%p %m%n
+
+
+
+
+下面给出我们项目实际用的ConversionPattern配置，一般的项目都是这么配置的。
+   log4j.appender.console.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss,SSS}]-[%t]-[%X{user_name}]-[%l]-[%p] %m%n

@@ -1,0 +1,27 @@
+google定制的搜索引擎我的搜索引擎
+
+
+
+       
+
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://www.google.com/coop/cse/brand?form=searchbox_008110756901039689918%3Au4suebjp27s&quot;&gt;&lt;/script&gt;
+
+   
+
+
+   
+
+
+
+&lt;!--GoogleCSESearchBoxBegins--&gt;&lt;formid=&quot;searchbox_008110756901039689918:u4suebjp27s&quot;action=&quot;http://www.google.com/cse&quot;&gt;&lt;inputtype=&quot;hidden&quot;name=&quot;cx&quot;value=&quot;008110756901039689918:u4suebjp27s&quot;/&gt;&lt;inputname=&quot;q&quot;type=&quot;text&quot;size=&quot;40&quot;/&gt;&lt;inputtype=&quot;submit&quot;name=&quot;sa&quot;value=&quot;Search&quot;/&gt;&lt;inputtype=&quot;hidden&quot;name=&quot;cof&quot;value=&quot;FORID:0&quot;/&gt;&lt;/form&gt;&lt;scripttype=&quot;text/javascript&quot;src=&quot;http://www.google.com/coop/cse/brand?form=searchbox_008110756901039689918%3Au4suebjp27s&quot;&gt;&lt;/script&gt;&lt;!--GoogleCSESearchBoxEnds--&gt;
+
+
+
+
+   
+
+
+   
+
+
+   http://www.google.com/coop/cse?cx=008110756901039689918%3Au4suebjp27s

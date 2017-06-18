@@ -1,0 +1,47 @@
+ionic版本从v1.0.0升级到v1.2.4后,android上使用&lt;ion-content&gt;的页面无法滑动android上运行的页面使用了ion-content指令，用于页面上下滑动：
+
+
+   &lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+	&lt;div&gt;&lt;/div&gt;
+	&lt;div&gt;&lt;/div&gt;
+	&lt;div&gt;&lt;/div&gt;
+&lt;/ion-content&gt;
+
+   
+
+
+   
+
+
+
+
+   版本升级后，发现经常出现页面滑动不可用的情况，最后在这里找到了解决方法。
+
+
+   
+
+
+
+
+   方法1：on-content上加上 overflow-scroll='false'
+
+
+   &lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot; overflow-scroll=&quot;false&quot;&gt;
+	&lt;div&gt;&lt;/div&gt;
+	&lt;div&gt;&lt;/div&gt;
+	&lt;div&gt;&lt;/div&gt;
+&lt;/ion-content&gt;
+
+   
+
+
+
+
+   
+
+
+
+方法2：在创建模块的时候进行配置
+   module = angular.module(id, [&#39;iron&#39;], function($ionicConfigProvider) {
+     	$ionicConfigProvider.scrolling.jsScrolling(true);
+     });

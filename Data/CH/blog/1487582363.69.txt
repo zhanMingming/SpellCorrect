@@ -1,0 +1,544 @@
+浙大计算机研究生复试上机考试-2009年//hdu 3782 3783 3784 3785 3786
+
+/************************************************************************/
+/* xxx定律-hdu 3782
+
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 32768/32768 K (Java/Others)
+Total Submission(s): 525    Accepted Submission(s): 438
+
+
+Problem Description
+对于一个数n，如果是偶数，就把n砍掉一半；如果是奇数，把n变成 3*n+ 1后砍掉一半，直到该数变为1为止。
+请计算需要经过几步才能将n变到1，具体可见样例。
+
+
+Input
+测试包含多个用例，每个用例包含一个整数n,当n为0 时表示输入结束。（1&lt;=n&lt;=10000）
+
+
+Output
+对于每组测试用例请输出一个数，表示需要经过的步数,每组输出占一行。
+
+
+Sample Input
+3
+1
+0
+
+
+Sample Output
+5
+0
+
+
+Source
+浙大计算机研究生复试上机考试-2009年      */
+/************************************************************************/
+
+#include &quot;stdio.h&quot;
+#include&quot;math.h&quot;
+
+int main()
+{
+	int a,b;
+	while(scanf(&quot;%d&quot;,&amp;a)!=EOF&amp;&amp;a)
+	{
+		int cnt=0;
+		while (a!=1)
+		{
+			if(a%2)
+			{
+				a=a*3+1;
+				a/=2;
+			}
+			else
+				a/=2;
+			cnt++;
+		}
+		printf(&quot;%d\n&quot;,cnt);
+	}
+}
+
+   
+
+
+
+
+   
+
+
+   
+   /************************************************************************/
+/* ZOJ hdu 3783
+
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 32768/32768 K (Java/Others)
+Total Submission(s): 464    Accepted Submission(s): 353
+
+
+Problem Description
+读入一个字符串，字符串中包含ZOJ三个字符，个数不一定相等，按ZOJ的顺序输出，当某个字符用完时，剩下的仍然按照ZOJ的顺序输出。
+
+
+Input
+题目包含多组用例,每组用例占一行，包含ZOJ三个字符，当输入“E”时表示输入结束。
+1&lt;=length&lt;=100。
+
+
+Output
+对于每组输入,请输出一行，表示按照要求处理后的字符串。
+具体可见样例。
+
+
+Sample Input
+ZZOOOJJJ
+ZZZZOOOOOJJJ
+ZOOOJJ
+E
+
+
+Sample Output
+ZOJZOJOJ
+ZOJZOJZOJZOO
+ZOJOJO
+
+
+Source
+浙大计算机研究生复试上机考试-2009年      */
+/************************************************************************/
+
+#include &quot;iostream&quot;
+#include&quot;string&quot;
+using namespace std;
+
+int main()
+{
+	char str[105];
+	while (scanf(&quot;%s&quot;,str)!=EOF&amp;&amp;strcmp(str,&quot;E&quot;))
+	{
+		int z,o,j;
+		z=o=j=0;
+		for (int i=0;i&lt;strlen(str);i++)
+		{
+			if(str[i]=='Z')
+				z++;
+			else if(str[i]=='O')
+				o++;
+			else if (str[i]=='J')
+				j++;
+		}
+		while (z&gt;0||o&gt;0|j&gt;0)
+		{
+			if(z--&gt;0)
+				printf(&quot;Z&quot;);
+			if(o--&gt;0)
+				printf(&quot;O&quot;);
+			if (j--&gt;0)
+				printf(&quot;J&quot;);
+		}
+		printf(&quot;\n&quot;);
+	}
+}
+
+
+   
+
+   /************************************************************************/
+/* 继续xxx定律-hdu 3784
+
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 32768/32768 K (Java/Others)
+Total Submission(s): 685    Accepted Submission(s): 197
+
+
+Problem Description
+当n为3时，我们在验证xxx定律的过程中会得到一个序列，3，5，8，4，2，1，将3称为关键数，5，8，4，2称为覆盖数。现在输入n个数字a[i]，根据关键数与覆盖数的理论，我们只需要验证其中部分数就可以确定所有数满足xxx定律，输出输入的n个数中的关键数。如果其中有多个关键数的话按照其输入顺序的逆序输出。
+
+
+Input
+输入数据包含多个用例,每个用例首先包含一个整数n，然后接下来一行有n个整数a[i]，其中:
+1&lt;=n&lt;=500
+1&lt;a[i]&lt;=1000
+
+
+Output
+请计算并输出数组a中包含的关键数，并按照其输入顺序的逆序输出,每个用例输出占一行。
+
+
+Sample Input
+3
+3 8 4
+5
+3 8 4 7 15
+5
+3 8 4 15 7
+0
+
+
+Sample Output
+3
+15 7 3
+7 15 3
+
+
+Source
+浙大计算机研究生复试上机考试-2009年
+*/
+/************************************************************************/
+
+#include&quot;iostream&quot;
+using namespace std;
+#define  N 1010
+int a[N];
+bool v[200000];
+int main()
+{
+	int x,i,j,n;
+	while (scanf(&quot;%d&quot;,&amp;n)!=EOF&amp;&amp;n)
+	{
+		memset(v,false,sizeof(v));
+		for (i=0;i&lt;n;i++)
+		{
+			scanf(&quot;%d&quot;,&amp;a[i]);
+			x=a[i];
+			while (x!=1)
+			{
+				if(x%2)
+				{
+					x=x*3+1;
+					x/=2;
+				}
+				else
+					x/=2;
+				v[x]=true;
+			}
+		}
+		bool first=true;
+		for (i=n-1;i&gt;=0;i--)
+		{
+			if (!v[a[i]])
+			{
+				if(!first)
+					cout&lt;&lt;&quot; &quot;;
+				printf(&quot;%d&quot;,a[i]);
+				first=false;
+			}
+			else
+				continue;
+		}
+		printf(&quot;\n&quot;);
+	}
+}
+
+
+   /************************************************************************/
+/* 寻找大富翁-hdu 3785
+
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 32768/32768 K (Java/Others)
+Total Submission(s): 765    Accepted Submission(s): 413
+
+
+Problem Description
+浙江桐乡乌镇共有n个人,请找出该镇上的前m个大富翁.
+
+
+Input
+输入包含多组测试用例.
+每个用例首先包含2个整数n（0&lt;n&lt;=100000）和m(0&lt;m&lt;=10)，其中: n为镇上的人数，m为需要找出的大富翁数, 接下来一行输入镇上n个人的财富值.
+n和m同时为0时表示输入结束.
+
+
+Output
+请输出乌镇前m个大富翁的财产数，财产多的排前面，如果大富翁不足m个，则全部输出,每组输出占一行.
+
+
+Sample Input
+3 1
+2 5 -1
+5 3
+1 2 3 4 5
+0 0
+
+
+Sample Output
+5
+5 4 3
+
+
+Source
+浙大计算机研究生复试上机考试-2009年      */
+/************************************************************************/
+
+#include &quot;iostream&quot;
+#include &quot;algorithm&quot;
+using namespace std;
+
+int a[100002];
+int m,n;
+int main()
+{
+	int i;
+	while(scanf(&quot;%d%d&quot;,&amp;n,&amp;m)!=EOF&amp;&amp;(n||m))
+	{
+		for (i=0;i&lt;n;i++)
+			scanf(&quot;%d&quot;,&amp;a[i]);
+		sort(a,a+n);
+		printf(&quot;%d&quot;,a[n-1]);
+		for (i=1;i&lt;m;i++)
+			printf(&quot; %d&quot;,a[n-i-1]);
+		cout&lt;&lt;endl;
+	}
+}
+
+
+   /************************************************************************/
+/*3785- 寻找大富翁（寻找第k大的数）
+*************************************************************************/
+//the k max number
+//@Author:zrq sophia
+#include &quot;iostream&quot;
+#include &quot;algorithm&quot;
+using namespace std;
+
+int a[100002];
+int c[15];
+int m,n;
+
+
+int Partition(int left,int right,int k)//find array 中的第k大数
+{
+	int base=a[left];//basic element
+	int l,r;
+	l=left,r=right;
+	while(l&lt;r)
+	{
+		while(l&lt;r&amp;&amp;a[r]&gt;base)	r--;
+		if(l&lt;r)	
+			a[l++]=a[r];
+		while(l&lt;r&amp;&amp;a[l]&lt;=base)	l++;
+		if(l&lt;r)
+			a[r--]=a[l];
+	}
+	a[l]=base;
+	int index=right-r+1;//base在是第index大的数
+	if(index&gt;k)		
+		return Partition(r+1,right,k);
+	else if(index&lt;k)
+		return Partition(left,r-1,k-index);
+	return base;
+}
+
+int main()
+{
+	int i;
+	while(scanf(&quot;%d%d&quot;,&amp;n,&amp;m)!=EOF&amp;&amp;(n||m))
+	{
+		for (i=0;i&lt;n;i++)
+			scanf(&quot;%d&quot;,&amp;a[i]);
+		int b= Partition(0,n-1,m);
+		int j=0;
+		for(i=0;i&lt;n;i++)
+		{
+			if(a[i]&gt;b)
+				c[j++]=a[i];
+		}
+		bool flag=false;
+		sort(c,c+j);
+		if(j&gt;=1)
+		{
+			printf(&quot;%d&quot;,c[j-1]);
+			flag=true;
+		}
+		for(i=1;i&lt;j;i++)
+			printf(&quot; %d&quot;,c[j-1-i]);
+		if(!flag)
+		{
+			printf(&quot;%d&quot;,b);
+			j++;
+		}
+		while(++j&lt;=m)
+			printf(&quot; %d&quot;,b);
+
+		cout&lt;&lt;endl;
+	}
+}
+
+
+
+   /************************************************************************/
+/* 找出直系亲属
+
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 32768/32768 K (Java/Others)
+Total Submission(s): 411    Accepted Submission(s): 171
+
+
+Problem Description
+如果A，B是C的父母亲，则A，B是C的parent，C是A，B的child，如果A，B是C的（外）祖父，祖母，则A，B是C的grandparent，C是A，B的grandchild，如果A，B是C的（外）曾祖父，曾祖母，则A，B是C的great-grandparent，C是A，B的great-grandchild，之后再多一辈，则在关系上加一个great-。
+
+
+Input
+输入包含多组测试用例,每组用例首先包含2个整数n（0&lt;=n&lt;=26）和m（0&lt;m&lt;50）, 分别表示有n个亲属关系和m个问题, 然后接下来是n行的形式如ABC的字符串，表示A的父母亲分别是B和C，如果A的父母亲信息不全，则用-代替，例如A-C,再然后是m行形式如FA的字符串,表示询问F和A的关系。
+当n和m为0时结束输入。
+
+
+Output
+如果询问的2个人是直系亲属，请按题目描述输出2者的关系，如果没有直系关系，请输出-。
+具体含义和输出格式参见样例.
+
+
+Sample Input
+3 2
+ABC
+CDE
+EFG
+FA
+BE
+0 0
+
+
+Sample Output
+great-grandparent
+-
+
+
+Source
+浙大计算机研究生复试上机考试-2009年
+
+*/
+/************************************************************************/
+#include &quot;iostream&quot;
+#include &quot;string&quot;
+#include &quot;algorithm&quot;
+using namespace std;
+#define INF 1000000
+#define min(a,b) a&lt;b?a:b
+char tree['Z'+10][2];
+
+int Dfs(char a,char b,int level)
+{
+	//分别从a和b往下找
+	if(a=='-'||tree[a][0]=='-'&amp;&amp;tree[a][1]=='-')
+		return INF;
+	if(tree[a][0]==b||tree[a][1]==b)
+		return level+1;
+	int left=Dfs(tree[a][0],b,level+1);
+	int right=Dfs(tree[a][1],b,level+1);
+	return min(left,right);
+}
+int main()
+{
+	string str;
+	int n,m,i,j;
+	while (scanf(&quot;%d%d&quot;,&amp;n,&amp;m)!=EOF&amp;&amp;!(n==0&amp;&amp;m==0))
+	{
+		memset(tree,'-',sizeof(char)*2*('Z'+10));
+		for(i=0;i&lt;n;i++)
+		{
+			cin&gt;&gt;str;
+			tree[str[0]][0]=str[1];
+			tree[str[0]][1]=str[2];
+		}
+		for(i=0;i&lt;m;i++)
+		{
+			cin&gt;&gt;str;
+			int level1=Dfs(str[0],str[1],0);
+			int level2=Dfs(str[1],str[0],0);
+			int level=level1&gt;=INF?-level2:level1;
+			if(abs(level)&gt;=INF)
+			{
+				printf(&quot;-\n&quot;);
+				continue;
+			}
+			while (level++&lt;-2)
+				printf(&quot;great-&quot;);
+			level--;
+			if(level==-1)
+				printf(&quot;parent\n&quot;);
+			else if(level==-2)
+				printf(&quot;grandparent\n&quot;);
+
+			while (level--&gt;2)
+				printf(&quot;great-&quot;);
+			level++;
+			if (level==2)
+				printf(&quot;grandchild\n&quot;);
+			else if(level==1)
+				printf(&quot;child\n&quot;);
+		}
+	}
+}
+
+   
+
+
+   hdu 3786
+
+
+   
+
+
+   //逆向思考更简单，建树可知每个node对应一个孩子，这里把孩子记为parent，只要顺着parent往上爬着找就行了
+//@Author:zrq sophia
+#include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;string&quot;
+#include&quot;memory.h&quot;
+#include &quot;algorithm&quot;
+using namespace std;
+#define INF 30
+#define min(a,b) a&lt;b?a:b
+char parent['Z'+10];//这棵树中的parent与题目描述的父子关系正好相反
+
+int cha(char c1,char c2)
+{
+	int level=0;
+	while(c1!=c2&amp;&amp;c1!='-')
+	{
+		c1=parent[c1];
+		level++;
+	}
+	if(c1=='-')
+		return INF;
+	return level;
+}
+
+int main()
+{
+	string str;
+	int n,m,i,j;
+	while (scanf(&quot;%d%d&quot;,&amp;n,&amp;m)!=EOF&amp;&amp;(n||m))
+	{
+		memset(parent,'-',sizeof(char)*('Z'+10));
+		for(i=0;i&lt;n;i++)
+		{
+			cin&gt;&gt;str;
+			parent[str[1]]=str[0];
+			parent[str[2]]=str[0];
+		}
+		for(i=0;i&lt;m;i++)
+		{
+			cin&gt;&gt;str;
+			int level1=cha(str[0],str[1]);
+			int level2=cha(str[1],str[0]);
+			int level=level2&gt;=INF?-level1:level2;
+			if(abs(level)&gt;=INF||abs(level)==0)
+			{
+				printf(&quot;-\n&quot;);
+				continue;
+			}
+			while (level++&lt;-2)
+				printf(&quot;great-&quot;);
+			level--;
+			if(level==-1)
+				printf(&quot;parent\n&quot;);
+			else if(level==-2)
+				printf(&quot;grandparent\n&quot;);
+
+			while (level--&gt;2)
+				printf(&quot;great-&quot;);
+			level++;
+			if (level==2)
+				printf(&quot;grandchild\n&quot;);
+			else if(level==1)
+				printf(&quot;child\n&quot;);
+		}
+	}
+}

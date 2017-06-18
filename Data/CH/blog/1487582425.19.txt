@@ -1,0 +1,230 @@
+C# 窗体间传值 + 获得数据库单元的数据Form1.cs中：
+
+
+   
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Data.OleDb;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using System.Configuration;
+
+namespace Str
+{
+    public partial class Form1 : Form
+    {
+ public Form1()
+ {
+     InitializeComponent();
+ }
+ private void submit_Click(object sender, EventArgs e)
+ {
+
+     /*
+      * connect to Sql Server
+      * 方法一：写在这里
+      */
+     //string strConnection = "Data Source=ZRQ-PC;";
+     //strConnection += "Initial Catalog=master;Integrated Security=True";
+     // SqlConnection objConnection = new SqlConnection(strConnection);
+
+     /*
+      * 方法二：
+      * 这个方法为工程添加了新建项&ldquo;应用程序配置文件&rdquo;
+      * 将上面的那段写在App.config里
+      */
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+
+     /************************************************************************/
+
+     if (name.Text == "")
+  MessageBox.Show("请输入姓名!", "提示", 0);
+     else
+     {
+  objConnection.Open();
+  SqlCommand cmd = new SqlCommand("select * from judging where userid='" + userid.Text.Trim() + "'", objConnection);
+  /*
+   ***********************************************************************************************
+   *判断是否有重复的ID,ExecuteScalar() return the first column of the first row in the result set.
+   */
+  if (cmd.ExecuteScalar() != null)
+  {
+      MessageBox.Show("ID重复", "提示", 0);
+  }
+  else
+  {
+      string sql = "insert into judging (userid,name,password) values('" + userid.Text.Trim() + "','" + name.Text.Trim() + "','" + password.Text.Trim() + "')";
+      cmd.CommandText = sql;
+      cmd.ExecuteNonQuery();
+   //   cmd.Cancel();
+      MessageBox.Show("添加成功！");
+  }
+  name.Clear();
+  password.Clear();
+  userid.Clear();
+     }
+     objConnection.Close();
+ }
+
+ private void button1_Click(object sender, EventArgs e)
+ {
+     Browseuser browse = new Browseuser();
+     browse.Show();
+ }
+    }
+}
+ 
+
+
+   
+
+
+   Browseuser中：
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Configuration;
+using System.Data.SqlClient;
+
+namespace Str
+{
+    public partial class Browseuser : Form
+    {
+ public Browseuser()
+ {
+     InitializeComponent();
+     
+ }
+ //define 数据集对象ds用于保存查询返回的结果集
+ DataSet ds;
+
+ private void Browseuser_Load(object sender, EventArgs e)
+ {
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     dataGridView1.DataSource=ds. Tables[0].DefaultView;
+     dataGridView1.Refresh();
+     this.judgingTableAdapter.Fill(this.masterDataSet.judging);
+ }
+
+ /**********************************************************************************************/
+ /*至此完成了将数据库judging中的内容全部显示在新form&mdash;&mdash;Browseuser上*/
+ /**********************************************************************************************/
+
+ private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+ }
+
+ private void button3_Click(object sender, EventArgs e)
+ {
+     this.Close();
+ }
+ 
+ private void button1_Click(object sender, EventArgs e)
+ {
+     if (dataGridView1[0,dataGridView1.CurrentRow.Index] != null)
+     {
+  //静态变量方法完成窗体间传值
+  app.value = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[0].Value.ToString();  
+  app.value1 = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[1].Value.ToString();
+
+  /******************************************************************************/
+  //这个模块是为了在Browseuser中不显示password的前提下，能在修改页面中得到password的值
+  //换言之，应该在database中找到该对应的值
+  /******************************/
+  //打开数据库
+  string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+  SqlConnection objConnection = new SqlConnection(strConnection);
+  objConnection.Open();
+  //寻找app.value(id)对应的密码
+  string str = "";
+  SqlCommand cmd = new SqlCommand("select * from judging where userid='" + app.value + "'", objConnection);
+  SqlDataReader read = cmd.ExecuteReader();
+  while (read.Read())
+  {
+      str = read[2].ToString();//读出对应的密码，read[0]-&gt;id;read[1]-&gt;name;read[2]-&gt;psw
+  }
+  app.value2 = str;
+  /***********************************************************************************/
+
+  alterinfo modifyinfo=new alterinfo();
+  modifyinfo.Show();
+     }
+ }
+    }
+    public class app//新建的类，为了在其中建立static类型成员   
+    {
+ public static string value;
+ public static string value1;
+ public static string value2;
+    }   
+}
+ 
+
+
+   
+
+
+   alterinfo中：
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace Str
+{
+    public partial class alterinfo : Form
+    {
+ public alterinfo()
+ {
+     InitializeComponent();
+     user.Text = app.value;
+     name.Text = app.value1;
+     pswtext.Text = app.value2;
+ }
+
+ private void button2_Click(object sender, EventArgs e)
+ {
+     this.Close();
+ }
+
+ private void button1_Click(object sender, EventArgs e)
+ {
+     
+ }
+
+ private void alterinfo_Load(object sender, EventArgs e)
+ {
+    
+ }
+    }
+}

@@ -1,0 +1,578 @@
+vi command summaryThe following tables contain all the basicvicommands.
+
+
+   Starting vi
+
+
+   
+
+
+
+Command
+Description
+
+
+	vifile
+	start at line 1 offile
+
+
+	vi&#43;nfile
+	start at linenoffile
+
+
+	vi&#43;file
+	start at last line offile
+
+
+	vi&#43;/patternfile
+	start atpatterninfile
+
+
+	vi-rfile
+	recoverfileafter a system crash
+
+
+
+
+
+
+   Saving files and quitting vi
+
+
+   
+
+
+
+Command
+Description
+
+
+	:efile
+	editfile(save current file with:wfirst)
+
+
+	:w
+	save (write out) the file being edited
+
+
+	:wfile
+	save asfile
+
+
+	:w!file
+	save as an existingfile
+
+
+	:q
+	quitvi
+
+
+	:wq
+	save the file and quitvi
+
+
+	:x
+	save the file if it has changed and quitvi
+
+
+	:q!
+	quitviwithout saving changes
+
+
+
+
+
+
+   Moving the cursor
+
+
+   
+
+
+
+Keys pressed
+Effect
+
+
+	h
+	left one character
+
+
+	l or &lt;Space&gt;
+	right one character
+
+
+	k
+	up one line
+
+
+	j or &lt;Enter&gt;
+	down one line
+
+
+	b
+	left one word
+
+
+	w
+	right one word
+
+
+	(
+	start of sentence
+
+
+	)
+	end of sentence
+
+
+	{
+	start of paragraph
+
+
+	}
+	end of paragraph
+
+
+	1G
+	top of file
+
+
+	nG
+	linen
+
+
+	G
+	end of file
+
+
+	&lt;Ctrl&gt;W
+	first character of insertion
+
+
+	&lt;Ctrl&gt;U
+	up ½ screen
+
+
+	&lt;Ctrl&gt;D
+	down ½ screen
+
+
+	&lt;Ctrl&gt;B
+	up one screen
+
+
+	&lt;Ctrl&gt;F
+	down one screen
+
+
+
+
+
+
+   Inserting text
+
+
+   
+
+
+
+Keys pressed
+Text inserted
+
+
+	a
+	after the cursor
+
+
+	A
+	after last character on the line
+
+
+	i
+	before the cursor
+
+
+	I
+	before first character on the line
+
+
+	o
+	open line below current line
+
+
+	O
+	open line above current line
+
+
+
+
+
+
+   Changing and replacing text
+
+
+   
+
+
+
+Keys pressed
+Text changed or replaced
+
+
+	cw
+	word
+
+
+	3cw
+	three words
+
+
+	cc
+	current line
+
+
+	5cc
+	five lines
+
+
+	r
+	current character only
+
+
+	R
+	current character and those to its right
+
+
+	s
+	current character
+
+
+	S
+	current line
+
+
+	~
+	switch between lowercase and uppercase
+
+
+
+
+
+
+   Deleting text
+
+
+   
+
+
+
+Keys pressed
+Text deleted
+
+
+	x
+	character under cursor
+
+
+	12x
+	12 characters
+
+
+	X
+	character to left of cursor
+
+
+	dw
+	word
+
+
+	3dw
+	three words
+
+
+	d0
+	to beginning of line
+
+
+	d$
+	to end of line
+
+
+	dd
+	current line
+
+
+	5dd
+	five lines
+
+
+	d{
+	to beginning of paragraph
+
+
+	d}
+	to end of paragraph
+
+
+	:1,. d
+	to beginning of file
+
+
+	:.,$ d
+	to end of file
+
+
+	:1,$ d
+	whole file
+
+
+
+
+
+
+   Using markers and buffers
+
+
+   
+
+
+
+Command
+Description
+
+
+	mf
+	set marker named ``f''
+
+
+	`f
+	go to marker ``f''
+
+
+	´f
+	go to start of line containing marker ``f''
+
+
+	&quot;s12yy
+	copy 12 lines into buffer ``s''
+
+
+	&quot;ty}
+	copy text from cursor to end of paragraph into buffer ``t''
+
+
+	&quot;ly1G
+	copy text from cursor to top of file into buffer ``l''
+
+
+	&quot;kd`f
+	cut text from cursor up to marker ``f'' into buffer ``k''
+
+
+	&quot;kp
+	paste buffer ``k'' into text
+
+
+
+
+
+
+   Searching for text
+
+
+   
+
+
+
+Search
+Finds
+
+
+	/and
+	next occurrence of ``and'', for example, ``and'', ``stand'', ``grand''
+
+
+	?and
+	previous occurrence of ``and''
+
+
+	/^The
+	next line that starts with ``The'', for example, ``The'', ``Then'', ``There''
+
+
+	/^The\&gt;
+	next line that starts with the word ``The''
+
+
+	/end$
+	next line that ends with ``end''
+
+
+	/[bB]ox
+	next occurrence of ``box'' or ``Box''
+
+
+	n
+	repeat the most recent search, in the same direction
+
+
+	N
+	repeat the most recent search, in the opposite direction
+
+
+
+
+
+
+   Searching for and replacing text
+
+
+   
+
+
+
+Command
+Description
+
+
+	:s/pear/peach/g
+	replace all occurrences of ``pear'' with ``peach'' on current line
+
+
+	:/orange/s//lemon/g
+	change all occurrences of ``orange'' into ``lemon'' on next line containing ``orange''
+
+
+	:.,$/\&lt;file/directory/g
+	replace all words starting with ``file'' by ``directory'' on every line from current line onward, for example, ``filename'' becomes ``directoryname''
+
+
+	:g/one/s//1/g
+	replace every occurrence of ``one'' with 1, for example, ``oneself'' becomes ``1self'', ``someone'' becomes ``some1''
+
+
+
+
+
+
+   Matching patterns of text
+
+
+   
+
+
+
+Expression
+Matches
+
+
+	.
+	any single character
+
+
+	
+	zero or more of the previous expression
+
+
+	.
+	zero or more arbitrary characters
+
+
+	\&lt;
+	beginning of a word
+
+
+	\&gt;
+	end of a word
+
+
+	\
+	quote a special character
+
+
+	\
+	the character ``''
+
+
+	^
+	beginning of a line
+
+
+	$
+	end of a line
+
+
+	[set]
+	one character from a set of characters
+
+
+	[XYZ]
+	one of the characters ``X'', ``Y'', or ``Z''
+
+
+	[[:upper:]][[:lower:]]*
+	one uppercase character followed by any number of lowercase characters
+
+
+	[^set]
+	one character not from a set of characters
+
+
+	[^XYZ[:digit:]]
+	any character except ``X'', ``Y'', ``Z'', or a numeric digit
+
+
+
+
+
+
+   Options to the :set command
+
+
+   
+
+
+
+Option
+Effect
+
+
+	all
+	list settings of all options
+
+
+	ignorecase
+	ignore case in searches
+
+
+	list
+	display &lt;Tab&gt; and end-of-line characters
+
+
+	mesg
+	display messages sent to your terminal
+
+
+	nowrapscan
+	prevent searches from wrapping round the end or beginning of a file
+
+
+	number
+	display line numbers
+
+
+	report=5
+	warn if five or more lines are changed by command
+
+
+	term=ansi
+	set terminal type to ``ansi''
+
+
+	terse
+	shorten error messages
+
+
+	warn
+	display ``[No write since last change]'' on shell escape if file has not been saved

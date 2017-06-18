@@ -1,0 +1,151 @@
+DLLs And ExesRunning the Executable Module
+
+
+When an executable file is invoked, the operating system loader creates the virtual address space for the process.
+
+Then the loader maps the executable module into the process' address space. The loader examines the executable's
+
+import section and attempts to locate and map any required DLLs into the process' address space.
+
+Because the import section contains just a DLL name without its pathname, the loader must search the user's disk
+
+drives for the DLL.
+
+
+   
+
+
+    Here is the loader's search order:
+
+ 1. The directory containing the executable image file
+
+
+
+    
+ 2. The Windows system directory returned by GetWindowsDirectory
+
+
+
+
+    
+
+
+
+
+    3. The 16-bit system directory&mdash;that is, the System subfolder under the Windows directory
+
+
+
+
+    
+
+
+
+
+    4. The Windows directory returned by GetSystemDirectory
+
+
+
+
+    
+
+
+
+
+    5. The process' current directory
+ 
+
+
+
+
+    6. The directories listed in the PATH environment variable
+
+
+
+   
+
+Notice that the application current directory is searched after the Windows directories. This change occurred in
+
+
+   
+
+
+   Windows XP SP2 to avoid having fake system DLLs be found and loaded from the application current directory instead 
+
+of from their official location in the Windows directories. The MSDN online help mentions how a DWORD value under 
+
+HKEY_LOCAL_MACHINE/SYSTEM/CurrentControlSet/Control/Session Manager could change this search order, but you 
+
+
+   
+
+
+   should never set it if you don't want to allow malware to compromise your machine. Be aware that other things can affect
+
+
+   
+
+
+   how the loader searches for a DLL. (See Chapter 20 for more information.)
+
+
+
+As the DLL modules are mapped into the process' address space, the loader checks each DLL's import section as well. 
+
+If an import section exists (and usually it does), the loader continues to map the additional required DLL modules 
+
+into the process' address space. The loader keeps track of the DLL modules that it is loading and maps a module 
+
+only once even if multiple modules require that module.
+
+
+   
+
+If the loader cannot locate a required DLL module, An error message box will come up.
+
+
+After all the DLL modules have been located and mapped into the process' address space, the loader fixes up all 
+
+references to imported symbols. To do this, it again looks in each module's import section. For each symbol listed, 
+
+the loader examines the designated DLL's export section to see if the symbol exists. If the symbol does not exist 
+
+(which is very rare), the loader displays a error message box .
+
+
+   
+
+
+   
+If the symbol does exist, the loader retrieves the RVA of the symbol and adds the virtual address of where the DLL 
+
+module is loaded (the location of the symbol in the process' address space). It then saves this virtual address in 
+
+the executable module's import section. Now, when the code references an imported symbol, it looks in the calling 
+
+module's import section and grabs the address of the imported symbol, and it can thus successfully access the 
+
+imported variable, function, or C++ class member function. When the dynamic link is complete, the process' 
+
+primary thread begins executing, and the application is finally running!
+
+
+   
+
+Naturally, it takes the loader quite a bit of time to load all these DLL modules and fix up every module's impor
+
+section with the proper addresses of all the imported symbols. Because all this work is done when the process 
+
+initializes, there is no run-time performance hit for the application. For many applications, however, a slow 
+
+initialization is unacceptable. To help improve your application's load time, you should rebase and bind your 
+
+executable and DLL modules. Few developers know how to do this, which is unfortunate because these techniques 
+
+
+   
+
+
+   are extremely important. The system would run much better if every company performed these techniques. In fact, I 
+
+believe that operating systems should ship with a utility that automatically performs these operations.

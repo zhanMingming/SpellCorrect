@@ -1,0 +1,506 @@
+Android-多列表的项目（Rxjava+Rtrofit+Recyclerview+Glide+Adapter封装）之（一）项目架构好久没写博客了，主要是之前要奋战完成一个外包项目，也因为是第一次外包，很多东西要处理，当然也学到很多东西，在这个系列，我会把这次外包的一些代码分享给大家，一起学习。
+
+
+
+项目介绍：1.这是一个简易使用的网络请求封装项目，可快速移植实现安卓网络层的开发；2.这是一个常见的app模板，使用较好的app架构，并实现一系列的优化。
+
+
+
+先上几张图看看
+
+
+   
+
+
+
+
+如例子的两个页面可以看到就是想这样的样式，以及请求，我们在android应用开发中经常遇到。
+
+
+
+好了，废话不多说，下面开始正文。
+
+
+
+
+
+文章结构：（1）整个应用的架构模式；（2）Activity和Fragment的封装；
+
+
+
+一、整个应用的架构模式：
+
+
+   
+
+
+
+
+主要还是MVC模式。不懂MVC的同学请看Android中的MVC模式。对应到我们的项目，M层就是我的bean包了，C层则由activity来担当，V层则由自定义view以及xml文件来担当。contronller（控制器）是一个中间桥梁的作用，通过接口通信来协同 View（视图）和Model（模型）工作，起到了两者之间的通信作用。
+
+
+
+二、Activity和Fragment的封装：
+
+
+   
+
+
+
+
+可以看到，我封装了三层抽象activity，各自负责不同的业务。这个是很常见的app的activity封装。
+
+
+
+1.BaseActivity是app设计中的最高父类，则由它处理一些加载的优化，以及使用了模板模式，制定一系列的抽象方法，管理相关的app整体功能（如退出整个app）。
+
+
+
+
+   public abstract class BaseActivity extends AppCompatActivity {
+   //存储全部activity
+    private static List&lt;Activity&gt; activities = new ArrayList&lt;&gt;();
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+ super.onCreate(savedInstanceState);
+ Logger.i("Activity---&gt;" + getClass().getSimpleName());
+ addActivity(this);
+
+ if (getLayoutId() != 0) {
+     setContentView(getLayoutId());
+ } else {
+     throw new IllegalArgumentException("返回一个正确的ContentView");
+ }
+ ButterKnife.bind(this);//ButterKnife必须在这里bing，也就是初始化，那么其余activity就不用顾及这个了
+
+ initView();//模板模式
+ initEvent();
+ loadData();
+    }
+
+    protected abstract int getLayoutId();
+
+    protected abstract void initView();
+
+    protected abstract void initEvent();
+
+    protected abstract void loadData();
+
+    @Override
+    protected void onPause() {
+ super.onPause();
+ removeActivity(this);//释放所有资源
+    }
+
+
+    // 添加Activity到容器中
+    private void addActivity(Activity activity) {
+ if (activity != null &amp;&amp; !activities.contains(activity)) {
+     activities.add(activity);
+ }
+    }
+
+    private void removeActivity(Activity activity) {
+ if (activity != null &amp;&amp; activities.contains(activity)) {
+     activities.remove(activity);
+ }
+    }
+
+    // 退出整个APP
+    public static void exit() {
+ if (activities != null &amp;&amp; activities.size() &gt; 0) {
+     for (Activity activity : activities) {
+  activity.finish();
+     }
+ }
+ System.exit(0);
+    }
+}
+
+
+
+
+2.ToolbarActivity是每个activity需要标题栏封装；主要是为了节省代码，并使得继承此activity的activity得以逻辑更加清晰。
+
+
+
+
+   public abstract class ToolbarActivity extends BaseActivity {
+
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.title)
+    public TextView title;
+
+
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+ super.onCreate(savedInstanceState);
+
+ toolbar.setTitle("");//节省代码啦，以后app的activity不用再为标题烦恼
+ setSupportActionBar(toolbar);
+ if (getSupportActionBar() != null) {
+     getSupportActionBar().setDisplayHomeAsUpEnabled(true);//决定左上角的图标是否可以点击
+ }
+ toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+     @Override
+     public void onClick(View v) {
+  finish();
+     }
+ });
+    }
+
+}
+
+
+
+3.DrawerActivity是抽屉activity；这样写的话，让MainActivity去继承就会使main的代码更加简洁，并且可以复用代码
+
+
+   public abstract class DrawerActivity extends ToolbarActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    @BindView(R.id.navigation_view)
+    NavigationView navigationView;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+ super.onCreate(savedInstanceState);
+
+ ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
+ drawerToggle.syncState();//该方法会自动和actionBar关联, 将开关的图片显示在了action上，如果不设置，也可以有抽屉的效果，不过是默认的图标  
+ drawerLayout.setDrawerListener(drawerToggle);
+
+ drawerToggle.setDrawerIndicatorEnabled(false);
+ toolbar.setNavigationIcon(R.drawable.toolbar_navigation);//设置那个抽屉图片，主要看美工了，美工要规定那个图片大小，我这里是随便放的
+ toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+     @Override
+     public void onClick(View v) {
+  drawerLayout.openDrawer(Gravity.LEFT);
+     }
+ });
+ navigationView.setNavigationItemSelectedListener(this);
+
+
+    }
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+ switch (item.getItemId()) {
+     case R.id.publish:
+     //跳转的activity在这里建立
+//  startActivity(new Intent(this, PublishActivity.class));
+  drawerLayout.closeDrawers();
+  return true;
+
+
+     case R.id.published:
+//  startActivity(new Intent(this, PublishedActivity.class));
+  drawerLayout.closeDrawers();
+  return true;
+
+
+     case R.id.growth:
+//  startActivity(new Intent(this, GrowthActivity.class));
+  drawerLayout.closeDrawers();
+  break;
+
+
+     case R.id.collect:
+//  startActivity(new Intent(this, CollectionActivity.class));
+  drawerLayout.closeDrawers();
+  return true;
+
+     case R.id.setting:
+//  startActivity(new Intent(this, SettingActivity.class));
+  drawerLayout.closeDrawers();
+  return true;
+ }
+ return super.onContextItemSelected(item);
+    }
+}
+
+
+
+所以继承DrawerActivity的MainActivity的代码就十分的简洁了，而且其他的activity也可以继承ToolbarActivity从而实现复用了。
+
+
+
+
+   public class MainActivity extends DrawerActivity {
+    private static final int PAGE_LIMIT = 4;//这里是限定预加载的页面个数，不用Fragment重新去onCreate。使用这个就是去优化页面，从而viewpager去缓存view
+    @BindView(R.id.tab_layout)
+    TabLayout tabLayout;
+    @BindView(R.id.viewpager)
+    NoScrollViewPager viewPager;
+
+
+    @Override
+    protected int getLayoutId() {
+ return R.layout.activity_main;
+    }
+
+    @Override
+    protected void initView() {
+
+    }
+
+    @Override
+    protected void initEvent() {
+ if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.M) {
+     String packageName = getPackageName();
+     PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+     if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+  Intent intent = new Intent();
+  intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+  intent.setData(Uri.parse("package:" + packageName));
+  startActivity(intent);
+     }
+ }
+    }
+
+    @Override
+    protected void loadData() {
+ List&lt;Fragment&gt; fragments = new ArrayList&lt;&gt;();
+ fragments.add(new AbilityFragment());
+ fragments.add(new AttentionFragment());
+ fragments.add(new DiscoveryFragment());
+ fragments.add(new ArenaFragment());
+ ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments);
+ viewPager.setAdapter(adapter);
+ viewPager.setOffscreenPageLimit(PAGE_LIMIT);
+ tabLayout.setupWithViewPager(viewPager);
+ for (int i = 0; i &lt; tabLayout.getTabCount(); i++) {
+     TabLayout.Tab tab = tabLayout.getTabAt(i);
+     Drawable drawable = null;
+     switch (i) {
+  case 0:
+      drawable = ContextCompat.getDrawable(this, R.drawable.tab_item_home);
+      break;
+  case 1:
+      drawable = ContextCompat.getDrawable(this, R.drawable.tab_item_attention);
+      break;
+  case 2:
+      drawable = ContextCompat.getDrawable(this, R.drawable.tab_item_discovery);
+      break;
+  case 3:
+      drawable = ContextCompat.getDrawable(this, R.drawable.tab_item_arena);
+      break;
+     }
+     if (tab != null) {
+  tab.setIcon(drawable);
+     }
+ }
+    }
+}
+
+接下来我们看下fragment的封装：
+
+
+   
+
+
+
+
+同样的，我们可以看到我写了三个抽象fragment，分别负责不同的业务。
+
+
+
+1.BaseFragment。主要有模板模式的方法，fragment的懒加载
+
+
+
+解析懒加载： setUserVisibleHint方法用于告诉系统，这个Fragment的UI是否是可见的。所以我们只需要继承Fragment并重写该方法，即可实现在fragment可见时才进行数据加载操作，即Fragment的懒加载。
+
+
+
+
+   public abstract class BaseFragment extends Fragment {
+    private Handler handler = new Handler();
+    private Runnable loadDataTask = new Runnable() {
+ @Override
+ public void run() {
+     loadData();
+ }
+    };
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+ View view = inflater.inflate(getLayoutId(), container, false);
+ ButterKnife.bind(this, view);
+ return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+ initView();
+ initEvent();
+ // 延迟加载数据，减少卡顿
+ handler.postDelayed(loadDataTask, 500);
+    }
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+ super.setUserVisibleHint(isVisibleToUser);
+ //做了个判断，判断isVisibleToUser只有为true，才去执行loadData()方法加载网络(或本地)数据。
+ if (!isVisibleToUser) {
+     handler.removeCallbacks(loadDataTask);
+ }
+    }
+
+    protected abstract void initView();
+
+    protected abstract void initEvent();
+
+    protected abstract void loadData();
+
+    protected abstract int getLayoutId();
+}
+
+
+
+2.RecyclerViewFragment，因为RecyclerView在多列表app中占很多部分，所以我抽离它作为一层fragment来编写，方便代码复用。还有此fragment还要完成下拉刷新的消息通知，子类实现复用。
+
+
+
+
+   public abstract class RecyclerViewFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
+
+    protected static final int REFRESH = 0x101;
+    @BindView(R.id.recycler_view)
+    RecyclerView recyclerView;
+    @BindView(R.id.swipeRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
+    protected RecyclerView.Adapter adapter;
+//一个handle让子类覆写onrefresh去通知父类，然后父类调用handler实现复用。
+    private Handler handler = new Handler() {
+ @Override
+ public void handleMessage(Message msg) {
+     switch (msg.what) {
+  case REFRESH:
+      swipeRefreshLayout.setRefreshing(false);
+      break;
+     }
+ }
+    };
+    @Override
+    protected void initView() {
+ FullyLinearLayoutManager layoutManager = new FullyLinearLayoutManager(getActivity(), LinearLayout.VERTICAL, false);
+ layoutManager.setSmoothScrollbarEnabled(true);
+ recyclerView.setLayoutManager(layoutManager);
+ recyclerView.setNestedScrollingEnabled(false);
+
+
+ swipeRefreshLayout.setSize(SwipeRefreshLayout.LARGE);
+ swipeRefreshLayout.setColorSchemeResources(R.color.colorArenaGreen, R.color.colorAccent, R.color.colorMainDividerLine);
+
+    }
+    @Override
+    protected void initEvent() {
+ swipeRefreshLayout.setOnRefreshListener(this);
+    }
+
+    @Override
+    protected void loadData(){
+ adapterBuilder();
+ recyclerView.setAdapter(adapter);
+    }
+    //子activity设置适配器
+    protected abstract void adapterBuilder();
+    @Override
+    public void onRefresh() {
+ //todo 网络请求任务
+ handler.sendEmptyMessageDelayed(REFRESH, 3000);
+    }
+}
+
+
+
+3.BannerFragment主要完成轮播图的封装，考虑广告众多app提供了一层。
+
+
+
+
+   public abstract class BannerFragment extends RecyclerViewFragment implements OnItemClickListener {
+
+    private static final long LOOP_TIME = 5000;
+
+//此轮播使用的是第三方的控件，实际项目开发时为了方便而使用的一个库。
+    @BindView(R.id.banner)
+    ConvenientBanner&lt;String&gt; convenientBanner;
+
+    protected abstract List&lt;String&gt; getBitmapList();
+    protected void loadConvenientBanner() {
+ convenientBanner.setPages(new CBViewHolderCreator&lt;LocalImageHolderView&gt;() {
+     @Override
+     public LocalImageHolderView createHolder() {
+  return new LocalImageHolderView();
+     }
+ }, getBitmapList())
+  .setPageIndicator(new int[]{R.drawable.page_indicator, R.drawable.page_indicator_focused})
+  .setOnItemClickListener(this);
+ convenientBanner.startTurning(LOOP_TIME);
+    }
+
+    @Override
+    protected void initView() {
+ super.initView();
+ convenientBanner.setPages(new CBViewHolderCreator&lt;LocalImageHolderView&gt;() {
+     @Override
+     public LocalImageHolderView createHolder() {
+  return new LocalImageHolderView();
+     }
+ }, getBitmapList())
+  .setPageIndicator(new int[]{R.drawable.page_indicator, R.drawable.page_indicator_focused})
+  .setOnItemClickListener(this);
+ convenientBanner.startTurning(LOOP_TIME);
+    }
+
+    @Override
+    protected void loadData(){
+ super.loadData();
+    }
+    public class LocalImageHolderView implements Holder&lt;String&gt; {
+ private ImageView imageView;
+
+ @Override
+ public View createView(Context context) {
+     imageView = new ImageView(context);
+     imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+     return imageView;
+ }
+
+ @Override
+ public void UpdateUI(Context context, final int position, String data) {
+     Glide.with(context).load(data).into(imageView);
+ }
+    }
+}
+
+
+
+
+
+源码下载：Android-多列表的项目（Rxjava+Rtrofit+Recyclerview+Glide+Adapter封装）
+
+好了，Android-多列表的项目（Rxjava+Rtrofit+Recyclerview+Glide+Adapter封装）之（一）项目架构讲完了。本博客是这个系列的第一篇，所以讲得是像项目的框架而已。另外，这个系列会逐步更新，我会尽快出完给大家，分享经验给大家。欢迎在下面指出错误，共同学习！！你的点赞是对我最好的支持！！
+
+转载请注明：【JackFrost的博客】
+
+
+
+更多内容，可以访问JackFrost的博客
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

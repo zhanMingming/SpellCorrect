@@ -1,0 +1,147 @@
+matlab进阶摸索篇——彩色图直方图均衡化首先转为灰度图，然后均衡化，详见代码
+
+
+   
+
+
+   sourcePic=imread('D:\Images\pic_loc\1870358810205041517.jpg');
+[m,n,o]=size(sourcePic);
+grayPic=rgb2gray(sourcePic);
+figure,imshow(sourcePic);
+figure,imshow(grayPic);
+
+gp=zeros(1,256); %计算各灰度出现的概率
+for i=1:256
+	gp(i)=length(find(grayPic==(i-1)))/(m*n);
+end
+figure,bar(0:255,gp);
+title('原图像直方图');
+xlabel('灰度值');
+ylabel('出现概率');
+
+newGp=zeros(1,256); %计算新的各灰度出现的概率
+S1=zeros(1,256);
+S2=zeros(1,256);
+tmp=0;
+for i=1:256
+	tmp=tmp+gp(i);
+	S1(i)=tmp;
+	S2(i)=round(S1(i)*256);
+end
+for i=1:256
+	newGp(i)=sum(gp(find(S2==i)));
+end
+figure,bar(0:255,newGp);
+title('均衡化后的直方图');
+xlabel('灰度值');
+ylabel('出现概率');
+
+newGrayPic=grayPic; %填充各像素点新的灰度值
+for i=1:256
+	newGrayPic(find(grayPic==(i-1)))=S2(i);
+end
+figure,imshow(newGrayPic);
+
+
+
+
+   
+
+
+   当然，有时候我们不禁想得到一幅图的灰度直方图均衡化结果，而是希望得到彩色图均衡化结果，那么就需要先将彩色图分为RGB分量，代码如下：
+
+
+   
+
+
+
+
+   
+   sourcePic=imread('D:\Images\pic_loc\1870358810205041517.jpg');
+[m,n,o]=size(sourcePic);
+figure,imshow(sourcePic,[]);
+%grayPic=rgb2gray(sourcePic);
+grayPic=sourcePic(:,:,1);
+
+gp=zeros(1,256); %计算各灰度出现的概率
+for i=1:256
+	gp(i)=length(find(grayPic==(i-1)))/(m*n);
+end
+
+newGp=zeros(1,256); %计算新的各灰度出现的概率
+S1=zeros(1,256);
+S2=zeros(1,256);
+tmp=0;
+for i=1:256
+	tmp=tmp+gp(i);
+	S1(i)=tmp;
+	S2(i)=round(S1(i)*256);
+end
+for i=1:256
+	newGp(i)=sum(gp(find(S2==i)));
+end
+
+newGrayPic=grayPic; %填充各像素点新的灰度值
+for i=1:256
+	newGrayPic(find(grayPic==(i-1)))=S2(i);
+end
+nr=newGrayPic;
+
+
+grayPic=sourcePic(:,:,2);
+
+gp=zeros(1,256); %计算各灰度出现的概率
+for i=1:256
+	gp(i)=length(find(grayPic==(i-1)))/(m*n);
+end
+
+newGp=zeros(1,256); %计算新的各灰度出现的概率
+S1=zeros(1,256);
+S2=zeros(1,256);
+tmp=0;
+for i=1:256
+	tmp=tmp+gp(i);
+	S1(i)=tmp;
+	S2(i)=round(S1(i)*256);
+end
+for i=1:256
+	newGp(i)=sum(gp(find(S2==i)));
+end
+
+newGrayPic=grayPic; %填充各像素点新的灰度值
+for i=1:256
+	newGrayPic(find(grayPic==(i-1)))=S2(i);
+end
+ng=newGrayPic;
+
+
+
+grayPic=sourcePic(:,:,3);
+
+gp=zeros(1,256); %计算各灰度出现的概率
+for i=1:256
+	gp(i)=length(find(grayPic==(i-1)))/(m*n);
+end
+
+newGp=zeros(1,256); %计算新的各灰度出现的概率
+S1=zeros(1,256);
+S2=zeros(1,256);
+tmp=0;
+for i=1:256
+	tmp=tmp+gp(i);
+	S1(i)=tmp;
+	S2(i)=round(S1(i)*256);
+end
+for i=1:256
+	newGp(i)=sum(gp(find(S2==i)));
+end
+
+newGrayPic=grayPic; %填充各像素点新的灰度值
+for i=1:256
+	newGrayPic(find(grayPic==(i-1)))=S2(i);
+end
+nb=newGrayPic;
+
+
+res=cat(3,nr,ng,nb);
+figure,imshow(res,[]);

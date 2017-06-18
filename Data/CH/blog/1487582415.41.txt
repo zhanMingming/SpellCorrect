@@ -1,0 +1,128 @@
+Fire Net 搜索 贪心Fire Net
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 1453Accepted Submission(s): 811
+
+Problem Description
+
+Suppose that we have a square city with straight streets. A map of a city is a square board with n rows and n columns, each representing a street or a piece of wall. A blockhouse is a small castle that has four openings through which to shoot. The four openings are facing North, East, South, and West, respectively. There will be one machine gun shooting through each opening. Here we assume that a bullet is so powerful that it can run across any distance and destroy a blockhouse on its way. On the other hand, a wall is so strongly built that can stop the bullets. The goal is to place as many blockhouses in a city as possible so that no two can destroy each other. A configuration of blockhouses is legal provided that no two blockhouses are on the same horizontal row or vertical column in a map unless there is at least one wall separating them. In this problem we will consider small square cities (at most 4x4) that contain walls through which bullets cannot run through. The following image shows five pictures of the same board. The first picture is the empty board, the second and third pictures show legal configurations, and the fourth and fifth pictures show illegal configurations. For this board, the maximum number of blockhouses in a legal configuration is 5; the second picture shows one way to do it, but there are several other ways. Your task is to write a program that, given a description of a map, calculates the maximum number of blockhouses that can be placed in the city in a legal configuration. 
+
+
+
+
+   
+
+Input
+
+The input file contains one or more map descriptions, followed by a line containing the number 0 that signals the end of the file. Each map description begins with a line containing a positive integer n that is the size of the city; n will be at most 4. The next n lines each describe one row of the map, with a '.' indicating an open space and an uppercase 'X' indicating a wall. There are no spaces in the input file. 
+
+
+
+
+   
+
+Output
+
+For each test case, output one line containing the maximum number of blockhouses that can be placed in the city in a legal configuration.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   4
+.X..
+....
+XX..
+....
+2
+XX
+.X
+3
+.X.
+X.X
+.X.
+3
+...
+.XX
+.XX
+4
+....
+....
+....
+....
+0
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   5
+1
+5
+2
+4
+#include&lt;stdio.h&gt;
+int n;
+char map[10][10];
+int max;
+int xx[8]={1,1, -1,-1,0,0,1,-1};
+int yy[8]={1,-1,1,-1,1,-1,0,0};
+//use '+' to record blockhouses ;
+//use 'X' represents wall ;
+//use '.' represents the avaliable position
+int check(int x,int y)//check whether a blockhouse can be set at position(x,y)
+{
+    int i,j;
+    for(i=x-1;i&gt;=0;i--) 
+	{
+		if(map[i][y]=='+')	return 0;
+		if(map[i][y]=='X')break;
+	}
+    for(j=y-1;j&gt;=0;j--) 
+	{
+		if(map[x][j]=='+') return 0;
+		if(map[x][j]=='X')break;
+	}
+    return 1;
+}
+void dfs(int x,int y,int step)
+{
+    if(y==n) {y=0;x++;}//一行一行地查找过去
+    if(x==n) 
+	{
+		if(step&gt;max) 
+			max=step;
+		return ;
+	}
+    if(map[x][y]=='.'&amp;&amp;check(x,y))
+    {
+ map[x][y]='+';
+ dfs(x,y+1,step+1);//recursion
+ map[x][y]='.';
+    }
+    dfs(x,y+1,step);//step means the present blockhouse num
+}
+
+int main()
+{
+    int i,j;
+    while(scanf("%d",&amp;n)==1&amp;&amp;n)
+    {
+ for(i=0;i&lt;n;i++)   scanf("%s",map[i]);
+ max=0;
+ dfs(0,0,0);
+ printf("%d/n",max);
+    }
+    return 0;
+}

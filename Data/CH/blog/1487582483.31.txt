@@ -1,0 +1,905 @@
+ODBC 编程APINormal
+  0
+  
+  
+  false
+  false
+  false
+  
+   
+   
+   
+   
+   
+   
+  
+  MicrosoftInternetExplorer4
+ 
+
+ 
+ 
+
+
+<!--
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:普通表格;
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+-->
+
+
+
+
+   转的ODBC API函数详细说明。
+
+
+   看了一遍，没有问题。
+
+
+   
+
+
+   使用
+ODBC API
+之前要用到的头文件和
+LIB
+库
+
+#include
+&quot;sql.h&quot;//
+This is the the main include for ODBC Core functions.
+#include
+&quot;sqlext.h&quot;//
+This is the include for applications using the Microsoft SQL Extensions
+#include &quot;sqltypes.h&quot;// This file defines the
+types used in ODBC
+#include &quot;sqlucode.h&quot;// This is the the unicode
+include for ODBC Core functions
+#include &quot;odbcss.h&quot;// This is the
+application include file for the SQL Server driver specific defines.
+#pragma coment(lib, &quot;odbc32.lib&quot;)
+
+
+ODBC API
+的返回值
+
+ODBC
+API
+的返回值定义为：
+SQLRETURN
+。
+ 
+在成功时返回值为：
+SQL_SUCCESS
+, SQL_SUCCESS_WITH_INFO
+
+；
+ 
+在失败时返回错误代码。一点需要注意的是如果
+ODBC
+返回值为：
+SQL_SUCCESS_WITH_INFO
+并不表明执行完全成功，而是表明执行成功但是
+ 
+带有一定错误信息。当执行错误时
+ODBC
+返回的是一个错误信息的结果集，你需要遍历结果集合中所有行，这点和后面讲到的查询
+SQL
+语句执行结果集的思路很
+
+
+类似。
+
+
+
+    
+SQL_SUCCESS的enum值为0，
+SQL_SUCCESS_WITH_INFO的enum值为1.所以你可以用返回值是否小于0来简单判断。
+
+
+
+
+   
+
+SQLAllocHandle 
+创建
+ODBC
+句柄
+
+
+SQLRETURN
+SQLAllocHandle (
+SQLSMALLINTHandleType,//
+
+
+需要申请的句柄类型
+
+SQLHANDLEInputHandle,//
+
+输入句柄
+
+SQLHANDLE*OutputHandlePtr);//
+
+输出句柄，即在第一参数指定需要申请的句柄
+
+
+
+第一参数
+ HandleType
+的取值可以为：
+
+1.SQL_HANDLE_ENV
+2.SQL_HANDLE_DBC
+3.SQL_HANDLE_STMT
+
+
+
+   
+
+
+    注意判断返回值，看创建是否成功。
+
+
+   
+
+
+   
+
+
+   SQLConnect 
+连接数据库
+
+SQLRETURN
+SQLConnect (
+SQLHDBCConnectionHandle,
+// DBC
+句柄，
+hdbc
+SQLCHAR*ServerName,
+// 
+为
+ODBC
+的
+DSN
+名称
+
+SQLSMALLINTNameLength1,//
+
+指明参数
+ServerName
+的长度
+(
+可以用
+SQL_NTS)
+SQLCHAR*UserName,//
+
+数据库用户名
+
+SQLSMALLINTNameLength2,//
+
+指明参数
+UserName
+的长度
+(
+可以用
+SQL_NTS)
+SQLCHAR*Authentication,//
+
+数据库用户密码
+
+SQLSMALLINTNameLength3)//
+
+指明参数
+Authentication
+的长度
+(
+可以用
+SQL_NTS)
+
+例如：
+
+SQLConnect
+(
+hdbc,
+
+(SQLTCHAR*)szDSN,
+SQL_NTS,
+(SQLTCHAR*)szUserId,
+SQL_NTS,
+(SQLTCHAR*)szPassword,
+SQL_NTS);
+
+
+
+
+   
+
+
+
+
+
+   SQLExecDirect 
+直接执行
+SQL
+语句
+
+
+SQLRETURN
+SQLExecDirect (
+SQLHSTMTStatementHandle,//
+STMT
+句柄
+
+SQLCHAR*
+StatementText,//
+SQL
+语句
+
+SQLINTEGERTextLength)//
+
+参数
+StatementText
+的长度，可以用
+SQL_NTS
+
+如果函数执行成功，你将会得到一个结果集，否则将返回错误信息。
+
+
+
+   获取
+SQL
+语句执行的结果
+
+
+对
+ 
+于
+SQL
+查询语句，
+ODBC
+会返回一个光标，与光标对应的是一个结果集合（可以理解为一个表格）。开发人员利用光标来浏览所有的结果，你可以利用
+ODBC API
+函数移动光标，并且获取当前光标指向的行的列字段的数值。此外还可以通过光标来对光标当前所指向的数据进行修改，而修改会直接反映到数据库中。
+
+
+
+   SQLFetch 
+移动光标
+
+
+SQLRETURN
+SQLFetch (SQLHSTMT StatementHandle);
+
+在你调用
+SQLExecDirect
+执行
+SQL
+语
+ 
+句后，你需要遍历结果集来得到数据。
+StatementHandle
+是
+STMT
+句柄，此句柄必须是被执行过。当调用
+SQLFetch 
+函数后，光标会被移动到下一条记录处，当光标移动到记录集的最后一条，函数将会返回
+SQL_NO_DATA
+。
+
+
+
+   
+
+
+   SQLGetData 
+得到光标处的某列的值
+
+
+SQLRETURN
+SQLGetData (
+SQLHSTMTStatementHandlem,//
+STMT
+句柄
+
+SQLUSMALLINTColumnNumber,
+// 
+列号，以
+1
+开始
+
+SQLSMALLINTTargetType,
+// 
+数据缓冲区（
+TargetValuePtr
+）的
+C
+语言类型
+
+SQLPOINTERTargetValuePtr,//
+
+数据缓冲区
+
+SQLINTEGERBufferLength,//
+
+数据缓冲区（
+TargetValuePtr
+）的长度
+
+SQLINTEGER*
+StrLen_or_IndPtr);// 
+返回当前字段得到的字节长度
+
+
+
+   
+
+
+   SQLBindCol
+通过列绑定获得字段数据
+
+
+SQLRETURN
+SQLBindCol (
+SQLHSTMTStatementHandle,//
+STMT
+语句
+
+SQLUSMALLINTColumnNumber,
+// 
+列号，以
+1
+开始
+
+SQLSMALLINTTargetType,
+// 
+数据缓冲区（
+TargetValuePtr
+）的
+C
+语言类型
+
+SQLPOINTERTargetValuePtr,
+ // 
+数据缓冲区
+
+SQLINTEGER
+BufferLength,
+// 
+数据缓冲区（
+TargetValuePtr
+）的字节长度
+
+SQLINTEGER*StrLen_or_IndPtr);//
+
+返回当前字段得到的字节长度
+
+
+在从结果集中读取字段值时可以利用
+SQLGetData
+，但为了速度可以利用列绑定
+
+(SQLBindCol)
+的方式，在每次移动光标后让
+ODBC
+将数据传送到指定的变量中
+
+
+
+   SQLNumResultCols 
+得到结果集中列数
+
+
+SQLRETURN
+SQLNumResultCols (
+SQLHSTMTStatementHandle,
+// STMT
+句柄
+
+SQLSMALLINT*ColumnCountPtr);//
+
+返回的列数
+
+
+
+   
+
+
+   SQLRowCount 
+执行
+SQL
+语句后得到影响的行数
+
+SQLRETURN SQLRowCount (
+SQLHSTMTStatementHandle,//
+STMT
+句柄
+
+SQLINTEGER*RowCountPtr);
+// 
+被影响的数据的行数
+
+
+你
+ 
+可以通过
+SQLExecDirect
+执行
+SQL
+语句来插入，修改和删除数据，在执行插入，修改和删除的
+SQL
+语句后就可以通过
+SQLRowCount
+函数
+ 
+来得到被影响的数据的行数。
+
+
+
+   
+
+
+   SQLDescribeCol 
+得到结果集中列的描述
+
+
+SQLRETURN
+SQLDescribeCol (
+SQLHSTMTStatementHandle,//
+STMT
+句柄
+
+SQLSMALLINTColumnNumber,//
+
+需要得到的列的序号，从
+1
+开始计算
+
+SQLCHAR*ColumnName,
+// 
+得到列的名称
+
+SQLSMALLINTBufferLength,
+// 
+指明
+ColumnName
+参数的最大长度
+
+SQLSMALLINT*NameLengthPtr,//
+
+返回列名称的长度
+
+SQLSMALLINT*DataTypePtr,//
+
+返回列的
+ODBC
+数据类型，见表
+
+SQLUINTEGER
+*ColumnSizePtr,//
+
+返回列的长度
+
+SQLSMALLINT*DecimalDigitsPtr,//
+
+当列为数字类型时返回小数点后数据的位数
+
+SQLSMALLINT*NullablePtr);//
+
+指明该列是否允许空值
+
+
+
+   
+
+
+   SQLSetStmtAttr
+设置
+ODBC
+光标类
+ 
+型
+
+SQLRETURN SQLSetStmtAttr (
+SQLHSTMTStatementHandle,//
+STMT
+句柄
+
+SQLINTEGER
+Attribute,//
+
+指定需要设置的属性类型
+
+SQLPOINTER
+ValuePtr,
+//
+
+提供的参数值
+
+SQLINTEGER
+StringLength);// 
+指定参数的长度，当参数是整数时设置为
+
+//
+SQL_IS_INTEGER, 
+当参数是字符串是设置
+
+//
+
+为字符串长度或者是
+SQL_NTS
+
+函数
+SQLSetStmtAttr
+可以让我们在
+ODBC
+中可以使用不同的光标类型
+
+
+
+
+
+
+
+
+
+
+
+
+   Attribute
+
+
+
+
+
+   ValuePtr
+
+
+
+
+
+   作用
+
+
+
+
+
+
+
+
+   SQL_ATTR_ASYNC_ENABLE
+
+
+
+
+
+   整数，取值为：
+
+  SQL_ASYNC_ENABLE_OFF
+，
+
+  SQL_ASYNC_ENABLE_ON
+
+
+
+
+
+   是否使用异步执行功能
+
+
+
+
+
+
+
+
+   SQL_ATTR_QUERY_TIMEOUT
+
+
+
+
+
+   设置一个合法的整数
+
+
+
+
+
+   SQL
+语句执行时的超时秒数，设置为
+0
+表示无超时
+
+
+
+
+
+
+
+
+   SQL_ATTR_CURSOR_TYPE
+
+
+
+
+
+   整数，取值为：
+
+  SQL_CURSOR_FORWARD_ONLY
+，
+
+  SQL_CURSOR_STATIC
+，
+
+  SQL_CURSOR_DYNAMIC
+，
+SQL_CURSOR_KEYSET_DRIVEN
+
+
+
+
+
+   设置光标的类型
+
+
+
+
+
+
+
+
+
+   1.
+向前光标
+：
+SQL_CURSOR_FORWARD_ONLY
+，光标仅仅向前滚动。
+
+2.
+静态光标
+：
+SQL_CURSOR_STATIC
+，结果集的数据是静态的，这就是说明在执行查询后，返回
+ 
+的结果集的数据不会再改变，即使是有其他程序更新了数据库中的记录，结果集中的记录也不会发生改变。
+
+3.
+动态光标
+：
+SQL_CURSOR_DYNAMIC
+，在光标打开以后，当结果集中的行所对应的数据值发生变
+ 
+化时，其变化能够反映到光标所对应的结果集上，这些变化包括：字段的修改，添加，结果集中行的顺序变化。但是请注意如果行被删除则无法在当前结果集中反映
+ 
+出，因为被删除的行不再出现在当前的结果集中。动态光标所对应的结果集在数据发生变化时会被重建。例如，假设动态光标已获取到了两行，然后，另一应用程序
+ 
+更新了这两行中的一行，并删除了另一行，如果动态游标再试图获取那些行，它将不能检测已删除的行（因为当前结果集中只有一行，但是不要利用这个办法去检测
+ 
+被删除的行，因为出现这种情况还可能是因为行的数据被改变后不能再满足查询条件），而是返回已更新行的新值。
+
+4.
+键集光标
+：
+SQL_CURSOR_KEYSET_DRIVEN
+，和上面的动态光标所不同的是键集光标能够
+ 
+检测到行的删除和修改，但是无法检测到行的添加和结果集顺序变化。因为在光标创建时就创建了整个结果集，结果集合中记录和顺序已经被固定，这一点和静态光
+ 
+标一样。所以键集光标可以说是一种介于静态光标和动态光标之间的光标类型。
+
+
+如：
+SQLSetStmtAttr (hstmt, SQL_ATTR_CURSOR_TYPE, (SQLPOINTER) SQL_CURSOR_KEYSET_DRIVEN,
+0);
+
+
+
+SQLFetchScroll
+利用可滚动光标进行
+ 
+查询
+
+SQLRETURN SQLFetchScroll (
+SQLHSTMTStatementHandle,//
+STMT
+语句
+
+SQLSMALLINTFetchOrientation,//
+
+光标滚动的方式，见下表
+
+SQLINTEGERFetchOffset);//
+
+光标滚动的位置
+
+
+前面介绍的
+SQLFetch
+函数只能够让光标向前移动，但在很多时候我们需要光标能够前后移动。我们需要利用另
+ 
+一个函数
+SQLFetchScroll
+，但是再这之前请利用
+SQLSetStmtAttr
+正确设置光标类型。
+
+
+
+
+
+
+
+
+
+
+
+
+   FetchOrientation
+
+
+
+
+
+   含
+ 
+义
+
+
+
+
+
+
+
+
+   SQL_FETCH_NEXT
+
+
+
+
+
+   滚动到下一行，这时候调用相当与
+SQLFetch
+，参数
+FetchOffset
+将被忽略
+(
+用
+0
+值
+)
+
+
+
+
+
+
+
+
+   SQL_FETCH_PRIOR
+
+
+
+
+
+   滚动到上一行，参数
+FetchOffset
+将被忽略
+(
+用
+0
+值
+)
+
+
+
+
+
+
+
+
+   SQL_FETCH_FIRST
+
+
+
+
+
+   滚动到第一行，参数
+FetchOffset
+将被忽略
+(
+用
+0
+值
+)
+
+
+
+
+
+
+
+
+   SQL_FETCH_LAST
+
+
+
+
+
+   滚动到最后一行，参数
+FetchOffset
+将被忽略
+(
+用
+0
+值
+)
+
+
+
+
+
+
+
+
+   SQL_FETCH_ABSOLUTE
+
+
+
+
+
+   滚动到参数
+FetchOffset
+指定的绝对行
+
+
+
+
+
+
+
+
+   SQL_FETCH_RELATIVE
+
+
+
+
+
+   由当前位置滚动到参数
+FetchOffset
+指定的相对行，
+FetchOffset
+大于
+0
+表示向前滚
+ 
+动，
+FetchOffset
+小于
+0
+表示向后滚动
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   用法示例会在接下来的文章里给出。

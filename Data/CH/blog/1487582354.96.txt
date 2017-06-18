@@ -1,0 +1,121 @@
+hdu 1236题目描述：
+ 今天的上机考试虽然有实时的Ranklist，但上面的排名只是根据完成的题数排序，没有考虑每题的分&#20540;，所以并不是最后的排名。给定录取分数线，请你写程序找出最后通过分数线的考生，并将他们的成绩按降序打印。
+
+
+
+
+输入：
+
+   
+ 测试输入包含若干场考试的信息。每场考试信息的第1行给出考生人数N ( 0 &lt; N &lt; 1000 )、考题数M ( 0 &lt; M &lt; = 10 )、分数线（正整数）G；第2行排序给出第1题至第M题的正整数分&#20540;；以下N行，每行给出一名考生的准考证号（长度不超过20的字符串）、该生解决的题目总数m、以及这m道题的题号（题目号由1到M）。
+
+ 当读入的考生人数为0时，输入结束，该场考试不予处理。
+
+
+
+
+输出：
+
+   
+ 对每场考试，首先在第1行输出不低于分数线的考生人数n，随后n行按分数从高到低输出上线考生的考号与分数，其间用1空&#26684;分隔。若有多名考生分数相同，则按他们考号的升序输出。
+
+
+
+
+样例输入：
+
+   4 5 25
+10 10 12 13 15
+CS004 3 5 1 3
+CS003 5 2 4 1 3 5
+CS002 2 1 2
+CS001 3 2 3 5
+1 2 40
+10 30
+CS001 1 2
+2 3 20
+10 10 10
+CS000000000000000001 0
+CS000000000000000002 2 1 2
+0
+
+
+
+样例输出：
+
+   3
+CS003 60
+CS001 37
+CS004 37
+0
+1
+CS000000000000000002 20
+
+
+   
+
+
+   注意结构体排序，尤其是字符串的排序
+
+
+   
+
+
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+
+int score[15];
+struct Peo
+{
+    char id[30];
+    int sum;
+}p[1010];
+
+int comp(const void *a,const void *b)
+{
+    Peo *A=(Peo*)a;
+    Peo *B=(Peo*)b;
+    if(A-&gt;sum==B-&gt;sum) return strcmp(A-&gt;id,B-&gt;id);
+    return B-&gt;sum-A-&gt;sum;
+}
+
+int main()
+{
+    int pn,cn,i,j,req,x;
+    while(cin&gt;&gt;pn&amp;&amp;pn)
+    {
+ cin&gt;&gt;cn;
+ cin&gt;&gt;req;
+ for(i=0;i&lt;cn;i++)
+     cin&gt;&gt;score[i];
+
+ int count=0;
+ for(i=1;i&lt;=pn;i++)
+ {
+     cin&gt;&gt;p[i].id&gt;&gt;j;
+     p[i].sum=0;
+     while(j--)
+     {
+  cin&gt;&gt;x;
+  p[i].sum+=score[x-1];
+     }
+     if(p[i].sum&gt;=req)
+  count++;
+ }
+ cout&lt;&lt;count&lt;&lt;endl;
+ 
+ qsort(p+1,pn,sizeof(p[0]),comp);
+ for(i=1;i&lt;=count;i++)
+     cout&lt;&lt;p[i].id&lt;&lt;&quot; &quot;&lt;&lt;p[i].sum&lt;&lt;endl;
+    }
+}

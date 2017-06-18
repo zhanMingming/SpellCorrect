@@ -1,0 +1,203 @@
+用汇编解释虚函数调用做程序设计助教，刚刚有个同学来实验室找我。问了个问题，“为什么指向基类指针能指向派生类，而且能调用派生类的函数”。
+
+
+      我按我的理解，简单解释下
+
+
+      指向基类的指针，“能看见”的部分是这个基类定义的，包括函数和变量。
+
+
+      如果该指针指向了它的派生类，它依然“能看见”的部分还是基类定义的，包括函数和变量。 但是如果函数是虚函数，那么C&#43;&#43;编译器会把这个调用，借用虚表的基地址，将这个调用重定向到派生类的调用中去，那么也就是说这个指针“能看见”派生类的该同名函数。
+
+
+      但是，一个指向派生类的指针，是不能指向基类的地址（当然可以强行指过去），因为这样，本来“能看见”的部分就未定义了，比如一个派生类的变量，在基类中没有，这个调用就要失败了。
+
+
+       一句话“看见东西少的指针，可以指向看见多的对象；但看见东西多的指针，不能指向看见少的对象”
+
+
+
+
+   
+
+
+
+
+   首先源代码很简单
+
+
+   class base
+
+{
+
+    public:
+
+        base()
+
+        {
+
+            m_i=0;
+
+        }
+
+        virtual int get()
+
+        {
+
+            return m_i;
+
+        }
+
+    public:
+
+        int m_i;
+
+};
+
+class subclass : public base
+
+{
+
+    public:
+
+        subclass()
+
+        {
+
+            m_j=1;
+
+        }
+
+        virtual int get()
+
+        {
+
+            return m_j;
+
+        }
+
+    public:
+
+        int m_j;
+
+};
+
+int main()
+
+{
+
+    base* p = 0;
+
+    subclass q;
+
+    p = &amp;q;
+
+    p-&gt;get();
+
+    return 0;
+
+
+   };
+
+
+   以下是汇编调试部分，在虚表的帮助下，调用过程导入到子类的get方法。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   为了更深入地理解，我憋了一个简短的代码，能看懂了，基本就完全理解虚函数，this指针是怎么回事了。
+
+
+   #include &quot;stdio.h&quot;
+
+class base
+
+{
+
+    public:
+
+        base()
+
+        {
+
+            m_i=0;
+
+        }
+
+        virtual int get()
+
+        {
+
+            return m_i;
+
+        }
+
+    public:
+
+        int m_i;
+
+};
+
+class subclass : public base
+
+{
+
+    public:
+
+        subclass()
+
+        {
+
+            m_j=1;
+
+        }
+
+        virtual int get()
+
+        {
+
+            printf(&quot;hello,%d\n&quot;,m_j);
+
+            return 0;
+
+        }
+
+    public:
+
+        int m_j;
+
+};
+
+int test()
+
+{
+
+    base* p = 0;
+
+    subclass q;
+
+    p = &amp;q;
+
+    int (*fun)(base*) = NULL;
+
+    fun = (int(*)(base*))((*(unsigned int**)&amp;q)[0]);
+
+    fun(p);
+
+};
+
+int main()
+
+{
+
+    test();
+
+}；

@@ -1,0 +1,190 @@
+Shrinking Polygons hust 14048Shrinking Polygons 
+
+
+
+
+
+
+	Time Limit: Unknown 
+
+	Memory Limit: Unknown 
+
+	64bit IO Format: %lld &amp; %llu 
+
+
+
+
+
+
+   [Submit] [Go Back] [Status] 
+
+
+   Description
+
+
+
+   
+
+Shrinking Polygons
+
+   
+
+
+   A polygon is said to be inscribed in a circle when all its vertices lie on that circle. In this problem you will be given a polygon inscribed in a circle, and you must determine the minimum number of vertices that should be removed to transform the given polygon into a regular polygon, i.e., a polygon that is equiangular (all angles are congruent) and equilateral (all edges have the same length). 
+
+
+   When you remove a vertex v from a polygon you first remove the vertex and the edges connecting it to its adjacent vertices w1 and w2, and then create a new edge connecting w1 and w2. Figure (a) below illustrates a polygon inscribed in a circle, with ten vertices, and figure (b) shows a pentagon (regular polygon with five edges) formed by removing five vertices from the polygon in (a). 
+
+
+   
+
+
+
+   In this problem, we consider that any polygon must have at least three edges. 
+
+
+   
+
+Input
+The input contains several test cases. The first line of a test case contains one integer N indicating the number of vertices of the inscribed polygon (3 &le; N &le; 104). The second line contains N integers Xi separated by single spaces (1 &le; Xi &le; 103, for 0 &le; i &le; N -1). Each Xi represents the length of the arc defined in the inscribing circle, clockwise, by vertex i and vertex (i+1) mod N. Remember that an arc is a segment of the circumference of a circle; do not mistake it for a chord, which is a line segment whose endpoints both lie on a circle.
+
+   The end of input is indicated by a line containing only one zero. 
+
+
+   
+
+Output
+
+   For each test case in the input, your program must print a single line, containing the minimum number of vertices that must be removed from the given polygon to form a regular polygon. If it is not possible to form a regular polygon, the line must contain only the value -1. 
+
+
+   
+
+
+
+
+Sample input
+
+   3
+1000 1000 1000
+6
+1 2 3 1 2 3
+3
+1 1 2
+10
+10 40 20 30 30 10 10 50 24 26
+0
+
+
+Output for the sample input
+
+   0
+2
+-1
+5
+
+
+
+
+
+
+
+
+   ACM ICPC :: South American Regional 2008 
+
+
+
+
+   Source
+
+South America 2008-2009 
+
+给出n个数字，求最少合并几次能使每一堆的value和相同。
+
+大牛的做法，hash处理sum[i],枚举起点px，每次探测 每一堆的和dd，若sum[end]+t*dd都能hash到，那么这个解就ok。
+
+#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+const int P = 999997;
+int n,m;
+int a[20005];
+int hash[1100005];
+
+int Max(int x,int y)
+{
+    return x&gt;y?x:y;
+}
+
+void insert_hash(int x)
+{
+     int k = x % P;
+     while (hash[k] &gt;= 0) k++;
+     hash[k] = x;
+}
+
+bool is_in(int x)
+{
+     int k = x % P;
+     while (hash[k] &gt;= 0 &amp;&amp; hash[k] != x) k++;
+     if (hash[k] == x) return true;
+     else return false;
+}
+
+int main()
+{
+    int i,j,k,s,t,ans,dd,px;
+    int x,y;
+    
+    while (cin &gt;&gt;n)
+    {
+   if (n == 0) break;
+   memset(hash,-1,sizeof(hash));
+   memset(a,0,sizeof(a));
+ for (i=1;i&lt;=n;i++)
+ {
+     cin &gt;&gt;a[i]; 
+     a[i] += a[i-1];
+     insert_hash(a[i]);
+     //printf("%d ",a[i]);
+ }
+ m = n*2;
+ ans = 0;
+ for (i=n+1;i&lt;=m;i++){
+     a[i] = a[n] + a[i-n];
+     insert_hash(a[i]);//printf("%d ",a[i]);
+     }
+ for (px=1;px&lt;=n;px++)
+ {
+     bool bo = false;
+   for (i=px;i&lt;px+n-2;i++)
+   {
+     dd = a[i] - a[px-1];
+     if (a[n] % dd == 0)
+     {
+   k = a[i];
+   while (k &lt; a[px+n-1])
+   {
+  if (!is_in(k)) break;
+  k += dd;
+   }
+   if (k == a[px+n-1]) {bo = true; break;}
+     }
+     if (a[n]/dd &lt;= ans) break;
+   }
+   if (bo &amp;&amp; a[n]/dd &gt; ans) {ans = a[n]/dd;}
+ }
+ if (ans &lt; 3) cout &lt;&lt;"-1"&lt;&lt;endl;
+ else cout &lt;&lt;n - ans&lt;&lt;endl;
+    }
+    
+    return 0;
+}
+ 
+
+这样还是有点耗时，更省力的解法是将sum[i]%dd存在数组B[]中，查找B[i]中出现次数最多的元素(sort一下做),次数记为maxn.if(maxn==分的组数)，则ok，这样分组数从N到3枚举就可以了。

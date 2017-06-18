@@ -1,0 +1,51 @@
+MFC 贴图 填充 矩形OnDraw()函数编写贴图并画矩形：
+
+
+   Rectangle() 可直接画矩形（具体见代码）
+
+
+   
+
+
+   void CintelligentjudgingView::OnDraw(CDC* pDC)
+{
+	CintelligentjudgingDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	int x=60,y=50;
+
+	pDC-&gt;SetTextColor(RGB(200,0,0));
+	pDC-&gt;TextOutW(x-40,y,(CString)("分析结果："));
+	CDC memDC;
+	memDC.CreateCompatibleDC(pDC);
+
+	CBitmap bmp;
+	bmp.LoadBitmap(IDB_BITMAP1);
+	HBITMAP hbm = (HBITMAP)bmp;
+	memDC.SelectObject(hbm);
+	CRect rect;
+	GetClientRect(&amp;rect);
+	BITMAP bm;
+	::GetObject(hbm,sizeof(bm),&amp;bm);
+	pDC-&gt;StretchBlt(x+100,y+20,494,261,&amp;memDC,0,0,bm.bmWidth,bm.bmHeight,SRCCOPY);
+	memDC.DeleteDC();
+	hbm-&gt;unused;
+
+	CRect res[6];
+	int fixedwidth=28;
+	int heightunit=40;
+	CBrush brush(RGB(200,200,200));
+/*	for(int i=0;i&lt;6;i++)
+		type[i]=2;
+	type[5]=3;*/
+	pDC-&gt;SelectObject(&amp;brush);
+	for(int i=0;i&lt;6;i++)
+	{
+		Rectangle(pDC-&gt;GetSafeHdc(),(i+1)*70+x+100,y+20+230-type[i]*heightunit,(i+1)*70+x+100+fixedwidth,y+20+230);
+	}
+	CView::OnDraw(pDC);
+	if (!pDoc)
+		return;
+
+	// TODO: 在此处为本机数据添加绘制代码
+}

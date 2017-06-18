@@ -1,0 +1,327 @@
+应用scikit-learn做文本分类文本挖掘的paper没找到统一的benchmark，只好自己跑程序，走过路过的前辈如果知道20newsgroups或者其它好用的公共数据集的分类（最好要所有类分类结果，全部或取部分特征无所谓）麻烦留言告知下现在的benchmark，万谢！
+
+   嗯，说正文。20newsgroups官网上给出了3个数据集，这里我们用最原始的20news-19997.tar.gz。
+
+   
+
+   
+
+   分为以下几个过程：
+
+   
+加载数据集提feature分类Naive BayesKNNSVM聚类
+说明： scipy官网上有参考，但是看着有点乱，而且有bug。本文中我们分块来看。
+
+
+
+Environment：Python 2.7 + Scipy （scikit-learn）
+
+
+
+1.加载数据集
+
+从20news-19997.tar.gz下载数据集，解压到scikit_learn_data文件夹下，加载数据，详见code注释。
+
+
+   #first extract the 20 news_group dataset to /scikit_learn_data
+from sklearn.datasets import fetch_20newsgroups
+#all categories
+#newsgroup_train = fetch_20newsgroups(subset='train')
+#part categories
+categories = ['comp.graphics',
+ 'comp.os.ms-windows.misc',
+ 'comp.sys.ibm.pc.hardware',
+ 'comp.sys.mac.hardware',
+ 'comp.windows.x'];
+newsgroup_train = fetch_20newsgroups(subset = 'train',categories = categories);
+
+可以检验是否load好了：
+
+
+   #print category names
+from pprint import pprint
+pprint(list(newsgroup_train.target_names))
+结果：
+
+['comp.graphics','comp.os.ms-windows.misc','comp.sys.ibm.pc.hardware','comp.sys.mac.hardware','comp.windows.x']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2. 提feature：
+
+刚才load进来的newsgroup_train就是一篇篇document，我们要从中提取feature，即词频啊神马的，用fit_transform
+
+
+Method 1. HashingVectorizer，规定feature个数
+
+
+
+
+   #newsgroup_train.data is the original documents, but we need to extract the 
+#feature vectors inorder to model the text data
+from sklearn.feature_extraction.text import HashingVectorizer
+vectorizer = HashingVectorizer(stop_words = 'english',non_negative = True,
+   n_features = 10000)
+fea_train = vectorizer.fit_transform(newsgroup_train.data)
+fea_test = vectorizer.fit_transform(newsgroups_test.data);
+
+
+#return feature vector 'fea_train' [n_samples,n_features]
+print 'Size of fea_train:' + repr(fea_train.shape)
+print 'Size of fea_train:' + repr(fea_test.shape)
+#11314 documents, 130107 vectors for all categories
+print 'The average feature sparsity is {0:.3f}%'.format(
+fea_train.nnz/float(fea_train.shape[0]*fea_train.shape[1])*100);
+结果：
+
+Size of fea_train:(2936, 10000)Size of fea_train:(1955, 10000)The average feature sparsity is 1.002%
+
+因为我们只取了10000个词，即10000维feature，稀疏度还不算低。而实际上用TfidfVectorizer统计可得到上万维的feature，我统计的全部样本是13w多维，就是一个相当稀疏的矩阵了。
+
+
+
+
+
+**************************************************************************************************************************
+
+   上面代码注释说TF-IDF在train和test上提取的feature维度不同，那么怎么让它们相同呢？有两种方法：
+
+   
+
+
+Method 2. CountVectorizer+TfidfTransformer
+
+
+
+让两个CountVectorizer共享vocabulary：
+
+
+   #----------------------------------------------------
+#method 1:CountVectorizer+TfidfTransformer
+print '*************************\nCountVectorizer+TfidfTransformer\n*************************'
+from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+count_v1= CountVectorizer(stop_words = 'english', max_df = 0.5);
+counts_train = count_v1.fit_transform(newsgroup_train.data);
+print &quot;the shape of train is &quot;+repr(counts_train.shape)
+
+count_v2 = CountVectorizer(vocabulary=count_v1.vocabulary_);
+counts_test = count_v2.fit_transform(newsgroups_test.data);
+print &quot;the shape of test is &quot;+repr(counts_test.shape)
+
+tfidftransformer = TfidfTransformer();
+
+tfidf_train = tfidftransformer.fit(counts_train).transform(counts_train);
+tfidf_test = tfidftransformer.fit(counts_test).transform(counts_test);
+
+结果：
+
+*************************
+
+CountVectorizer+TfidfTransformer*************************the shape of train is (2936, 66433)the shape of test is (1955, 66433)
+
+
+
+
+
+
+
+
+
+
+
+
+Method 3.TfidfVectorizer
+
+
+
+让两个TfidfVectorizer共享vocabulary：
+
+   #method 2:TfidfVectorizer
+print '*************************\nTfidfVectorizer\n*************************'
+from sklearn.feature_extraction.text import TfidfVectorizer
+tv = TfidfVectorizer(sublinear_tf = True,
+ max_df = 0.5,
+ stop_words = 'english');
+tfidf_train_2 = tv.fit_transform(newsgroup_train.data);
+tv2 = TfidfVectorizer(vocabulary = tv.vocabulary_);
+tfidf_test_2 = tv2.fit_transform(newsgroups_test.data);
+print &quot;the shape of train is &quot;+repr(tfidf_train_2.shape)
+print &quot;the shape of test is &quot;+repr(tfidf_test_2.shape)
+analyze = tv.build_analyzer()
+tv.get_feature_names()#statistical features/terms
+
+
+结果：
+
+*************************TfidfVectorizer*************************the shape of train is (2936, 66433)the shape of test is (1955, 66433)
+
+
+
+
+
+此外，还有sklearn里封装好的抓feature函数，fetch_20newsgroups_vectorized
+
+
+
+
+
+
+
+
+
+
+Method 4.fetch_20newsgroups_vectorized
+
+
+但是这种方法不能挑出几个类的feature，只能全部20个类的feature全部弄出来：
+
+
+
+
+   print '*************************\nfetch_20newsgroups_vectorized\n*************************'
+from sklearn.datasets import fetch_20newsgroups_vectorized
+tfidf_train_3 = fetch_20newsgroups_vectorized(subset = 'train');
+tfidf_test_3 = fetch_20newsgroups_vectorized(subset = 'test');
+print &quot;the shape of train is &quot;+repr(tfidf_train_3.data.shape)
+print &quot;the shape of test is &quot;+repr(tfidf_test_3.data.shape)
+
+
+结果：
+
+
+
+*************************fetch_20newsgroups_vectorized*************************the shape of train is (11314, 130107)the shape of test is (7532, 130107)
+
+
+
+
+
+
+
+
+
+3. 分类
+
+3.1 Multinomial Naive Bayes Classifier
+
+见代码&amp;comment，不解释
+
+
+   ######################################################
+#Multinomial Naive Bayes Classifier
+print '*************************\nNaive Bayes\n*************************'
+from sklearn.naive_bayes import MultinomialNB
+from sklearn import metrics
+newsgroups_test = fetch_20newsgroups(subset = 'test',
+  categories = categories);
+fea_test = vectorizer.fit_transform(newsgroups_test.data);
+#create the Multinomial Naive Bayesian Classifier
+clf = MultinomialNB(alpha = 0.01) 
+clf.fit(fea_train,newsgroup_train.target);
+pred = clf.predict(fea_test);
+calculate_result(newsgroups_test.target,pred);
+#notice here we can see that f1_score is not equal to 2*precision*recall/(precision+recall)
+#because the m_precision and m_recall we get is averaged, however, metrics.f1_score() calculates
+#weithed average, i.e., takes into the number of each class into consideration.注意我最后的3行注释，为什么f1≠2*（准确率*召回率）/（准确率+召回率）
+
+   其中，函数calculate_result计算f1：
+
+   
+
+   def calculate_result(actual,pred):
+    m_precision = metrics.precision_score(actual,pred);
+    m_recall = metrics.recall_score(actual,pred);
+    print 'predict info:'
+    print 'precision:{0:.3f}'.format(m_precision)
+    print 'recall:{0:0.3f}'.format(m_recall);
+    print 'f1-score:{0:.3f}'.format(metrics.f1_score(actual,pred));
+    
+   
+
+   3.2 KNN：
+
+   
+
+   ######################################################
+#KNN Classifier
+from sklearn.neighbors import KNeighborsClassifier
+print '*************************\nKNN\n*************************'
+knnclf = KNeighborsClassifier()#default with k=5
+knnclf.fit(fea_train,newsgroup_train.target)
+pred = knnclf.predict(fea_test);
+calculate_result(newsgroups_test.target,pred);
+   
+
+   3.3 SVM:
+
+   
+
+   ######################################################
+#SVM Classifier
+from sklearn.svm import SVC
+print '*************************\nSVM\n*************************'
+svclf = SVC(kernel = 'linear')#default with 'rbf'
+svclf.fit(fea_train,newsgroup_train.target)
+pred = svclf.predict(fea_test);
+calculate_result(newsgroups_test.target,pred);
+   
+
+   
+结果：
+   *************************
+
+   Naive Bayes*************************predict info:precision:0.764recall:0.759f1-score:0.760*************************KNN*************************predict info:precision:0.642recall:0.635f1-score:0.636*************************SVM*************************predict info:precision:0.777recall:0.774f1-score:0.774
+
+   
+
+   
+
+   4. 聚类
+
+   
+
+   ######################################################
+#KMeans Cluster
+from sklearn.cluster import KMeans
+print '*************************\nKMeans\n*************************'
+pred = KMeans(n_clusters=5)
+pred.fit(fea_test)
+calculate_result(newsgroups_test.target,pred.labels_);
+
+   
+
+   结果：
+
+   
+
+   *************************KMeans*************************predict info:precision:0.264recall:0.226f1-score:0.213
+
+   
+
+   
+
+   本文全部代码下载：在此
+
+   
+
+   貌似准确率好低……那我们用全部特征吧……结果如下：
+
+   *************************Naive Bayes*************************predict info:precision:0.771recall:0.770f1-score:0.769*************************KNN*************************predict info:precision:0.652recall:0.645f1-score:0.645*************************SVM*************************predict info:precision:0.819recall:0.816f1-score:0.816*************************KMeans*************************predict info:precision:0.289recall:0.313f1-score:0.266
+
+   
+
+   
+
+   关于Python更多的学习资料将继续更新，敬请关注本博客和新浪微博Rachel Zhang。

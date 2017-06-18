@@ -1,0 +1,302 @@
+数学题Longge's problem
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:35 Accepted:10 
+
+
+   Description 
+
+
+   Longge is good at mathematics and he likes to think about hard mathematical problems which will be solved by some graceful algorithms. Now a problem comes: Given an integer N(1 &lt; N &lt; 2^31),you are to calculate &sum;gcd(i, N) 1&lt;=i &lt;=N. "Oh, I know, I know!" Longge shouts! But do you know? Please solve it.
+
+
+   Input 
+
+
+   Input contain several test case. A number N per line. 
+
+
+   Output 
+
+
+   For each N, output ,&sum;gcd(i, N) 1&lt;=i &lt;=N, a line 
+
+
+   Sample Input 
+
+
+   
+
+   2
+6
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   3
+15
+
+
+
+   
+
+
+   Hint 
+
+
+   输出会超过32位整数类型
+
+
+   
+
+
+   思路：
+
+先给出一个证明吧：首先假设n有一个约数d，那么怎样计算出1～n中最大公约数为d的个数呢？很显然，这个个数实质上是等于fin(n/d)(其中先用fin代表欧拉函数），想到这里的话，基本上就确定了策略，我们先枚举出n的所有约数，然后求出每一个的欧拉函数，然后d*fin(n/d)相加后的结果即为所求，但是枚举出n的所有约数，这是一个很难的问题，首先那些因数怎么求呢？不过，题目是求和，并不是一个一个地求，于是我们把欧拉函数的公式套上，可得d*n/d*(1-1/p1)*(1-1/p2)*...*(1-1/pm),化简得到n*(1-1/p1)(1-1/p2)*..(1-1/pm),那么所有的项其实都可以提一个n出来，于是关键是求最后一部分的和，首先最后一部分其实是n/d的因数分解所得出的p1,p2,...pm,那么我们考虑假设n的因数分解是p1^r1*p2^r2*...*pn^rn,那么n的因子d其实都可以表示成p1^k1*p2^k2*...pn^kn,其中0&lt;=ki&lt;=ri,那么如果ki不为ri的话，n/d这个数中必然含有p1这个素因子，否则的话就不含p1这个素因子，到了这里，利用排列组合的知识我们可以写出一个最后一部分的和的公式了:(1+r1*(1-1/p1))*(1+r2*(1-1/p2))*...(1+rn*(1-1/pn));其实是这样的,当不包含p1这个素因子时，第一项选1，然后若包含p1这项因子时，那么n/d中的p1的指数可以有r1中情况，所以第一项选最后一个r1*(1-1/p1)。然后得出了最后的公式n*((1+r1*(1-1/p1))*(1+r2*(1-1/p2))*...(1+rn*(1-1/pn)));现在只需要进行因数分解，这个问题可以在大概的O(sqrt(n))的时间求出。 
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;math.h&gt;
+using namespace std;
+#define M 100001
+
+int is[M],prime[M],pl=0;
+int main()
+{
+	for(int i=2;i&lt;M;i++)
+	{
+		if(is[i]==0)//isprime
+			prime[pl++]=i;
+		for(int j=0;j&lt;pl&amp;&amp;prime[j]*i&lt;M;j++)
+		{
+			is[prime[j]*i]=1;
+			if(i%prime[j]==0)
+				break;
+		}
+	}
+
+	int n;
+	while(scanf("%d",&amp;n)!=EOF)
+	{
+		__int64 sum=n;
+		for(int i=0;i&lt;pl&amp;&amp;prime[i]&lt;sqrt(n*1.0);i++)
+		{
+			if(n%prime[i]==0)
+			{
+				int r=0;
+				while(n%prime[i]==0)
+				{
+					r++;
+					n/=prime[i];
+				}
+				sum=sum*(1+r)-sum/prime[i]*r;
+			}
+		}
+		if(n&gt;1)
+			sum=sum*2-sum/n*1;
+		printf("%I64d/n",sum);
+	}
+	return 0;
+}
+ 
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   
+
+
+   Close Encounter
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:36 Accepted:11 
+
+
+   Description 
+
+
+   Lacking even a fifth grade education, the cows are having trouble with a fraction problem from their textbook. Please help them. The problem is simple: Given a properly reduced fraction (i.e., the greatest common divisor of the numerator and denominator is 1, so the fraction cannot be further reduced) find the smallest properly reduced fraction with numerator and denominator in the range 1..32,767 that is closest (but not equal) to the given fraction. 
+
+
+   Input 
+
+
+   * Line 1: Two positive space-separated integers N and D (1 &lt;= N &lt; D &lt;= 32,767), respectively the numerator and denominator of the given fraction 
+
+
+   Output 
+
+
+   * Line 1: Two space-separated integers, respectively the numerator and denominator of the smallest, closest fraction different from the input fraction. 
+
+
+   Sample Input 
+
+
+   
+
+   2 3
+
+
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   21845 32767
+
+
+
+   
+
+
+   Hint 
+
+
+   INPUT DETAILS: 2/3 OUTPUT DETAILS: 21845/32767 = .666676839503.... ~ 0.666666.... = 2/3. 
+
+
+   
+
+
+   
+
+
+   //开始在傻傻的想枚举每个分母，然后二分
+//后来大牛指点一下，顿悟
+//干吗要二分分子啊！！！知道了分母，值，求分子不就好了！
+
+#include&lt;stdio.h&gt;
+#include&lt;math.h&gt;
+#define MAX 32767
+#define MIN 0.0000000000001
+
+int main()
+{
+	double num,min,t;
+	int a,b,rzi,rmu,zi,mu;
+	while(scanf("%d%d",&amp;a,&amp;b)!=EOF)
+	{
+		num=a*0.1/b;
+		min=1;
+		rzi=1;
+	    for(int j=2;j&lt;=32767;j++)
+		{
+			rmu=j;
+			rzi=num*rmu*10;
+			for(int i=-1;i&lt;=1;i++)
+			{
+				int temp=rzi+i;
+				t=temp*0.1/rmu;
+				if(fabs(t-num)&lt;fabs(min)&amp;&amp;fabs(t-num)&gt;MIN&amp;&amp;t&gt;0)
+				{
+					min=fabs(t-num);
+					zi=temp;
+					mu=rmu;
+				}
+			}
+		}
+		printf("%d %d/n",zi,mu);
+	}
+	return 0;
+} 
+
+
+   
+
+
+   
+
+
+   第二种方法，
+
+
+   
+
+
+   #include&lt;stdio.h&gt;
+#include&lt;math.h&gt;
+#define MAX 32767
+#define MIN 0.0000000000001
+
+int main()
+{
+	double num,min,t;
+	int a,b,ra,rb,c,d;
+	while(scanf("%d%d",&amp;a,&amp;b)!=EOF)
+	{
+		num=a*0.1/b;
+		min=1;
+		ra=1;
+		rb=2;
+		while(1)
+		{
+			t=ra*0.1/rb;
+			if(fabs(t-num)&lt;min &amp;&amp; fabs(t-num)&gt;MIN)
+			{
+				min=fabs(t-num);
+				c=ra;
+				d=rb;
+			}
+			if(t&lt;num)
+			{
+				ra++;
+				if(ra&gt;MAX)
+					break;
+			}
+			else
+			{
+				rb++;
+				if(rb&gt;MAX)
+					break;
+			}
+		}
+		printf("%d %d/n",c,d);
+	}
+	return 0;
+}
+ 
+
+
+   
+
+
+   分子分母从1/2开始依次与找

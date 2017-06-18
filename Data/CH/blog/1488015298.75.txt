@@ -1,0 +1,169 @@
+System.gc()和-XX:+DisableExplicitGC启动参数，以及DirectByteBuffer的内存释放我之前的一篇博客：java中使用堆外内存，关于内存回收需要注意的事和没有解决的遗留问题(等大神解答)介绍了java堆外内存的使用，以及堆外内存的释放。那篇博客遗留了一个问题：DirectByteBuffer究竟是如何释放堆外内存的？本文主要是解决下那篇博客的遗留问题。
+
+
+   首先我们修改下JVM的启动参数，重新运行之前博客中的代码。JVM启动参数和测试代码如下：
+
+
+   
+
+
+   -verbose:gc -XX:+PrintGCDetails -XX:+DisableExplicitGC -XX:MaxDirectMemorySize=40M
+   import java.nio.ByteBuffer;
+
+public class TestDirectByteBuffer
+{
+	// -verbose:gc -XX:+PrintGCDetails -XX:MaxDirectMemorySize=40M
+	// 加上-XX:+DisableExplicitGC,也会报OOM(Direct buffer memory)
+	public static void main(String[] args) throws Exception
+	{
+		while (true)
+		{
+			ByteBuffer.allocateDirect(10 * 1024 * 1024);
+		}
+	}
+}与之前的JVM启动参数相比，增加了-XX:&#43;DisableExplicitGC，这个参数作用是禁止代码中显示调用GC。代码如何显示调用GC呢，通过System.gc()函数调用。如果加上了这个JVM启动参数，那么代码中调用System.gc()没有任何效果，相当于是没有这行代码一样。
+
+   
+
+
+   
+
+
+   Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Direct buffer memory
+	at java.nio.Bits.reserveMemory(Bits.java:632)
+	at java.nio.DirectByteBuffer.&lt;init&gt;(DirectByteBuffer.java:97)
+	at java.nio.ByteBuffer.allocateDirect(ByteBuffer.java:288)
+	at direct.TestDirectByteBuffer.main(TestDirectByteBuffer.java:13)
+Heap
+ PSYoungGen      total 9536K, used 507K [0x1cf90000, 0x1da30000, 0x27a30000)
+  eden space 8192K, 6% used [0x1cf90000,0x1d00ef30,0x1d790000)
+  from space 1344K, 0% used [0x1d8e0000,0x1d8e0000,0x1da30000)
+  to   space 1344K, 0% used [0x1d790000,0x1d790000,0x1d8e0000)
+ PSOldGen total 21888K, used 0K [0x07a30000, 0x08f90000, 0x1cf90000)
+  object space 21888K, 0% used [0x07a30000,0x07a30000,0x08f90000)
+ PSPermGentotal 16384K, used 2292K [0x03a30000, 0x04a30000, 0x07a30000)
+  object space 16384K, 13% used [0x03a30000,0x03c6d380,0x04a30000)
+显然堆内存（包括新生代和老年代）内存很充足，但是堆外内存溢出了。也就是说NIO直接内存的回收，需要依赖于System.gc()。如果我们的应用中使用了java nio中的direct memory，那么使用-XX:&#43;DisableExplicitGC一定要小心，存在潜在的内存泄露风险。
+
+   
+
+
+   
+
+
+
+
+   我们知道java代码无法强制JVM何时进行垃圾回收，也就是说垃圾回收这个动作的触发，完全由JVM自己控制，它会挑选合适的时机回收堆内存中的无用java对象。代码中显示调用System.gc()，只是建议JVM进行垃圾回收，但是到底会不会执行垃圾回收是不确定的，可能会进行垃圾回收，也可能不会。什么时候才是合适的时机呢？一般来说是，系统比较空闲的时候（比如JVM中活动的线程很少的时候），还有就是内存不足，不得不进行垃圾回收。我们例子中的根本矛盾在于：堆内存由JVM自己管理，堆外内存必须要由我们自己释放；堆内存的消耗速度远远小于堆外内存的消耗，但要命的是必须先释放堆内存中的对象，才能释放堆外内存，但是我们又不能强制JVM释放堆内存。
+
+
+   
+
+
+
+
+   下面我们看下newDirectByteBuffer的源码
+
+
+   
+
+
+   DirectByteBuffer(int cap) 
+{			
+
+	super(-1, 0, cap, cap, false);
+	Bits.reserveMemory(cap);
+	int ps = Bits.pageSize();
+	long base = 0;
+	try {
+	    base = unsafe.allocateMemory(cap + ps);
+	} catch (OutOfMemoryError x) {
+	    Bits.unreserveMemory(cap);
+	    throw x;
+	}
+	unsafe.setMemory(base, cap + ps, (byte) 0);
+	if (base % ps != 0) {
+	    // Round up to page boundary
+	    address = base + ps - (base &amp; (ps - 1));
+	} else {
+	    address = base;
+	}
+	cleaner = Cleaner.create(this, new Deallocator(base, cap));
+ viewedBuffer = null;
+}
+   static void reserveMemory(long size) 
+{
+
+	synchronized (Bits.class) {
+	    if (!memoryLimitSet &amp;&amp; VM.isBooted()) {
+		maxMemory = VM.maxDirectMemory();
+		memoryLimitSet = true;
+	    }
+	    if (size &lt;= maxMemory - reservedMemory) {
+		reservedMemory += size;
+		return;
+	    }
+	}
+	
+	// 显示调用垃圾回收
+	System.gc();
+	try {
+	    Thread.sleep(100);
+	} catch (InterruptedException x) {
+	    // Restore interrupt status
+	    Thread.currentThread().interrupt();
+	}
+	synchronized (Bits.class) {
+	    if (reservedMemory + size &gt; maxMemory)
+		throw new OutOfMemoryError(&quot;Direct buffer memory&quot;);
+	    reservedMemory += size;
+	}
+
+}可以看到：每次执行代码ByteBuffer.allocateDirect(10 * 1024 * 1024);的时候，都会调用一次System.gc()。目的很简单，就是希望JVM赶紧把堆中的无用对象回收掉。虽然System.gc()只是建议JVM进行垃圾回收，不能强制。可以这里理解：如此频繁的建议JVM进行垃圾回收，就算堆内存还很充足，JVM也不能对我们显示的GC视而不见啊。所以显示的使用System.gc()，还是有用的。也就是说direct
+ memory的释放，依赖于System.gc()触发JVM的垃圾回收动作，只有回收了堆内存中的DirectByteBuffer对象，才有可能回收DirectByteBuffer对象中占用的堆外内存空间。
+
+   
+
+
+   
+
+
+
+
+   回想下java中使用堆外内存，关于内存回收需要注意的事和没有解决的遗留问题 这篇博客中的第4节正确释放Unsafe分配的堆外内存
+
+
+   我们在RevisedObjectInHeap类中
+
+
+   
+
+
+   // 让对象占用堆内存,触发[Full GC  
+private byte[] bytes = null;
+
+public RevisedObjectInHeap()  
+{  
+    address = unsafe.allocateMemory(2 * 1024 * 1024);  
+	
+	// 占用堆内存
+    bytes = new byte[1024 * 1024];  
+} 定义了1M的字节数组，就是为了让JVM赶紧进行垃圾回收，这样当堆内存中的垃圾对象被回收的时候，JVM就能够调用finalize()方法，就能够释放堆外内存。这跟NIO类库中，显示调用System.gc()目的是一样的。至此我们可以得出：堆内存和非堆内存资源（文件句柄、socket句柄，堆外内存、数据库连接等）的同步释放，的确是一个很棘手的问题。虽然通过System.gc()能够避免内存泄露，但是严重影响系统的运行效率，因为垃圾回收会减慢系统的运行。最佳编程实践是：暴露出释放资源的接口，程序员使用完成后，显示释放，这样就能够避免堆内存和非堆内存资源的同步释放的难题。
+
+   
+
+
+   
+
+
+
+
+   RevisedObjectInHeap类中通过finalize()方法来释放堆外内存的，阅读源码可以发现，NIO中direct memory的释放并不是通过finalize()，而是通过sun.misc.Cleaner实现的
+
+
+   cleaner = Cleaner.create(this, new Deallocator(base, cap));
+
+   
+
+
+
+为什么不用finalize呢？因为finalize不安全，也非常影响性能。什么是sun.misc.Cleaner？这是个幽灵引用PhantomReference。后续博客将继续分析finalize和Cleaner等垃圾回收相关的知识，欢迎关注。

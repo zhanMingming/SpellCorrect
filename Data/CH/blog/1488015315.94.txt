@@ -1,0 +1,189 @@
+如何配置tomcat数据源以及Cannot create JDBC driver of class &#39;&#39; for connect URL &#39;null&#39;最近折腾TOMCAT数据源的时候，遇到了一个错误：Cannot create JDBC driver of class '' for connect URL 'null'。
+
+
+   
+
+
+
+
+   配置某个web项目私有的数据源，比如我的web项目名叫jndi：
+
+
+   1.将数据库驱动放到WEB-INF/lib下
+
+
+   
+
+
+
+
+   2.在META-INF下建立context.xml
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;  
+&lt;Context&gt;  
+	&lt;Resource 
+	name=&quot;jdbc/mysql&quot;
+	auth=&quot;Container&quot; 
+	type=&quot;javax.sql.DataSource&quot;
+	initialSize=&quot;5&quot;
+	maxActive=&quot;5&quot; 
+	maxIdle=&quot;5&quot;
+	username=&quot;root&quot; 
+	password=&quot;root&quot;
+	driverClassName=&quot;com.mysql.jdbc.Driver&quot;
+	url=&quot;jdbc:mysql://localhost:3306/test&quot;
+	factory=&quot;org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory&quot;/&gt;
+	
+&lt;/Context&gt; 
+
+
+
+
+   
+
+
+   3.web.xml建立对数据源的引用
+
+
+   
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+
+	&lt;resource-ref&gt; 
+ &lt;description&gt;DB Connection&lt;/description&gt; 
+ &lt;res-ref-name&gt;jdbc/mysql&lt;/res-ref-name&gt; 
+ &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt; 
+ &lt;res-auth&gt;Container&lt;/res-auth&gt; 
+    &lt;/resource-ref&gt; 
+	 
+&lt;/web-app&gt;
+
+4.启动web项目可以通过下面的代码验证是否可以成功获取到数据源和数据库连接
+   &lt;%@ page contentType=&quot;text/html;charset=utf-8&quot;%&gt;
+&lt;%@ page import=&quot;java.sql.*, javax.sql.*, javax.naming.*&quot; %&gt;
+
+&lt;%
+
+Connection conn = null;
+
+try
+{
+	Context ctx = new InitialContext(); 
+	DataSource ds = (DataSource)ctx.lookup(&quot;java:comp/env/jdbc/mysql&quot;);
+	System.out.println(ds.getClass());   
+	conn = ds.getConnection();
+	System.out.println(conn.getClass());   
+	System.out.println(conn.hashCode());   
+	
+} 
+catch (Exception e)
+{
+	e.printStackTrace();
+}
+finally
+{
+	conn.close();
+}
+
+%&gt;
+
+
+   
+
+
+   
+
+
+
+配置项目私有的数据源这个比较简单，我自己在配置的时候也没有遇到问题。现在看下如何配置一个共有数据源，即webapp下的每个项目都可以访问的数据源。
+
+   1.将数据库驱动加入到%TOMCAT_HOME%/lib下
+
+
+   
+
+
+
+
+
+
+   2.在%TOMCAT_HOME%/conf/server.xml中的&lt;GlobalNamingResources&gt;节点下增加配置：
+
+
+   &lt;!--配置MySQL数据库的JNDI数据源--&gt;
+	&lt;Resource 
+		name=&quot;jdbc/mysql&quot;
+		auth=&quot;Container&quot; 
+		type=&quot;javax.sql.DataSource&quot;
+		initialSize=&quot;5&quot;
+		maxActive=&quot;5&quot; 
+		maxIdle=&quot;5&quot;
+		username=&quot;root&quot; 
+		password=&quot;root&quot;
+		driverClassName=&quot;com.mysql.jdbc.Driver&quot;
+		factory=&quot;org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory&quot;
+		url=&quot;jdbc:mysql://localhost:3306/test&quot;/&gt;
+
+   
+
+
+   
+
+
+
+启动tomcat，通过mysql的&quot;SHOW processlist&quot;可以看到，数据库连接是可以成功建立的。
+
+   
+
+
+
+
+
+
+   3.既然已经配置了全局数据库连接，我们就可以删除jndi项目下的数据库驱动jar和context.xml，然后访问jsp发现：不能获取数据库连接。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   折腾了很久，最终在这篇博客“在Tomcat配置JNDI数据源的三种方式”中找到了解决方案：还必需在jndi这个web项目下提供context.xml，内容配置如下：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;  
+&lt;Context&gt;  
+	
+	&lt;ResourceLink name=&quot;jdbc/mysql&quot; type=&quot;javax.sql.DataSource&quot; global=&quot;jdbc/mysql&quot;/&gt;  
+
+&lt;/Context&gt;  
+
+   
+
+
+   
+
+
+
+
+   &#20540;得一提的是：如果context.xml配置如上所示，那么我们在web.xml中可以不用再配置如下数据源的引用：
+
+
+   
+   &lt;resource-ref&gt; 
+ &lt;description&gt;DB Connection&lt;/description&gt; 
+ &lt;res-ref-name&gt;jdbc/mysql&lt;/res-ref-name&gt; 
+ &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt; 
+ &lt;res-auth&gt;Container&lt;/res-auth&gt; 
+    &lt;/resource-ref&gt;

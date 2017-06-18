@@ -1,0 +1,125 @@
+Guava Cache的缓存统计guava cache很适合做进程内的缓存，本文先学习下它的缓存统计功能，需要使用recordStats()打开缓存统计功能。
+
+
+   // 创建1块缓存,key和value都是integer类型,最大缓存个数是5,开启缓存统计功能
+ // 使用LoadingCache,如果数据不存在就使用CacheLoader加载数据
+ LoadingCache cache = CacheBuilder.newBuilder().recordStats().maximumSize(5).
+  build(new CacheLoader&lt;Integer, Integer&gt;() {
+      @Override
+      public Integer load(Integer id) throws Exception {
+   System.out.println(&quot;mock query db....&quot;);
+   if (id % 2 == 0) {
+Thread.sleep(100);
+throw new RuntimeException();
+   } else {
+Thread.sleep(200);
+return id * 10;
+   }
+      }
+  });
+
+   
+
+
+   
+
+
+
+
+   CacheStats的javadoc已经很清楚地描述了缓存统计的一些规则：
+
+
+
+
+   
+
+
+
+
+   
+
+
+   
+
+
+
+
+   // 预先添加一条缓存数据
+cache.put(1, 100);
+System.out.println(&quot;....&quot; + cache.stats());
+
+// 缓存命中,hitCount加1
+System.out.println(&quot;get data====&quot; + cache.get(1));
+System.out.println(&quot;....&quot; + cache.stats());
+
+// 没有命中缓存, missCount和loadSuccessCount加1,并增加totalLoadTime(纳秒为单位)
+System.out.println(&quot;get data====&quot; + cache.get(3));
+System.out.println(&quot;....&quot; + cache.stats());
+
+// 没有命中缓存, missCount和loadExceptionCount加1,并增加totalLoadTime(纳秒为单位)
+try {
+	System.out.println(&quot;get data====&quot; + cache.get(4));
+} catch (Exception e) {
+	System.out.println(&quot;....&quot; + cache.stats());
+}
+
+// 手动清除缓存数据,或者是直接操作缓存底层数据,不会影响统计信息
+System.out.println(&quot;get data====&quot; + cache.asMap().get(1));// 通过缓存底层数据结构,读取数据
+cache.invalidateAll();// 清空缓存
+System.out.println(&quot;....&quot; + cache.stats());
+
+// 添加6条缓存数据,由于最大数目是5,所以evictionCount=1
+System.out.println(&quot;size===&quot; + cache.size());
+cache.put(1, 100);
+cache.put(2, 100);
+cache.put(3, 100);
+cache.put(4, 100);
+cache.put(5, 100);
+cache.put(6, 100);
+System.out.println(&quot;....&quot; + cache.stats());
+
+   
+
+
+   
+
+
+
+
+
+有一点需要注意下：可以通过修改底层map给缓存添加数据，也可以获取数据。通过map获取数据，不会影响缓存统计；通过map添加数据，会影响evictionCount。
+
+   
+
+
+   // 创建1块缓存,key和value都是integer类型,最大缓存个数是5,开启缓存统计功能
+// 使用LoadingCache,如果数据不存在就使用CacheLoader加载数据
+LoadingCache cache = CacheBuilder.newBuilder().recordStats().maximumSize(5).
+		build(new CacheLoader&lt;Integer, Integer&gt;() {
+			@Override
+			public Integer load(Integer id) throws Exception {
+				System.out.println(&quot;mock query db....&quot;);
+				if (id % 2 == 0) {
+					Thread.sleep(100);
+					throw new RuntimeException();
+				} else {
+					Thread.sleep(200);
+					return id * 10;
+				}
+			}
+		});
+
+// 修改底层的map也会导致cache发生变化
+ConcurrentMap underlingMap = cache.asMap();
+underlingMap.put(1, 1);
+underlingMap.put(2, 2);
+underlingMap.put(3, 3);
+underlingMap.put(4, 4);
+underlingMap.put(5, 5);
+underlingMap.put(6, 6);
+
+System.out.println(&quot;underlingMap....&quot; + underlingMap);
+System.out.println(&quot;cache....&quot; + cache.size());
+
+// evictionCount=1
+System.out.println(&quot;stats....&quot; + cache.stats());

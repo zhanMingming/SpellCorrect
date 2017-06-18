@@ -1,0 +1,39 @@
+如何使菜单栏变灰 MFC下面讲下如何在MFC中使菜单栏变灰：
+
+
+   /*
+*使菜单栏变灰的方法：
+*
+*1.设定想要变灰的菜单ID为ID_32771
+*2.假如我想设定的功能是：在点击了一次该按钮后禁止按钮
+*3.在我给菜单栏中的该按钮添加的消息响应函数ON_COMMAND(ID_32771, &amp;CintelligentjudgingView::On32771 )
+     之后再加一个ON_UPDATE_COMMAND_UI(ID_32771, OnUpdate32771)
+*4.给该类（View类）添加函数void CintelligentjudgingView::OnUpdate32771(CCmdUI* pCmdUI)&lt;别忘了加参数&gt;
+*5.添加消息响应函数内容
+*/
+
+void CintelligentjudgingView::On32771()
+{
+	CQue que;
+	que.DoModal();
+	// TODO: 在此添加命令处理程序代码
+}
+
+void CintelligentjudgingView::OnUpdate32771(CCmdUI* pCmdUI)
+{
+	if(!isclicked)
+		pCmdUI-&gt;Enable(!isclicked);
+	else
+	{		
+		MessageBox((CString)"Please run project again to create a new test！");
+		this-&gt;DestroyWindow();
+	}
+	isclicked=true;
+}
+ 
+
+
+   
+
+
+   其中isclicked 变量就是标记该按钮是否点击过的标记。

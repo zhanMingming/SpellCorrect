@@ -1,0 +1,164 @@
+Linux/Ubuntu下安装VMWare Tools================================================================
+
+
+
+
+   安装环境：
+
+
+   windows 7 &#43; VMWare 8&#43; ubuntu-12.04-desktop-i386
+
+
+   ================================================================
+
+
+   遇到问题：
+
+
+   &quot;make
+ sure that you are logged int the guest operating system...&quot;,
+
+
+
+
+   ================================================================
+
+
+
+
+   正确安装过程会出现：
+
+
+   
+
+
+   
+1. 在整个安装过程中，一共需要回答：17 个问题。这17个问题，全部都可以用默认的“直接按回车”，来执行，不需要做任何其他设置。除非你自己懂得问题的意思，想更改，如果你不懂，那就全部直接回车!
+
+
+   
+　　2.在安装过程中，遇到3次[Press Enter key to continux]的时候，就是让你“按回车”继续安装过程。我后面碰到的时候就不再说一次了。后面有图的。
+
+
+   ================================================================
+
+
+   所需资源：
+
+
+   VMware-tools工具包
+
+
+   如果下载的是Vmware完整包，可以在windows 下的C:\Program Files\VMware\VMware Workstation（虚拟机安装目录）下找到linux.iso文件（57M左右），否则去单独下载：http://www.xdowns.com/soft/6/99/2008/Soft_45322.html
+
+
+   ================================================================
+
+
+
+
+   在“VMware”中加载该资源（linux.iso）
+
+
+   很多人通过虚拟机菜单栏上的VM-&gt;Install VM Tools安装的时候遇到&quot;make
+ sure that you are logged int the guest operatoing system...&quot;这个问题，首先确定VM状态栏右下角的Floppy setting改为auto，CD ROM1 为Use ISO image file:C:\Program
+ Files\VMware\VMware Workstation\linux.iso，如下图：
+
+
+   
+
+
+
+
+   然后再次VM-&gt;Install VM，如果还不行（报上面的错误），看下面的这个吧，保证可以！
+
+
+   ================================================================
+
+
+
+
+   在“Ubuntu”下安装：VMware-tools:
+
+
+
+
+   1.进入Ubuntu系统（login后startx），点击CDROM1，双击打开
+
+
+   
+
+
+
+
+   可以看到vmware-tools-distrib文件夹。由于它是压缩文件，将其解压即可,这时可以获得其文件目录地址
+
+
+   
+
+
+
+
+   
+
+
+   
+
+
+
+
+   for example 点Extract，解压到桌面可得目录 /root(换成你的登录名)/Desktop/vmware-tools-distrib
+
+
+   点击Ctrl&#43;ALT&#43;t 到terminal，运行终端，输入
+
+
+   cd/root(换成你的登录名)/Desktop/vmware-tools-distrib
+
+
+   按回车，你会发现，前面的目录改变了，变得N长，不管它，继续输入： sudo ./vmware-install.pl回车
+
+
+
+
+   就开始正式安装了。
+
+
+   
+
+
+
+
+   安装过程一路Enter下去，共有17个
+
+
+   中间，会有3次出现：Press Enter key to continue，这里也是按回车
+
+
+
+
+   ================================================================
+
+
+
+
+   安装好了：
+
+
+   最后，顺利安装完成，会出现下面图里的英文，然后返回终端命令行，你可以输入“exit”来关闭当前终端窗口。
+
+
+
+
+   
+
+
+
+
+   之后重启Ubuntu，便可以实现ubuntu和windows直接拖动文件复制啦！
+
+
+   不过文字是不可以互相粘贴的哦，毕竟人家是两个机器嘛~
+
+
+   ================================================================

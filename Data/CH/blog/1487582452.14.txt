@@ -1,0 +1,103 @@
+MYSQL 的Query CacheMYSQL的Query Cache
+
+
+   
+当你的数据库打开了Query Cache（简称QC）功能后，数据库在执行SELECT语句时，会将其结果放到QC中，当下一次处理同样的SELECT请求时，数据库就会从QC取得结果，而不需要去数据表中查询。
+
+
+   
+
+
+
+   
+
+
+
+   
+在这个“Cache为王”的时代，我们总是通过不同的方式去缓存我们的结果从而提高响应效率，但一个缓存机制是否有效，效果如何，却是一个需要好好思考的问题。在MySQL中的Query Cache就是一个适用较少情况的缓存机制。在上图中，如果缓存命中率非常高的话，有测试表明在极端情况下可以提高效率238%[1]。但实际情况如何？Query Cache有如下规则，如果数据表被更改，那么和这个数据表相关的全部Cache全部都会无效，并删除之。这里“数据表更改”包括:INSERT,UPDATE,DELETE,TRUNCATE,ALTER
+ TABLE,DROP TABLE, orDROP
+ DATABASE等。举个例子，如果数据表posts访问频繁，那么意味着它的很多数据会被QC缓存起来，但是每一次posts数据表的更新，无论更新是不是影响到了cache的数据，都会将全部和posts表相关的cache清除。如果你的数据表更新频繁的话，那么Query Cache将会成为系统的负担。有实验表明，糟糕时，QC会降低系统13%[1]的处理能力。
+
+
+   
+如果你的应用对数据库的更新很少，那么QC将会作用显著。比较典型的如博客系统，一般博客更新相对较慢，数据表相对稳定不变，这时候QC的作用会比较明显。
+
+
+   
+再如，一个更新频繁的BBS系统。下面是一个实际运行的论坛数据库的状态参数：
+
+
+
+
+
+
+QCache_hit
+
+5280438
+
+
+
+
+QCache_insert
+
+8008948
+
+
+
+
+Qcache_not_cache
+
+95372
+
+
+
+
+Com select
+
+8104159
+
+
+
+
+   
+可以看到，数据库一共往QC中写入了约800W次缓存，但是实际命中的只有约500W次。也就是说，每一个缓存的使用率约为0.66次。很难说，该缓存的作用是否大于QC系统所带来的开销。但是有一点是很肯定的，QC缓存的作用是很微小的，如果应用层能够实现缓存，将可以忽略QC的效果。
+
+
+   
+————-下面是关于QC的一些其他细节—————–
+
+
+   
+一、Query Cache相关参数：
+
+
+query_cache_sizeQC占用空间大小，通过将其设置为0关闭QC功能query_cache_type 0表示关闭QC；1表示正常缓存；2表示SQL_CACHE才缓存query_cache_limit 最大缓存结果集query_cache_min_res_unit 手册上说，QC会按照这个&#20540;分配缓存block的大小。Qcache_lowmem_prunes这是一个状态变量(show
+ status)，当缓存空间不够需要释放旧的缓存时，该&#20540;会自增。
+
+   
+二、Query Cache观察：
+
+
+   CREATE TABLE t1(id INT,var1 varchar(10));
+	//Com_select:8	Qcache_hits:1
+INSERT INTO t1 VALUES(1,’WWW’);
+	//Com_select:8	Qcache_hits:1
+SELECT * FROM t1 WHERE id=1;
+	//Com_select:9	Qcache_hits:1
+SELECT * FROM t1 WHERE id=1;
+	//Com_select:9	Qcache_hits:2 Qcache_queries_in_cache:1
+INSERT INTO t1 VALUES(2,’RRRR’);
+	//Com_select:9	Qcache_hits:2 Qcache_queries_in_cache:0
+SELECT * FROM t1 WHERE id=1; //INSERT后Cache失效
+	//Com_select:10  Qcache_hits:2 Qcache_queries_in_cache:1
+
+   
+参考：
+
+
+http://dev.mysql.com/doc/refman/5.0/en/query-cache.htmlhttp://dev.mysql.com/doc/refman/5.0/en/server-system-variables.htmlhttp://www.mysqlperformanceblog.com/2006/07/27/mysql-query-cache/
+
+原文地址：
+
+
+http://www.taobaodba.com/html/325_query-cache-cool-or-not.html

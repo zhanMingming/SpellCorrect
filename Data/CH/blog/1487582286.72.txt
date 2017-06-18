@@ -1,0 +1,68 @@
+kv文件读写 in Python &amp; C++文件格式均为kv对，即keylength, key, valuelen, value. 如何对其进行读写操作，本文列出demo code。感谢涛哥贡献部分代码，这里分享，方便大家使用。
+
+   
+
+   Python:
+
+   
+   def readimg():
+	fr = open('IMG_2963.JPG','r')
+	keylen = struct.unpack('i',fr.read(4))[0]
+	key = fr.read(keylen)
+	valuelen = struct.unpack('i',fr.read(4))[0]
+	value = fr.read(valuelen)
+	fr.close()
+
+
+def writeimg():
+	fw = open('Img_to_Write','w')
+	key = 'key'
+	fw.write(struct.pack('i',len(key)))
+	fw.write(key)    
+	fw.write(struct.pack('i',len(val)))
+	fw.write(val)
+	fw.close()
+
+
+
+   
+
+   
+
+   C++:
+
+   
+   inline bool readkv(istream &amp;ifs,string &amp;key,string &amp;value)
+{
+	int keylen;
+	ifs.read((char*)&amp;keylen,4);
+	if (!ifs)
+	{
+		return false;
+	}
+	key.resize(keylen);
+	ifs.read((char*)key.c_str(),keylen);
+	int valuelen;
+	ifs.read((char*)&amp;valuelen,4);
+	value.resize(valuelen);
+	ifs.read((char*)value.c_str(),valuelen);
+	return true;
+}
+
+inline void writekv(ostream &amp;ofs,const string &amp; key,const string &amp; value)
+{
+	unsigned int klen = key.size();
+	unsigned int vlen = value.size();
+	ofs.write((const char*)&amp;klen,4);
+	ofs.write(key.c_str(),klen);
+	ofs.write((const char*)&amp;vlen,4);
+	ofs.write(value.c_str(),vlen);
+	ofs.flush();
+}
+
+
+   如果value是一张图片的data，调用的时候可以用opencv的imdecode直接进行转换，生成cv::Mat类型的图片
+
+   
+   cv::Mat buf(1,value.size(),CV_8U,(void *)value.c_str());
+cv::Mat srcmat = cv::imdecode(buf,1);

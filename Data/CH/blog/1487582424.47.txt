@@ -1,0 +1,406 @@
+SQL 基本操作 删除 修改 刷新 修改版C# 数据库之旅&hellip;&hellip;
+
+
+   
+
+
+   继续进攻层出不穷的problems
+
+
+   
+
+
+   在上一篇内容的基础上，我又作以改进，现在的情况是这样的：
+
+
+   
+
+
+   //In Browseuser form
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Configuration;
+using System.Data.SqlClient;
+
+namespace Str
+{
+    public partial class Browseuser : Form
+    {
+ public Browseuser()
+ {
+     InitializeComponent();
+ }
+ 
+ //define 数据集对象ds用于保存查询返回的结果集
+ DataSet ds;
+ private void Browseuser_Load(object sender, EventArgs e)
+ {
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     dataGridView1.DataSource=ds. Tables[0].DefaultView;
+     dataGridView1.Refresh();
+     this.judgingTableAdapter.Fill(this.masterDataSet.judging);
+ }
+
+ /**********************************************************************************************/
+ /*至此完成了将数据库judging中的内容全部显示在新form&mdash;&mdash;Browseuser上*/
+ /**********************************************************************************************/
+
+ private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+ }
+
+ private void button3_Click(object sender, EventArgs e)
+ {
+     this.Close();
+ }
+
+ //define a delegate instance in order to refresh
+ delegate void UseF();
+
+ /***************************************************************************************/
+ /***********************************希望委托执行的函数************************************/
+ /***************************************************************************************/
+
+ static void ReFresh()
+ {
+     DataSet ds;
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     Browseuser user = new Browseuser();
+     user.dataGridView1.DataSource = ds.Tables[0].DefaultView;
+     user.dataGridView1.Refresh();
+     user.judgingTableAdapter.Fill(user.masterDataSet.judging);
+     user.ShowDialog();
+ }
+
+ /***************************************************************************************/
+ /***********************************修改记录操作*****************************************/
+ /***************************************************************************************/
+ private void button1_Click(object sender, EventArgs e)
+ {
+     if (dataGridView1[0,dataGridView1.CurrentRow.Index] != null)
+     {
+  //静态变量方法完成窗体间传值
+  app.value = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[0].Value.ToString();  
+  app.value1 = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[1].Value.ToString();
+
+  /******************************************************************************/
+  //这个模块是为了在Browseuser中不显示password的前提下，能在修改页面中得到password的值
+  //换言之，应该在database中找到该对应的值
+  /******************************/
+  //打开数据库
+  string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+  SqlConnection objConnection = new SqlConnection(strConnection);
+  objConnection.Open();
+  //寻找app.value(id)对应的密码
+  string str = "";
+  SqlCommand cmd = new SqlCommand("select * from judging where userid='" + app.value + "'", objConnection);
+  SqlDataReader read = cmd.ExecuteReader();
+  while (read.Read())
+  {
+      str = read[2].ToString();//读出对应的密码，read[0]-&gt;id;read[1]-&gt;name;read[2]-&gt;psw
+  }
+  app.value2 = str;
+  /***********************************************************************************/
+
+  alterinfo modifyinfo=new alterinfo();
+  modifyinfo.Show();
+     }
+ }
+
+ /***************************************************************************************/
+ /***********************************刷新dataGridView操作***********************************/
+ /***************************************************************************************/
+ private void button4_Click(object sender, EventArgs e)
+ {
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     dataGridView1.DataSource = ds.Tables[0].DefaultView;
+     dataGridView1.Refresh();
+     this.judgingTableAdapter.Fill(this.masterDataSet.judging);
+ }
+ /***************************************************************************************/
+ /***********************************删除记录操作*****************************************/
+ /***************************************************************************************/
+ private void button2_Click(object sender, EventArgs e)
+ {
+     app.value = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[0].Value.ToString(); 
+     //打开数据库
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+     //寻找app.value(id)对应的密码
+
+     //找到对应id的数据
+     SqlCommand cmd = new SqlCommand("select * from judging where userid='" + app.value + "'", objConnection);
+     string sql = "delete from judging where userid=" + app.value;
+     cmd.CommandText = sql;
+     cmd.ExecuteNonQuery();
+     MessageBox.Show("删除成功！");
+     this.Close();
+     //这里做了修改，定义了委托实例，调用自定义的ReFresh函数，进行刷新
+     UseF u = new UseF(Browseuser.ReFresh);
+     u();
+ }
+    }
+    public class app//新建的类，为了在其中建立static类型成员   
+    {
+ public static string value;
+ public static string value1;
+ public static string value2;
+    }   
+}
+ 
+
+
+   
+
+
+   大家请看Browseuser.cs中改动：
+
+
+   为了使dataGridView1中的数据随着我的修改、删除能够进行时时刷新，我定义了委托类型的实例
+
+
+   并定义了一个static void Refresh, 里面定义的是&ldquo;刷新&rdquo;按钮里的code&hellip;&hellip;
+
+
+   但问题来了：
+
+
+   Refresh 既然定义成static(由于定义委托实例时的要求，必须定义成static), 那里面只能用类中的static成员，换言之，this没法用了，更别提this. 明显也点不出来了&hellip;&hellip;
+
+
+   
+
+
+   所以我想用this.dataGridView1刷新成为了幻想！
+
+
+   那我自己定义一个UseF（委托声明的名称）实例吧，UseF user，可是我执行完了改变的是user里的datagridview啊&hellip;&hellip;
+
+
+   那我只好在&ldquo;删除&rdquo;按钮中（具体见code）
+
+
+   先this.close();
+
+
+   再在委托执行函数ReFresh中执行user.Show();
+
+
+   
+
+
+   可这样不是我想要的效果啊&hellip;&hellip;（我希望将this.datagridView刷新，而不是关掉这个再产生新的实例）
+
+
+   问题的关键还是static不能调用非静态变量！
+
+
+   怎么办？
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   唉！真是笨死了！把问题想复杂了，根本不用委托！
+
+
+   一天过去了，贴出解决方案吧：
+
+
+   //In Browseuser form   
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Configuration;
+using System.Data.SqlClient;
+
+namespace Str
+{
+    public partial class Browseuser : Form
+    {
+ public Browseuser()
+ {
+     InitializeComponent();
+ }
+
+ //define 数据集对象ds用于保存查询返回的结果集   
+ DataSet ds;
+ private void Browseuser_Load(object sender, EventArgs e)
+ {
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     dataGridView1.DataSource = ds.Tables[0].DefaultView;
+     dataGridView1.Refresh();
+     this.judgingTableAdapter.Fill(this.masterDataSet.judging);
+ }
+
+ /**********************************************************************************************/
+ /*至此完成了将数据库judging中的内容全部显示在新form&mdash;&mdash;Browseuser上*/
+ /**********************************************************************************************/
+
+ private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+ }
+
+ private void button3_Click(object sender, EventArgs e)
+ {
+     this.Close();
+ }
+
+ //define a delegate instance in order to refresh   
+ delegate void UseF();
+
+ /**************************************************************************************/
+ /**********************************刷新datagridview函数***********************************/
+ /*************************************************************************************/
+
+ private void ReFresh()
+ {
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     dataGridView1.DataSource = ds.Tables[0].DefaultView;
+     dataGridView1.Refresh();
+     this.judgingTableAdapter.Fill(this.masterDataSet.judging);
+ }
+
+ /***************************************************************************************/
+ /***********************************修改记录操作*****************************************/
+ /***************************************************************************************/
+ private void button1_Click(object sender, EventArgs e)
+ {
+     if (dataGridView1[0, dataGridView1.CurrentRow.Index] != null)
+     {
+  //静态变量方法完成窗体间传值   
+  app.value = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[0].Value.ToString();
+  app.value1 = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[1].Value.ToString();
+
+  /******************************************************************************/
+  //这个模块是为了在Browseuser中不显示password的前提下，能在修改页面中得到password的值   
+  //换言之，应该在database中找到该对应的值   
+  /******************************/
+  //打开数据库   
+  string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+  SqlConnection objConnection = new SqlConnection(strConnection);
+  objConnection.Open();
+  //寻找app.value(id)对应的密码   
+  string str = "";
+  SqlCommand cmd = new SqlCommand("select * from judging where userid='" + app.value + "'", objConnection);
+  SqlDataReader read = cmd.ExecuteReader();
+  while (read.Read())
+  {
+      str = read[2].ToString();//读出对应的密码，read[0]-&gt;id;read[1]-&gt;name;read[2]-&gt;psw   
+  }
+  app.value2 = str;
+  /***********************************************************************************/
+
+  alterinfo modifyinfo = new alterinfo();
+  if (modifyinfo.ShowDialog() == DialogResult.OK)//此前我在alterinfo中将&ldquo;确定&rdquo;按钮的DialogResult属性变为OK,这样就可以在点击确定时触发refresh函数
+      ReFresh();
+     }
+ }
+
+ /***************************************************************************************/
+ /***********************************刷新dataGridView操作***********************************/
+ /***************************************************************************************/
+ private void button4_Click(object sender, EventArgs e)
+ {
+     ReFresh();
+ }
+ /***************************************************************************************/
+ /***********************************删除记录操作*****************************************/
+ /***************************************************************************************/
+ private void button2_Click(object sender, EventArgs e)
+ {
+     app.value = dataGridView1.Rows[this.dataGridView1.CurrentRow.Index].Cells[0].Value.ToString();
+     //打开数据库   
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+     //寻找app.value(id)对应的密码   
+
+     //找到对应id的数据   
+     SqlCommand cmd = new SqlCommand("select * from judging where userid='" + app.value + "'", objConnection);
+     string sql = "delete from judging where userid=" + app.value;
+     cmd.CommandText = sql;
+     cmd.ExecuteNonQuery();
+     MessageBox.Show("删除成功！");
+
+     ReFresh();
+ }
+    }
+    public class app//新建的类，为了在其中建立static类型成员      
+    {
+ public static string value;
+ public static string value1;
+ public static string value2;
+    }
+} 
+
+
+   
+
+
+   现在的代码对刷新、修改、删除部分做了修改，对数据库的修改通过datagridview实现。
+
+
+   放弃了delegate，并提高了代码重用率。

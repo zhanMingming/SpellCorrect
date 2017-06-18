@@ -1,0 +1,342 @@
+Google 笔试题。一、单选
+1. 80x86中，十进制数-3用16位二进制数表示为？
+
+
+   解答： 0xFFFD. 数据在计算机里用补码表示，正数的补码为其原码，不变，负数的值为其补码求反加一。最高位为符号位。
+
+
+   因此，可以这样计算，3减去1，等于2，然后取反，则得到-3的补码。
+
+
+   
+
+
+   2. 假定符号-、*、$分别代表减法、乘法和指数运算，且
+三个运算符优先级顺序是：- 最高，*其次，$最低；
+运算符运算时为左结合。请计算3-2*4$1*2$3的值：
+(A)4096，(B)-61，(C)64，(D)-80，(E)512
+
+
+   解答：－优先级最高，表达式从左到右计算，先运算３－２，得到１，然后乘以４，得四。由于$ｄ的优先级最低，所以
+
+
+   接着计算1&times;2，为2.最后表达式为4$2$3.从左到右计算，为4的2次方，得到16，再3次方，得到4096.
+
+
+   
+
+
+   
+3.下列伪代码 中，参数是引用传递，结果是？
+calc(double p, double q, double r)
+{
+
+
+   　　q=q-1.0;
+
+
+   　　r=r+p
+
+
+   }
+
+
+   
+main(
+
+
+   {
+　　double a = 2.5, b = 9.0;
+　　calc(b-a, a, a);
+　　print(a);
+}
+(A)1.5 (B)2.5 (C)10.5 (D)8 (E)6.5
+
+
+   
+解答：b-a的结果为6.5，作为一临时变量传进去，因此实际计算的表达式为
+
+
+   a = a - 1.0; -&gt; a = 1.5
+
+
+   a = a + 6.5; -&gt; a = 1.5 + 6.5
+
+
+   4、求输出结果：
+int foo(int x, int y)
+
+
+   {
+
+
+    if(x &lt;=0 || y &lt;= 0) return 1;
+ return 3 * foo(x - 1, y / 2);
+}
+
+
+   printf(&quot;%d/n&quot;, foo(3, 5));
+(A)81 (B)27 (C)9 (D)3 (E)16
+
+
+   解答：此题考查递归函数的调用，　调用栈顺序： foo(3,5) -&gt; 3*foo(2, 2) -&gt; 3*3*foo(1, 1)-&gt; 3 *3*3*f(0,0)
+
+
+   foo(0,0) 返回一，因此结果为27.
+
+
+   
+5、下列哪个数据 结构在优先队列中被最广泛使用
+(A)堆 (B)数组 (C)双向链表 (D)图 (E)向量
+
+
+   解答： 众所周知优先队列的实现是基于堆的。因为堆的最小值(最大值)是在堆顶的,这个特性使得实现优先队列非堆莫属。
+
+
+   
+
+
+   
+
+
+   
+6、以下算法描述了一个在n国元素的双向链表中找到第k个元素的
+方法（k &gt;= 1且k &lt;= n）：
+如果k &lt;= n - k，从链表开始往前进k-1个元素。
+否则，从终点出发，往回走n - k个元素。
+这个算法的时间代价是？
+(A)&theta;(nlogn) (B)&theta;(max{k, n - k}) (C)&theta;(k + (n - k)) 
+(D)&theta;(max{k, k - n}) (E)&theta;(min{k, n - k})
+
+
+   解答：这个算法的目的就是找比较省时的算法。所以答案选Ｅ．为min(k. n-k).
+
+
+   
+
+
+   
+
+7、有一个由10个顶点组成的图，每个顶点有6个度，那么这个图有几条边？ 
+(A)60 (B)30 (C)20 (D)80 (E)90
+
+
+   解答： 图论我忘记的差不多了。该怎么算？
+
+
+   
+
+
+   
+8、正则表达式L = x*(x|yx+)。下列哪个字符串不符号L
+(A)x (B)xyxyx (C)xyx (D)yxx (E)yx
+
+
+   重新拿起正则表达式，好久没写了：从左到右，x*表示可以匹配0次或多次x。
+
+
+   再看括号里面，x|yx+, 可为x或者是yx++. ,此时注意yx不是整体。
+
+
+   因此xyxyx不匹配。
+
+
+   
+
+
+   
+9、为读取一块数据而准备磁盘驱动器的总时间包括:
+(A)等待时间 (B)寻道时间 (C)传输时间 (D)等待时间加寻道时间
+等待时间加寻道时间加传输时间
+
+
+   解答：个人觉得答案为D。很不靠谱的答案，这个问题还有待研究。
+
+
+   
+
+二、算法
+
+1、打印出一个二叉树的内容 。 
+
+
+   解答：递归打印，先打印左子树，输出根节点，再打印右子树。当然，如果按照树形来打印的话，就没有这么简单了。
+
+
+   要复杂一点。
+
+
+   
+
+
+   
+2、在一个字符串中找到第一个只出现一次的字符。如abaccdeff，输出b。
+
+
+   可以用简单的hash方法，使用一个hash数组，hash结果是每个字符的出现次数。
+
+
+   然后从左到右遍历这个数组的内容，看看谁的值为1即可。
+
+
+   算法：
+char FindEarliestFirstOccurence(const char* str)
+{
+ const char* p = str;
+ char table[256] = {0};
+ for (;*p; p++)
+ {
+  table[*p]++;
+ }
+ const char* q = str;
+ for (; *q; q++)
+  if (table[*q] == 1)  
+   return *q;  
+ return 0; // 返回零表示找不到。
+}
+
+
+   时间复杂大概为2*strlen(str);还是属于线性的。
+
+
+   
+3、给定一个长度为N的整数数组（元素有正有负），求所有元素之和
+最大的一个子数组。分析算法时空复杂度。不必写代码。
+
+
+   
+
+
+   个人感觉此题是求所有元素之和的最大值的变种。（给长度为N的整数数组，有正有负，求子数组之和的最大值）。
+
+
+   
+
+
+   方法一：　穷举法。求最大值。
+
+
+   方法二：　分而治之
+
+
+   方法三： 一个巧妙的方法，逻辑是这样的，从左到右，求元素之和，如果元素之和为正值，那么继续向右。如果元素之和为负值，那么将这
+
+
+   段元素值和设为零。重新计算元素之和。算法描述为：
+
+
+   int maxsubsum(const vector&lt;int&gt;&amp; a)
+
+
+   {
+
+
+    int maxsum = 0;
+
+
+    int currentsum = 0;
+
+
+   
+
+
+    for(int i = 0; i &lt; N; ++i)
+
+
+   {
+
+
+    currentsum += a[i];
+
+
+    if (currentsum &gt; maxsum)
+
+
+    maxsum = currentsum;
+
+
+    else if (currentsum &lt; 0) // 如果当前段值得和小于0的话，那么这一段都可以舍弃了，因为其和为负值，最后结果肯定包含他们这一段的。
+
+
+    currentsum = 0;
+
+
+    }
+
+
+   )
+
+
+   
+
+
+   有了这个基础，对于求最大的字数组，求很容易了，拿两个变量来标识最长字数组的头和尾就行了。
+
+
+   
+vector&lt;int&gt; maxsubsum(const vector&lt;int&gt;&amp; a)
+{
+ int maxsum = 0;
+ int currentsum = 0;
+ int start = 0;
+ int end = 0;
+
+ vector&lt;int&gt; resultset;
+ for(size_t i = 0; i &lt; a.size(); ++i)
+ {   
+  currentsum += a[i];
+  if (currentsum &gt; maxsum )
+  {
+
+
+    maxsum = currentsum;
+   end = i; //end的值会被不断的更新。用来表示这段字数组的尾部。end随着maxsum的更新而更新。
+  }
+  else if (currentsum &lt; 0)// 如果当前段值得和小于0的话，那么这一段都可以舍弃了，因为其和为负值，最后结果肯定包含他们这一段的。
+  {
+   currentsum = 0;
+   start = i + 1;
+  }
+ }
+
+ copy(a.begin() + start, a.begin() + end, back_inserter(resultset)); //复制最长组数组到结果数组。。相当于把从start到end的数据拷贝到结果数组里去。
+ return resultset;
+
+
+   }
+
+
+   
+
+
+   测试程序：
+
+
+   #include &lt;vector&gt;
+#include &lt;iostream&gt;
+#include &lt;iterator&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+
+   int _tmain(int argc, _TCHAR* argv[])
+{
+ vector&lt;int&gt; a;
+ copy(istream_iterator&lt;int&gt;(cin),istream_iterator&lt;int&gt;(), back_inserter(a));
+
+ vector&lt;int&gt; b;
+ b = maxsubsum(a);
+ copy(b.begin(), b.end(), ostream_iterator&lt;int&gt;(cout, &quot; &quot;));
+ return 0;
+}
+这个算法的时间复杂度为o(n).
+
+
+   
+
+
+   
+
+
+   代码基本上用c/c++来写的了，用起来顺手一点，题目做的不对的地方，务必请大家指出来。

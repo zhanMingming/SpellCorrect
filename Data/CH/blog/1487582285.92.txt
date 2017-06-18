@@ -1,0 +1,123 @@
+有代价的单源最短路径问题：有代价的单源最短路径，并要求存储路径。（求最短的路径，并使代价最小）
+
+   特点：
+
+   * 存储路径：决定了难以用dijkstra，可以用flody，用path[i][j]表示 i 想走到 j 迈出的第一步。假设k是 i-&gt;j 的中间节点，更新时候用path[i][j] = path[i][k]，具体做法见link。但是flody比较耗时（O（N^3））
+
+   * 有代价：如果想用flody的话，有要求代价最小，就需要将最短路相等的都记录下来。边一多代价更上去了。所以还是dfs比较方便。
+
+   
+
+   例题：
+
+   PAT 1018（http://pat.zju.edu.cn/contests/pat-a-practise/1018）
+
+   
+
+   这道题关键要想到用dfs，就好做了。Code：
+
+   
+
+   
+   #include&lt;iostream&gt;
+#include&lt;memory.h&gt;
+#include&lt;vector&gt;
+using namespace std;
+#define N 505
+int map[N][N];
+vector&lt;int&gt; path,min_path;
+int bike[N];
+bool visit[N];
+#define INF 10000000
+int dest,n,req;//req:require
+int min_d,min_bring,min_back;
+int cur_d,cur_bring,cur_back;
+
+void dfs(int p)
+{
+	int i;
+	if(p==dest)
+	{
+		if(cur_d&lt;min_d ||
+			cur_d==min_d &amp;&amp; cur_bring &lt; min_bring||
+			cur_d == min_d &amp;&amp; cur_bring == min_bring &amp;&amp; cur_back&lt;min_back)
+		{
+			min_d = cur_d;
+			min_bring = cur_bring;
+			min_back = cur_back;
+			min_path = path;
+		}
+		return;
+	}
+	else
+	{
+		for(i=0;i&lt;=n;i++)
+		{
+			if(!visit[i]&amp;&amp;map[p][i]!=INF)
+			{
+				cur_d += map[p][i];
+				visit[i] = true;
+				path.push_back(i);
+				if(bike[i]&lt;req)
+				{
+					if(cur_back &gt;= req-bike[i])
+					{
+						cur_back -= (req-bike[i]);
+						dfs(i);
+						cur_back += (req-bike[i]);
+					}
+					else
+					{
+						int t = cur_back;
+						cur_bring += req-bike[i] - cur_back;
+						cur_back = 0;
+						dfs(i);
+						cur_back = t;
+						cur_bring -= req-bike[i] - cur_back;
+					}
+				}
+				else
+				{
+					cur_back += bike[i]-req;
+					dfs(i);
+					cur_back -= (bike[i]-req);
+				}				
+				path.pop_back();
+				visit[i] = false;
+				cur_d-=map[p][i];
+			}
+		}
+	}
+}
+
+int main()
+{
+	int cm,m,i,j,t,a,b;
+	scanf(&quot;%d%d%d%d&quot;,&amp;cm,&amp;n,&amp;dest,&amp;m);
+	req = cm/2;
+	for(i=0;i&lt;n;i++)
+		scanf(&quot;%d&quot;,&amp;bike[i+1]);
+	memset(visit,false,sizeof(visit));
+	visit[0] = true;
+
+	for(i=0;i&lt;=n;i++)
+		for(j=0;j&lt;=n;j++)
+			map[i][j] = INF;
+
+	for(i=0;i&lt;m;i++)
+	{
+		scanf(&quot;%d%d%d&quot;,&amp;a,&amp;b,&amp;t);
+		if(map[a][b]&gt;t)
+			map[a][b] = map[b][a] = t;
+	}
+	min_d = min_bring = min_back = INF;
+	cur_d = cur_bring = cur_back = 0;
+	path.push_back(0);
+	dfs(0);
+    cout&lt;&lt;min_bring&lt;&lt;&quot; &quot;;
+	printf(&quot;%d&quot;,min_path[0]);
+	for(i=1;i&lt;min_path.size();i++)
+ printf(&quot;-&gt;%d&quot;,min_path[i]);
+    cout&lt;&lt;&quot; &quot;&lt;&lt;min_back&lt;&lt;endl;
+	return 0;
+}

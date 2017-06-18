@@ -1,0 +1,33 @@
+寻找数组中过半的数#include &lt;iostream&gt;
+using namespace std;
+int n;
+void FindNumExceedHalf(const int* data)
+{
+	int number;
+	int flag = 0;
+	for( int i = 0 ; i&lt;n ; ++i )
+	{
+		if( flag == 0 )
+		{
+			number = data[i];
+			++flag;
+			continue;
+		}
+		 number == (data[i])?(++flag):(--flag);
+	}
+	cout &lt;&lt; number &lt;&lt; endl;
+	//cout &lt;&lt; flag &lt;&lt; endl;
+}
+
+int main(int argc, char *argv[])
+{
+	cout&lt;&lt;&quot;Number of the Array:&quot;;
+	scanf(&quot;%d&quot;,&amp;n);
+	cout&lt;&lt;&quot;Please input data:&quot;;
+	int *data=(int *)malloc(n*sizeof(int));
+	int i =0;
+	while(i&lt;n)
+		cin &gt;&gt; data[i++];
+	FindNumExceedHalf(data);
+	return 0;
+}

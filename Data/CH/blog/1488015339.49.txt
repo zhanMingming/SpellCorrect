@@ -1,0 +1,119 @@
+seajs开篇：我为什么学习seajs，因为它的&quot;预先下载,延迟执行&quot;特性之前参与的2个项目都用到了js模块化工具requireJS框架，工作之余学习了这个框架，也熟悉了requireJS的基本用法以及AMD规范。本来对seaJS没有太大的兴趣，知道它实现了CMD规范，功能和requireJS类&#20284;仅此而已。最近在自己关注的微信订阅号&quot;前端大全&quot;看到了一篇文章&quot;js模块化历程&quot;，对seajs产生了极大的兴趣，因为它有&quot;预先下载，延迟执行&quot;的特性。
+
+
+   
+
+
+
+
+   首先需要从官网下载seajs，我使用的是当前的最新版本seajs-3.0.0.zip。解压后得到如下结构，其中dist目录下的sea.js就是我们需要的seajs库。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   我的例子代码目录结构如下：
+
+
+   examples/
+  |-- lib      存放 seajs、jquery等第三方库
+  |-- app      存放模块a和模块b
+  |     |-- a.js
+  |     |-- b.js
+  |   
+   -- index.html 首页
+   --  main.js   js入口
+
+首先利用seajs编写模块a、模块b、模块main，源码如下：
+
+
+   //a.js
+define(function(){
+     console.log(&#39;a.js&#39;);
+     return {
+   hello: function(){
+ console.log(&#39;hello, a.js&#39;);
+   }
+     }
+});
+   //a.js
+define(function(){
+     console.log(&#39;a.js&#39;);
+     return {
+   hello: function(){
+ console.log(&#39;hello, a.js&#39;);
+   }
+     }
+});
+   //main.js系统初始化入口
+define(function(require, exports, module) {
+	 console.log(&#39;main.js&#39;);
+
+     var a = require(&#39;a&#39;);
+     a.hello();    
+
+     $(&#39;#b&#39;).click(function(){
+   var b = require(&#39;b&#39;);
+   b.hello();		  
+     });
+
+});
+
+下面是index.html源码，主要就是引入seajs。这里需要注意:seajs对jquery的支持不好，无法按照模块的方式加载jquery，所以我直接在页面中引入jquery。
+   &lt;html&gt;
+&lt;head&gt;
+	&lt;script src=&quot;./libs/jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;./libs/seajs-3.0.0/dist/sea.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;	
+	seajs.config({
+		base: &quot;.&quot;,
+		alias: {
+			&quot;a&quot; : &quot;app/a.js&quot;,
+			&quot;b&quot; : &quot;app/b.js&quot;
+		}
+	});
+	// 加载入口模块
+	seajs.use(&quot;main&quot;);	
+	&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;button id=&quot;b&quot;&gt;click me&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+运行index.html，执行结果如下:
+
+   
+
+可以看到：浏览器下载了a.js和b.js，控制台打印了a.js却没有打印b.js。只有点击了&quot;click me&quot;按钮的时候，才需要加载(初始化)b模块。对于b模块来说，浏览器的确提前下载了文件，但是b模块的初始化是等到&quot;click me&quot;按钮点击的时候才执行。这就是所谓的&quot;预先下载，延迟执行&quot;。
+
+
+   
+
+
+
+
+   同样的代码我用requireJS当前最新版本的2.1.20跑了一下，执行结果如下：
+
+
+   
+
+
+
+
+   可以看到requireJS不仅下载了b.js文件，而且还加载(初始化)了模块b，很明显控制台打印出了b.js。
+
+
+   
+
+
+
+
+   正是seajs的这种特性，让我产出了很大的兴趣，后续再慢慢学习seajs。

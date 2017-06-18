@@ -1,0 +1,186 @@
+Beautiful MeadowThe 4th Zhejiang Provincial Collegiate Programming Contest - 1002
+
+Beautiful Meadow 
+
+Time Limit: 1 Second  Memory Limit: 32768 KB 
+
+<!--
+ Problem text file for ZheJiang University Online Judge
+ Created by LiuYaoting
+-->Tom's Meadow
+
+   Tom has a meadow in his garden. He divides it into N * M squares. Initially all the squares were covered with grass. He mowed down the grass on some of the squares and thinks the meadow is beautiful if and only if 
+
+
+Not all squares are covered with grass. 
+No two mowed squares are adjacent. 
+
+
+   Two squares are adjacent if they share an edge. Here comes the problem: Is Tom's meadow beautiful now? 
+
+
+   Input
+
+
+   The input contains multiple test cases! 
+
+
+   Each test case starts with a line containing two integers N, M (1 &lt;= N, M &lt;= 10) separated by a space. There follows the description of Tom's Meadow. There're N lines each consisting of M integers separated by a space. 0(zero) means the corresponding position of the meadow is mowed and 1(one) means the square is covered by grass. 
+
+
+   A line with N = 0 and M = 0 signals the end of the input, which should not be processed 
+
+
+   Output
+
+
+   One line for each test case. 
+
+
+   Output "Yes" (without quotations) if the meadow is beautiful, otherwise "No"(without quotations). 
+
+
+   Sample Input
+
+
+   2 21 00 12 21 10 02 31 1 11 1 10 0
+
+
+   Sample Output
+
+
+   YesNoNo
+
+
+   
+
+
+   水过&hellip;&hellip;
+
+
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define N 12
+int map[N][N];
+int n,m;
+int dir[4][2]={0,1,0,-1,1,0,-1,0};
+struct point
+{
+	int x,y;
+}p[N*N],now,t;
+
+queue&lt;point&gt;Q;
+
+bool bound(int tx,int ty)
+{
+	if(tx&gt;=0&amp;&amp;tx&lt;n&amp;&amp;ty&gt;=0&amp;&amp;ty&lt;m)
+		return true;
+	return false;
+}
+
+bool bfs()
+{
+	while(!Q.empty())
+	{
+		now=Q.front();
+		Q.pop();
+		for(int i=0;i&lt;4;i++)
+		{
+			int tx=now.x+dir[i][0];
+			int ty=now.y+dir[i][1];
+			if(bound(tx,ty)&amp;&amp;map[tx][ty]==0)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+int main()
+{
+	int i,j,flag;
+	while(scanf("%d%d",&amp;n,&amp;m)!=EOF&amp;&amp;(m||n))
+	{
+		flag=0;
+		for(i=0;i&lt;N;i++)
+		{
+			for(j=0;j&lt;N;j++)
+			{
+				map[i][j]=1;
+			}
+		}
+		for(i=0;i&lt;n;i++)
+		{
+			for(j=0;j&lt;m;j++)
+			{
+				scanf("%d",&amp;map[i][j]);
+				if(map[i][j]==0)
+				{
+					flag=1;
+					now.x=i;
+					now.y=j;
+					Q.push(now);
+				}
+			}
+		}
+		if(!flag)
+		{
+			cout&lt;&lt;"No"&lt;&lt;endl;
+			continue;
+		}
+		if(bfs())
+			cout&lt;&lt;"Yes"&lt;&lt;endl;
+		else cout&lt;&lt;"No"&lt;&lt;endl;
+		while(!Q.empty())
+			Q.pop();
+	}
+} 
+
+
+   
+
+
+   附上更简洁的代码：
+
+
+   #include &lt;stdio.h&gt;
+int main(int argc, char *argv[])
+{
+	int s[100][100];
+	int M,N,i,j,t=0;
+
+	scanf ("%d %d",&amp;M,&amp;N);
+	while (M&amp;&amp;N)
+	{
+		for (i=0;i&lt;=M+1;i++)
+		{
+			for (j=0;j&lt;=N+1;j++)
+			{
+				s[i][j]=8;
+			}
+		}
+		for (i=1;i&lt;=M;i++)
+		{
+			for (j=1;j&lt;=N;j++)
+			{
+				scanf ("%d",&amp;s[i][j]);
+			}
+		}
+		for (i=1;i&lt;=M;i++)
+		{
+			for (j=1;j&lt;=N;j++)
+			{
+				if (s[i][j]==1) t++;
+				if (s[i][j]==0&amp;&amp;(s[i][j]==s[i][j+1]||s[i][j]==s[i+1][j]||s[i][j]==s[i-1][j]||s[i][j]==s[i][j-1]))
+					break;
+			}
+			if (j&lt;=N) break;
+		}
+		if (i==M+1&amp;&amp;j==N+1&amp;&amp;M*N!=t) printf ("Yes/n");
+		else printf ("No/n");
+		scanf ("%d %d",&amp;M,&amp;N);
+		t=0;
+	}
+}

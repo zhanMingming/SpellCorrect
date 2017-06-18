@@ -1,0 +1,412 @@
+使用maven搭建XML风格的Spring MVC+WebSocket+sockjs+STOMP+ActiveMQ应用Spring4开始支持WebSocket，也支持通过STOMP协议连接JMS消息服务器如ActiveMQ等。Spring4官方给出了这么一个STOMP例子，不过是使用注解风&#26684;的，官方例子没有我们熟悉的web.xml，没有spring.xml，这个跟Spring3差别很大，一时有点接受不了，经过自己的尝试把官方例子改成了XML风&#26684;的。
+
+
+   
+
+
+
+
+   项目的目录结构如下：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   我使用的是4.2.4.RELEASE版本的Spring，pom.xml配置如下：
+
+
+   &lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+	&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+	&lt;groupId&gt;net.aty.springmvc&lt;/groupId&gt;
+	&lt;artifactId&gt;SpringMvcDemo&lt;/artifactId&gt;
+	&lt;packaging&gt;war&lt;/packaging&gt;
+	&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+	&lt;name&gt;SpringMvcDemo Maven Webapp&lt;/name&gt;
+	&lt;url&gt;http://maven.apache.org&lt;/url&gt;
+
+	&lt;properties&gt;
+		&lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+		&lt;spring.version&gt;4.2.4.RELEASE&lt;/spring.version&gt;
+	&lt;/properties&gt;
+
+	&lt;dependencies&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;org.springframework&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
+			&lt;version&gt;${spring.version}&lt;/version&gt;
+		&lt;/dependency&gt;
+
+		&lt;dependency&gt;
+			&lt;groupId&gt;org.springframework&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-websocket&lt;/artifactId&gt;
+			&lt;version&gt;${spring.version}&lt;/version&gt;
+		&lt;/dependency&gt;
+
+		&lt;dependency&gt;
+			&lt;groupId&gt;org.springframework&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-messaging&lt;/artifactId&gt;
+			&lt;version&gt;${spring.version}&lt;/version&gt;
+		&lt;/dependency&gt;
+
+		&lt;!--required when the &quot;stomp-broker-relay&quot; profile is enabled. --&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;io.projectreactor&lt;/groupId&gt;
+			&lt;artifactId&gt;reactor-net&lt;/artifactId&gt;
+			&lt;version&gt;2.0.7.RELEASE&lt;/version&gt;
+		&lt;/dependency&gt;
+
+		&lt;dependency&gt;
+			&lt;groupId&gt;io.netty&lt;/groupId&gt;
+			&lt;artifactId&gt;netty-all&lt;/artifactId&gt;
+			&lt;version&gt;4.0.33.Final&lt;/version&gt;
+		&lt;/dependency&gt;
+
+
+		&lt;!-- 解决错误:Whoops! Lost connection to undefined --&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;
+			&lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;
+			&lt;version&gt;2.6.4&lt;/version&gt;
+		&lt;/dependency&gt;
+
+		&lt;dependency&gt;
+			&lt;groupId&gt;javax.servlet&lt;/groupId&gt;
+			&lt;artifactId&gt;javax.servlet-api&lt;/artifactId&gt;
+			&lt;version&gt;3.1.0&lt;/version&gt;
+			&lt;scope&gt;provided&lt;/scope&gt;
+		&lt;/dependency&gt;
+
+
+	&lt;/dependencies&gt;
+
+	&lt;build&gt;
+		&lt;finalName&gt;SpringMvcDemo&lt;/finalName&gt;
+	&lt;/build&gt;
+&lt;/project&gt;
+
+
+   
+
+
+   
+
+
+
+maven下载的jar如图所示：
+
+   
+
+
+
+
+   
+
+
+
+
+   java代码如下：
+
+
+   package net.aty.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class MyService {
+
+	public MyService() {
+		System.out.println(&quot;bean MyService&quot;);
+	}
+
+	public String process(String name) {
+		return name.toLowerCase();
+	}
+}
+   package net.aty.springmvc;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class ChatController {
+
+	@Autowired
+	private SimpMessagingTemplate template;
+
+	
+	@MessageMapping(&quot;/hello&quot;)
+	public String send(String message) {
+		
+		String text = &quot;[&quot; + System.currentTimeMillis() + &quot;]:&quot; + message;
+
+		template.convertAndSend(&quot;/topic/greetings&quot;, text);
+
+		return text;
+	}
+}
+
+   package net.aty.springmvc;
+
+import net.aty.service.MyService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+public class FirstController {
+
+	@Autowired
+	private MyService service;
+	
+	public FirstController()
+	{
+		System.out.println(&quot;I am a controller.&quot;);
+	}
+
+	@RequestMapping(&quot;/mvc/first/hello.do&quot;)
+	@ResponseBody
+	public String hello(@RequestParam(&quot;userName&quot;) String userName) {
+		return service.process(userName);
+	}
+
+}
+
+   
+
+
+
+
+   
+
+
+
+spring配置文件root-context.xml如下：
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+	xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;
+ http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd
+ http://www.springframework.org/schema/context
+ http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
+
+	&lt;context:component-scan base-package=&quot;net.aty.service&quot; /&gt;
+
+&lt;/beans&gt;
+
+   
+
+
+   
+
+
+
+spring mvc配置文件如下：
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+	xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+	xmlns:websocket=&quot;http://www.springframework.org/schema/websocket&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;
+ http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd
+ http://www.springframework.org/schema/context
+ http://www.springframework.org/schema/context/spring-context.xsd
+ http://www.springframework.org/schema/mvc
+ http://www.springframework.org/schema/mvc/spring-mvc.xsd
+ http://www.springframework.org/schema/websocket
+   		http://www.springframework.org/schema/websocket/spring-websocket.xsd&quot;&gt;
+
+	&lt;mvc:annotation-driven /&gt;
+
+	&lt;context:component-scan base-package=&quot;net.aty.springmvc&quot; /&gt;
+
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.html&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.js&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.css&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.png&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.gif&quot; /&gt;
+
+	&lt;websocket:message-broker
+		application-destination-prefix=&quot;/app&quot;&gt;
+		&lt;websocket:stomp-endpoint path=&quot;/stomp&quot;&gt;
+			&lt;websocket:sockjs /&gt;
+		&lt;/websocket:stomp-endpoint&gt;
+
+		&lt;websocket:stomp-broker-relay prefix=&quot;/topic,/queue&quot;
+			relay-host=&quot;127.0.0.1&quot; relay-port=&quot;61613&quot; heartbeat-receive-interval=&quot;20000&quot;
+			heartbeat-send-interval=&quot;20000&quot; /&gt;
+
+	&lt;/websocket:message-broker&gt;
+
+&lt;/beans&gt;
+
+   
+
+
+
+
+   
+
+
+
+web.xml配置如下：
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+
+	&lt;context-param&gt;
+		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+		&lt;param-value&gt;/WEB-INF/spring/root-context.xml&lt;/param-value&gt;
+	&lt;/context-param&gt;
+
+	&lt;listener&gt;
+		&lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+	&lt;/listener&gt;
+
+	&lt;servlet&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+		&lt;init-param&gt;
+			&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+			&lt;param-value&gt;/WEB-INF/spring/spring-dispatcher.xml&lt;/param-value&gt;
+		&lt;/init-param&gt;
+		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+	&lt;/servlet&gt;
+	&lt;servlet-mapping&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+	&lt;/servlet-mapping&gt;
+
+
+&lt;/web-app&gt;
+
+
+   
+
+
+   
+
+
+
+
+   客户端使用了sockjs&#43;stomp.js，代码如下：
+
+
+   &lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Hello WebSocket&lt;/title&gt;
+    &lt;script src=&quot;js/sockjs-0.3.4.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;js/stomp.js&quot;&gt;&lt;/script&gt;
+    &lt;script type=&quot;text/javascript&quot;&gt;
+ var stompClient = null;
+ 
+ function setConnected(connected) {
+     document.getElementById(&#39;connect&#39;).disabled = connected;
+     document.getElementById(&#39;disconnect&#39;).disabled = !connected;
+     document.getElementById(&#39;conversationDiv&#39;).style.visibility = connected ? &#39;visible&#39; : &#39;hidden&#39;;
+     document.getElementById(&#39;response&#39;).innerHTML = &#39;&#39;;
+ }
+ 
+ function connect() {
+     var socket = new SockJS(&#39;/SpringMvcDemo/stomp&#39;);
+     stompClient = Stomp.over(socket);     
+     stompClient.connect({}, function(frame) {
+  setConnected(true);
+  console.log(&#39;Connected: &#39; + frame);
+  stompClient.subscribe(&#39;/topic/greetings&#39;, function(greeting){
+      showGreeting(greeting.body);
+  });
+     });
+ }
+ 
+ function disconnect() {
+     if (stompClient != null) {
+  stompClient.disconnect();
+  setConnected(false);
+  console.log(&quot;Disconnected&quot;);
+     }
+ }
+ 
+ function sendName() {
+     var name = document.getElementById(&#39;name&#39;).value;
+     stompClient.send(&quot;/app/hello&quot;, {}, name);
+ }
+ 
+ function showGreeting(message) {
+     var response = document.getElementById(&#39;response&#39;);
+     var p = document.createElement(&#39;p&#39;);
+     p.style.wordWrap = &#39;break-word&#39;;
+     p.appendChild(document.createTextNode(message));
+     response.appendChild(p);
+ }
+    &lt;/script&gt;
+&lt;/head&gt;
+&lt;body onload=&quot;disconnect()&quot;&gt;
+&lt;noscript&gt;&lt;h2 style=&quot;color: #ff0000&quot;&gt;Seems your browser doesn&#39;t support Javascript! Websocket relies on Javascript being enabled. Please enable
+    Javascript and reload this page!&lt;/h2&gt;&lt;/noscript&gt;
+&lt;div&gt;
+    &lt;div&gt;
+ &lt;button id=&quot;connect&quot; onclick=&quot;connect();&quot;&gt;Connect&lt;/button&gt;
+ &lt;button id=&quot;disconnect&quot; disabled=&quot;disabled&quot; onclick=&quot;disconnect();&quot;&gt;Disconnect&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;conversationDiv&quot;&gt;
+ &lt;label&gt;What is your name?&lt;/label&gt;&lt;input type=&quot;text&quot; id=&quot;name&quot; /&gt;
+ &lt;button id=&quot;sendName&quot; onclick=&quot;sendName();&quot;&gt;Send&lt;/button&gt;
+ &lt;p id=&quot;response&quot;&gt;&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+
+
+   
+
+
+   上述web工程打war包后部署到支持J2EE7的容器中，如Tomcat7.0.62版本。有一点需要注意：activeMQ默认没有开启对STOMP协议的支持，需要在{activemq_home}/conf/activemq.xml开启stomp协议：
+
+
+   &lt;transportConnector name=&quot;stomp&quot; uri=&quot;stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireformat.maxFrameSize=104857600&quot;/&gt;
+
+   
+
+
+   
+
+
+
+运行ActiveMQ服务器和Tomcat，可以看到能够正常地发送和接收消息：
+
+   
+
+
+
+
+
+
+   最后提一下自己在尝试过程中遇到的错误：
+
+
+   1. 忘记开启activeMQ对stomp协议的支持，这会导致建立连接报错。
+
+
+   2.缺少jar包，我们再pom.xml中配置的是netty-all和jackson-databind，会传递依赖好几个jar。

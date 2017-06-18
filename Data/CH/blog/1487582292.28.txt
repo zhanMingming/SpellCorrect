@@ -1,0 +1,174 @@
+Ubuntu12.04配置NVIDIA cuda5.5经验帖之前配过一遍都忘光了，现在要重新配一遍真是好难过。。。特此记录参考网站以便查阅。
+
+   
+
+   =============
+
+   环境：Ubuntu 12.04+Cuda5.5
+
+   
+
+   1. 判断安装环境：
+
+   
+
+   The setup of CUDA development tools on a system running the appropriate version of Linux consists of a few simple steps:
+Verify the system has a CUDA-capable GPU.Verify the system has a supported version of Linux.Verify the system has gcc installed.见官方配置手册：http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html
+
+
+   2. 下载镜像：
+
+   https://developer.nvidia.com/cuda-downloads
+
+   下run好了
+
+   
+
+   3. 安装必要的库
+
+   
+
+   sudo apt-get install freeglut3-dev build-essential libx11-dev libxmu-dev
+libxi-dev libgl1-mesa-glx libglu1-mesa libglu1-mesa-dev4. 删除已有nvidia，拉黑名单
+   
+
+   
+
+   sudo apt-get remove --purge nvidia*
+sudo nano /etc/modprobe.d/blacklist.conf
+blacklist.conf加入
+   
+
+   
+
+   lacklist amd76x_edac
+blacklist vga16fb
+blacklist nouveau
+blacklist rivafb
+blacklist nvidiafb
+blacklist rivatv
+5. Ctrl+Alt+F1, 登陆后安装
+   
+
+   
+
+   sudo service lightdm stop
+chmod +x cuda_5.5.22_linux_64.run
+sudo ./cuda_5.5.22_linux_64.run
+
+   
+
+   
+Cuda5.5集成了toolkit，sdk和driver, 所以安装的时候一路同意下来就好了
+   
+
+   6. 得到以下安装结果
+
+     Driver:  Installed  Toolkit: Installed In /Usr/Local/Cuda-5.0  Samples: Installation Failed. Missing Required Libraries.
+
+   也就是SDK安装失败，这个官方手册上也提到了解决方案。
+
+   
+
+   7. 单独安装SDK
+
+   解压sdk：
+
+   
+
+   sh cuda_5.5.22_linux_64.run -extract=/path/to/extract/dir/
+到根目录下的/path/to/extract/dir/去找cuda-samples_5.5.22_*******.run, 安装
+   
+
+   
+
+   sh cuda-samples_5.5.22_*******.run
+   
+
+   
+
+   8. Path配置：
+
+   $sudo gedit etc/profile或~/.bashrc
+
+   
+
+   export PATH=$PATH:/usr/local/cuda-5.5/bin
+export LD_LIBRARY_PATH=/usr/local/cuda-5.5/lib64:/lib使之生效：
+   
+
+   source /etc/profile（对应profile）或sudo ldconfig（对应bashrc）
+
+   
+
+   还有一种装sdk的方法见http://askubuntu.com/questions/338907/how-to-install-cuda-5-5-under-ubuntu-12-04-lts-64-bit
+
+   
+
+   9. 验证
+
+   见官网http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html#verify-installation
+
+   nvcc-V:
+
+   
+
+   
+
+   deviceQuery:
+
+   
+
+   
+
+   10. Cuda Hello World:
+
+   https://devtalk.nvidia.com/default/topic/486692/cuda-programming-and-performance/guide-installing-cuda-sdk-on-linux-walkthrough-on-how-to-install-the-cuda-sdk-and-build-the-example/
+
+   正文最下方
+
+   
+
+   11. 装好theano的前提下配置~/.theanorc配置GPU
+
+   sudo vim ~/.theanorc
+
+   写入
+
+   [global]
+
+   floatX = float32
+
+   device = gpu
+
+   进行测试：http://deeplearning.net/software/theano/tutorial/using_gpu.html#testing-theano-with-gpu
+
+   
+
+   
+
+   
+
+   =============
+
+   此外附上其他配置参考：
+
+   1. theano+python模块
+
+   （Ubuntu 12.04自带python不用装，但要注意系统里很多模块依赖python，没事不要随便删！！！）
+
+   http://www.cnblogs.com/Ponys/p/3438491.html
+
+   
+
+   
+
+   
+
+   感兴趣的小伙伴请关注本人博客和微博Rachel____Zhang
+
+   
+
+   
+
+   PS：CSDN新加的验证码功能好坑爹啊，人眼都看不清！试了6次才发出去。。。

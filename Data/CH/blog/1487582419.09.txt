@@ -1,0 +1,87 @@
+ASP.NET 连接数据库这个东西太纠结了~贴出来代码，供大家享用
+
+
+   
+
+
+   分三个部分：.config .aspx .aspx.cs
+
+
+   
+
+
+   //web.config
+ &lt;appSettings&gt;
+    &lt;add key="keystring" value="Data Source=ZRQ-PC;Initial Catalog=OnlineJudge;Integrated Security=True"/&gt;
+  &lt;/appSettings&gt; 
+
+
+   
+
+
+   //page.aspx
+&lt;form id="form2" name="form2" method="post" action=""&gt;
+      &lt;asp:Panel ID="unlogin" runat="server"&gt;      
+  &lt;div class="Login" align="center"&gt;
+   &lt;p&gt;Login&lt;/p&gt;
+   用户名&lt;asp:TextBox ID="username" runat="server" Width="106px"&gt;&lt;/asp:TextBox&gt;&lt;br /&gt;
+   密码 &lt;asp:TextBox ID="password" runat="server" Height="22px" Width="106px"&gt;&lt;/asp:TextBox&gt;&lt;br /&gt;
+   &lt;asp:Button ID="submit" runat="server" Text="登录" onclick="submit_Click" /&gt;
+   
+   &lt;asp:Button ID="register" runat="server" Text="注册" /&gt;
+  &lt;/div&gt;
+      &lt;/asp:Panel&gt;
+      &lt;asp:Panel ID="allogin" runat="server" Visible="false"&gt;
+   &lt;div class="Login" align="center"&gt;
+  &lt;asp:Label ID="welcome" runat="server" Text="Label"&gt;&lt;/asp:Label&gt;&lt;br /&gt;
+  &lt;asp:Button ID="alterinfo" runat="server" Text="修改信息" /&gt;&lt;br /&gt;
+  &lt;asp:Button ID="logout" runat="server" Text="注销登陆" /&gt;&lt;br /&gt;
+  &lt;asp:Button ID="register1" runat="server" Text="注册新用户" /&gt;&lt;br /&gt;
+&lt;asp:Button ID="relogin" runat="server" Text="重新输入密码" /&gt;
+   &lt;/div&gt;
+      &lt;/asp:Panel&gt;
+      &lt;/form&gt; 
+
+
+   
+
+
+   //page.aspx.cs
+public partial class MasterPage : System.Web.UI.MasterPage
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+ //connect to database
+ string strConnection = ConfigurationManager.AppSettings["keystring"].ToString();
+ SqlConnection objConnection = new SqlConnection(strConnection);
+
+ objConnection.Open();
+ SqlCommand cmd = new SqlCommand("select * from Users where name='" + username.Text.Trim() + "'", objConnection);
+ string sql = "select * from Users where 用户名='" + username.Text + "'and 密码='" + password.Text + "'";
+ cmd.CommandText = sql;
+ /*  
+  ***********************************************************************************************  
+  *判断是否有此ID,ExecuteScalar() return the first column of the first row in the result set.  
+  */
+ if (cmd.ExecuteScalar() == null)//无此用户   
+ {
+     welcome.Text = "Sorry, please check your id and psw";
+     alterinfo.Visible = false;
+     logout.Visible = false;
+     register1.Visible = true;
+     relogin.Visible = true;
+ }
+ else
+ {
+     welcome.Text = "Welcome to " + username.Text;
+     alterinfo.Visible = true;
+     logout.Visible = true;
+     register1.Visible = false;
+     relogin.Visible = false;
+ }
+    }
+    protected void submit_Click(object sender, EventArgs e)
+    {
+ allogin.Visible = true;
+ unlogin.Visible = false;
+    }

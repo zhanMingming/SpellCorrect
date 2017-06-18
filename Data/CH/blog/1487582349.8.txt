@@ -1,0 +1,163 @@
+opencv实现分水岭算法//  分水岭算法原理
+//  
+
+IplImage* marker_mask = 0;
+IplImage* markers = 0;
+//IplImage* img0 = 0, *img = 0, *img_gray = 0, *wshed = 0;
+IplImage  *img_gray = 0, *wshed = 0;
+CvPoint prev_pt = {-1,-1};
+
+void on_mouse( int event, int x, int y, int flags, void* param )
+{
+	if( !img )
+		return;
+
+	if( event == CV_EVENT_LBUTTONUP || !(flags &amp; CV_EVENT_FLAG_LBUTTON) )
+		prev_pt = cvPoint(-1,-1);
+	else if( event == CV_EVENT_LBUTTONDOWN )
+		prev_pt = cvPoint(x,y);
+	else if( event == CV_EVENT_MOUSEMOVE &amp;&amp; (flags &amp; CV_EVENT_FLAG_LBUTTON) )
+	{
+		CvPoint pt = cvPoint(x,y);
+		if( prev_pt.x &lt; 0 )
+			prev_pt = pt;
+		cvLine( marker_mask, prev_pt, pt, cvScalarAll(255), 5, 8, 0 );
+		cvLine( img, prev_pt, pt, cvScalarAll(255), 5, 8, 0 );
+		prev_pt = pt;
+		cvShowImage( &quot;image&quot;, img );
+	}
+}
+
+void CCVMFCView::OnWatershed()//分水岭
+{
+	int   flag=0;
+	CvRNG rng = cvRNG(-1);
+
+	img0 = cvCloneImage( workImg );  //  建立工作位图
+	cvFlip(img0);
+
+	cvNamedWindow( &quot;image&quot;, 1 );
+	//  cvNamedWindow( &quot;watershed transform&quot;, 1 );
+
+	img = cvCloneImage( img0 );
+	img_gray = cvCloneImage( img0 );
+	wshed = cvCloneImage( img0 );
+	marker_mask = cvCreateImage( cvGetSize(img), 8, 1 );
+	markers = cvCreateImage( cvGetSize(img), IPL_DEPTH_32S, 1 );
+	cvCvtColor( img, marker_mask, CV_BGR2GRAY );
+	cvCvtColor( marker_mask, img_gray, CV_GRAY2BGR );
+
+	cvZero( marker_mask );
+	cvZero( wshed );
+	cvShowImage( &quot;image&quot;, img );
+	//  cvShowImage( &quot;watershed transform&quot;, wshed );
+	cvSetMouseCallback( &quot;image&quot;, on_mouse, 0 );
+
+	m_ImageType=-3;
+	for(;;)
+	{
+		int c = cvWaitKey(0);
+
+		if( c == 27 ) {
+			if (!flag) {      //  未加标记
+				wshed = cvCloneImage( img0 );
+			}
+			break;
+		}
+
+		if( c == 'r' )
+		{
+			cvZero( marker_mask );
+			cvCopy( img0, img );
+			cvShowImage( &quot;image&quot;, img );
+		}
+
+		if( c == 'w' || c == '\r' )
+		{
+			CvMemStorage* storage = cvCreateMemStorage(0);
+			CvSeq* contours = 0;
+			CvMat* color_tab;
+			int i, j, comp_count = 0;
+			//cvSaveImage( &quot;wshed_mask.png&quot;, marker_mask );
+			//marker_mask = cvLoadImage( &quot;wshed_mask.png&quot;, 0 );
+			cvFindContours( marker_mask, storage, &amp;contours, sizeof(CvContour),
+				CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );
+
+			CvSeq* contourn = contours;
+			int n;
+			for (n=0; contourn != 0; contourn = contourn-&gt;h_next,n++) {
+			}   //  检查边界数
+			if (n) {   //  已作标记才进行处理      
+				cvZero( markers );
+				for( ; contours != 0; contours = contours-&gt;h_next, comp_count++ )
+				{
+					cvDrawContours( markers, contours, cvScalarAll(comp_count+1),
+						cvScalarAll(comp_count+1), -1, -1, 8, cvPoint(0,0) );
+				}
+
+				color_tab = cvCreateMat( 1, comp_count, CV_8UC3 );
+				for( i = 0; i &lt; comp_count; i++ )
+				{
+					uchar* ptr = color_tab-&gt;data.ptr + i*3;
+					ptr[0] = (uchar)(cvRandInt(&amp;rng)%180 + 50);
+					ptr[1] = (uchar)(cvRandInt(&amp;rng)%180 + 50);
+					ptr[2] = (uchar)(cvRandInt(&amp;rng)%180 + 50);
+				}
+
+				{
+					double t = (double)cvGetTickCount();
+					cvWatershed( img0, markers );  //  分水岭算法处理
+					t = (double)cvGetTickCount() - t;
+					//					printf( &quot;exec time = %gms\n&quot;, t/(cvGetTickFrequency()*1000.) );
+				}
+
+				// paint the watershed image
+				for( i = 0; i &lt; markers-&gt;height; i++ ) {
+					for( j = 0; j &lt; markers-&gt;width; j++ )
+					{
+						int idx = CV_IMAGE_ELEM( markers, int, i, j );
+						uchar* dst = &amp;CV_IMAGE_ELEM( wshed, uchar, i, j*3 );
+						if( idx == -1 )
+							dst[0] = dst[1] = dst[2] = (uchar)255;
+						else if( idx &lt;= 0 || idx &gt; comp_count )
+							dst[0] = dst[1] = dst[2] = (uchar)0; // should not get here
+						else
+						{
+							uchar* ptr = color_tab-&gt;data.ptr + (idx-1)*3;
+							dst[0] = ptr[0]; dst[1] = ptr[1]; dst[2] = ptr[2];
+						}
+					}
+				}
+
+				cvAddWeighted( wshed, 0.5, img_gray, 0.5, 0, wshed );  //  图像合成
+				//				cvShowImage( &quot;watershed transform&quot;, wshed );
+				cvReleaseMemStorage( &amp;storage );
+				cvReleaseMat( &amp;color_tab );
+			}
+			else {     //  未加标记
+				wshed = cvCloneImage( img0 );
+			}
+			cvCopy(wshed,workImg);
+			cvFlip(workImg);
+
+			CClientDC dc(this);
+			StretchDIBits(dc.m_hDC,  //  刷新主窗口
+				0,0,workImg-&gt;width,workImg-&gt;height,
+				0,0,workImg-&gt;width,workImg-&gt;height,
+				workImg-&gt;imageData,m_lpBmi,DIB_RGB_COLORS,SRCCOPY);
+			flag=1;
+		}
+	}
+
+	cvDestroyWindow( &quot;image&quot; );
+	cvReleaseImage(&amp;img0);
+	cvReleaseImage(&amp;img);
+	cvReleaseImage(&amp;img_gray);
+	cvReleaseImage(&amp;marker_mask);
+	cvReleaseImage(&amp;markers);
+
+	cvFlip(wshed);
+	m_dibFlag=imageReplace(wshed,&amp;workImg);
+
+	Invalidate();
+}

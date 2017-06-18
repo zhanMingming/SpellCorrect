@@ -1,0 +1,149 @@
+CWinThread类，以及和createthread API的区别CWinThreadCObject└CCmdTarget└CWinThreadCWinThread对象代表在一个应用程序内运行的线程。运行的主线程通常由CWinApp的派生类提供；CWinApp由CWinThread派生。另外，CWinThread对象允许一给定的应用程序拥有多个线程。
+
+
+   CWinThread支持两种线程类型：工作者线程(Worker Thread)和用户界面线程(UI thread)。工作者线程没有收发消息的功能(没有消息队列)：例如，在电子表格应用程序中进行后台计算的线程。
+
+
+   
+
+
+   用户界面线程具有收发消息的功能，并处理从系统收到的消息。CWinApp及其派生类是用户界面线程的例子。其它用户界面线程也可由CWinThread直接派生。
+
+
+   CWinThread类的对象存在于线程的生存期。如果你希望改变这个特性，将m_bAutoDelete设为FALSE。
+
+
+   
+
+
+   要使你的代码和MFC是完全线程安全的，CWinThread类是完全必要的。框架使用的用来维护与线程相关的信息的线程局部数据由CWinThread对象管理。由于依赖CWinThread来处理线程局部数据(Thread Local Storage)，任何使用MFC的线程必须由MFC创建。例如，由运行时函数_beginthreadex创建的线程不能使用任何MFCAPI。
+
+
+   为了创建一个线程，调用AfxBeginThread函数。根据你需要工作者线程还是用户界面线程，有两种调用AfxBeginThread的格式。如果你需要用户界面线程，则将指向你的CWinThread派生类的CRuntimeClass的指针传递给AfxBeginThread。如果你需要创建工作者线程，则将指向控制函数的指针和控制函数的参数传递给AfxBeginThread。对于工作者线程和用户界面线程，你可以指定可选的参数来修改优先级，堆栈大小，创建标志和安全属性。
+
+
+   AfxBeginThread线程将返回指向新的CWinThread对象的指针。与调用AfxBeginThread相反，你可以构造一个CWinThread派生类的对象，然后调用CreateThread。如果你需要在连续创建和终止线程的执行之间重复使用CWinThread对象，这种两步构造方法非常有用。
+
+
+   CWinThread类成员数据成员
+
+
+   m_bAutoDelete           指定线程结束时是否要销毁对象m_hThread               当前线程的句柄m_nThreadID             当前线程的IDm_pMainWnd             保存指向应用程序的主窗口的指针m_pActiveWnd            指向容器应用程序的主窗口，当一个OLE服务器被现场激活时构造函数
+
+
+   CWinThread              构造一个CWinThread对象CreateThread             开始一个CWinThread对象的执行操作
+
+
+   GetMainWnd             查询指向线程主窗口的指针GetThreadPriority          获取当前线程的优先级PostThreadMessage        向另外的CWinThread对象传递一条消息ResumeThread            减少一个线程的挂起计数SetThreadPriority          设置当前线程的优先级SuspendThread           增加一个线程的挂起计数可重载函数
+
+
+   ExitInstance             重载以进行线程终止时的清理工作InitInstance              重载以实现线程实例的初始化OnIdle                  重载以进行线程特定的空闲操作PreTranslateMessage      在消息被发送到Windows函数TranslateMessage和DispatchMessage之前过滤消息IsIdleMessage           检测特定的消息ProcessWndProcException  截获线程消息和命令处理函数出现的所有未处理的异常ProcessMessageFilter      在特定的消息到达应用程序之前截获消息Run                    线程的具有消息收发功能的控制函数，可重载以定制缺省的消息循环
+
+
+   
+
+
+   
+
+
+   
+
+
+AfxBeginThread和CreateThread具体区别
+
+
+
+具体说来，CreateThread这个 函数是windows提供给用户的 API函数，是SDK的标准形式.
+
+
+AfxBeginThread，是编译器对原来的CreateThread函数的封装，用与MFC.
+
+
+而_beginthread是C的运行库函数。 
+
+
+
+
+
+在使用AfxBeginThread时，线程函数的定义为：UINT_yourThreadFun(LPVOIDpParam)
+
+
+在使用CreateThread时，线程的函数定义为：DWORDWINAPI_yourThreadFun(LPVOID pParameter)。
+
+
+
+
+
+两个的实质都是一样的，不过AfxBeginThread返回一个CWinThread的指针，就是说他会new一个CWinThread对象，而且这个对象是自动删除的（在线程运行结束时），给我们带来的不便就是无法获得它的状态，因为随时都有可能这个指针指向的是一个已经无效的内存区域，所以使用时（如果需要了解它的运行状况的话）首先CREATE_SUSPENDED让他挂起，然后m_bAutoDelete=FALSE，接着才ResumeThread，最后不要了delete那个指针。
+
+
+CreatThread就方便多了，它返回的是一个句柄，如果你不使用CloseHandle的话就可以通过他安全的了解线程状态，最后不要的时候CloseHandle，Windows才会释放资源(线程内核对象).
+
+
+
+
+
+
+
+   下面我们就来看一下AfxBeginThread函数的内部实现
+
+
+   //启动worker线程CWinThread* AFXAPI AfxBeginThread(AFX_THREADPROC pfnThreadProc, LPVOID pParam,                             int nPriority, UINT nStackSize, DWORD dwCreateFlags,                             LPSECURITY_ATTRIBUTES lpSecurityAttrs){
+
+
+   ASSERT(pfnThreadProc != NULL);
+
+
+   CWinThread* pThread = DEBUG_NEW CWinThread(pfnThreadProc, pParam);ASSERT_VALID(pThread);
+
+
+   
+
+
+   if (!pThread-&gt;CreateThread(dwCreateFlags|CREATE_SUSPENDED, nStackSize,lpSecurityAttrs)){pThread-&gt;Delete();return NULL;}VERIFY(pThread-&gt;SetThreadPriority(nPriority));if (!(dwCreateFlags &amp; CREATE_SUSPENDED))VERIFY(pThread-&gt;ResumeThread() != (DWORD)-1);
+
+
+   return pThread;}
+
+
+   
+
+
+   
+
+
+   //启动UI线程CWinThread* AFXAPI AfxBeginThread(CRuntimeClass* pThreadClass,int nPriority, UINT nStackSize, DWORD dwCreateFlags,LPSECURITY_ATTRIBUTES lpSecurityAttrs){
+
+
+   ASSERT(pThreadClass != NULL);
+
+
+   ASSERT(pThreadClass-&gt;IsDerivedFrom(RUNTIME_CLASS(CWinThread)));
+
+
+   CWinThread* pThread = (CWinThread*)pThreadClass-&gt;CreateObject();if (pThread == NULL)AfxThrowMemoryException();ASSERT_VALID(pThread);
+
+
+   pThread-&gt;m_pThreadParams = NULL;
+
+
+   if (!pThread-&gt;CreateThread(dwCreateFlags|CREATE_SUSPENDED, nStackSize,lpSecurityAttrs)){pThread-&gt;Delete();return NULL;}VERIFY(pThread-&gt;SetThreadPriority(nPriority));if (!(dwCreateFlags &amp; CREATE_SUSPENDED))VERIFY(pThread-&gt;ResumeThread() != (DWORD)-1);
+
+
+   return pThread;}
+
+
+
+
+
+
+   
+
+
+   
+
+
+   主要创建函数是 pThread-&gt;CreateThread(dwCreateFlags|CREATE_SUSPENDED, nStackSize,lpSecurityAttrs))
+
+
+   也就是CWinThread::CreateThread.

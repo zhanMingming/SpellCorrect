@@ -1,0 +1,47 @@
+crontab中执行其他账号运行的程序 免密码我有一个crontab但是执行的脚本中包含这么一句，如下：
+
+
+   
+/usr/bin/sudo -u pennyliang bash -c ' echo xxx '
+
+
+
+
+   这时这个echo xxx总是执行不了，后来发现是因为root的 crontab的脚本如果切换到其他账号是需要账号密码的，
+
+
+   
+
+
+
+
+   找到一个文章，解决了这个问题，并记录下来 http://blog.csdn.net/wangxianshou/article/details/8531340
+
+
+   
+
+
+   
+第一步 chmod u&#43;w /etc/sudoers
+
+
+   
+在 修改/etc/sudoers 中的
+
+
+   
+56 # Defaults  requiretty  55行左右的地方注释掉这句
+
+
+
+
+   
+98 root  ALL=(ALL)    ALL
+
+99 %pennyliang   ALL=(ALL)    NOPASSWD:ALL  99行的地方增加需要suder免密码的账号
+
+
+
+
+   
+第三步 chmod u-w /etc/sudoers

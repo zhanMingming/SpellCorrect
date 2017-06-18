@@ -1,0 +1,16 @@
+用Opencv设置图像拷贝和覆盖int  imageClone(IplImage* pi,IplImage** ppo)  //  复制 IplImage 位图
+{
+	if (*ppo) {
+		cvReleaseImage(ppo);  //  释放原来位图
+	}
+ 	(*ppo) = cvCloneImage(pi);//  复制新位图
+	return(1);
+}
+
+int  imageReplace(IplImage* pi,IplImage** ppo)  //  位图替换
+{
+	if (*ppo) 
+		cvReleaseImage(ppo);  //  释放原来位图
+ 	(*ppo) = pi;//  位图换名
+	return(1);
+}

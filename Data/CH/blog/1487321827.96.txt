@@ -1,0 +1,25 @@
+自动文本分类方法nRocchio方法 
+
+
+nNa&iuml;ve Bayes 
+
+
+nkNN方法 
+
+
+n决策树方法decision tree 
+
+
+nDecision Rule Classifier
+
+
+nThe Widrow-Hoff Classifier 
+
+
+n神经网络方法Neural Networks
+
+
+n支持向量机SVM 
+
+
+n基于投票的方法(voting method)

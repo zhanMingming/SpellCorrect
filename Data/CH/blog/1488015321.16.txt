@@ -1,0 +1,112 @@
+maven构建spring4 mvc+spring4 websocket应用上一篇文章我们没有使用Spring MVC，而是自己编写了一个Servlet用来处理来自的客户端的WebSocket连接，这篇文章我们用Spring MVC &#43; WebSocket改造下之前的程序。
+
+
+   
+
+
+
+
+   pom.xml增加spring-mvc的依赖：
+
+
+   &lt;dependency&gt;
+	&lt;groupId&gt;org.springframework&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
+	&lt;version&gt;${spring.version}&lt;/version&gt;
+&lt;/dependency&gt;
+
+   
+
+
+   
+
+
+
+spring-websocket.xml配置文件如下：
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+	xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+	xmlns:websocket=&quot;http://www.springframework.org/schema/websocket&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;
+ http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd
+ http://www.springframework.org/schema/context
+ http://www.springframework.org/schema/context/spring-context.xsd
+ http://www.springframework.org/schema/websocket
+   		http://www.springframework.org/schema/websocket/spring-websocket.xsd&quot;&gt;
+
+
+	&lt;bean id=&quot;webSocketHandler&quot; class=&quot;net.aty.websocket.MyHandler&quot; /&gt;
+
+	&lt;websocket:handlers allowed-origins=&quot;*&quot;&gt;
+		&lt;websocket:mapping path=&quot;/websocket.connection&quot; handler=&quot;webSocketHandler&quot; /&gt;
+		&lt;websocket:handshake-interceptors&gt;
+			&lt;bean class=&quot;net.aty.websocket.MyWebSocketHandshakeInterceptor&quot; /&gt;
+		&lt;/websocket:handshake-interceptors&gt;
+	&lt;/websocket:handlers&gt;
+
+&lt;/beans&gt;
+
+   
+
+
+   
+
+
+
+web.xml配置如下：
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+
+	&lt;context-param&gt;
+		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+		&lt;param-value&gt;/WEB-INF/spring/spring-websocket.xml&lt;/param-value&gt;
+	&lt;/context-param&gt;
+
+	&lt;listener&gt;
+		&lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+	&lt;/listener&gt;
+	
+	&lt;servlet&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+		&lt;init-param&gt;
+			&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+			&lt;param-value&gt;&lt;/param-value&gt;
+		&lt;/init-param&gt;
+		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+	&lt;/servlet&gt;
+	&lt;servlet-mapping&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;url-pattern&gt;/websocket.connection&lt;/url-pattern&gt;
+	&lt;/servlet-mapping&gt;
+	
+
+	&lt;!-- 
+	&lt;servlet&gt;
+		&lt;servlet-name&gt;websocket&lt;/servlet-name&gt;
+		&lt;servlet-class&gt;net.aty.websocket.MyServlet&lt;/servlet-class&gt;
+		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+	&lt;/servlet&gt;
+	&lt;servlet-mapping&gt;
+		&lt;servlet-name&gt;websocket&lt;/servlet-name&gt;
+		&lt;url-pattern&gt;/websocket.connection&lt;/url-pattern&gt;
+	&lt;/servlet-mapping&gt;
+	 --&gt;
+	 
+&lt;/web-app&gt;
+
+
+   
+
+
+   
+
+
+
+
+   其他java和html文件都没有变化，和上一篇文章一样的。我们使用Spring MVC的DispatcherServlet只拦截了websocket请求。DispatcherServlet拦截到请求后，会自动调用我们在spring.xml中注册的websocket的处理类。

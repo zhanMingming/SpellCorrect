@@ -1,0 +1,238 @@
+使用当当网的Config Toolkit集中管理分布式集群的配置数据在大型集群和分布式应用中，配置数据不宜分散到集群结点中，应该集中起来统一管理。本文主要介绍如何使用这个开源工具。
+
+
+   1、首先从github下载该项目源码：
+
+
+   git clone https://github.com/dangdangdotcom/config-toolkit.git
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   2、将config-zk-web这个maven工程打包，可以得到一个war，这就是配置管理界面后台。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   3、将war部署到tomcat下，就可以通过http://127.0.0.1:8080/config-web/访问
+
+
+   
+
+
+
+
+   4、启动zookeeper server，端口号使用默认的2181
+
+
+   
+
+
+
+
+   
+
+
+
+
+   6、创建项目需要的根节点，并对内容进行加密。比如我们的根节点是/atyroot，数据内容是123456。为了能在配置管理界面连接这个节点，需要对内容进行SHA1加密。
+
+
+   import com.google.common.hash.Hashing;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+
+public class SHA1 {
+    public static void main(String[] args) throws NoSuchAlgorithmException {
+
+ // 7c4a8d09ca3762af61e59520943dc26494f8941b
+ String password = SHA1(&quot;123456&quot;);
+ System.out.println(password);
+
+ // 7c4a8d09ca3762af61e59520943dc26494f8941b
+ String dest = Hashing.sha1().hashBytes(&quot;123456&quot;.getBytes()).toString();
+ System.out.println(dest);
+    }
+
+    public static String SHA1(String decript) throws NoSuchAlgorithmException {
+ MessageDigest digest = java.security.MessageDigest
+  .getInstance(&quot;SHA-1&quot;);
+ digest.update(decript.getBytes());
+ byte messageDigest[] = digest.digest();
+
+ StringBuffer hexString = new StringBuffer();
+
+ for (int i = 0; i &lt; messageDigest.length; i++) {
+     String shaHex = Integer.toHexString(messageDigest[i] &amp; 0xFF);
+     if (shaHex.length() &lt; 2) {
+  hexString.append(0);
+     }
+     hexString.append(shaHex);
+ }
+ return hexString.toString();
+
+    }
+}
+
+7、使用zk客户端连接zookeeper，创建根节点
+
+   
+
+
+
+
+   
+
+
+
+
+   8、在控制管理界面，登陆/atyroot，密码是123456
+
+
+   
+
+
+
+
+   
+
+
+
+
+   9、创建版本和配置数据
+
+
+   
+
+
+
+
+   
+
+
+
+
+   10、通过java代码获取配置数据
+
+
+   &lt;dependency&gt;
+     &lt;groupId&gt;com.dangdang&lt;/groupId&gt;
+     &lt;artifactId&gt;config-toolkit&lt;/artifactId&gt;
+     &lt;version&gt;3.1.6-RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+   import com.dangdang.config.service.GeneralConfigGroup;
+import com.dangdang.config.service.zookeeper.ZookeeperConfigGroup;
+import com.dangdang.config.service.zookeeper.ZookeeperConfigProfile;
+
+public class DandangMain {
+    public static void main(String[] args) {
+ ZookeeperConfigProfile configProfile = new ZookeeperConfigProfile(&quot;127.0.0.1:2181&quot;, &quot;/atyroot&quot;, &quot;0.0&quot;);
+ GeneralConfigGroup group = new ZookeeperConfigGroup(configProfile, &quot;jdbc&quot;);
+ System.out.println(group.get(&quot;url&quot;));
+    }
+}
+
+11、与spring集成获取配置数据
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:c=&quot;http://www.springframework.org/schema/c&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;bean id=&quot;configProfile&quot; class=&quot;com.dangdang.config.service.zookeeper.ZookeeperConfigProfile&quot;&gt;
+ &lt;constructor-arg name=&quot;connectStr&quot; value=&quot;127.0.0.1:2181&quot;/&gt;
+ &lt;constructor-arg name=&quot;rootNode&quot; value=&quot;/atyroot&quot;/&gt;
+ &lt;constructor-arg name=&quot;version&quot; value=&quot;0.0&quot;/&gt;
+    &lt;/bean&gt;
+
+    &lt;!--代码中使用这个bean,可以实现配置数据热替换--&gt;
+    &lt;bean id=&quot;jdbcConfigGroup&quot; class=&quot;com.dangdang.config.service.zookeeper.ZookeeperConfigGroup&quot;
+   c:configProfile-ref=&quot;configProfile&quot; c:node=&quot;jdbc&quot;/&gt;
+
+    &lt;bean id=&quot;configGroupSources&quot; class=&quot;com.dangdang.config.service.support.spring.ConfigGroupSourceFactory&quot;
+   factory-method=&quot;create&quot;&gt;
+ &lt;constructor-arg name=&quot;configGroups&quot;&gt;
+     &lt;list&gt;
+  &lt;ref bean=&quot;jdbcConfigGroup&quot;&gt;&lt;/ref&gt;
+     &lt;/list&gt;
+ &lt;/constructor-arg&gt;
+    &lt;/bean&gt;
+
+    &lt;bean class=&quot;org.springframework.context.support.PropertySourcesPlaceholderConfigurer&quot;&gt;
+ &lt;property name=&quot;order&quot; value=&quot;1&quot;/&gt;
+ &lt;property name=&quot;ignoreUnresolvablePlaceholders&quot; value=&quot;true&quot;/&gt;
+ &lt;property name=&quot;propertySources&quot; ref=&quot;configGroupSources&quot;/&gt;
+    &lt;/bean&gt;
+
+    &lt;!--spring容器只加载一次,所以不能热替换--&gt;
+    &lt;bean id=&quot;holder&quot; class=&quot;net.aty.dangdang.ConfigInfoHolder&quot;&gt;
+ &lt;property name=&quot;detail&quot; value=&quot;${url}&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+
+&lt;/beans&gt;
+   import com.dangdang.config.service.zookeeper.ZookeeperConfigGroup;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+
+import java.io.IOException;
+
+public class SpringDangDangMain {
+    public static void main(String[] args) {
+ ApplicationContext context = new FileSystemXmlApplicationContext(
+  &quot;src/main/java/net/aty/dangdang/spring-dangdang.xml&quot;);// 加载 spring 配置文件
+ ConfigInfoHolder holder = (ConfigInfoHolder) context.getBean(&quot;holder&quot;);
+
+
+ ZookeeperConfigGroup group = (ZookeeperConfigGroup) context.getBean(&quot;jdbcConfigGroup&quot;);
+ System.out.println(holder.getDetail());
+ System.out.println(group.get(&quot;url&quot;));
+
+ // 修改url配置数据后,在控制台回车,观察热替换效果
+ try {
+     System.in.read();
+ } catch (IOException e) {
+
+ }
+
+ System.out.println(holder.getDetail());
+ System.out.println(group.get(&quot;url&quot;));
+
+    }
+
+}
+
+
+
+
+   
+
+
+
+
+   12、再谈管理界面的登录和注册
+
+
+   上面我们是通过自己对zookeeper创建节点并加密，然后可以用这个信息登录easyZK配置界面。那只不过是为了展示easyZK的实现原理，实际项目中使用是很容易的。输入节点名(/aty)和密码(123456)之后，直接sign in 和sign up就可以了，前者是登录，后者是注册。

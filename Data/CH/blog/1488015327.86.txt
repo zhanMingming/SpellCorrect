@@ -1,0 +1,108 @@
+简单了解文档碎片DocumentFragment的使用上一篇文章介绍&lt;template&gt;元素的时候提到了文档碎片DocumentFragment，这篇文章我们学习下什么是文档碎片，以及文档碎片的使用方式。
+
+
+   
+
+
+
+
+   碎片的创建很简单，使用document.createDocumentFragment()即可。
+
+
+   // 创建DocumentFragment碎片
+var fragment = document.createDocumentFragment();
+
+// 创建HTMLElement对象
+var pElement = document.createElement(&#39;p&#39;);
+
+DocumentFragment接口表示文档的一部分（或一段）。更确切地说，它表示一个或多个邻接的 Document 节点和它们的所有子孙节点。DocumentFragment 节点不属于文档树，继承的 parentNode 属性总是 null。不过它有一种特殊的行为，该行为使得它非常有用，即当请求把一个 DocumentFragment 节点插入文档树时，插入的不是DocumentFragment 自身，而是它的所有子孙节点。这使得 DocumentFragment
+ 成了有用的占位符，暂时存放那些一次插入文档的节点。它还有利于实现文档的剪切、复制和粘贴操作，尤其是与 Range 接口一起使用时更是如此。
+
+
+   
+
+
+   
+
+
+
+
+   比如下面这段代码，我们先创建div元素插入到碎片中，最后将碎片插入到container中。这样，碎片下的所有子孙节点都会被插入到container下。
+
+
+   var fragment = document.createDocumentFragment();
+for (var i=0; i&lt;100; i++) {
+	var div =document.createElement(&#39;div&#39;);//创建一个dom节点
+	div.innerHTML = &#39;aaa&#39; + i;//给节点添加内容
+	temp.appendChild(div);//把创建的节点插入到碎片中
+}
+
+$(&quot;#container&quot;).append(fragment);
+
+   
+
+
+   
+
+
+
+
+   下面这段代码很方便地将&lt;template&gt;下的所有节点插入到container下。
+
+
+   &lt;body&gt;
+	&lt;div id=&quot;container&quot;&gt;
+	&lt;/div&gt;
+	
+	&lt;template id=&quot;template&quot;&gt;
+		&lt;span class=&quot;title&quot; id=&quot;ele_in_template&quot;&gt;use template&lt;/span&gt;
+    &lt;/template &gt;
+&lt;/body&gt;
+&lt;script&gt;
+	// 将template下所有元素插入到container
+	$(&quot;#container&quot;).append($(&quot;#template&quot;).get(0).content);
+&lt;/script&gt;
+
+
+
+
+   
+
+
+   我们知道由于DOM的repaint和reflow非常影响性能，如果在循环中操作DOM效率很低。下面这段代码，动态创建了1000个&lt;p&gt;元素插入到body下。
+
+
+   var count = 1000;
+
+var begin = new Date().getTime();
+var end = begin;
+
+for (var i = 0; i &lt; count; i++)
+{
+	var el = document.createElement(&#39;p&#39;);
+	el.innerHTML = i;
+	document.body.appendChild(el);
+}
+
+end = new Date().getTime();
+	
+console.log(&quot;cost time: &quot; + (end-begin));
+
+很自然地想到：可以先插入到碎片下，再将碎片插入到body。据说下面的代码效率比上面的代码更高，经过我自己的尝试。使用碎片确实效率高一些，但是高的有限，可能是循环次数太少，也可能是插入的dom太简单，导致两种方式差别并不明显。不过不管怎么样，还是应该避免循环操作dom。
+   var count = 100;
+var begin = new Date().getTime();
+var end = begin;
+
+var frag = document.createDocumentFragment();
+
+for (var i = 0; i &lt; count; i++)
+{
+	var el = document.createElement(&#39;p&#39;);
+	el.innerHTML = i;
+	frag.appendChild(el);
+}
+
+document.body.appendChild(frag);
+end = new Date().getTime();
+
+console.log(&quot;cost time: &quot; + (end-begin));

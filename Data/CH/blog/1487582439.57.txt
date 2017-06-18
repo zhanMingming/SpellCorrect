@@ -1,0 +1,12 @@
+统计一个整数的二进制中1的个数（位运算技巧）int CountNumberOfOne(int number)
+{
+	int counter = 0;
+
+	while (number)
+	{
+		counter++;
+		number &amp;= number - 1 ;
+	}
+
+	return counter;
+}

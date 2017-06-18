@@ -1,0 +1,240 @@
+用XMLRPC开服务进行server/client通信本文讲一下如何用python的xmlrpc开服务，进行server/client的通信。
+
+   应用场景：1）需多client访问应用程序给予应答情况——网页服务； 2）数据极大，希望加载一次，后面只用方法调用
+解决方案： 开两个服务，一个数据服务，一个网络服务；		 数据服务端加载数据，网络服务端调用数据，并将结果显示在网络服务中；		 外部调用网络服务返回结果；
+   应用工具：xmlrpc，本文中以python 2.7.3的xmlrpclib为例，其他语言也有相应接口
+
+   下面分别说明。
+
+   
+
+   1. 数据端
+
+   在本地localhost的8000端口开server服务，load数据，并定义接口查找数据第i个元素（findai）.
+
+   Server :
+
+   
+
+   
+
+   from SimpleXMLRPCServer import SimpleXMLRPCServer
+global a
+
+def load():
+	global a
+	a = [1 ,2, 24]
+	return a
+
+def findai(i):
+	global a
+	print a[i]
+	return a[i]
+
+server = SimpleXMLRPCServer((&quot;localhost&quot;, 8000))
+server.register_function(findai,&quot;findai&quot;)
+load()
+server.serve_forever() 
+   
+
+   Client:
+
+   import xmlrpclib
+proxy = xmlrpclib.ServerProxy(&quot;http://localhost:8000/&quot;)
+
+candidate = proxy.findai(1)
+print &quot;the %d-th number of a is %d&quot; %(1, candidate)
+
+
+
+
+   2. 数据端 + 网络端
+
+   Client:
+
+   import xmlrpclib
+proxy = xmlrpclib.ServerProxy(&quot;http://localhost:8000/&quot;)
+
+candidate = proxy.findai(1)
+print &quot;the %d-th number of a is %d&quot; %(1, candidate)
+
+from bottle import route, run, template
+@route('/hello/&lt;name&gt;')
+def index(name):
+	return template('&lt;b&gt; hello {{name}} &lt;/b&gt;', name=candidate)
+
+run(host=&quot;localhost&quot;, port=8086)
+   
+
+   
+
+   注意事项：
+
+   1. 通信数据类型
+
+   注意通讯数据类型只能是python的built-in类型（而不能是numpy类型），所以其他类型应转换为str类型（client端用ast.literal_eval从str转回来）或者更方便的用list（直接server端tolist转，client端numpy.array解）；
+
+   否则会报错：
+
+   
+
+   xmlrpclib.Fault:  &lt;Fault  8002:  &quot;Can't serialize output: cannot marshal &lt;type 'numpy.float64'&gt; objects&quot;&gt;
+   
+
+   以string为例（其实tolist更简单），
+
+   Server:
+
+   
+   from SimpleXMLRPCServer import SimpleXMLRPCServer
+global a
+import ast
+from cStringIO import StringIO
+from numpy.lib import format
+import numpy
+
+class T:
+	def to_string(self,arr):
+		f = StringIO()
+		if type(arr)==numpy.ndarray:
+			format.write_array(f,arr)
+			s = f.getvalue()
+		elif isinstance(arr,str)==False:
+			s = str(arr)
+		return s
+
+	def from_string(self,s):
+		if s[0]!=&quot;[&quot;: # converted from numpy array
+			f = StringIO(s)
+			arr = format.read_array(f)
+		else:
+			arr = ast.literal_eval(s)
+		return arr
+
+	def load(self):
+		global a
+		a = [1 ,2, 24]
+		return a
+
+	def ret_a(self):
+		global a
+		return a
+		
+
+
+server = SimpleXMLRPCServer((&quot;localhost&quot;, 8002))
+server.register_instance(T())
+srv = T()
+srv.load()
+server.serve_forever() 
+Client:
+
+   
+   import xmlrpclib
+proxy = xmlrpclib.ServerProxy(&quot;http://localhost:8002/&quot;)
+
+candidate = proxy.ret_a()
+print &quot;the variable 'a' in server is &quot;+ str((proxy.from_string(candidate)))
+
+
+   
+
+   
+
+   
+
+   2. 通讯字符编码问题
+
+   注意通讯字符必须是unicode编码，用中文的时候要小心。
+
+   所以中文的case下，在server段执行：
+
+   
+
+   def gbk_to_unicode(s):
+    return s.decode('gbk').encode('utf-8').decode('latin1')
+
+   
+
+   client端执行：
+
+   
+
+   
+
+   def unicode_to_gbk(s):
+    return s.encode('latin1').decode('utf-8').encode('gbk')
+
+   
+
+   for example,
+
+   Server:
+
+   
+   from SimpleXMLRPCServer import SimpleXMLRPCServer
+global a
+import ast
+from cStringIO import StringIO
+from numpy.lib import format
+import numpy
+import sys
+
+def gbk_to_unicode(s):
+ return s.decode('gbk').encode('utf-8').decode('latin1')
+
+class T:
+
+    def load(self): # load a dictionary with gbk elements
+ global a
+ a = {&quot;1,1&quot;:[&quot;小&quot;,&quot;苹果&quot;],&quot;1,2&quot;:[1,2]}
+
+
+    def printf(self,s): # receive unicode, return unicode
+ print &quot;received string : &quot;+ s #unicode
+ return s
+
+    def idx(self,s): # transfer gbk -&gt; unicode to client
+ global a
+ return [gbk_to_unicode(x) for x in a.get(s,[])]
+
+
+reload(sys)
+sys.setdefaultencoding('gbk')
+server = SimpleXMLRPCServer((&quot;localhost&quot;, 8002))
+server.register_instance(T())
+srv = T()
+srv.load()
+server.serve_forever()
+
+
+   Client:
+
+   
+   import xmlrpclib
+proxy = xmlrpclib.ServerProxy(&quot;http://localhost:8002/&quot;)
+
+# method 1. 用unicode编码
+
+s = u&quot;美女&quot;
+print &quot;the variable to transfer is &quot;+ s
+res_u1 = proxy.printf(s)
+
+# method 2. decode to unicode
+s = &quot;美女&quot;
+print &quot;the variable to transfer is &quot;+ s
+res_u2 = proxy.printf(s.decode('latin1'))
+
+assert res_u1 == res_u2
+res_gbk = res_u1.encode('latin1')
+print res_gbk
+
+
+# 再进一步
+
+def unicode_to_gbk(s):
+	return s.encode('latin1').decode('utf-8').encode('gbk')
+
+res = proxy.idx(&quot;1,1&quot;) # receive unicode
+a =  [unicode_to_gbk(s) for s in res] # transfer unicode-&gt;gbk
+print a[0], a[1]

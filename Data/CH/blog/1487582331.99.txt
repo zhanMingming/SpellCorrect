@@ -1,0 +1,80 @@
+MFC获取View类指针现在知道的有三种方法：
+
+
+   
+
+
+
+   1.当只有一个view类的时候，或者只想获取当前活动的view类，这时可以采用这种方法。
+
+   在当前使用的类中添加如下代码：
+
+  CMainFrame*  pFrame=(CMainFrame*)AfxGetMainWnd(); 
+
+  CListCtrlView* pView = (CListCtrlView*)pFrame-&gt;GetActiveView();
+
+   2.view类中有相同的功能，或要循环访问各个view类，此时可以采用这种方法。
+
+   在当前使用的类中添加如下代码：
+
+
+
+
+
+  POSITION  POS; 
+
+  POS = AfxGetApp()-&gt;GetFirstDocTemplatePosition(); 
+
+  CDocTemplate*  pDocTemplate = AfxGetApp()-&gt;GetNextDocTemplate(POS); 
+
+  POS = pDocTemplate-&gt;GetFirstDocPosition(); 
+
+  CDocument*  pDoc=pDocTemplate-&gt;GetNextDoc(POS); 
+
+  POS = pDoc-&gt;GetFirstViewPosition();
+
+  CView*  pView;
+
+  while (POS != NULL)
+
+  {
+
+    pView=(CView*)pDoc-&gt;GetNextView(POS);
+
+    if( pView-&gt;IsKindOf( RUNTIME_CLASS(CListCtrlView) ) )
+
+    {
+
+        //添加自己的处理代码 ;
+
+    }
+
+  }
+
+   3.最后一种，也是我遇到的一种，要在CMainFrame中只访问多个view类中的特定的一个view类。
+
+   前提条件：进行了窗口的切分。
+
+   （1）在MainFrame.h中定义各个view类的指针，如：CListCtrlView* pListView；CWinPcapView* pCapView;
+
+   （2）在OnCreateClient函数中添加代码（注意：要在完成切割后添加）。如：
+
+//切分窗口的语句：
+
+  if(m_SplitWnd.CreateStatic(this,1,2) == NULL)
+
+    return TRUE;
+
+  m_SplitWnd.CreateView(0,0,RUNTIME_CLASS(CListCtrlView),CSize(80,0),pContext);
+
+  m_SplitWnd.CreateView(0,1,RUNTIME_CLASS(CWinPcapView),CSize(200,0),pContext);
+
+  pListView=(CListCtrlView*)m_SplitWnd.GetPane(0,0);   //该句得到CListView类的指针
+
+如此就可以在其他函数中用这个CListView类的指针了。
+
+使用的方法是：首先取得CMainFrame类的指针，得到该类中我们想要的指针变量。如：
+
+CMainFrame*  pFrame=(CMainFrame*)AfxGetMainWnd(); 
+
+CListCtrlView* pView = (CListCtrlView*)pFrame-&gt;pListView；

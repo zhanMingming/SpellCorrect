@@ -1,0 +1,28 @@
+匹配不包含指定中文字符的行上一篇利用正则表达式匹配不包含某些指定字符的只是动动脑机，回忆一下正则表达式， 但是遇到了中文，一来编码问题不方便， 二来容易考虑问题有漏洞。 如果我们想实现匹配不包含某些字符串的功能， 还是用shell脚本比较安全。
+
+
+
+   如下面这段代码实现匹配所有不含“登录”和“注册”的行。其中， “=~”表示包含。
+
+
+
+   str="登录|注册"
+
+while read line; do
+    if  [[ ! $line =~ $str ]]; then
+ echo $line;
+    fi
+done &lt; inputfile
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

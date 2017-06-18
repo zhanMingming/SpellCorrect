@@ -1,0 +1,28 @@
+VC查看宏展开之后的文件的设置VC查看展开后的宏:
+
+
+   
+
+
+   VC++ 6.0project menu-&gt;settings project settings dialog C/C++ tab category : preprocessor Project options: 最后加上 /P rebuild all,会产生于.cpp同名的.i文件。在这里宏被展开了
+
+
+   
+
+
+   
+
+
+   VC++ 2005及以上:
+
+
+   Project-&gt;右键Property-&gt;c++-&gt;Preprocessor-&gt;Generate Preprocessed File :
+
+
+   	选中/p选项即可.
+
+
+   
+
+
+   	重新编译，在源代码目录下会产生相应的.i文件。

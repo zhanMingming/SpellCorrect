@@ -1,0 +1,16 @@
+什么是cookieless domain?在网页优化中有一种优化方式，简称cookieless domain，这是一种是将网页中静态的文本，图片等的域名和主域名相区别开的方法。
+
+
+     主域名难免要使用cookie，而这个旁路域名则禁用cookie,这样每次用户浏览器访问，在HTTP头中就不包含cookie的内容，可以节约用户上行和服务器下行的带宽，虽然只有一点点，但如果这个主页访问量巨大，还是值得的。
+
+
+   
+
+
+     例如搜狗首页(www.sogou.com)，就存在这个问题，如下图：
+
+
+     
+
+
+   详细参见：http://www.ravelrumba.com/blog/static-cookieless-domain/

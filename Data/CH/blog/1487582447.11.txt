@@ -1,0 +1,106 @@
+Equipment Box(计算几何)设计到角度的问题，轻松！
+
+
+   Equipment Box
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:69 Accepted:14 
+
+
+   Description 
+
+
+   There is a large room in the Pyramid called Room-of-No-Return. Its floor is covered by rectangular tiles of equal size. The name of the room was chosen because of the very high number of traps and mechanisms in it. The ACM group has spent several years studying the secret plan of this room. It has made a clever plan to avoid all the traps. A specially trained mechanic was sent to deactivate the most feared trap called Shattered Bones. After deactivating the trap the mechanic had to escape from the room. It is very important to step on the center of the tiles only; he must not touch the edges. One wrong step and a large rock falls from the ceiling squashing the mechanic like a pancake. After deactivating the trap, he realized a horrible thing: the ACM plan did not take his equipment box into consideration. The box must be laid onto the ground because the mechanic must have both hands free to prevent contact with other traps. But when the box is laid on the ground, it could touch the line separating the tiles. And this is the main problem you are to solve. 
+
+
+   Input 
+
+
+   The input consists of T test cases. The number of them (T) is given on the first line of the input file. Each test case consists of a single line. The line contains exactly four integer numbers separated by spaces: A, B, X and Y. A and Bindicate the dimensions of the tiles, X and Y are the dimensions of the equipment box (1 &lt;= A,B,X,Y &lt;= 50000). 
+
+
+   Output 
+
+
+   Your task is to determine whether it is possible to put the box on a single tile -- that is, if the whole box fits on a single tile without touching its border. If so, you are to print one line with the sentence "Escape is possible.". Otherwise print the sentence "Box cannot be dropped.". 
+
+
+   Sample Input 
+
+
+   
+
+   2
+10 10 8 8
+8 8 10 10
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   Escape is possible.
+Box cannot be dropped.
+
+
+   #include&lt;iostream&gt;
+#include&lt;cmath&gt;
+using namespace std;
+
+#define pi acos(-1)
+void swap(double a,double b)
+{
+	double t;
+	t=a;
+	a=b;
+	b=t;
+}
+
+struct zuobiao
+{
+	double x,y;
+}rec[2];
+
+int main()
+{
+	int cases;
+	scanf("%d",&amp;cases);
+	while(cases--)
+	{
+		scanf("%lf%lf%lf%lf",&amp;rec[0].x,&amp;rec[0].y,&amp;rec[1].x,&amp;rec[1].y);
+		if(rec[0].x&lt;rec[0].y)
+			swap(rec[0].x,rec[0].y);
+		if(rec[1].x&lt;rec[1].y)
+			swap(rec[1].x,rec[1].y);
+		if(rec[0].x&gt;rec[1].x&amp;&amp;rec[0].y&gt;rec[1].y)
+		{
+			cout&lt;&lt;"Escape is possible."&lt;&lt;endl;
+			continue;
+		}
+		else if(rec[0].x*rec[0].y&lt;rec[1].x*rec[1].y)
+		{
+			cout&lt;&lt;"Box cannot be dropped."&lt;&lt;endl;
+			continue;
+		}
+		int flag=0;
+		for(double i=0;i&lt;90;i+=0.2)
+		{
+			double angle=i/180*pi;
+			if(rec[1].x*sin(angle)+rec[1].y*cos(angle)&lt;rec[0].x&amp;&amp;rec[1].y*sin(angle)+rec[1].x*cos(angle)&lt;rec[0].y)
+			{
+				cout&lt;&lt;"Escape is possible."&lt;&lt;endl;
+				flag=1;
+				break;
+			}
+		}
+		if(flag==0)
+			cout&lt;&lt;"Box cannot be dropped."&lt;&lt;endl;
+	}
+	return 0;
+}

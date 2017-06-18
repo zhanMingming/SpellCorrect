@@ -1,0 +1,58 @@
+google news(news.google.com)重大改版google news在个性化和相关性上作出了重大改进，上一次记得google新闻支持了加星标的功能（我的博客中也有介绍）和快翻功能。
+
+
+   
+
+
+   另外在一些细节上也做出了更加符合新闻从业人员的需求。
+
+
+   例如重大事件的主流媒体报道链接聚合，Email story等功能。
+
+
+   
+
+
+   
+
+
+   以下为techcrunch原文
+
+
+   After months of testing, today Google News is unveiling &ldquo;the biggest redesign since the beta launch in 2002,&rdquo; says director of product management Ben Ling. The main new elements of the page include new navigation by trending topics in the left pane, a personalized news stream in the middle pane, and localized news and weather in the right-hand pane. 
+
+
+   The whole idea is to make Google news more personal and relevant. The trending topics, which Google calls topic links, will sit under Top Stories and be tied to keywords related to hot stories of the day. We spotted these trending topics in the wild earlier this year during the beta test period. And yes, that is similar to a very popular discovery feature on Twitter. But these topic links will also appear just above headlines and if you click on them you get a stream of related stories. 
+
+
+   The biggest change, though, is shift to a personal news stream. One of the sections on the main page is now called &ldquo;News For You.&rdquo; It shows all the sources and topics which you tend to read. News can be viewed in a section view or a new list view, which is basically a reverse-chronological stream (like a blog or Twitter/Facebook stream). There is also be a new tool available under &ldquo;Edit Personalizations&rdquo; which lets you specify which news sources you trust the most. News items from those sources will be given extra weight in the &ldquo;News For You&rdquo; column. Go ahead and select TechCrunch. (We&rsquo;ll wait).
+
+
+   Local news and weather, as well as news somehow deemed relevant to you, will be in the lower right hand corner. I think of that as the Geo section.
+
+
+   Social sharing is quickly becoming a key way that news travels. Google News also has new sharing options. Every story can be shared via Gmail, Google Reader, Google Buzz, Facebook, and Twitter. You can not only share stories, but entire story clusters. Google is boosting the sharing features across its products, so this one was a natural.
+
+
+   The Spotlight section, which is like an Editor&rsquo;s pick collection of longer-form and longer-lasting stories, is getting more prominence on the main page. Finally, Google News is adding keyboard shortcuts such as &ldquo;n&rdquo; for next story, &ldquo;p&rdquo; for previous, &ldquo;/&rdquo; for search, and &ldquo;s&rdquo; to star a topic.
+
+
+   In many ways, Google is learning what Yahoo and others learned long ago. Making the news personal, makes people come back more often. But Google is wrapping this personalization in the new vocabulary of social streams and sharing. The new design will begin rolling out in the U.S. today.
+
+
+   
+
+
+   
+
+
+   
+
+
+   推荐阅读：
+
+
+   http://blog.csdn.net/pennyliang/archive/2010/02/05/5288175.aspx
+
+
+   http://techcrunch.com/2010/06/30/google-news-overhaul/

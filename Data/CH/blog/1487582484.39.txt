@@ -1,0 +1,283 @@
+boost::polymorphic_cast用法boost::polymorphic_cast用来实现down cast。如果转换不成功，则抛出一个异常。
+
+
+   
+
+
+   这和dynamic_cast很类似。但是dynamic_cast转换指针失败的时候，不抛异常。
+
+
+   
+
+
+   下面是二者使用的例子：
+
+
+   
+
+
+   
+
+
+   #ifndef BASE_FOR_CAST
+
+
+   #define BASE_FOR_CAST
+
+
+   
+
+
+   #include &lt;iostream&gt;
+
+
+   #include &lt;boost/cast.hpp&gt;
+
+
+   #include &lt;boost/scoped_ptr.hpp&gt;
+
+
+   
+
+
+   class base1
+
+
+   {
+
+
+   public:
+
+
+   	virtual void print()
+
+
+   	{
+
+
+   		std::cout &lt;&lt; "Base1::print" &lt;&lt; std::endl;
+
+
+   	}
+
+
+   
+
+
+   	virtual ~base1() { }
+
+
+   protected:
+
+
+   private:
+
+
+   };
+
+
+   
+
+
+   
+
+
+   class base2
+
+
+   {
+
+
+   public:
+
+
+   	void only_base2()
+
+
+   	{
+
+
+   		std::cout &lt;&lt; "only base2" &lt;&lt; std::endl;
+
+
+   	}
+
+
+   
+
+
+   	virtual ~base2() {}
+
+
+   protected:
+
+
+   private:
+
+
+   };
+
+
+   
+
+
+   
+
+
+   class derived : public base1, public base2
+
+
+   {
+
+
+   public:
+
+
+   	void print()
+
+
+   	{
+
+
+   		std::cout &lt;&lt; "derived :: print" &lt;&lt; std::endl ;
+
+
+   	}
+
+
+   
+
+
+   	void only_here()
+
+
+   	{
+
+
+   		std::cout &lt;&lt; "only derived 2" &lt;&lt; std::endl;
+
+
+   	}
+
+
+   
+
+
+   	void only_base2()
+
+
+   	{
+
+
+   		std::cout &lt;&lt; "derived base2" &lt;&lt; std::endl ;
+
+
+   	}
+
+
+   	~derived() { std::cout &lt;&lt; "derived destuctor" &lt;&lt; std::endl; }
+
+
+   };
+
+
+   
+
+
+   void Test_Polymorphic_Cast()
+
+
+   {
+
+
+   	base1* p1 = new derived;
+
+
+   
+
+
+   	boost::scoped_ptr&lt;base1&gt; bsp(p1);
+
+
+   	p1-&gt;print();
+
+
+   
+
+
+   	try
+
+
+   	{
+
+
+   		derived* pd = boost::polymorphic_cast&lt;derived*&gt;(p1);
+
+
+   		pd-&gt;only_base2();
+
+
+   		pd-&gt;only_here();
+
+
+   
+
+
+   		base2* pb2 = boost::polymorphic_cast&lt;base2*&gt;(p1);
+
+
+   		pb2-&gt;only_base2();
+
+
+   	}
+
+
+   	catch (std::bad_cast&amp; e)
+
+
+   	{
+
+
+   		std::cout &lt;&lt; e.what() &lt;&lt; std::endl;
+
+
+   	}
+
+
+   	
+
+
+   }
+
+
+   
+
+
+   void polyporphic_cast_example(base1* p)
+
+
+   {
+
+
+   	derived* d = boost::polymorphic_cast&lt;derived*&gt;(p);
+
+
+   	d-&gt;print();
+
+
+   
+
+
+   	base2* b2 = boost::polymorphic_cast&lt;base2*&gt;(p);
+
+
+   	b2-&gt;only_base2();
+
+
+   }
+
+
+   
+
+
+   以上代码通过vs2008编译和测试，请注意设置好boost库的路径。

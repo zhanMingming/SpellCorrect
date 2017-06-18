@@ -1,0 +1,109 @@
+guava-retrying重试工具库: 阻塞策略BlockStrategy什么是阻塞策略呢？通过前面的学习，我们知道guava-retrying是可以设置2次重试的时间间隔的。比如第一次失败后，需要等待200ms再开始第二次尝试，也就是说线程需要等待200ms。实现200ms等待有多种方式，比如通过sleep方式，比如通过自旋的方式，比如锁、wait等多种控制手段，这其实就是并发策略。guava-retrying默认是使用睡眠方式来实现阻塞的。
+
+
+   
+
+
+
+
+   比如下面这段代码，我们配置的是重试5次，但是实际上只重试2次就会终止。因为我们将重试线程中断了，所以就不会再重试了。通过睡眠实现阻塞的一个好处：可以响应外部中断请求。
+
+
+   
+   import com.github.rholder.retry.*;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+public class TestBlock {
+
+
+    private static Callable&lt;Boolean&gt; alwaysExceptionTask = new Callable&lt;Boolean&gt;() {
+
+ @Override
+ public Boolean call() throws Exception {
+     System.out.println(&quot;called&quot;);
+     throw new NullPointerException();
+ }
+    };
+
+
+    public static void main(String[] args) throws Exception {
+ Thread retryThread = runInNewThread();
+
+ // 让retryThread先执行
+ Thread.sleep(2000);
+ retryThread.interrupt();
+    }
+
+    // 第一次重试是立刻执行的,无需等待
+    private static Thread runInNewThread() {
+ Runnable runnable = () -&gt; {
+     Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+      .retryIfException()
+      .withBlockStrategy(BlockStrategies.threadSleepStrategy())
+      .withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+      .withStopStrategy(StopStrategies.stopAfterAttempt(5))
+      .build();
+
+     try {
+  retryer.call(alwaysExceptionTask);
+     } catch (Exception e) {
+  System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+     }
+ };
+
+ Thread retryThread = new Thread(runnable);
+ retryThread.start();
+ return retryThread;
+    }
+}
+
+
+
+
+
+
+   我们可以自己实现阻塞策略，比如通过自旋来实现阻塞，那么就不会响应阻塞；比如我们实现一个假的阻塞策略(根本不阻塞)，那么等待时间就没有意义了。
+
+
+   
+   // 类似自旋锁的实现, 不响应线程中断
+public class SpinBlockStrategy implements BlockStrategy {
+
+    @Override
+    public void block(long sleepTime) throws InterruptedException {
+ long start = System.currentTimeMillis();
+ long end = start;
+ System.out.println(&quot;[SpinBlockStrategy]...begin wait.&quot;);
+
+ while (end - start &lt;= sleepTime) {
+     end = System.currentTimeMillis();
+ }
+
+ System.out.println(&quot;[SpinBlockStrategy]...end wait.&quot;);
+    }
+}
+
+
+
+
+
+
+   
+
+
+
+
+   
+   import com.github.rholder.retry.BlockStrategy;
+
+// 伪造的阻塞策略,实际上根本没有任何阻塞
+public class FakeBlockStrategy implements BlockStrategy {
+
+    @Override
+    public void block(long sleepTime) throws InterruptedException {
+ System.out.println(&quot;[FakeBlockStrategy]...begin wait.&quot;);
+ System.out.println(&quot;[FakeBlockStrategy]...end wait.&quot;);
+    }
+}

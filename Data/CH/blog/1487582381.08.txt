@@ -1,0 +1,52 @@
+无题给定一个32bit的整数a。求另一个整数b，使得a和b的二进制序列互为逆序。
+
+
+   
+
+
+   Condition 1. 假设a=10(000A)16，,则希望得到b=(5000)16。
+
+
+   
+
+
+   #include&quot;iostream&quot;
+using namespace std;
+
+int a=10;
+int b=0;
+int i;
+int main()
+{
+   for(i=0;i&lt;32;i++)
+   {
+      b=(b&lt;&lt;1)+(a&amp;1);
+      a&gt;&gt;=1;
+    }
+
+    cout&lt;&lt;b&lt;&lt;endl;
+}
+
+
+   Condition 2. 不固定32b，假设a=10(000A)16，,则希望得到b=(0005)16。
+
+
+   
+
+
+   #include&quot;iostream&quot;
+using namespace std;
+
+int a=10;
+int b=0;
+int i;
+int main()
+{
+   while(a)
+   {
+      b=(b&lt;&lt;1)+(a&amp;1);
+      a&gt;&gt;=1;
+    }
+
+    cout&lt;&lt;b&lt;&lt;endl;
+}

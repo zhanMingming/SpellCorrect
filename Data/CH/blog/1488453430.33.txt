@@ -1,0 +1,192 @@
+c程序员的python开发总结之前发表过一篇文章《如何学习一门新的语言》。之后就开始学习python了，具体原因也不是很清楚了。我先是从python简明教程开始，写了两篇笔记《python初体验1》《python初体验2》，但是没有太多的感受。后面因为一个小的项目，我想尝试一下python，在这个过程中，体验了python的简洁和高效，有一种飞起来的感觉——也许我是一名c语言程序员。
+
+   事实也再次证明，学习一门新的语言最好的方法就是在实际开发中去使用它。我旁边没有人有python经验，所以学习过程有些曲折，还好很多问题都可以通过网络解决。另外，学习的过程中发现一本书《python参考手册》非常不错，有时间一定要通读一下。
+
+   学习一门语言最大的障碍不是语法，也不是库的使用，而是之前语言的思维方式——思维定势会让人倾向于用新的语言来模拟自己熟悉的语言，而这正是最大的障碍所在，你将无法体会到这门语言的优势。所以要学会用新的语言的思维方式来解决问题。还是让我们在来温习一下这个非常有寓意的比喻：
+
+   这就像你本来只有一个榔头，有人给了你一个螺丝刀，你说“哎，这不是一把好榔头，但是我应该可以倒着拿螺丝刀，用螺丝刀来砸东西。”你得到了一个很烂的榔头，但事实上它确实一把很不错的螺丝刀。所以你应该对所有的事物保持开放和积极的心态。”
+
+   这方面赖勇浩翻译过一篇文章《pythonic到底是什么玩意》，应该是同一个意思。python方面赖勇浩写的文章非常不错。
+
+   好了，进入正题了：下面是我的总结，可能不够pythonic，如果你有更好的方案，就指出了。
+
+   
+套接字编程：
+   
+
+   1、 函数的功能基本和c类似，唯一不同的地方在于当发生错误时，它不是通过返回值来告知的，而是通过触发异常，所以udp中的bind, recvfrom, sendto必须要进行捕捉异常。
+
+   2、 套接字在垃圾收集的时候也会关闭。
+
+   3、 获取网卡的IP： 
+
+   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+   return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0X8915, struct.pack('256s', ethname[:15]))[20:24])
+字符串的使用：
+   1、 字符串中删除一个字串。没有直接提供这个方法，但是replace可以实现：
+
+   &quot;abcdef&quot;.replace(&quot; &quot;, &quot;&quot;)
+
+   同样的功能还有一个方法：translate。它的原有作用是将字符串中的某个字符替换为另外一个字符，注意，不是字符串。它的第一个参数是一个转换表。第二个参数是要删除的字符串。我们可以利用第二个参数del，实现这个功能。同时，第一个参数设置为None。
+
+   translate可能更高效一点。另外，它的第二个参数可以使一个字符串，含有多个字符，这样就会删除多个。
+
+   2、 strip方法：去除字符串两侧的空格，返回新的字符串。这个功能非常有用。
+
+   3、 endswitch：检查字符串是否已某字符串结尾。
+
+   4、 partition：它将字符串按指定的字符串分为三个部分，返回一个元组。第一个是指定字符串前面内容，第二个是指定字符串，第三个是指定字符串后面的内容。用于字符串解析非常好用。
+
+   5、 split：将字符串按照某指定字符串分割成多个子字符串，返回一个分割后的列表。
+
+   6、 join：将一个字符串列表中的各个字符串连接起来，中间插入指定的字符串。
+
+   
+函数的使用：
+   1、函数的作用域：函数中定义一个变量，如果和全局变量重名，则全局变量名称就会被覆盖，也就是，这里对这个变量的更改，不会更改全局变量。但是，如果直接使用的话，是会使用全局变量的。同时，如果想要修改全局变量，需要制定是全局变量：global a
+字典的使用：
+   1、 字典的删除：直接使用del dict[k]可能会引发异常；首先判断k是否存在则效率有些低；使用异常使程序结构看起来不好。一个好的方法是pop(k, default v)。这个删除一个k项，并且返回。如果不存在返回默认的v。如果不加默认值，则会引发异常。
+
+   
+
+   2、 直接使用字典下标获取字典的值可能会引发一场。使用get方法则不会，如果不存在会返回none。另外，还可以设置不存在的默认值。
+
+   3、 通过字典格式化字符串：print “value is %(key)s” % kvdict
+
+   4、 item方法返回一个列表，列表中的元素是一个元组，第一个是key，第二个是value。比较好用的方法。
+
+   
+列表的使用：
+   1、 列表的删除：不可以在遍历的过程中删除链表，这样会得到不可预知的后果。可以使用列表的过滤，来获得新的列表。
+
+   2、 列表的过滤：
+
+    def filterFun(node):#这个函数做了两个事情哎。
+
+    node.cycleCount = node.cycleCount -1
+
+    return node.cycleCount &lt; 0
+
+   timeoutList = filter(filterFun, timerList)
+
+    对timerList中的每个节点执行函数filterFun，根据filterFun返回的结果，为真的项组成一个新的列表。
+
+   
+
+   3、 map: kvlist = map(lambda x:x.strip(), kvlist)
+
+   4、 
+XML的使用：
+   1、 处理xml消息包比较好用的模块是xml.etree.ElementTree。
+
+   2、 Element执行xml的根节点。
+
+   3、 elem.find(path):查找根节点下面路径为path的子节点。
+
+   4、 elem.findall(path):同样的子节点可能有多个，这里会返回一个列表。
+
+   5、 elem.findtext(path):获取指定路径子节点的内容，这个我们会经常使用。
+
+   6、 elem.get(key);获取属性的值。
+
+   7、 上面如果没用，则返回none
+
+   8、 elem.append:添加自节点。
+
+   9、 elem.tag：返回tag值，也就是name。
+
+   10、 elem.text:返回内容。
+
+   11、 elem.attrib:返回属性的字典。
+
+   12、 SubElement：生成一个节点，自动添加为父节点的子节点。
+
+   13、 tostring：转化为xml文本字符串。但是不包括xml头。如果编码方式为UTF-8或者GB2312,gb2312都会产生xml头；如果是utf-8,则不会产生xml头
+
+   14、 fromstring：从字符串转化为ElementTree对象。和XML同样的功能。
+
+   15、 elem.set();设置属性值
+time的使用：
+   1、 time.sleep()函数函数具有c下sleep函数功能，单位为秒，但是可以接受浮点数。这样可以表示毫秒。
+
+   2、 ti = datetime.datetime.now()可以显示当前的时间，包括当前的微秒也可以显示出来。两个的差值可以表示时间的间隔：microsecondLong = timeLong.seconds *1000000 + timeLong.microseconds。差值的成员是seconds和microseconds
+
+   3、 
+
+   
+OO的使用：
+   1、 如果不想让成员变量或者方法被外部使用（也就是private特性），可以以__双下划线开通。
+
+   2、 Python也可以实现抽象基类，也就是接口：
+ 
+  
+   
+  
+   
+ 
+   
+
+   3、 __str__属性可以将对象转换为字符串，也就是调用print(object)是会打印的字符串。
+
+   4、 __call__可以见对象作为函数来调用。给它一个入参就可以。
+
+   5、 对象实例是否可以删除？
+
+   6、 Python参考手册要好好看一下。
+模块的使用：
+   1、 如果不想将模块的某些函数和变量被别的模块使用，可以以单下划线开头。这样import *是没有的，但是使用importmode，然后mode._fun仍然可以调用。
+
+   2、 
+
+   
+日志的使用：
+   1、 日志的标准模块logging基本可以满足我的工作。
+
+   2、 设置log的初始化工作：
+
+   logging.basicConfig(
+
+    filename = &quot;test.log&quot;,
+
+    format = &quot;[%(asctime)s-%(levelname)s] %(message)s[%(filename)s,%(lineno)d]&quot;,
+
+    level = logging.INFO,
+
+    datefmt = &quot;%F %T&quot;)
+
+   3、 除此之外，一个比较强大的功能就是过滤功能：可以针对级别，文件，行号等等很多的东西进行过滤。
+
+   4、 
+
+   
+自省的使用：
+   1、 type()可以查看对象的类型。这就是自省。也就是可以看看自己是什么类型。这个功能在动态语言中非常有用。
+
+   2、 
+
+   
+配置文件读取的使用：
+   1、 使用模块ConfigParser。实例如下：
+
+   conf = ConfigParser()
+
+   conf.read(&quot;snmp_agent.ini&quot;)
+
+   
+
+   print(conf.get(&quot;main&quot;, &quot;log_level&quot;))
+
+   print(conf.getint(&quot;main&quot;, &quot;ne_agent_port&quot;))
+
+   print(conf.get(&quot;main&quot;, &quot;ne_agent_qip&quot;))
+
+   
+异常的使用：
+   1、 尽量少用。它会使程序难以理解，而且还会发生不可预知的情况，比如异常的发生使程序的状态变为一个未知状态。
+
+   2、 可以寻找替代方案。
+
+   3、 程序非常重要，不可以停止，可以在主循环包装在异常处理中运行。
+
+   4、 打印出异常的信息，供后面的定位：log.error(traceback.format_exc())

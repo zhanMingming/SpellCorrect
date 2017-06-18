@@ -1,0 +1,29 @@
+解决 Mac OS SSH 登陆 Linux 出现中文乱码问题原理： 都用utf-8.
+
+
+
+   方法：
+
+
+
+terminal中： 
+
+LANG=zh_CN.UTF-8 
+
+export LANG
+terminal preference 中的encoding改成utf-8
+关掉terminal, 重新连接
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

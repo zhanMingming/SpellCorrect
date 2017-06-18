@@ -1,0 +1,103 @@
+hdu 3700 catCat
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 181Accepted Submission(s): 52Special Judge
+
+Problem Description
+
+There is a cat, cat likes to sleep. If he sleeps, he sleeps continuously no less than A hours.For some strange reason, the cat can not stay awake continuously more than B hours.The cat is lazy, it could sleep all the time, but sometimes interesting events occur(such as cat food, TV show, etc) . The cat loves these events very much.So, Please help the cat plan their day so as not to miss any interesting events. Every day the cat wants to live on the same schedule.
+
+
+
+
+   
+
+Input
+
+The first line of the input file contains two integers A and B (1 &lt;= A, B &lt;= 24). The second line of the input file contains the number n, the number of interesting events (1 &lt;= n &lt;= 20). Following n rows describe the interesting events. Each event is described line of the form hh:mm-hh:mm, which specifiesthe time period during which it occurs. Time varies from 00:00 to 23:59. No two interesting events will overlap.If the event is completed earlier than the beginning, This means that it captures midnight.The event is considered to be occupying the whole minute, when it begins and the moment when it ends (event 12:00-13:59 lasted exactly 120 minutes). Start time and time end of the event are different.
+
+
+
+
+   
+
+Output
+
+If the cat can organize their day so that during all the interesting events not sleep, print to output file Yes.On the second line Bring k - how many times a day cat should go to bed. In the following k rows Bring out the intervals in which the cat sleeps in the same format, in which interesting events are set in the input file. If making a few, display any.If the cat can not organize their day desired way, print to the output file No.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   12 12
+1
+23:00-01:00
+3 4
+3
+07:00-08:00
+11:00-11:09
+19:00-19:59
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   Yes
+1
+01:07-22:13
+No
+
+
+
+
+
+
+   
+
+Author
+
+ZhengZhao@SJTU
+
+
+
+
+   
+
+Source
+
+HDOJ 5th Anniversary Contest 
+
+
+
+
+   
+
+Recommend
+
+lcy
+
+
+
+玩笑开大了= =！为以防cat挂掉，它必须睡觉。that is to say, if (segn==0) -&gt; ouput "No"
+
+
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;#include&lt;stdlib.h&gt;using namespace std;#define N 21int n,sleep,awake;struct Time{ int hour; int minite; int sec; void trans() { sec=hour*60+minite; } void retrans() { sec+=24*60; } void minusonesecond() { if(minite==0) hour--,minite=59; else minite--; if(hour&lt;0) hour+=24; } void addonesecond() { if(minite==59) hour++,minite=0; else minite++; if(hour&gt;23) hour-=24; } bool operator &lt; (const Time a)const {  if(hour==a.hour) { return minite&lt;a.minite; } return hour&lt;a.hour;  }};struct Arrange{ Time tb,te;} affire[N];int cmp(const void *a,const void *b){ struct Arrange *A=(Arrange*)a; struct Arrange *B=(Arrange*)b; if(B-&gt;tb&lt;A-&gt;tb) return 1; return -1;}Time sle[N][2];//sleep segmentchar evn[20];void solve(bool flag){ int i,j,begin,end,temp=0,nowlast=0,segn=0; Time temp1,temp2; for(i=2;i&lt;=n;i++) { end=affire[i].tb.sec-1; begin=affire[i-1].te.sec+1; if(end&lt;begin&amp;&amp;begin-end!=1) end+=24*60; if(end-begin+1&gt;=sleep)//can sleep { ++segn; temp1=affire[i-1].te; temp1.addonesecond(); sle[segn][0]=temp1; temp1=affire[i].tb; temp1.minusonesecond(); sle[segn][1]=temp1; nowlast=0; } else if(end-begin+1&lt;sleep)//cannot sleep { if(nowlast==0) nowlast+=affire[i-1].te.sec-affire[i-1].tb.sec+1; nowlast+=affire[i].te.sec-affire[i-1].te.sec+1; if(nowlast&gt;awake) { printf("No/n"); return ; } } }// [deal with the n-th and 1-st] end=affire[1].tb.sec-1; begin=affire[n].te.sec+1; if(end&lt;begin&amp;&amp;begin-end!=1) end+=24*60; if(end-begin+1&gt;=sleep)//can sleep { ++segn; temp2=affire[n].te; temp2.addonesecond(); sle[segn][0]=temp2; temp1=affire[1].tb; temp1.minusonesecond(); sle[segn][1]=temp1; nowlast=0; } else if(end-begin+1&lt;sleep)//cannot sleep { if(nowlast==0) nowlast+=affire[n].te.sec-affire[n].tb.sec+1; nowlast+=affire[1].te.sec-affire[n].te.sec+1; if(nowlast&gt;awake) { printf("No/n"); return ; } } if(n==0) { segn=1; printf("Yes/n%d/n",segn); printf("00:00-23:59/n"); return; } else { if(segn!=0) { printf("Yes/n%d/n",segn); for(i=1;i&lt;=segn;i++) { printf("%02d:%02d-%02d:%02d/n",sle[i][0].hour,sle[i][0].minite,sle[i][1].hour,sle[i][1].minite); } } else printf("No/n"); }}int main(){ while(scanf("%d%d",&amp;sleep,&amp;awake)!=EOF) { sleep*=60,awake*=60; scanf("%d",&amp;n); int i,j; bool flag=false; bool ss=false; for(i=1;i&lt;=n;i++) { Time T1,T2; scanf("%d:%d-%d:%d",&amp;T1.hour,&amp;T1.minite,&amp;T2.hour,&amp;T2.minite); T1.trans(),T2.trans(); if(T2.sec-T1.sec+1&gt;awake) { ss=true; } if(T2&lt;T1) { flag=true; T2.retrans(); } affire[i].tb=T1,affire[i].te=T2; } if(ss) { printf("No/n"); continue; } qsort(affire+1,n,sizeof(Time)*2,cmp); solve(flag);//flag-&gt;是否跨午夜 }}

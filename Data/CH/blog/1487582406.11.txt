@@ -1,0 +1,91 @@
+不让拖动的标题栏, 双击标题栏无反应C# 中怎样不能拖动窗体，使其固定在一个位置。
+
+
+   
+
+
+   第1种:用API去掉系统菜单的&ldquo;移动&rdquo;菜单项, 完美的解决方案 
+
+
+   using System; 
+using System.Windows.Forms; 
+using System.Runtime.InteropServices; 
+
+class Test : Form 
+{ 
+  const int MF_BYPOSITION = 0x0400; 
+  const int MF_REMOVE     = 0x1000; 
+
+  [DllImport("user32.dll",EntryPoint="GetSystemMenu")] 
+  extern static IntPtr GetSystemMenu(IntPtr hWnd, IntPtr bRevert); 
+
+  [DllImport("user32.dll",EntryPoint="RemoveMenu")] 
+  extern static int RemoveMenu(IntPtr hMenu, int nPos, int flags); 
+
+  Test() 
+  { 
+    Text     =  "不能移动和改变大小的窗口"; 
+    FormBorderStyle = FormBorderStyle.FixedSingle; 
+    MaximizeBox     = false; 
+    MinimizeBox     = false; 
+    RemoveMenu(GetSystemMenu(Handle,IntPtr.Zero),1,MF_BYPOSITION|MF_REMOVE); 
+  } 
+
+  static void Main() 
+  { 
+    Application.Run(new Test()); 
+  } 
+}  
+
+
+第2种: 去掉标题栏的系统菜单, 点右键自然无效, 不推荐
+
+using System.Windows.Forms;
+class Test : Form 
+{ 
+  Test() 
+  { 
+    Text     = "去掉系统菜单的标题栏"; 
+    FormBorderStyle = FormBorderStyle.FixedSingle; 
+    MaximizeBox     = false; 
+    MinimizeBox     = false; 
+  } 
+  const int WS_SYSMENU = 0x00080000;
+  protected override CreateParams CreateParams 
+  { 
+    get 
+    { 
+      CreateParams cp =  base.CreateParams; 
+      cp.Style = cp.Style &amp; ~WS_SYSMENU; 
+      return cp; 
+    } 
+  } 
+  static void Main() 
+  { 
+    Application.Run(new Test()); 
+  } 
+} 
+ 
+
+第三种，重载WndProc
+
+protected override void WndProc(ref Message m) 
+{ 
+ if (m.Msg == 0xa1 &amp;&amp; (int)m.WParam == 0x3) 
+ { 
+  return; 
+ } 
+ if (m.Msg == 0xa3 &amp;&amp; ((int)m.WParam == 0x3 || (int)m.WParam == 0x2)) 
+ { 
+  return; 
+ } 
+ if (m.Msg == 0xa4 &amp;&amp; ((int)m.WParam == 0x2 || (int)m.WParam == 0x3)) 
+ { 
+  return; 
+ } 
+ if (m.Msg == 0x112 &amp;&amp; (int)m.WParam == 0xf100) 
+ { 
+  return; 
+ } 
+ base.WndProc(ref m); 
+}

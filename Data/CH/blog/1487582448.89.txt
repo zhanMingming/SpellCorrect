@@ -1,0 +1,59 @@
+hdu 1025悲剧了&hellip;&hellip;看了好久才明白这是求最长递增子序列！
+
+
+   留个底儿以后也许有用&hellip;&hellip;
+
+
+   
+
+
+   #include &lt;iostream&gt;
+#define maxn 500002  
+using namespace std;  
+
+int dp[maxn];  
+int n,t;  
+int p[maxn];  
+
+void Solve()  
+{  
+    int i,low,up,mid,len=1;  
+    dp[1] = p[1];  
+    for(i=1;i&lt;=n;i++)  
+    {  
+ low = 1;  
+ up = len;  
+ while(low&lt;=up) 
+ { 
+     mid = (low+up)/2; 
+     if(dp[mid]&gt;=p[i])    
+				up = mid-1; 
+     else low = mid+1;
+ } 
+ dp[low] = p[i]; 
+ if(low&gt;len) len++;
+    }  
+    printf("Case %d:/nMy king, at most %d road",t++,len);  
+    if(len!=1) printf("s");  
+    printf(" can be built./n/n");
+}  
+int main()  
+{  
+    int i,temp,r;  
+    t = 1;  
+    while(scanf("%d",&amp;n)!=EOF)  
+    {  
+ for(i=1;i&lt;=n;i++)  
+ {  
+     scanf("%d%d",&amp;temp,&amp;r);  
+     p[temp]=r;  
+ }  
+ Solve();  
+    }  
+    return 0;  
+}
+
+ 
+
+
+   ps：还有个题可以练下，形式和这个差不多~hdu 1950

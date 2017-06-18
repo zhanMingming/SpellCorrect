@@ -1,0 +1,240 @@
+(二十) 理解和解决angularJS报错$apply already in progress如果我们使用了angularJS中的$scope.$apply()或者$scope.$digest()，我们很可能会遇到类&#20284;下面的错误，虽然这个错误没有太大影响，但是在日志中看起来还是很不爽的，日志中记录的异常或者错误，就应该是需要关注和解决的问题，否则就没有必要出现在日志中了。
+
+
+   Error: [$rootScope:inprog] $apply already in progress
+http://errors.angularjs.org/1.3.13/$rootScope/inprog?p0=%24apply
+    at angular.js:63
+    at beginPhase (angular.js:14755)
+    at Scope.$apply (angular.js:14499)
+    at new &lt;anonymous&gt; (1%20-%20%E5%89%AF%E6%9C%AC.html:10)
+    at Object.invoke (angular.js:4185)
+    at extend.instance (angular.js:8454)
+    at angular.js:7700
+    at forEach (angular.js:331)
+    at nodeLinkFn (angular.js:7699)
+    at compositeLinkFn (angular.js:7078)下面这段代码就会报上面这个错误：
+    var myModule = angular.module(&#39;myModule&#39;, []);  
+ myModule.controller(&quot;ctrl_1&quot;,function($scope){
+	$scope.value = &quot;aty&quot;;
+	$scope.$apply();
+	//$scope.$digest();
+ });
+
+   
+
+
+   这个错误其实很好理解：angularJS框架本身已经在做脏数据检测了，我们没有必要再手动调用$apply或者$digest。这里自然而然出现了一个疑问：什么时候需要我们手动调用$apply或者$digest，什么时候不需要呢？这是个好问题，我现在也不知道，目前我只能列出自己在项目中遇到的2种需要手动调用$apply的情况。
+
+
+   
+
+
+
+
+   情况1：controller中如果有异步操作，比如ajax回调，timeout延时等。可以这么理解：由于异步(延迟)的存在，当开始执行回调函数的时候，angularJS自身controller中的脏&#20540;检测已经结束，无法检测到回调函数导致数据的变化。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;angular.js&quot;&gt;&lt;/script&gt;	
+	&lt;script&gt;
+		
+ var myModule = angular.module(&#39;myModule&#39;, []);  
+		myModule.controller(&quot;ctrl_1&quot;,function($scope){
+			$scope.text = &quot;place&quot;;
+			
+			setTimeout(function(){
+				$scope.text = &quot;value setted after time out&quot;;
+				$scope.$apply();//必需手动进行脏值检测,否则数据无法刷新到界面
+			},1000);
+		
+		});	
+		
+		$(function(){
+			angular.bootstrap($(&quot;#div1&quot;)[0], [&quot;myModule&quot;]); 
+			
+		})
+	&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+	&lt;div id=&quot;div1&quot; ng-controller=&quot;ctrl_1&quot;&gt;
+		&lt;div&gt;{{text}}&lt;/div&gt;
+		&lt;input id=&quot;btn&quot; type=&quot;button&quot; value=&quot;jquery-event&quot;&gt;&lt;/input&gt;		
+	&lt;/div&gt;  
+  &lt;/body&gt;
+&lt;/html&gt;
+
+	
+	
+这段代码如果没有调用$scope.$apply()的话，数据是不会刷新到界面上的。
+
+   
+
+
+   
+
+
+
+
+   情况2：在JQuery代码中修改$scope中的数据。这种情况是在angular框架之外操作$scope中的数据，angular不能检测到数据变化是正常的。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;angular.js&quot;&gt;&lt;/script&gt;	
+	&lt;script&gt;
+		
+ var myModule = angular.module(&#39;myModule&#39;, []);  
+		myModule.controller(&quot;ctrl_1&quot;,function($scope){
+			$scope.text = &quot;place&quot;;
+		});	
+		
+		$(function(){
+			angular.bootstrap($(&quot;#div1&quot;)[0], [&quot;myModule&quot;]); 
+
+			$(&quot;#btn&quot;).click(function(){
+				var $scope = $(&quot;#btn&quot;).scope();
+				$scope.text = &quot;value setted in jquery&quot;;
+				$scope.$apply();
+			});			
+		})
+	&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+	&lt;div id=&quot;div1&quot; ng-controller=&quot;ctrl_1&quot;&gt;
+		&lt;div&gt;{{text}}&lt;/div&gt;
+		&lt;input id=&quot;btn&quot; type=&quot;button&quot; value=&quot;jquery-event&quot;&gt;&lt;/input&gt;		
+	&lt;/div&gt;  
+  &lt;/body&gt;
+&lt;/html&gt;
+
+	
+在JQuery的事件处理函数中，我们能够通过dom拿到其关联的$scope对象，进而修改$scope中的数据。这种情况下，也必需要手动调用$scope.$apply()。
+
+
+
+也就是说我们必须要清楚哪儿些情况需要手动$apply，哪儿些情况不需要手动$apply，这看起来很简单，实际上并不是这样的。看一段我们项目中的代码：
+
+   
+
+
+   var myModule = angular.module(&#39;myModule&#39;, []);  
+myModule.controller(&quot;ctrl_1&quot;,function($scope){
+	$scope.listItems = [];
+	
+	$scope.loadListFromService = function(){
+		Spl.MessageProcessor.loadData({
+      serviceId : &quot;url&quot;,
+      data : {},
+      success : function(json) {
+      	$scope.listItems = json.results;
+			// 要不要$scope.$apply()?
+      },
+      error: function() {
+   console.error(&quot;invoke service[&quot;+optionsJson.serviceId+&quot;] error.&quot;);
+      }
+ });
+	
+	}
+	
+	$scope.loadListFromService();
+	
+});loadData()这个函数很像ajax回调，确实是这样的，这个API不过是做了一点封装，大致代码如下：
+
+   
+
+
+   
+
+
+   function loadData(options)
+{
+	// 从本地缓存中读取,很快
+	var dataInCache = U.loadDataFromCache(options.serviceId);
+	if(dataInCache)
+	{
+		options.success(dataInCache);
+	}
+	else
+	{
+		//异步ajax
+		U.readDataFromServer(options.serviceId, options.data, function(response){
+			options.success(response);
+		});
+	}
+}
+
+由于缓存的影响，$scope.loadListFromService()变得不再那么可控，如果本地已经有缓存了，那直接读取缓存是很快的，这个时候不需要手动$apply；如果是第一次，本地没有缓存，那么就变成了情况1，我们需要手动$apply。显然调用loadData()函数的地方，不需要也不应该关注到底有没有缓存的存在，这个时候判断需要不要手动$apply就没有那么容易的。简单粗暴的方式，不管怎么样都手动调用下$scope.$apply()，这样功能不会有问题，但是日志中就不可避免要出现文中开头提到的错误。
+
+   
+
+
+   
+
+
+
+
+   angular中的$scope中提供了一个$$phase变量，如果这个变量的&#20540;是&quot;$digest&quot; 或者&quot;$apply&quot;，就代表angular自身已经在做脏&#20540;检测了，不需要我们再去调用$apply或者$digest；否则的话就需要我们手动调用$apply或者$digest了。利用这个属性，我们就可以方便解决上面的错误了，判断一下呗。下面是一个工具函数，好理解吧。
+
+
+   
+
+
+   function safeApply(scope, fn) {
+    (scope.$$phase || scope.$root.$$phase) ? fn() : scope.$apply(fn);
+}
+
+   
+
+
+
+最后提一下，$digest、$apply、$$phase这些属性或者方法其实都是$scope中的私有的，最好不要使用。如果你用到了这些方法，基本可以断言你的代码存在问题，没有按照angular的方式来组织代码。比如情况1中的setTimeout，完全可以用angular中的$timeout代替，这才是推荐的方式，而不是通过$apply来补救。
+
+   
+
+
+   
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;angular.js&quot;&gt;&lt;/script&gt;	
+	&lt;script&gt;
+		
+ var myModule = angular.module(&#39;myModule&#39;, []);  
+		myModule.controller(&quot;ctrl_1&quot;,function($scope, $timeout){
+			$scope.text = &quot;place&quot;;
+			
+			$timeout(function(){
+				$scope.text = &quot;value setted after time out&quot;;
+			},1000);
+		
+		});	
+		
+		$(function(){
+			angular.bootstrap($(&quot;#div1&quot;)[0], [&quot;myModule&quot;]); 
+			
+		})
+	&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+	&lt;div id=&quot;div1&quot; ng-controller=&quot;ctrl_1&quot;&gt;
+		&lt;div&gt;{{text}}&lt;/div&gt;
+		&lt;input id=&quot;btn&quot; type=&quot;button&quot; value=&quot;jquery-event&quot;&gt;&lt;/input&gt;		
+	&lt;/div&gt;  
+  &lt;/body&gt;
+&lt;/html&gt;
+
+
+   所以解决“$apply already in progress”最好的方式，就是不要使用$scope.$apply()或者$scope.$digest()。
+
+
+   
+
+
+
+
+   参考文章：Prevent error $digest already in progress when calling $scope.$apply()

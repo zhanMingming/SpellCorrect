@@ -1,0 +1,22 @@
+部分百科词条内部导航直接进搜索结果页网页搜索，搜陈独秀，百科内部导航直接进搜索结果页，这个用户体验做得好啊。 记得此前我也发过google.com实现的这个功能，techcrunch的一个新闻。 百度这么快就做了啊。
+
+
+    
+
+
+    背景参见：http://www.techcrunch.com/2009/09/25/anchors-away-google-now-has-search-results-within-search-results/
+
+
+   
+
+
+    水木社区的讨论：
+
+
+    谷歌这个功能的讨论：http://www.newsmth.net/bbstcon.php?board=SearchEngineTech&amp;gid=18431
+
+
+   
+
+
+    最新的讨论：http://www.newsmth.net/bbstcon.php?board=SearchEngineTech&amp;gid=20463

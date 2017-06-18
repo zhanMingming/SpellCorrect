@@ -1,0 +1,222 @@
+Task ScheduleTask Schedule
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 267Accepted Submission(s): 99
+
+Problem Description
+
+Our geometry princess XMM has stoped her study in computational geometry to concentrate on her newly opened factory. Her factory has introduced M new machines in order to process the coming N tasks. For the i-th task, the factory has to start processing it at or after day Si, process it for Pi days, and finish the task before or at day Ei. A machine can only work on one task at a time, and each task can be processed by at most one machine at a time. However, a task can be interrupted and processed on different machines on different days. Now she wonders whether he has a feasible schedule to finish all the tasks in time. She turns to you for help.
+
+
+
+
+   
+
+Input
+
+On the first line comes an integer T(T&lt;=20), indicating the number of test cases.You are given two integer N(N&lt;=500) and M(M&lt;=200) on the first line of each test case. Then on each of next N lines are three integers Pi, Si and Ei (1&lt;=Pi, Si, Ei&lt;=500), which have the meaning described in the description. It is guaranteed that in a feasible schedule every task that can be finished will be done before or at its end day.
+
+
+
+
+   
+
+Output
+
+For each test case, print &ldquo;Case x: &rdquo; first, where x is the case number. If there exists a feasible schedule to finish all the tasks, print &ldquo;Yes&rdquo;, otherwise print &ldquo;No&rdquo;.Print a blank line after each test case.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2
+4 3
+1 3 5 
+1 1 4
+2 3 7
+3 5 9
+
+2 2
+2 1 3
+1 2 2
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   Case 1: Yes
+   
+Case 2: Yes
+
+
+
+
+
+
+   
+
+Author
+
+allenlowesy
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（13）&mdash;&mdash;Host by UESTC 
+
+
+
+
+   
+
+Recommend
+
+zhouzeyong
+
+构图方法：
+
+
+
+最大流，用sap做才不会tle= =！
+
+#include &lt;iostream&gt;
+using namespace std;
+
+const int MAXN=1010;
+const int MAXM=500010;
+typedef  struct {int v,next,val;} edge;
+
+edge e[MAXM];
+int p[MAXN],eid, ans;
+int n,m;
+int h[MAXN];
+int gap[MAXN];
+int source,sink;
+
+inline void add(int from,int to,int val)
+{
+    e[eid].v=to;
+    e[eid].val=val;
+    e[eid].next=p[from];
+    p[from]=eid++;
+ 
+    e[eid].v=from;
+    e[eid].val=0;
+    e[eid].next=p[to];
+    p[to]=eid++;
+}
+
+void init()
+{
+    scanf("%d %d", &amp;n, &amp;m);
+    int i, P, S, E, j;
+    memset(p, -1, sizeof(p));
+    ans = eid = 0;
+    for (i = 1; i &lt;= n; ++i)
+    {
+ scanf("%d %d %d", &amp;P, &amp;S, &amp;E);
+ ans += P;
+ add(0, i, P);
+ for (j = S; j &lt;= E; ++j)
+ {
+     add(i, n+j, 1);
+ }
+    }
+    for (i = 1; i &lt;= 500; i++)
+    {
+ add(i+n, n+500+1, m);
+    }
+}
+
+inline int dfs(int pos,int cost, int cnt)
+{
+    if (pos==sink)
+    {
+ return cost;
+    }
+ 
+    int j,minh=cnt-1,lv=cost,d;
+ 
+    for (j=p[pos];j!=-1;j=e[j].next)
+    {
+ int v=e[j].v,val=e[j].val;
+ if(val&gt;0)
+ {
+     if (h[v]+1==h[pos])
+     {    
+  if (lv&lt;e[j].val) d=lv;
+  else d=e[j].val;
+ 
+  d=dfs(v,d,cnt);
+  e[j].val-=d;
+  e[j^1].val+=d;
+  lv-=d;
+  if (h[source]&gt;=cnt) return cost-lv;  
+  if (lv==0) break;
+     }
+ 
+     if (h[v]&lt;minh)    minh=h[v];
+ }
+    }
+ 
+    if (lv==cost)
+    {
+ --gap[h[pos]];
+ if (gap[h[pos]]==0) h[source]=cnt;
+ h[pos]=minh+1;
+ ++gap[h[pos]];
+    }
+ 
+    return cost-lv;
+ 
+}
+ 
+int sap(int st,int ed, int cnt)
+{
+    source=st;
+    sink=ed;
+    int ret=0;
+    memset(gap,0,sizeof(gap));
+    memset(h,0,sizeof(h));
+ 
+    gap[st]=cnt;
+ 
+    while (h[st]&lt;cnt)
+    {
+ ret+=dfs(st,INT_MAX, cnt);
+    }
+ 
+    return ret;    
+}
+
+int main()
+{
+    int T, cas = 0;
+    scanf("%d", &amp;T);
+    while (T--)
+    {
+ init();
+ bool flag = false;
+ if (ans == sap(0, n+500+1, n+500+2))
+ {
+     flag = true;
+ }
+ printf("Case %d: %s/n/n", ++cas, flag ? "Yes" : "No");
+    }
+    return 0; 
+}

@@ -1,0 +1,72 @@
+开源日志系统 - log4cplus (三)如何控制输出消息的格式
+
+
+   前面已经讲过，log4cplus通过布局器（Layouts）来控制输出的格式，log4cplus提供了三种类型的Layouts，
+
+   分别是SimpleLayout、PatternLayout、和TTCCLayout。
+
+   1. SimpleLayout是一种简单格式的布局器，在输出的原始信息之前加上LogLevel和一个"-"。
+
+   比如以下代码片段：
+
+    /* step 1: Instantiate an appender object */
+
+     //appender的名字就是最后生成的log的文件名. SharedObjectPtr _append (new ConsoleAppender()); _append-&gt;setName("append for test");
+
+    /* step 2: Instantiate a layout object */ std::auto_ptr&lt; log4cplus::SimpleLayout&gt;  _layout(new log4cplus::SimpleLayout());
+
+    /* step 3: Attach the layout object to the appender */ _append-&gt;setLayout( _layout );
+
+    /* step 4: Instantiate a logger object */ Logger _logger = Logger::getInstance("test");
+
+    /* step 5: Attach the appender object to the logger */ _logger.addAppender(_append);
+
+    /* log activity */ LOG4CPLUS_DEBUG(_logger, "This is the simple formatted log message...") ... ... 将打印结果：DEBUG - This is the simple formatted log message...
+
+   2. PatternLayout是一种有词法分析功能的模式布局器，一提起模式就会想起正则表达式，这里的模式和正则表达式类似，但是远比后者简单，能够对预定义的标识符（称为conversion specifiers）进行解析，转换成特定格式输出。以下代码片段演示了如何使用PatternLayout：
+
+    ... ...
+
+    /* step 1: Instantiate an appender object */ SharedObjectPtr _append (new ConsoleAppender()); _append-&gt;setName("append for test");  /* step 2: Instantiate a layout object */ std::string pattern = "%d{%m/%d/%y %H:%M:%S} - %m [%l]%n"; std::auto_ptr&lt;PatternLayout&gt;   _layout(new PatternLayout(pattern));
+
+    /* step 3: Attach the layout object to the appender */ _append-&gt;setLayout( _layout );
+
+    /* step 4: Instantiate a logger object */ Logger _logger = Logger::getInstance("test_logger.subtest");
+
+    /* step 5: Attach the appender object to the logger */ _logger.addAppender(_append);
+
+    /* log activity */ LOG4CPLUS_DEBUG(_logger, "teststr")  ... ... 输出结果：10/16/04 18:51:25 - teststr [main.cpp:51]
+
+   可以看出通过填写特定格式的模式字符串"pattern"，原始信息被包含到一堆有格式的信息当中了，这就使得用户可以根据自身需要来定制显示内容。"pattern"可以包含普通字符串和预定义的标识符，其中：
+
+   （1）普通字符串，能够被直接显示的信息。（2）预定义标识符，通过"%"与一个或多个字符共同构成预定义的标识符，能够产生出特定格式信息。
+
+   关于预定义标识符，log4cplus文档中提供了详细的格式说明，我每种都试了一下，以上述代码为例，根据不同的pattern，各种消息格式使用情况列举如下：
+
+   （1）"%%"，转义为%, 即，std::string pattern = "%%" 时输出: "%"（2）"%c"，输出logger名称，比如std::string pattern ="%c" 时输出: "test_logger.subtest"， 也可以控制logger名称的显示层次，比如"%c{1}"时输出"test_logger"，其中数字表示层次。（3）"%D"，显示本地时间，当std::string pattern ="%D" 时输出:"2004-10-16 18:55:45"，%d显示标准时间， 所以当std::string pattern ="%d" 时输出 "2004-10-16 10:55:45" （因为我们是东8区，差8个小时啊）。 可以通过%d{...}定义更详细的显示格式，比如%d{%H:%M:%s}表示要显示小时:分钟：秒。大括号中可显示的 预定义标识符如下： %a -- 表示礼拜几，英文缩写形式，比如"Fri"%A -- 表示礼拜几，比如"Friday"%b -- 表示几月份，英文缩写形式，比如"Oct"%B -- 表示几月份，"October"%c -- 标准的日期＋时间格式，如 "Sat Oct 16 18:56:19 2004"%d -- 表示今天是这个月的几号(1-31)"16"%H -- 表示当前时刻是几时(0-23)，如 "18"%I -- 表示当前时刻是几时(1-12)，如 "6"%j -- 表示今天是哪一天(1-366)，如 "290"%m -- 表示本月是哪一月(1-12)，如 "10"%M -- 表示当前时刻是哪一分钟(0-59)，如 "59"%p -- 表示现在是上午还是下午， AM or PM%q -- 表示当前时刻中毫秒部分(0-999)，如 "237"%Q -- 表示当前时刻中带小数的毫秒部分(0-999.999)，如 "430.732"%S -- 表示当前时刻的多少秒(0-59)，如 "32"%U -- 表示本周是今年的第几个礼拜，以周日为第一天开始计算(0-53)，如 "41"%w -- 表示礼拜几，(0-6, 礼拜天为0)，如 "6"%W -- 表示本周是今年的第几个礼拜，以周一为第一天开始计算(0-53)，如 "41"%x -- 标准的日期格式，如 "10/16/04"%X -- 标准的时间格式，如 "19:02:34"%y -- 两位数的年份(0-99)，如 "04"%Y -- 四位数的年份，如 "2004"%Z -- 时区名，比如 "GMT"
+
+   （4）"%F"，输出当前记录器所在的文件名称，比如std::string pattern ="%F" 时输出: "main.cpp"（5）"%L"，输出当前记录器所在的文件行号，比如std::string pattern ="%L" 时输出: "51"（6）"%l"，输出当前记录器所在的文件名称和行号，比如std::string pattern ="%L" 时输出: "main.cpp:51"（7）"%m"，输出原始信息，比如std::string pattern ="%m" 时输出: "teststr"，即上述代码中 LOG4CPLUS_DEBUG的第二个参数，这种实现机制可以确保原始信息被嵌入到带格式的信息中。（8）"%n"，换行符，没什么好解释的（9）"%p"，输出LogLevel，比如std::string pattern ="%p" 时输出: "DEBUG"（10）"%t"，输出记录器所在的线程ID，比如std::string pattern ="%t" 时输出: "1075298944"（11）"%x"，嵌套诊断上下文NDC (nested diagnostic context) 输出，从堆栈中弹出上下文信息，NDC可以用对 不同源的log信息（同时地）交叉输出进行区分，关于NDC方面的详细介绍会在下文中提到。（12）格式对齐，比如std::string pattern ="%-10m"时表示左对齐，宽度是10，此时会输出"teststr "，当 然其它的控制字符也可以相同的方式来使用，比如"%-12d"，"%-5p"等等（刚接触log4cplus文档时还以为 "%-5p"整个字符串代表LogLevel呢，呵呵）。
+
+    3. TTCCLayout是在PatternLayout基础上发展的一种缺省的带格式输出的布局器， 其格式由时间，线程ID，Logger和NDC 组成（consists of time, thread, Logger and nested diagnostic context information, hence the name），因而得名（怎么得名的？Logger里哪里有那个"C"的缩写啊！名字起得真够烂的，想扁人）。提供给那些想显示典型的信息（一般情况下够用了）又懒得配置pattern的同志们。
+
+   TTCCLayout在构造时有机会选择显示本地时间或GMT时间，缺省是按照本地时间显示：TTCCLayout::TTCCLayout(bool use_gmtime = false)
+
+   以下代码片段演示了如何使用TTCCLayout：
+
+    /* step 1: Instantiate an appender object */ SharedObjectPtr   _append (new ConsoleAppender()); _append-&gt;setName("append for test");
+
+    /* step 2: Instantiate a layout object */ std::auto_ptr _layout(new TTCCLayout());
+
+    /* step 3: Attach the layout object to the appender */ _append-&gt;setLayout( _layout );
+
+    /* step 4: Instantiate a logger object */ Logger _logger = Logger::getInstance("test_logger");
+
+    /* step 5: Attach the appender object to the logger */ _logger.addAppender(_append);
+
+    /* log activity */ LOG4CPLUS_DEBUG(_logger, "teststr")  ... ... 输出结果：10-16-04 19:08:27,501 [1075298944] DEBUG test_logger &lt;&gt; - teststr
+
+   				当构造TTCCLayout对象时选择GMT时间格式时：
+
+    std::auto_ptr _layout(new TTCCLayout(true));  ... ... 输出结果：10-16-04 11:12:47,678 [1075298944] DEBUG test_logger &lt;&gt; - testst
+
+   本文介绍了控制log信息格式的相关知识，下一部分将详细介绍log信息的几种文件操作方式。

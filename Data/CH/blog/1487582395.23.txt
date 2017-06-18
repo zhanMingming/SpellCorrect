@@ -1,0 +1,210 @@
+Counting Factor Trees zoj 3405Counting Factor Trees
+
+Time Limit: 2 Seconds  Memory Limit: 65536 KB 
+
+
+   Factoring, i.e., listing all the prime factors, of an integer is a useful skill that often helps to solve math problems. For example, one of the ways to find the GCD (Greatest Common Divisor) or LCM (Least Common Multiple) of two integers is by listing all their prime factors. The GCD is then the product of all the common factors; the LCM is the product of all the remaining ones. 
+
+
+   The Factor Tree is a tool for finding such prime factorizations. The figure below demonstrates three factor trees of 108. At the beginning a root with a number is given, say N, which is to be factored. Then, the root is factored into two children N1 and N2 such that N = N1 &times; N2 (N1 &ge; 2, N2 &ge; 2). Note that N1 and N2 need not be prime. The same factoring process continues until all the leaves are prime. 
+
+
+
+
+   While the prime factorization is unique, the factor tree reflects the order in which the factors were found, and is by no means unique. So, how many factor trees of a number are there? 
+
+Input
+
+   There are no more than 10000 cases. A line containing an integer N (2 &le; N &le; 1000000000) is given for each case. 
+
+Output
+
+   Print the number of factor trees of N in a line for each case. The answer will be fit in a signed 64-bit integer. 
+
+Sample Input
+
+   12
+108
+642485760
+
+Sample Output
+
+   6
+140
+9637611984000
+
+
+
+   Author: GAO, YuanContest: ZOJ Monthly, September 2010
+
+
+   好悲剧！比赛时候没做出来，赛后CE,TLE过也就算了，还给我来过Floating Point Error （由于prime[i]算的不够多导致x除0！！！）
+
+
+   TLE的注意一下Method函数，也就是求x个元素有多少中排列方法的函数：
+
+
+   原来写成了
+
+
+   int Method(int num)
+
+
+   {
+
+
+    if(a[num])
+
+
+    return a[num];
+
+
+    int i,j;
+
+
+    int temp=0;
+
+
+    for(i=1;i&lt;=num/2;i++)
+
+
+    {
+
+
+    temp+=Method(i)*Method(num-i)*2;
+
+
+    }
+
+
+    if(num%2==0)
+
+
+    temp-=Method(num/2)*Method(num/2);
+
+
+    return temp;
+
+
+   }
+
+
+   
+
+   
+
+
+   = =！
+
+
+
+
+   这样 temp-=Method(num/2)*Method(num/2); 岂不是要再算一遍！！
+
+
+   
+
+
+   
+
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;cmath&gt;
+using namespace std;
+
+long long prime[5000];
+long long factor[100];
+long long r[100];
+long long a[100]={0,1,1,2};
+long long x;
+
+bool isprime(long long x)
+{
+	long i,j;
+	for(i=2;i&lt;=sqrt(x*1.0);i++)
+	{
+		if(x%i==0)
+			return false;
+	}
+	return true;
+}
+
+long long C(long long n,long long k)
+{
+	long long tmp=1;
+	if(k&gt;(n-k))
+		k=n-k;
+	for(long long i=1;i&lt;=k;i++,n--)
+		tmp=tmp*n/i;
+	return tmp;
+}
+int cntnum=0;
+long long Divide(long long x)
+{
+	long long i=1,j=0;
+	cntnum=0;
+	while(x!=1&amp;&amp;prime[i]*prime[i]&lt;=x)
+	{
+		if(x%prime[i]==0)
+		{
+			factor[j]=prime[i];
+			r[j]=0;
+			while(x%prime[i]==0)
+			{
+				x/=prime[i];
+				r[j]++;
+				cntnum++;
+			}
+			j++;
+		}
+		i++;
+	}
+
+	if(x!=1)
+	{
+		cntnum++;
+		r[j++]=1;
+	}
+	//cntnum-&gt;how many factors in total
+	long long temp=1;
+	long long tt=(long long)cntnum;
+	for(i=0;i&lt;j;i++)
+	{
+		temp*=C(tt,r[i]);
+		tt-=r[i];
+	}
+	return temp;
+}
+
+long long Method(long long n)
+{
+	if(a[n])
+		return a[n];
+	long long i,tmp=0;
+	for(i=1;i&lt;=n/2;i++)
+		if(i*2==n)
+			tmp+=Method(i)*Method(i);
+		else tmp+=2*Method(i)*Method(n-i);
+	return (a[n]=tmp);
+}
+int main()
+{
+	long long i,j;
+	j=1;
+	prime[j]=2;
+	//print prime table
+	for(i=3;i&lt;33200;i+=2)
+	{
+		if(isprime(i))
+			prime[++j]=i;
+	}
+	//divide x
+	while(scanf("%lld",&amp;x)!=EOF)
+	{
+		long long temp=Divide(x);//method num
+		long long cnt=(long long )cntnum;
+		printf("%lld/n",Method(cnt)*temp);
+	}
+}

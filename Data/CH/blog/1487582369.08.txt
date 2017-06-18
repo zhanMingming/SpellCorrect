@@ -1,0 +1,210 @@
+博弈论 + 按位异或今天怎么突然想起来一道博弈，好不容易把它从OJ里扒拉出来了，怎么做果然忘了……搜了别人解题报告。
+
+
+   PKU 2234
+
+
+   
+
+
+Matches Game
+
+
+
+
+
+
+Time Limit:1000MS
+
+
+
+Memory Limit:65536K
+
+
+
+Total Submissions:3934
+
+
+
+Accepted:2215
+
+
+
+
+
+
+   
+
+
+   
+Description
+
+
+Here is a simple game. In this game, there are several piles of matches and two players. The two player play in turn. In each turn, one can choose a pile and take away arbitrary number of matches from the pile (Of course the number of matches, which is taken
+ away, cannot be zero and cannot be larger than the number of matches in the chosen pile). If after a player’s turn, there is no match left, the player is the winner. Suppose that the two players are all very clear. Your job is to tell whether the player who
+ plays first can win the game or not.
+
+
+   
+Input
+
+
+The input consists of several lines, and in each line there is a test case. At the beginning of a line, there is an integer M (1 &lt;= M &lt;=20), which is the number of piles. Then comes M positive integers, which are not larger than 10000000. These M integers represent
+ the number of matches in each pile.
+
+
+   
+Output
+
+
+For each test case, output &quot;Yes&quot; in a single line, if the player who play first will win, otherwise output &quot;No&quot;.
+
+
+   
+Sample Input
+
+
+   2 45 453 3 6 9
+
+   
+Sample Output
+
+
+   NoYes
+
+   
+Source
+
+
+POJ Monthly,readchild
+
+
+
+
+   
+
+
+
+
+   
+
+
+   此题为随机博弈题目。随机博弈指的是这样的一个博弈游戏，目前有任意堆石子，每堆石子个数也是任意的，双方轮流从中取出石子，规则如下：
+
+
+   1〉每一步应取走至少一枚石子；每一步只能从某一堆中取走部分或全部石子；
+
+
+   2〉如果谁取到最后一枚石子就胜
+
+
+   也就是&#23612;姆博弈（Nimm Game）这种博弈的最终状态是：最后剩下一堆石子，当前取石子的人一次取完剩下的全部石子获胜。当石子剩下两堆，每堆1颗的时候，当前取的人显然必败；再来讨论一种情况，当石子剩下两堆，其中一堆只剩下1颗，另一堆剩下多于1颗石子时，当前取的人只需将多于1颗的那一堆取到剩余1颗，则局面变为刚才提到的必败局面。这个过程就是当前取石子的人如果有必胜策略，那么就迫使局面由必胜局面转化到必败局面，也就是说如果当前的局面是必败局面，那么经过2次取，局面又回到必败局面。无穷下降法不同于反证法之处也在此：在“下降”的过程中，状态一直保持不变（在证明费马猜想n=4的情形时，状态就是该三元组是方程的解）；而在随机博弈过程中，状态即局面，下降的是石子数目，由于石子总数目一直在减少，因此最终会“下降”到终极必败状态：最后一颗石子已经被胜者拿走，当前没有石子剩余。现在的问题是：
+
+
+   1〉确定一个方法（或者称之为一个从某一局面映射集合{必胜局面，必败局面}的函数），能够快速判断出当前局面是否为必胜（必败）局面；
+
+
+   2〉是否存在一种满足规则的转化状态方法（或者称之为一个从必胜局面映射到必败局面的函数），满足只要当前不是必败局面，取一次后均可以转化到必败局面。
+
+
+   如果仅仅是两堆石子，那么上述两个问题很好解决：
+
+
+   1〉当两堆石子数目相等的时候，当前局面为必败局面，否则为必胜局面，显然，两堆均为0颗是满足这个方法的；
+
+
+   2〉如果当前局面是必胜局面，那么从石子较多的那一堆里面取，使得两堆石子数相等，这样便转化到了必败局面。
+
+
+   然而，对多于两堆石子，1〉可以照旧，但是这样一来2〉远远没有这么简单，因为不太可能取后使得所有堆数目都一样（除非除了石子最多的一堆之外其它所有堆石子数目都相等）。因此需要找一组更加有效的方法，有个叫张一飞的人作过这个研究，他想到的方法是这样的：
+
+
+   1〉把所有堆的石子数目用二进制数表示出来，当全部这些数按位异或结果为0时当前局面为必败局面，否则为必胜局面；
+
+
+   2〉（定理0）一组自然数中必然存在一个数，它大于等于其它所有数按位异或的结果。因此在必胜局面下，因为所有数按位异或的结果是大于零的，那么通过一次取，将这个（大于其它所有数按位异或的结果的）数下降到其它所有数按位异或的结果，这时局面就变为必败局面了。
+
+
+   有了上述理论，此题就很简单了。
+
+
+
+
+
+   Source Code
+
+
+
+
+
+	Problem:2234
+	User:nathan96
+
+
+
+	Memory:188K
+	Time:0MS
+
+
+
+	Language:C&#43;&#43;
+	Result:Accepted
+
+
+
+
+Source Code
+   #include&lt;iostream&gt;
+using namespace std;
+int main()
+{
+int N;
+int i;
+   long int a[23];
+int sum;
+while(cin&gt;&gt;N)
+{
+for(i=0; i&lt;N; i++)
+cin&gt;&gt;a[i];
+    sum=a[0];
+for(i=1; i&lt;N; i++)
+sum=sum^a[i];
+if(sum==0)
+cout&lt;&lt;&quot;No&quot;&lt;&lt;endl;
+else
+cout&lt;&lt;&quot;Yes&quot;&lt;&lt;endl;
+}
+return 0;
+}
+
+
+
+
+原文出处：http://hi.baidu.com/nathan_96/blog/item/bf3465fbfd34259a59ee9094.html
+
+   
+
+
+
+
+   
+
+
+
+
+   这里还想废两句话，关于异或的特点，怕以后忘了：
+
+
+   0^anything=anything
+
+
+   1^anything=非anything=1-anything
+
+
+   a^a=0
+
+
+   所以，比如有这么个问法：1000个数里删掉1个，问删掉的是哪个。求法:将删掉前后的所有数异或得到a；删掉之后的所有数异或得到b；a^b即为删掉的数。原理就是a=a^x^x.
+
+
+   类&#20284;的都可以这么干。

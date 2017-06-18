@@ -1,0 +1,300 @@
+HTML5规范之Web Worker入门1.什么是Web Worker?
+
+在web worker规范产生之前，dom渲染和javascript代码执行是在同一个浏览器线程中执行的。也就是说：渲染dom的时候不能执行javascript代码，执行javascript代码的时候，UI界面会暂停响应。如果javascript代码执行时间很长，那么UI就会无响应，这就是所谓的页面卡死。Web Workers是 HTML5 提供的一个javascript多线程解决方案，我们可以将一些耗时的javascript代码交由web
+ Worker运行而不冻结用户界面。也就是说web worker和UI界面是运行在不同线程中的。
+
+
+
+
+
+
+2.检测浏览器对Web Worker支持
+
+web worker是HTML5中新增的特性，一般的主流浏览器都是支持的，但不是所有的浏览器都支持。我用的是chrome 46，是支持web worker的。我们可以使用下面这段代码，来检测浏览器是否支持web worker。
+
+
+
+   if(typeof(window.Worker)!==&quot;undefined&quot;)
+{
+	// Yes! Web worker support!
+}
+else
+{
+	// Sorry! No Web Worker support..
+}
+
+
+
+3.创建web worker文件
+
+web worker一般是存放在一个单独的js文件中，由使用它的html页面来加载。
+
+
+
+   //my_worker.js
+
+//这里this并不是传统意义上的window对象,而是一个WorkGlobalScope对象
+var self = this;
+
+
+// worker入口,类似于Thread的run方法
+self.onmessage = function(evt){
+	
+	// 接收传递过来的参数
+	var millSeconds = evt.data;
+	
+	wait(millSeconds);
+	
+	console.log(&quot;work time is: &quot; + new Date());
+	
+	// 返回数据给调用者
+	postMessage(&quot;from worker&#39;s message.&quot;);
+}
+
+
+function wait(millSeconds)
+{
+	var begin = new Date().getTime();
+	var end = new Date().getTime();
+	while(end - begin &lt; millSeconds)
+	{
+		end = new Date().getTime();
+	}
+}
+
+worker新线程使用通过postMessage和onmessage方法：
+
+
+1.通过postMessage( data ) 方法来向主线程发送数据。
+
+
+2.绑定onmessage方法来接收主线程发送过来的数据。
+
+
+
+
+
+
+
+
+
+
+
+
+
+4.创建Web Worker对象
+
+有了web worker文件之后，我们就可以在自己的HTML页面中调用它。
+
+
+
+   &lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;/&gt;
+	&lt;script type=&quot;text/javascript&quot;&gt;
+		// 开启一个web worker线程(加载js文件,创建worker对象)
+		var worker =new Worker(&quot;my_worker.js&quot;); 
+		
+		// 传递数据给work
+		worker.postMessage(5000);     
+		
+		console.log(&quot;continue ...&quot;);
+		
+		// 接收work返回的数据
+		worker.onmessage =function(evt){    
+			console.log(&quot;main now is: &quot; + new Date());     
+			console.log(evt.data);
+		}
+		
+		console.log(&quot;no wait ...&quot;);
+		
+	&lt;/script&gt;
+ &lt;/head&gt;
+&lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;
+
+我们的main.htm(WEB主线程)主要做以下事情：
+
+
+1.通过 worker = new Worker( url ) 加载一个JS文件来创建一个worker，同时返回一个worker实例。
+
+2.通过worker.postMessage( data ) 方法来向worker发送数据。
+
+3.绑定worker.onmessage方法来接收worker发送过来的数据。
+
+4.使用 worker.terminate() 来终止一个worker,释放占用的资源。
+
+
+
+
+
+
+
+
+5.运行含Web Worker的页面
+
+上面的main.html页面使用了Web Work，必需将main.html和my_worker.js部署到web容器(比如Tomcat)下才能运行。如果直接在本地运行main.html页面，会报错：
+
+
+
+   Uncaught SecurityError: Failed to construct &#39;Worker&#39;: Script at &#39;file:///C:/Users/a00228097/Desktop/work/worker.js&#39; cannot be accessed from origin &#39;null&#39;.这是因为我用的是chrome浏览器，chrome不支持这种本地使用本地方式使用Web Worker。不过别的浏览器可能就支持，所以还是把main.html页面放在web容器中运行更靠谱。
+
+
+
+
+
+6.Web Worker的跨域访问限制
+
+在main.html中通过new Work(url)来创建work对象，加载的js文件不能跨域。比如我们将main.html放在端口是8080的Tomcat下，将my_worker.js放在端口是9090的Tomcat下，那么main.html是不能使用my_work.js的。
+
+
+
+   var worker =new Worker(&quot;http://localhost:9090/demo/my_worker.js&quot;); 
+/*
+Uncaught SecurityError: Failed to construct &#39;Worker&#39;: 
+	Script at &#39;http://localhost:9090/demo/my_worker.js&#39; 
+	cannot be accessed from origin &#39;http://localhost:8080&#39;.
+*/
+
+
+
+7.Web Worker的异常处理和终止
+
+WEB主线程加载web worker一般没有什么异常，不过也有2种情况会导致创建web work报错，比如我们跨域访问web worker文件，再比如web work中的js代码出现了未捕获的异常。如果main.html需要关注这些异常，那么我们可以使用onerror回调：
+
+
+
+   var worker =new Worker(&quot;my_worker.js&quot;); 
+  
+worker.onerror = function(e){
+	console.log(&quot;load web worker error.&quot;+e);
+};
+
+当main.html不再需要使用web worker的时候，需要调用worker对象的terminate()方法来释放web worker占用的资源。
+
+
+
+   worker.terminate();
+
+
+
+8.web worker中使用importScripts加载外部js
+
+我们知道在html页面中，可以使用&lt;script&gt;标签加载外部的js文件，而且script标签还支持跨域加载js。如果我们的web worker中也需要访问外部的js文件，那么可以使用importScripts函数来加载文件，而且也是跨域的。
+
+
+
+   //my_worker.js
+
+
+var self  =this;
+importScripts(&quot;http://localhost:9090/demo/util.js&quot;);
+importScripts(&quot;math.js&quot;);
+
+onmessage = function(evt){
+	
+	var millSeconds = evt.data;
+	
+	wait(millSeconds);
+	
+	console.log(&quot;work time is: &quot; + new Date());
+	postMessage(&quot;from worker&#39;s message.&quot;);
+	
+	warn(&quot;sss&quot;);//调用util.js中的warn函数
+}
+
+
+function wait(millSeconds)
+{
+	var begin = new Date().getTime();
+	var end = new Date().getTime();
+	while(end - begin &lt; millSeconds)
+	{
+		end = new Date().getTime();
+	}
+}
+
+importScripts使用方式如下：
+
+
+
+   importScripts(&#39;script1.js&#39;);
+importScripts(&#39;script2.js&#39;);
+
+//Which can also be written as a single import statement:
+importScripts(&#39;script3.js&#39;, &#39;script4.js&#39;);
+
+
+
+9.Web Work的局限性
+
+在web worker的js中无法访问main.html中的DOM对象、window对象、document对象等，这是属于功能上的局限性。还有不同厂家的浏览器对Web Worker规范的实现并不一致，导致运行效果的差异。这篇文章介绍了web
+ worker中一些API的不兼容性。所以使用web worker需要小心，不然会导致功能性问题和兼容性问题。
+
+
+
+
+
+
+10.使用Blob URL实现Web Worker的inline
+
+一般来说web worker都是放在一个单独的外部js文件中的，这就是最佳实践。如果只是为了自己平时测试需要，将web worker和main.html放在一起也是可以的。需要借助window.URL.createObjectURL()来实现inline。比如下面的main.html是可以正常运行的。
+
+
+
+   &lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;/&gt;
+	&lt;script type=&quot;text/javascript&quot;&gt;
+	var blob = new Blob([&quot;onmessage = function(e) { postMessage(&#39;msg from worker&#39;); }&quot;]);
+
+	// Obtain a blob URL reference to our worker &#39;file&#39;.
+	var blobURL = window.URL.createObjectURL(blob);
+
+	var worker = new Worker(blobURL);
+	worker.onmessage = function(e) {
+		console.log(e.data);
+	};
+	
+	worker.postMessage(1); // Start the worker.
+		
+	&lt;/script&gt;
+ &lt;/head&gt;
+&lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+参考文章：
+
+
+1. The Basics of Web Workers
+
+
+
+
+
+
+
+
+
+2.TML5 Web Worker
+
+
+
+
+
+
+
+3.Web Workers specification

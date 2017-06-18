@@ -1,0 +1,202 @@
+HTML5数据存储方案data-*与jQuery数据存储方案$.data()的区别&quot;HTML5新特性：自定义数据属性data-*&quot; 和 &quot;jQuery数据缓存方案详解：$.data()的使用&quot;
+ 这2篇文章，分别介绍了不同的缓存方案，现在我们看下jQuery对HTML5中data-*的支持与差别。
+
+
+   
+
+
+
+
+   我们先看下$.fn.data()的使用，这个和$.data()是不一样的，前者是和某个jquery对象相关，后者则是全局方法。主要有data()和removeData()这2个实例方法。通过下面的例子和执行结果可以看到：$.fn.data()和$.fn.removeData()跟$.data的使用方式没有什么差别。
+
+
+   // 支持任何数据类型
+$( &quot;body&quot; ).data( &quot;name&quot;, &quot;xx&quot; );
+$( &quot;body&quot; ).data( &quot;sex&quot;, &quot;male&quot; );
+$( &quot;body&quot; ).data( &quot;foo&quot;, 100 );
+$( &quot;body&quot; ).data( &quot;object&quot;, {myType: &quot;test&quot;, count: 40 } );
+$( &quot;body&quot; ).data(&quot;array&quot;, [ 1, 2, 3 ]);
+
+
+// data()获取单个属性
+console.log($( &quot;body&quot; ).data( &quot;foo&quot; ));
+
+// 获取所有属性
+console.log($( &quot;body&quot; ).data());
+
+// 删除属性
+$( &quot;body&quot; ).removeData(&quot;foo&quot;);
+
+console.log($( &quot;body&quot; ).data());
+
+// 批量修改属性
+$( &quot;body&quot; ).data({&quot;new&quot; : 123, &quot;name&quot;:&quot;yy&quot;, &quot;sex&quot; : &quot;female&quot;});
+
+console.log($( &quot;body&quot; ).data());
+
+接着我们看下：jquery数据缓存方案与HTML5中data-*的关系。如果html元素有自定义属性data-*，那么调用$.fn.data()的时候会获取这些属性的&#20540;。
+   &lt;div id=&quot;one&quot; data-role=&quot;page&quot; data-last-value=&quot;43&quot; data-hidden=&quot;true&quot; data-options=&#39;{&quot;name&quot;:&quot;John&quot;}&#39;&gt;&lt;/div&gt;
+&lt;script&gt;
+	console.log($(&quot;#one&quot;).data(&quot;role&quot; ) === &quot;page&quot;);
+	console.log($(&quot;#one&quot;).data(&quot;lastValue&quot; ) === 43);
+	console.log($(&quot;#one&quot;).data(&quot;hidden&quot; ) === true);
+	console.log($(&quot;#one&quot;).data(&quot;options&quot; ).name === &quot;John&quot;);
+&lt;/script&gt;
+
+可以看到：jQuery获取data-*属性的时候，会自动进行数据类型转换，支持数字、对象和数组等类型。如果我们不想做这种自动类型转换，那么可以使用attr()函数获取原始&#20540;。
+
+   
+
+
+   
+
+
+
+
+   代码1：
+
+
+   
+
+
+   &lt;div id=&quot;one&quot; data-role=&quot;page&quot; data-last-value=&quot;43&quot; data-hidden=&quot;true&quot; data-options=&#39;{&quot;name&quot;:&quot;John&quot;}&#39;&gt;&lt;/div&gt;
+&lt;script&gt;
+	var domOne = $(&quot;#one&quot;)[0];
+	
+	console.log($.data(domOne));
+	
+	console.log($(&quot;#one&quot;).data(&quot;role&quot; ) === &quot;page&quot;);
+	console.log($.data(domOne));
+	
+	console.log($(&quot;#one&quot;).data(&quot;lastValue&quot; ) === 43);
+	console.log($.data(domOne));
+	
+	console.log($(&quot;#one&quot;).data(&quot;hidden&quot; ) === true);
+	console.log($.data(domOne));
+	
+	console.log($(&quot;#one&quot;).data(&quot;options&quot; ).name === &quot;John&quot;);
+	console.log($.data(domOne));
+&lt;/script&gt;
+
+通过代码1的执行结果，可以得出2点结论：
+
+   
+
+
+   1.HTML5中的data-*属性，会被jQuery附加到HTMLElement对象上，这就是为什么我们可以通过$.data()获取HTML5自定义属性&#20540;的原因。
+
+
+   2.jQuery获取data-*是懒惰的、按需的。如果代码中没有使用这些HTML5自定义属性，那么jQuery是不会附加这些属性到HTMLElement对象上的。
+
+
+   
+
+
+
+
+   代码2：
+
+
+   
+
+
+   &lt;div id=&quot;one&quot; data-role=&quot;page&quot; data-last-value=&quot;43&quot; data-hidden=&quot;true&quot; data-options=&#39;{&quot;name&quot;:&quot;John&quot;}&#39;&gt;&lt;/div&gt;
+&lt;script&gt;
+	var domOne = $(&quot;#one&quot;)[0];
+	
+	console.log($(&quot;#one&quot;).data(&quot;role&quot; ) === &quot;page&quot;);
+	console.log($.data(domOne));
+	console.log($.data($(&quot;#one&quot;)[0]));
+	console.log($.data($(&quot;#one&quot;)));
+&lt;/script&gt;
+
+更加可以证实：data-*是被绑定到HTMLElement对象上的，而不是jQuery封装后的对象上。
+
+   
+
+
+   
+
+
+
+
+   代码3：
+
+
+   
+
+
+   &lt;div id=&quot;b&quot; data-name=&quot;b&quot; data-hobby=&quot;swim&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+	// 试图使用jQuery修改name属性
+	$(&quot;#b&quot;).data(&quot;name&quot;,&quot;newb&quot;);
+	
+	// 使用DOM修改
+	$(&quot;#b&quot;)[0].dataset.hobby = &quot;run&quot;;
+	
+	console.log(document.getElementById(&quot;b&quot;).dataset.name);
+	console.log(document.getElementById(&quot;b&quot;).dataset.hobby);
+&lt;/script&gt;
+
+可以看到：使用jQuery修改属性只是在内存中的操作，并不会刷新dom。但是通过js中的dataset修改时候，会刷新DOM，这是两者最大的不同。
+
+   
+
+
+   
+
+
+
+
+   代码4：
+
+
+   
+
+
+   &lt;div id=&quot;a&quot; data-name=&quot;a&quot; data-hobby=&quot;books&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+	var domA = document.getElementById(&quot;a&quot;);
+	
+	console.log(domA.dataset.name);//a
+	console.log($(&quot;#a&quot;).data(&quot;name&quot;));//a
+	
+	// 修改name
+	domA.dataset.name = &quot;aty&quot;;
+	
+	console.log(domA.dataset.name);//aty
+	console.log($(&quot;#a&quot;).data(&quot;name&quot;));//结果是a,不是我们期望的aty
+
+	// 修改hobby
+	domA.dataset.hobby = &quot;run&quot;;
+	
+	console.log(domA.dataset.hobby);//run
+	console.log($(&quot;#a&quot;).data(&quot;hobby&quot;));//run
+&lt;/script&gt;
+
+这里需要特别注意：jQuery只会在第一次访问data-*的时候，将属性&#20540;加载到内存中；之后就和data-*无关了。The data-attributes are pulled in the first time the data property is accessed and then are no longer accessed or mutated (all data values are then stored internally in jQuery)。也就是说：data-*属性只是起初始化的作用。
+
+   
+
+
+   
+
+
+
+
+   至此：jQuery数据缓存和HTML5 data-*属性介绍完毕，简单总结下比较关键的几点：
+
+
+   1.jQuery读取data-*会自动做数据类型转换，如果不想要这种转换只能使用attr()去获取原始的属性&#20540;。
+
+
+   2.jQuery读取data-*属性是懒惰的、按需的，只有真正使用这些属性的时候，jQuery才会将其加载到内存。
+
+
+   3.jQuery修改属性&#20540;，都是在内存中进行的，并不会修改 DOM。
+
+
+   4.data-*会被jQuery绑定到HTMLElement对象上，而不是jQuery封装后的对象上。
+
+
+   5.最重要的一点：jQuery只会在data-*第一次被访问的时候将其加载到内存，之后再也不会重新读取了。

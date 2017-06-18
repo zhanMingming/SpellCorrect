@@ -1,0 +1,28 @@
+搜索引擎早期重要论文推荐系列【5】《Linux Performance and Tuning Guidelines》
+
+
+   这是一本2007年完成的电子书，这可能不能算早期论文，但作为系统调优是一本集大成之作。
+
+
+   特别适合linux开发工程师，网络管理员阅读。
+
+
+   
+
+
+   推荐原因
+
+
+   学术价值 3星
+
+
+   工程价值 5星
+
+
+   可读性 5星
+
+
+   
+
+
+   下载地址：http://www.redbooks.ibm.com/redpapers/pdfs/redp4285.pdf

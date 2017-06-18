@@ -1,0 +1,45 @@
+初始化窗口以下代码用于设置初始窗口大小、显示模式、是否固定窗口大小&hellip;&hellip;
+
+
+   
+
+
+   BOOL CMainFrame::PreCreateWindow(CREATESTRUCT&amp; cs)
+{
+	if( !CFrameWnd::PreCreateWindow(cs) )
+		return FALSE;
+
+	//these sentenses are used to get the size of screen
+	int cxScreen,cyScreen;
+	cxScreen=GetSystemMetrics(SM_CXSCREEN)*0.9;
+	cyScreen=GetSystemMetrics(SM_CYSCREEN)*0.9;
+
+	cs.cx=cxScreen;
+	cs.cy=cyScreen;
+
+	//these two sentenses has the function of getting a fixed window
+	//	cs.style&amp;=~WS_MAXIMIZEBOX;
+	//	cs.style&amp;=~WS_THICKFRAME;
+
+	// TODO: 在此处通过修改
+	//  CREATESTRUCT cs 来修改窗口类或样式
+	return TRUE;
+} 
+
+
+   
+
+
+   
+
+
+   这个用来设置View类标题，来取代&ldquo;无标题&rdquo;：（它是在项目名.cpp文件里的）
+
+
+   
+
+
+   	// 唯一的一个窗口已初始化，因此显示它并对其进行更新
+	m_pMainWnd-&gt;ShowWindow(SW_SHOW);
+	m_pMainWnd-&gt;UpdateWindow();
+	m_pMainWnd-&gt;SetWindowText((CString)"你的标题");

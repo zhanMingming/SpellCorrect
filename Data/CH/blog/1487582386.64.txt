@@ -1,0 +1,75 @@
+hdu 3415 单调队列1之所以取名为 单调队列1.是因为本来想做另外一道的，但是实在做不来&hellip;&hellip;所以先铺垫一道题
+
+
+   
+
+
+   看了别人的分析，很经典：
+
+
+   
+
+
+   题目大意：给出一个有N个数字（-1000..1000，N&lt;=10^5）的环状序列，让你求一个和最大的连续子序列。这个连续子序列的长度小于等于K。分析：因为序列是环状的，所以可以在序列后面复制一段（或者复制前k个数字）。如果用s[i]来表示复制过后的序列的前i个数的和，那么任意一个子序列[i..j]的和就等于s[j]-s[i-1]。对于每一个j，用s[j]减去最小的一个s[i](i&gt;=j-k+1)就可以得到以j为终点长度不大于k的和最大的序列了。将原问题转化为这样一个问题后，就可以用单调队列解决了。
+
+
+   单调队列即保持队列中的元素单调递增（或递减）的这样一个队列，可以从两头删除，只能从队尾插入。单调队列的具体作用在于，由于保持队列中的元素满足单调性，对于上述问题中的每个j，可以用O(1)的时间找到对应的s[i]。（保持队列中的元素单调增的话，队首元素便是所要的元素了）。
+
+
+   维护方法：对于每个j，我们插入s[j-1]（为什么不是s[j]? 队列里面维护的是区间开始的下标，j是区间结束的下标），插入时从队尾插入。为了保证队列的单调性，我们从队尾开始删除元素，直到队尾元素比当前需要插入的元素优（本题中是值比待插入元素小，位置比待插入元素靠前，不过后面这一个条件可以不考虑），就将当前元素插入到队尾。之所以可以将之前的队列尾部元素全部删除，是因为它们已经不可能成为最优的元素了，因为当前要插入的元素位置比它们靠前，值比它们小。我们要找的，是满足(i&gt;=j-k+1)的i中最小的s[i]，位置越大越可能成为后面的j的最优s[i]。
+
+
+   在插入元素后，从队首开始，将不符合限制条件(i&gt;=j-k+1)的元素全部删除，此时队列一定不为空。（因为刚刚插入了一个一定符合条件的元素）
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define INF 0x3fffffff
+#define N 100010*2
+int num[N],sum[N];
+int main()
+{
+	int T,n,k,on;
+	cin&gt;&gt;T;
+	while(T--)
+	{
+		int i,j;
+		cin&gt;&gt;n&gt;&gt;k;
+		sum[0]=0;
+		for(i=1;i&lt;=n;i++)
+		{
+			scanf("%d",&amp;num[i]);
+			sum[i]=sum[i-1]+num[i];
+		}
+		for(i=n+1;i&lt;n+k;i++)//continue k numbers
+			sum[i]=sum[i-1]+num[i-n];
+		on=n;
+		n=n+k-1;
+
+		int ans=-INF;
+		int start,end;
+		deque&lt;int&gt;q;
+		q.clear();
+		//枚举以j结尾的区间，找满足[j-k&lt;=i&lt;=j]且使sum最小的i
+		for(j=1;j&lt;=n;j++)
+		{
+			//delete from tail
+			while(!q.empty()&amp;&amp;sum[j-1]&lt;sum[q.back()])
+				q.pop_back();
+			while(!q.empty()&amp;&amp;q.front()&lt;(j-k))//requirement:length&lt;=k,=&gt; i&gt;j-k
+				q.pop_front();
+			q.push_back(j-1);
+			if(sum[j]-sum[q.front()]&gt;ans)
+			{
+				ans=sum[j]-sum[q.front()];
+				start=q.front()+1;
+				end=j;
+			}
+		}
+		cout&lt;&lt;ans&lt;&lt;" "&lt;&lt;start&lt;&lt;" "&lt;&lt;(end&gt;on?end%on:end)&lt;&lt;endl;
+	}
+}

@@ -1,0 +1,124 @@
+BeanFactoryAware在InitializingBean之后执行，奇怪的Spring初始化顺序？网上已经有大把文章介绍bean的生命周期和执行顺序，但是都是针对单个bean的。
+
+
+   
+
+
+
+
+   今天在项目遇到一个问题：A类实现了BeanFactoryAware接口，将BeanBeanFactory对象保存在自己的static变量中。
+
+
+   public class A implements BeanFactoryAware {
+    private static BeanFactory beanFactory;
+
+    public static BeanFactory getBeanFactory() {
+ return beanFactory;
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+ System.out.println(&quot;aaa&quot;);
+ A.beanFactory = beanFactory;
+    }
+}
+
+
+   
+
+
+
+
+   B类实现了InitializingBean接口，希望获取到BeanBeanFactory对象。
+
+
+   public class B implements InitializingBean {
+    @Override
+    public void afterPropertiesSet() throws Exception {
+ System.out.println(&quot;bbbb&quot;);
+ System.out.println(A.getBeanFactory()==null);
+    }
+}
+
+   
+
+
+   
+
+
+
+
+   现在我们来测试下着2个方法的执行顺序：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    &lt;bean class=&quot;net.aty.spring.A&quot;&gt;&lt;/bean&gt;
+    &lt;bean class=&quot;net.aty.spring.B&quot;&gt;&lt;/bean&gt;
+
+&lt;/beans&gt;
+   public class MainTst {
+    public static void main(String[] args) {
+ ApplicationContext context = new ClassPathXmlApplicationContext(
+  &quot;spring.xml&quot;);// 加载 spring 配置文件
+    }
+}
+
+程序输出如下：
+
+   
+
+
+
+
+
+
+   
+
+
+
+
+   现在我们修改下xml文件，测试java代码不变：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+    
+    &lt;bean class=&quot;net.aty.spring.B&quot;&gt;&lt;/bean&gt;
+	&lt;bean class=&quot;net.aty.spring.A&quot;&gt;&lt;/bean&gt;
+
+&lt;/beans&gt;
+
+   
+
+
+   
+
+
+
+输出结果是：
+
+   
+
+
+
+
+
+
+   我们项目恰好使用的是第二种方式，结果就导致空指针了。对于单个bean来说，确实是先执行BeanFactoryAware，后执行InitializingBean。但是对于不同的bean来说，并没有这个顺序保证。上面测试可以看出：先定义的bean先执行。
+
+
+   
+
+
+
+
+   spring判断bean的依赖关系，无非就是构造注入和set注入，上面的2个A和B并没有显示地依赖关系，虽然逻辑上是B依赖于A，但是spring并不知道这种关系。为了让spring知道这种逻辑上的依赖关系，spring专门提供了depends-on。

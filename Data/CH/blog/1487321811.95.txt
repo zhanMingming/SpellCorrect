@@ -1,0 +1,34 @@
+php调用存储过程返回结果集，解决can&#39;t return a result set in the given context错误的方法需要php调用存储过程，返回一个结果集，发现很困难，找了半天，终于在老外的论坛上找到解决方案，这里本地化一下。
+
+
+   关键就是两点
+
+
+   1）define('CLIENT_MULTI_RESULTS', 131072);
+
+
+   2）$link = mysql_connect(&quot;127.0.0.1&quot;, &quot;root&quot;, &quot;&quot;,1,CLIENT_MULTI_RESULTS) or die(&quot;Could not connect: &quot;.mysql_error());
+
+
+   下面就可以正常使用了，以下是例子程序。
+
+
+   
+
+
+   &lt;?php define('CLIENT_MULTI_RESULTS', 131072);
+
+
+    $link = mysql_connect(&quot;127.0.0.1&quot;, &quot;root&quot;, &quot;&quot;,1,CLIENT_MULTI_RESULTS) or die(&quot;Could not connect: &quot;.mysql_error()); mysql_select_db(&quot;vs&quot;) or die(&quot;Could not select database&quot;);?&gt;
+
+
+    &lt;?php $result = mysql_query(&quot;call get_news_from_class_id(2)&quot;) or die(&quot;Query failed:&quot; .mysql_error()); while($row = mysql_fetch_array($result, MYSQL_ASSOC)) { $line = '&lt;tr&gt;&lt;td&gt;&lt;a target = _blank href=/''.$row[&quot;url&quot;].'/'&gt;'.$row[&quot;title&quot;].'('.$row[&quot;page_time&quot;].')'.'&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;'; echo $line; printf(&quot;/n&quot;);
+
+
+    } mysql_free_result($result); ?&gt;
+
+
+   
+
+
+   &lt;?php mysql_close($link);?

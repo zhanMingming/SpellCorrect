@@ -1,0 +1,146 @@
+A Task Process DPA Task Process
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 615Accepted Submission(s): 299
+
+Problem Description
+
+There are two kinds of tasks, namely A and B. There are N workers and the i-th worker would like to finish one task A in ai minutes, one task B in bi minutes. Now you have X task A and Y task B, you want to assign each worker some tasks and finish all the tasks as soon as possible. You should note that the workers are working simultaneously.
+
+
+
+
+   
+
+Input
+
+In the first line there is an integer T(T&lt;=50), indicates the number of test cases.In each case, the first line contains three integers N(1&lt;=N&lt;=50), X,Y(1&lt;=X,Y&lt;=200). Then there are N lines, each line contain two integers ai, bi (1&lt;=ai, bi &lt;=1000).
+
+
+
+
+   
+
+Output
+
+For each test case, output &ldquo;Case d: &ldquo; at first line where d is the case number counted from one, then output the shortest time to finish all the tasks.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   3
+2 2 2
+1 10
+10 1
+2 2 2
+1 1
+10 10
+
+3 3 3
+2 7
+5 5
+7 2
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   Case 1: 2
+Case 2: 4
+Case 3: 6
+
+
+
+
+
+
+   
+
+Author
+
+wzc1989
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（1）&mdash;&mdash;Host by FZU 
+
+
+
+
+   
+
+Recommend
+
+zhouzeyong
+
+悲剧！比赛时候一点思路也没有！
+
+详细思路见代码注释~
+
+#include&lt;iostream&gt;
+using namespace std;
+#define M 60
+#define N 210
+#define INF 100000000
+int cas,tim,n,x,y;
+int a[60],b[60],f[M][N];
+
+bool Can(int t)
+{
+	int i,j,k;
+	for (i=0;i&lt;=n;i++)
+		for (j=0;j&lt;=x;j++)
+			f[i][j]=-INF;
+	f[0][0]=0;
+	for (i=1;i&lt;=n;i++)
+		for (j=0;j&lt;=x;j++)
+			for (k=0;k&lt;=j;k++)
+				if ((j-k)*a[i]&lt;=t)
+					f[i][j]=max(f[i][j],f[i-1][k]+(t-(j-k)*a[i])/b[i]);
+	return f[n][x]&gt;=y;
+}
+/*
+f[i,j]=max{f[i-1,k]+(t-(j-k)*a[i])/b[i]};
+f[i,j] presents 前i个人完成j个A任务后可以完成的B任务的数量
+f[i,j]=max{前i-1个人完成k个A任务时所能完成的B任务个数+剩下的时间还能完成多少B任务}
+*/
+
+int main()
+{
+	scanf("%d",&amp;cas);
+	for(int tim=0;tim&lt;cas;)
+	{
+		scanf("%d%d%d",&amp;n,&amp;x,&amp;y);
+		for(int i=1;i&lt;=n;i++)
+			scanf("%d%d",&amp;a[i],&amp;b[i]);
+		int low=0,high=a[1]*x+b[1]*y;
+		int mid;
+		while(low&lt;high)
+		{
+			mid=(low+high)&gt;&gt;1;
+			if(Can(mid))
+				high=mid;
+			else
+				low=mid+1;
+		}      
+		printf("Case %d: %d/n",++tim,low);
+	}
+	return 0;
+}

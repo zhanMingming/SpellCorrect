@@ -1,0 +1,51 @@
+open party上和大家交流的一个例子，通过这里例子说明了大规模数据处理的深远意义for(;;) {  void* buffer = malloc(SIZE);   memset(buffer,SIZE);  process(buffer)  free buffer; } 
+
+
+   这是一位实习生（我曾带过10+位实习生，因此见多识广）的伪代码，原本这个SIZE很小，估计是存放URL用的，定义为512字节，后来由于某种原因，扩大到了1M，从512字节扩大到了1M，速度变慢很多。为什么呢？这位同学无法解释，但我让他继续探索，找到真正的原因。
+
+
+   
+
+
+    我让他从这样几个方面入手，
+
+
+   （1）首先分析一些主要花费时间的代码，结果发现是memset这一段从512到1M后耗费时间增多，而且增多并不是线性的，我让他先看一下glibc的memset源代码，如下：
+
+
+   #if defined _LIBC || defined STDC_HEADERS || defined USG# include &lt;string.h&gt;# define flood memset#elsestatic void flood (__ptr_t, int, __malloc_size_t);static voidflood (ptr, val, size) __ptr_t ptr; int val; __malloc_size_t size; { char *cp = ptr; while (size--) *cp++ = val;}#endif
+
+
+   
+
+
+    由此可知memset是每字节每字节的赋值的，这并不是机器喜欢的方式，机器希望的是在4字节对齐的位置上进行操作（32位机器，64位机器喜欢8字节对齐），一次读取32位（4个字节）。因此memset完全可以自己实现一个一次性写4个字节的代码。
+
+
+   
+
+
+   （2)接下来需要探索的是malloc，事实上linux内存分配有两种，brk，mmap，前者分配128k以内的内存，后者分配128k以上的内存，在改成1M后， void* buffer = malloc(SIZE); 这一段是很快的，因为只是分配了虚存，并没有载入内存，可以查看/proc/pid/statm，考察内存分配，memset操作前后的变化。 而memset，就需要进行实际的内存分配，缺页中断，加载TLB等等。 而brk分配的内存是glibc管理的内存，分配很快，释放也方便（很多时候其实并不释放）。因此512字节是，使用的brk分配（效率很高），而变成1M后，使用mmap分配（加上memset的低效）因此效率要低很多。 
+
+
+   
+
+
+    (3) 这段代码如果改成，效果等价性能也会大幅度提升。
+
+
+    void* buffer = malloc(SIZE);  for(;;) { memset(buffer,SIZE);   process(buffer) }
+
+
+    free buffer;
+
+
+    
+
+    (4)最后需要质疑的是为什么需要开辟1M大小的空间，是否通过了验证，这样做是否有必要，实际情况是怎样的，memset是否需要，是否可以通过什么其他方法来避免这种计算。
+
+
+   
+
+
+    由此可见，很多问题，不好的编码习惯，对机器理解的不够透彻是很难再一般的工作中发现，必须在大规模数据处理的实践场合（处理数据量足够大），才能体现出来，因此大规模数据处理技术是软件、硬件相结合的技术，而且不仅仅是技术上的问题还包括了业务上的问题，废代码，废计算应该去掉，不合理的计算应该变得合理。

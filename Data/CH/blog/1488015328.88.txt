@@ -1,0 +1,231 @@
+Tomcat7 Websocket入门贴传统的J2EE程序，浏览器端并没有推送机制，如果浏览器想要实时获取服务端的最新信息，那么必须通过轮询的方式。很显然轮询方式既浪费http带宽，又难以保证实时性。手机端的消息推送很方便，很好用。比如百度提供的百度云推送方案，google的GCM推送，apple的apns推送，基于这些推送服务，我们可以很容易构建出手机端的实时应用。websocket的引入，就是为了让浏览器也能像手机一样，被动接受服务端的推送信息。
+
+
+   
+
+
+
+
+   HTML5中引入了WebSocket，浏览器的编码是很容易的。我写了一个简单的模拟登录、登出、发消息的界面：
+
+
+   
+
+
+
+
+   
+
+
+   &lt;head&gt;
+&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+$(function(){
+	
+	// 浏览器上的websocket对象,用来和服务端通信.
+	var socket = null;
+	
+	$(&quot;#login&quot;).click(function(){
+		var userName = $(&quot;#userName&quot;).val();
+		if($.trim(userName) == &quot;&quot;)
+		{
+			return;
+		}
+		
+		// 创建websocket对象
+		socket = new WebSocket(&#39;ws://localhost:8080/websocket/chat?userName=&#39;+userName);
+		registerEvent();
+	});
+	
+	$(&quot;#logout&quot;).click(function(){
+		socket.close();
+	});
+	
+	$(&quot;#send&quot;).click(function(){
+		socket.send($(&quot;#message&quot;).val());
+	});
+
+	function registerEvent()
+	{
+		socket.onopen = function(event) { 
+			$(&quot;#messagePanel&quot;).append(&quot;&lt;div&gt;websocket open successfully.&lt;/div&gt;&quot;);
+		}
+		
+		socket.onmessage = function(event) { 
+			$(&quot;#messagePanel&quot;).append(&quot;&lt;div&gt;msg=&quot;+event.data+&quot;&lt;/div&gt;&quot;);
+		}; 
+	  
+		socket.onclose = function(event) { 
+			$(&quot;#messagePanel&quot;).append(&quot;&lt;div&gt;websocket close successfully.&lt;/div&gt;&quot;);
+		};			
+	}
+	
+
+});
+
+
+&lt;/script&gt;
+&lt;style&gt;
+	.card{
+		margin:20px;
+	}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;div class=&quot;card&quot;&gt;
+		userName:&lt;input id=&quot;userName&quot; value=&quot;&quot; placeholder=&quot;input your name&quot;/&gt;
+		&lt;button id=&quot;login&quot;&gt;login&lt;/button&gt;
+		&lt;button id=&quot;logout&quot;&gt;logout&lt;/button&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;card&quot;&gt;
+		message:&lt;input id=&quot;message&quot; value=&quot;&quot; placeholder=&quot;input your message&quot;/&gt;
+		&lt;button id=&quot;send&quot;&gt;send&lt;/button&gt;
+	&lt;/div&gt;
+	
+	&lt;div class=&quot;card&quot; id=&quot;messagePanel&quot;&gt;
+		
+	&lt;/div&gt;
+&lt;/body&gt;
+
+
+
+
+   
+
+
+   可以看到客户端的编程是很容易的，我们主要看下服务端的编程。
+
+
+   package aty.net;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.catalina.websocket.MessageInbound;
+import org.apache.catalina.websocket.StreamInbound;
+import org.apache.catalina.websocket.WebSocketServlet;
+import org.apache.catalina.websocket.WsOutbound;
+
+@WebServlet(name = &quot;chat&quot;, urlPatterns = &quot;/chat&quot;)
+public class ChatWebSocket extends WebSocketServlet {
+
+	private static final String GUEST_PREFIX = &quot;Guest&quot;;
+
+	private final Set&lt;ChatMessageInbound&gt; connections = new CopyOnWriteArraySet&lt;ChatMessageInbound&gt;();
+	
+	@Override
+	protected StreamInbound createWebSocketInbound(String subProtocol,
+			HttpServletRequest request) {
+		return new ChatMessageInbound(request.getParameter(&quot;userName&quot;));
+	}
+
+	private final class ChatMessageInbound extends MessageInbound {
+
+		private final String nickname;
+
+		private ChatMessageInbound(String name) {
+			this.nickname = name;
+		}
+
+		@Override
+		protected void onOpen(WsOutbound outbound) {
+			connections.add(this);
+			
+			System.out.println(nickname + &quot;has joined.&quot;);
+			broadcast(nickname + &quot; has joined.&quot;);
+		}
+
+		@Override
+		protected void onClose(int status) {
+			connections.remove(this);
+			System.out.println(nickname + &quot;has leaved.&quot;);
+			broadcast(nickname + &quot; has leaved.&quot;);
+		}
+		
+		@Override
+		protected void onBinaryMessage(ByteBuffer buffer) throws IOException {
+			
+		}
+
+		@Override
+		protected void onTextMessage(CharBuffer buffer) throws IOException {
+
+			System.out.println(nickname + &quot; say:&quot; + buffer.toString());
+			broadcast(nickname + &quot; say:&quot; + buffer.toString());
+		}
+
+		private void broadcast(String message) {
+			for (ChatMessageInbound connection : connections) {
+				try {
+					CharBuffer buffer = CharBuffer.wrap(message);
+					connection.getWsOutbound().writeTextMessage(buffer);
+				} catch (IOException ignore) {
+				}
+			}
+		}
+	}
+}
+可以看到我们使用了WebSocketServlet接受请求，使用MessageInbound来处理真正的websocket连接。
+
+   
+
+
+   
+
+
+
+
+   为了保证上面的java代码编译通过，需要引入catalina.jar、servlet-api.jar、tomcat-coyote.jar。需要特别注意：这3个包只是编译需要，实际运行的时候不能将这3个jar放到我们的war包中。因为tomcat7运行环境，自带的就有这些jar。我实验过：如果将这些jar包放到我们自己war包下，会导致创建websocket失败。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   接下来我们可以在tomcat7下运行上面的代码，打开1个浏览器客户端。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   现在我们打开第二个客户端，操作步骤同第一个客户端一样。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   现在我们看下第一个客户端：
+
+
+   
+
+
+
+
+   很明显：第一个客户端能够收到消息，这就是推送，非常方便。基于websocket推送，我们能够更好、更容易地构建监控等实时应用的程序。

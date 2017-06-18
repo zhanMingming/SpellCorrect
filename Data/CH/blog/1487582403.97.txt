@@ -1,0 +1,184 @@
+A Walk Through the Forest  最短路+dpA Walk Through the Forest
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:48 Accepted:15 
+
+
+   Description 
+
+
+   Jimmy experiences a lot of stress at work these days, especially since his accident made working difficult. To relax after a hard day, he likes to walk home. To make things even nicer, his office is on one side of a forest, and his house is on the other. A nice walk through the forest, seeing the birds and chipmunks is quite enjoyable. The forest is beautiful, and Jimmy wants to take a different route everyday. He also wants to get home before dark, so he always takes a path to make progress towards his house. He considers taking a path from A to B to be progress if there exists a route from B to his home that is shorter than any possible route from A. Calculate how many different routes through the forest Jimmy might take. 
+
+
+   Input 
+
+
+   Input contains several test cases followed by a line containing 0. Jimmy has numbered each intersection or joining of paths starting with 1. His office is numbered 1, and his house is numbered 2. The first line of each test case gives the number of intersections N, 1 &lt; N &le; 1000, and the number of paths M. The following M lines each contain a pair of intersections a b and an integer distance 1 &le; d &le; 1000000 indicating a path of length d between intersection a and a different intersection b. Jimmy may walk a path any direction he chooses. There is at most one path between any pair of intersections. 
+
+
+   Output 
+
+
+   For each test case, output a single integer indicating the number of different routes through the forest. You may assume that this number does not exceed 2147483647. 
+
+
+   Sample Input 
+
+
+   
+
+   5 6
+1 3 2
+1 4 2
+3 4 3
+1 5 12
+4 2 34
+5 2 24
+7 8
+1 3 1
+1 4 1
+3 7 1
+7 4 1
+7 5 1
+6 7 1
+5 2 1
+6 2 1
+0
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   2
+4
+
+
+   题目大意是给一个图。起点为1，终点为2然后点a到点b是合法的判断是当b存在一个到终点的距离小于a到终点的最小距离。。。。。求从起点到终点的路径数。。我的做法是dijk + sort + dp。
+
+   先dijk出任何点到2的最小距离。然后按照距离对他们sort 。
+
+   dp就是很普通的路径dp：ans[终点] += ans[起点];
+
+
+
+   #include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define MAXN 1100
+#define INF 1000000000
+
+struct way
+{
+	int s;
+	int d;//distance
+	bool operator &lt;(const way k)const
+	{
+		return d &lt; k.d;
+	}
+};
+
+struct point//restore id and d(distance) of each point
+{
+	int d,id;
+	bool operator&lt;(const point &amp;a) const//used for sort
+	{
+		if(d==a.d)
+			return a.id&gt;id;//从小到大排id
+		return a.d&lt;d;//从大到小排distance
+	}
+}p[MAXN];
+
+int n,ans[MAXN];
+int map[MAXN][MAXN];
+bool flag[MAXN];
+
+void dijk()//dijk find minimal distance between each point to point 2
+{
+	priority_queue&lt;way&gt;Q;
+
+	way temp,now;
+	now.s=2;
+	now.d=0;
+	Q.push(now);
+	p[2].d=0;
+
+	while(!Q.empty())
+	{
+		now=Q.top();
+		Q.pop();//use priority queue to ensure pop the point with minimal distance every time
+		if(flag[now.s])
+			continue;
+		flag[now.s]=1;//flag[i]==1 means it is in the end point set
+		for(int i=1;i&lt;=n;i++)//从终点往回推
+		{
+			if(!flag[i]&amp;&amp;map[now.s][i]!=INF&amp;&amp;p[i].d&gt;p[now.s].d+map[now.s][i])
+			{
+				temp.s=i;
+				temp.d=p[now.s].d+map[now.s][i];
+				p[i].d=temp.d;
+				Q.push(temp);
+			}
+		}
+	}
+}
+
+void init(int m)//初始化
+{
+	int i,j;
+	int a,b,c;
+	for(i=1;i&lt;=n;i++)
+	{
+		p[i].id=i;
+		flag[i]=0;
+		p[i].d=INF;
+		ans[i]=0;
+		for(j=1;j&lt;=n;j++)
+			map[i][j]=INF;
+	}
+	while(m--)
+	{
+		scanf("%d%d%d",&amp;a,&amp;b,&amp;c);
+		map[a][b] = c;
+		map[b][a] = c;
+	}
+}
+
+void dp()//ans[end point]+=ans[start point]
+{
+	int i,j;
+	for(i=1;i&lt;=n;i++)//find start point 1
+		if(p[i].id==1)
+			break;
+	ans[1]=1;
+	for(i;i&lt;n;i++)
+	{
+		for(j=i+1;j&lt;=n;j++)//p[j].d must be &lt;= p[i].d after sorting
+		{
+			if(map[p[j].id][p[i].id]!=INF&amp;&amp;p[j].d&lt;p[i].d)
+				ans[p[j].id]+=ans[p[i].id];
+		}
+	}
+}
+
+int main()
+{
+	int m;
+	while(scanf("%d",&amp;n)!=EOF&amp;&amp;n!=0)
+	{
+		scanf("%d",&amp;m);
+		init(m);
+		dijk();//find minimal distance between each point to point 2
+		sort(p+1,p+n+1);//sort the distance
+		dp();
+		printf("%d/n",ans[2]);
+	}
+	return 0;
+}

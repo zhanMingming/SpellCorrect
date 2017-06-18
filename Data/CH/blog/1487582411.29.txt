@@ -1,0 +1,162 @@
+False coinFalse coin
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:31 Accepted:5 
+
+
+   Description 
+
+
+   The "Gold Bar"bank received information from reliable sources that in their last group of N coins exactly one coin is false and differs in weight from other coins (while all other coins are equal in weight). After the economic crisis they have only a simple balance available (like one in the picture). Using this balance, one is able to determine if the weight of objects in the left pan is less than, greater than, or equal to the weight of objects in the right pan. In order to detect the false coin the bank employees numbered all coins by the integers from 1 to N, thus assigning each coin a unique integer identifier. After that they began to weight various groups of coins by placing equal numbers of coins in the left pan and in the right pan. The identifiers of coins and the results of the weightings were carefully recorded. You are to write a program that will help the bank employees to determine the identifier of the false coin using the results of these weightings. 
+
+
+   Input 
+
+
+   The first line of the input file contains two integers N and K, separated by spaces, where N is the number of coins (2&lt;=N&lt;=1000 ) and K is the number of weightings fulfilled (1&lt;=K&lt;=100). The following 2K lines describe all weightings. Two consecutive lines describe each weighting. The first of them starts with a number Pi (1&lt;=Pi&lt;=N/2), representing the number of coins placed in the left and in the right pans, followed by Pi identifiers of coins placed in the left pan and Pi identifiers of coins placed in the right pan. All numbers are separated by spaces. The second line contains one of the following characters: '&lt;', '&gt;', or '='. It represents the result of the weighting: '&lt;' means that the weight of coins in the left pan is less than the weight of coins in the right pan, '&gt;' means that the weight of coins in the left pan is greater than the weight of coins in the right pan, '=' means that the weight of coins in the left pan is equal to the weight of coins in the right pan. 
+
+
+   Output 
+
+
+   Write to the output file the identifier of the false coin or 0, if it cannot be found by the results of the given weightings.
+
+
+   Sample Input 
+
+
+   
+
+   5 3
+2 1 2 3 4
+&lt;
+1 1 4
+=
+1 2 5
+=
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   3
+
+
+
+
+   
+
+
+   Source 
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;math.h&gt;
+using namespace std;
+#define M 1005
+#define N 110
+
+int n,k;
+int coins[M];
+bool flag[M];
+
+struct COMP
+{
+	int num;
+	int left[M];
+	int right[M];
+	char command;
+}cas[N];
+
+void init()
+{
+	int i,j;
+	memset(coins,0,sizeof(coins));
+	memset(flag,false,sizeof(flag));
+
+	for(i=0;i&lt;k;i++)
+	{
+		scanf("%d",&amp;cas[i].num);
+		for(j=0;j&lt;cas[i].num;j++)
+			scanf("%d",&amp;cas[i].left[j]);
+		for(j=0;j&lt;cas[i].num;j++)
+			scanf("%d",&amp;cas[i].right[j]);
+		char c=getchar();
+		while(c!='='&amp;&amp;c!='&lt;'&amp;&amp;c!='&gt;')
+			c=getchar();
+		//cin&gt;&gt;cas[i].command;
+		cas[i].command=c;
+		if(cas[i].command=='=')
+			for(j=0;j&lt;cas[i].num;j++)
+				flag[cas[i].left[j]]=flag[cas[i].right[j]]=true;
+		else if(cas[i].command=='&lt;')
+			for(j=0;j&lt;cas[i].num;j++)
+				coins[cas[i].left[j]]--,coins[cas[i].right[j]]++;
+		else if(cas[i].command=='&gt;')
+			for(j=0;j&lt;cas[i].num;j++)
+				coins[cas[i].left[j]]++,coins[cas[i].right[j]]--;
+	}
+}
+
+void solve()
+{
+	int num=0;
+	int max=-1;
+	int temp;
+	int i;
+	for(i=1;i&lt;=n;i++)
+		if(flag[i]==false)
+		{
+			num++;
+			temp=i;
+			if(abs(coins[i])&gt;max)
+				max=abs(coins[i]);
+		}
+		if(num==1)
+		{
+			printf("%d/n",temp);
+			return ;
+		}
+		int index=0;
+		int count=0;
+		for(i=1;i&lt;=n;i++)
+		{
+			if(abs(coins[i])==max&amp;&amp;flag[i]==false)
+			{
+				count++;
+				index=i;
+			}
+			if(count&gt;1)
+				break;
+		}
+		if(count==1)
+		{
+			printf("%d/n",index);
+			return ;
+		}
+		else 
+			printf("0/n");
+}
+
+int main()
+{
+	while(scanf("%d%d",&amp;n,&amp;k)!=EOF)
+	{
+		init();
+		solve();
+	}
+	return 0;
+}

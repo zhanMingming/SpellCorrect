@@ -1,0 +1,135 @@
+关于GetTickCount和QueryPerformanceCounter的精度区别其实差别不大，写了两个类来测试：
+
+
+   
+
+   
+
+
+   class TimeCounter
+
+
+   {
+
+
+   private:
+
+
+   	DWORD start;
+
+
+   public:
+
+
+   	TimeCounter() {Start();}
+
+
+   	void Start(){start = GetTickCount(); }
+
+
+   	DWORD Now()
+
+
+   	{
+
+
+   		DWORD end = GetTickCount(); 		
+
+
+   		return (end - start); // return miliseconds
+
+
+   	}	
+
+
+   };
+
+
+   
+
+
+   
+
+
+   class HighResolutionTimeCounter
+
+
+   {
+
+
+   	LARGE_INTEGER start;
+
+
+   	LARGE_INTEGER freq;
+
+
+   public:
+
+
+   	HighResolutionTimeCounter() { QueryPerformanceFrequency(&amp;freq); Start();}
+
+
+   	void Start() { QueryPerformanceCounter(&amp;start); }
+
+
+   	__int64 Now() // return miliseconds
+
+
+   	{
+
+
+   		LARGE_INTEGER end = { 0 };
+
+
+   		QueryPerformanceCounter(&amp;end);
+
+
+   		return (end.QuadPart - start.QuadPart)*1000 / freq.QuadPart;
+
+
+   	}
+
+
+   };
+
+
+
+
+   
+
+
+   测试代码 ：
+
+
+   
+
+   TimeCounter tc;
+
+
+   			HighResolutionTimeCounter hrtc;
+
+
+   
+
+
+   Sleep(10*1000);
+
+
+   
+
+
+   			
+
+
+   			cout &lt;&lt; tc.Now() &lt;&lt; endl;
+
+
+   			cout &lt;&lt; hrtc.Now() &lt;&lt;endl;
+
+
+
+
+   
+
+
+   最后得到的结果的区别是很小的。

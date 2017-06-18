@@ -1,0 +1,74 @@
+【运营汇编1】如何确保数据传到远程服务器上#!/bin/bash
+
+
+   7za a log.7z log       #将文件log压缩成log.7z
+
+
+
+
+   7za t log.7z           #检验文件log.7z是否可解压。
+
+
+
+
+   rsync -avP log.7z root@192.168.1.1:/data/  #将log.7z传送到192.168.1.1 服务器上。
+
+
+
+
+   
+
+
+
+
+   整个过程都可能出现问题，7za t 可能检验文件不可解压。rsync也可能出错，而使得传送中断。
+
+
+   改成如下命令：
+
+
+   
+
+
+   #!/bin/bash
+
+
+   7za a log.7z log       #将文件log压缩成log.7z
+
+
+
+
+   7za t log.7z           #检验文件log.7z是否可解压。
+
+
+
+
+   zat_result=$?         #获取7za 命令的返回&#20540;，返回&#20540;用$?表示。
+
+if [ $zat_result -eq 0 ]; then     #如果返回0，表示文件可解压
+
+
+       while [ &quot;1&quot; = &quot;1&quot; ]
+
+    do
+
+
+         rsync -avP log.7z root@192.168.1.1:/data/  #将log.7z传送到192.168.1.1 服务器上。
+
+
+         $awsls_result=$?
+
+
+         if [ $awsls_result -eq 0 ]; then
+
+
+            break
+
+
+         fi
+
+
+      done
+
+
+   fi

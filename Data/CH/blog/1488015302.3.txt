@@ -1,0 +1,449 @@
+Hibernate缓存体系之查询缓存（query cache），以及list和iterate方法的区别Hibernate框架提供了Session.load()和Session.get()方法，用来根据实体对象的主键&#20540;从数据库中查询对应记录。针对load和get方法，hibernate提供了一级缓存和二级缓存的支持，提高查询效率，具体可以参考我的博客：通过测试用例和执行结果，让你正确推测和理解Session中Load和get的区别，不再困惑。
+
+
+      
+
+
+   那么什么是查询缓存呢？hibernate中提供了一级缓存、二级缓存用来提高单个记录查询的效率。查询缓存是为了提高批量查询的效率。何为批量查询呢？就是使用HQL/SQL语句，从数据库中查询多条满足条件的记录。也就是说：load和get缓存中的key是实体对象的主键&#20540;；查询缓存中的key则是hql/sql语句。我们以HQL语句为例进行介绍，SQL语句的查询稍后再进行测试。在hibernate中可以使用如下形式的代码，进行HQL查询。
+
+
+   
+
+
+   Query query = hqlSession.createQuery(&quot;from Student where name='zhangsan111'&quot;);
+
+List&lt;Student&gt; studentList = (List&lt;Student&gt;) query.list();
+Iterator&lt;Student&gt; studentIterator = (Iterator&lt;Student&gt;) query.iterate();
+
+   
+
+
+   
+
+
+
+
+   在hibernate4.1.6版本中，为了使用查询缓存，需要进行两步操作：
+
+
+   1.在hibernate.cfg.xml中开启查询缓存，因为hibernate默认情况下会关闭查询缓存。配置方式如下：
+
+
+   
+
+
+   &lt;property name=&quot;hibernate.cache.use_query_cache&quot;&gt;true&lt;/property&gt;2.在hibernate的Query对象中，通过代码设置开启查询缓存。代码如下：
+
+   
+
+
+   
+
+
+   Session hqlSession = sessionFactory.openSession();
+		
+Query query = hqlSession.createQuery(&quot;from Student where name='zhangsan111'&quot;);
+		
+query.setCacheable(true);注意：经过上面的配置，我们开启了查询缓存，但是没有开启二级缓存。我们先编写单元测试代码，然后通过查看实际的运行结果，来分析查询缓存的原理。测试代码如下：
+
+   
+
+
+   public class TestQueryCache
+{
+	private SessionFactory sessionFactory = new Configuration().configure()
+			.buildSessionFactory();
+
+	private String testHql = &quot;from Student where name='zhangsan111'&quot;;
+
+	@Test
+	// 如果开启了查询缓存,list第二次查询，直接获取缓存的主键id，然后根据id查询详情
+	public void testUseList()
+	{
+		testListQuery(sessionFactory);
+
+		System.out.println(&quot;-------list进行第二次查询------&quot;);
+
+		testListQuery(sessionFactory);
+
+	}
+
+	@Test
+	// 是否开启查询缓存，对iterator没有影响，它都会先根据hql语句查询id，再根据id查询详情
+	public void testUseIterator()
+	{
+		testIterateQuery(sessionFactory);
+
+		System.out.println(&quot;-------iterate进行第二次查询------&quot;);
+
+		testIterateQuery(sessionFactory);
+
+	}
+
+	@Test
+	public void testIteratorAndList1()
+	{
+		testIterateQuery(sessionFactory);
+
+		System.out.println(&quot;-------第一次使用iterate,第二次使用list查询------&quot;);
+
+		testListQuery(sessionFactory);
+
+	}
+
+	@Test
+	public void testIteratorAndList2()
+	{
+		testListQuery(sessionFactory);
+
+		System.out.println(&quot;-------第一次使用list,第二次使用iterate查询------&quot;);
+
+		testIterateQuery(sessionFactory);
+
+	}
+
+	private void testListQuery(SessionFactory sessionFactory)
+	{
+		Session hqlSession = sessionFactory.openSession();
+
+		Query query = hqlSession.createQuery(testHql);
+
+		query.setCacheable(true);
+		@SuppressWarnings(&quot;unchecked&quot;)
+		List&lt;Student&gt; studentList = (List&lt;Student&gt;) query.list();
+
+		for (Student student : studentList)
+		{
+			System.out.println(&quot;list语句测试query cache:&quot; + student);
+		}
+		hqlSession.close();
+	}
+
+	private void testIterateQuery(SessionFactory sessionFactory)
+	{
+		Session hqlSession = sessionFactory.openSession();
+
+		Query query = hqlSession.createQuery(testHql);
+
+		query.setCacheable(true);
+
+		@SuppressWarnings(&quot;unchecked&quot;)
+		Iterator&lt;Student&gt; studentList = (Iterator&lt;Student&gt;) query.iterate();
+
+		while (studentList.hasNext())
+		{
+			System.out.println(&quot;iterate语句测试query cache:&quot; + studentList.next());
+		}
+
+		hqlSession.close();
+	}
+
+}
+
+   
+
+
+   数据库中的记录如下：
+
+
+   
+
+
+   
+
+1. 2次list()执行结果分析
+
+
+
+  list()方法执行效果如下：
+
+
+   
+
+
+   Hibernate: 
+    select
+ student0_.id as id0_,
+ student0_.name as name0_,
+ student0_.age as age0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+list语句测试query cache:hibernate.Student@a09e41[id=1, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@9dd6e2[id=2, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@8698fa[id=3, name=zhangsan111, age=18]
+-------list进行第二次查询------
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+list语句测试query cache:hibernate.Student@1751a9e[id=1, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@60b407[id=2, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@e391c4[id=3, name=zhangsan111, age=18]第一次查询的时候，list()只发出了一条sql语句，查出了所有name='zhangsan111'的记录共有3条，这个很好理解，因为缓存中没有数据，所以list直接去数据库中进行了查询；第二次查询的时候，list发出了3条根据id去查询的sql语句。这是因为，第二次查询的hql语句跟第一次查询的时候完全相同。所以直接从查询缓存中，获取到满足条件的记录id&#20540;。之后根据id去student表中查询详情。可以看出：查询缓存，缓存的key是hql语句，缓存的value是满足hql语句的记录的主键&#20540;。也就是说，查询缓存，只是缓存数据库记录的主键&#20540;，并不会缓存记录的所有字段&#20540;。
+
+   
+
+
+   
+
+
+
+
+   2. 2次iterate()执行结果分析
+
+
+
+  iterate()方法执行效果如下：
+
+
+   
+
+
+   Hibernate: 
+    select
+ student0_.id as col_0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@61ec49[id=1, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@4e21db[id=2, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@1e3a0ec[id=3, name=zhangsan111, age=18]
+-------iterate进行第二次查询------
+Hibernate: 
+    select
+ student0_.id as col_0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@1e4905a[id=1, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@1751a9e[id=2, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@182a033[id=3, name=zhangsan111, age=18]可以发现：2次使用iterate进行查询，发出的sql完全相同。是否开启查询缓存，对iterate方式没有影响。无论如何，iterate()都会先查询出满足条件的id&#20540;，然后再根据id去数据查询记录的详情。
+
+
+
+3. 先iterate后list执行结果分析
+
+  testIteratorAndList1()方法执行效果如下：
+
+   
+
+
+   
+
+
+   Hibernate: 
+    select
+ student0_.id as col_0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@135daf[id=1, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@158f1fa[id=2, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@e9aa13[id=3, name=zhangsan111, age=18]
+-------第一次使用iterate,第二次使用list查询------
+Hibernate: 
+    select
+ student0_.id as id0_,
+ student0_.name as name0_,
+ student0_.age as age0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+list语句测试query cache:hibernate.Student@cab854[id=1, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@10bbd42[id=2, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@14323d5[id=3, name=zhangsan111, age=18]
+iterate方法，发出了4次sql查询语句，list发出了一次sql查询语句。可以得到结论：iterate不会将满足条件的id&#20540;放入查询缓存中，或者说iterate将满足条件的id&#20540;放入了查询缓存，但是list方法并没有使用。个人感觉：iterate方法不会将满足查询条件的id&#20540;放入查询缓存。因为如果iterate将id放入了查询缓存，list没有理由不去使用；而且通过2次iterate测试发现，查询缓存对iterate没有影响。
+
+
+
+
+   
+
+
+   4. 先list后iterate执行结果分析
+
+
+
+ testIteratorAndList2()方法执行效果如下：
+
+
+
+
+   
+
+
+   Hibernate: 
+    select
+ student0_.id as id0_,
+ student0_.name as name0_,
+ student0_.age as age0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+list语句测试query cache:hibernate.Student@16daa9[id=1, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@14b9a74[id=2, name=zhangsan111, age=18]
+list语句测试query cache:hibernate.Student@893969[id=3, name=zhangsan111, age=18]
+-------第一次使用list,第二次使用iterate查询------
+Hibernate: 
+    select
+ student0_.id as col_0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.name='zhangsan111'
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@1add463[id=1, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@12a66ea[id=2, name=zhangsan111, age=18]
+Hibernate: 
+    select
+ student0_.id as id0_0_,
+ student0_.name as name0_0_,
+ student0_.age as age0_0_ 
+    from
+ Student student0_ 
+    where
+ student0_.id=?
+iterate语句测试query cache:hibernate.Student@e580e1[id=3, name=zhangsan111, age=18]
+结论2次list查询的效果，可以得出结论：list会将满足查询条件的记录的id放入查询缓存，但是iterate不会使用这些缓存的id。
+
+   
+
+
+   
+
+
+
+
+   5. 总结
+
+   默认hibernate不会开启查询缓存，这是因为查询缓存只有在hql/hql语句语义完全一致的时候，才能命中。而实际查询场景下，查询条件、分页、排序等构成的复杂查询sql语句很难完全一致。可能是hibernate觉得命中率低，所以默认关闭了查询缓存。我们可以根据实际使用情况，决定是否开启查询缓存，唯一的原则就是命中率要尽可能的高。如果针对A表的查询，查询sql语句基本都是完全一致的情况，就可以针对A使用查询缓存；如果B表的查询条件经常变化，很难命中，那么就不要对B表使用查询缓存。这可能就是hibernate使用查询缓存的时候，既要在hibernate.cfg.xml中进行配置，也需要query.setCacheable(true)的原因。
+
+
+     查询缓存只对list有用，对iterate方式无用。iterate不会读也不会写查询缓存，list会读也会写查询缓存。查询缓存中的key是sql语句（这些sql语句会被hibernate解析，保证语义相同的sql，能够命中查询缓存），缓存的value是记录的主键&#20540;。

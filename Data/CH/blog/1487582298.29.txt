@@ -1,0 +1,101 @@
+.NET + OpenCV &amp; Python + OpenCV最近需要做一个图像识别的GUI应用，权衡了Opencv+ 1）QT，2）Python GUI，3）.NET后选择了.NET。。。
+
+   本文给出C#+Opencv和Python+Opencv的相应参考，节省大家时间。
+
+   
+
+   
+
+   （一）C#.NET + Opencv
+
+   1）下载并安装Emgu库（for opencv on .NET env）
+
+      Download @http://sourceforge.net/projects/emgucv/
+
+   2）How to use opencv on C#?
+
+     VS上配置Emgu（库）
+
+   3）测试on C#.NET
+
+    
+
+   
+
+   （二）Python + Opencv
+
+   
+
+   按照官网的Instruction一步步来，可以从source自己编译，也可以直接用二进制文件。
+
+   这里注意我遇到的一个错误，undefined cv2.SIFT()：
+
+   
+
+   AttributeError: 'module' object has no attribute 'SIFT'查资料有的地方解释为高版本把SIFT当做non-free的module需要自己编译才有，具体参考这个帖子。
+   
+
+   但我自己编译成功后还是没解决问题。。。于是试着吧opencv 2.3.1换成opencv 2.4.6.0,再按官网的Instruction预编译二进制文件方法把cv2.pyd拷到python下，成功了。。。。
+
+   PS: 喜欢在mac上折腾的看看这个帖子吧。。。Installing OpenCV 2.4.2 on Mac OSX Mountain Lion with Python support
+
+   
+
+   最后贴个python+opencv+numpy测试代码：
+
+   
+
+   
+   import cv2
+import numpy as np
+#import pdb
+#pdb.set_trace()#turn on the pdb prompt
+
+#test cv2 and numpy package
+print cv2.__version__
+a = np.arange(10)
+print(a)
+
+#read image
+img = cv2.imread('D:\privacy\picture\little girl.jpg',cv2.IMREAD_COLOR)
+gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+cv2.imshow('tt',img);
+
+#basic accessing
+b,g,r = img[0,0];#blue,green,red
+print b,g,r
+
+rows,columns,channels = img.shape
+print rows,columns,channels
+print img.size
+
+#channels split and merge
+b,g,r = cv2.split(img)
+img = cv2.merge([b,g,r])
+
+#SIFT
+detector = cv2.SIFT()
+keypoints = detector.detect(gray,None)
+img = cv2.drawKeypoints(gray,keypoints)
+#img = cv2.drawKeypoints(gray,keypoints,flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+cv2.imshow('test',img);
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+   
+结果：
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   关于Computer Vision更多的学习资料将继续更新，敬请关注本博客和新浪微博Rachel____Zhang。

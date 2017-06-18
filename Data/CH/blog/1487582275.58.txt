@@ -1,0 +1,245 @@
+GMM的EM算法实现在 聚类算法K-Means, K-Medoids, GMM, Spectral clustering，Ncut一文中我们给出了GMM算法的基本模型与似然函数，在EM算法原理中对EM算法的实现与收敛性证明进行了详细说明。本文主要针对如何用EM算法在混合高斯模型下进行聚类进行代码上的分析说明。
+
+   
+
+   1. GMM模型：
+
+   
+
+   每个 GMM 由 K个 Gaussian 分布组成，每个 Gaussian 称为一个“Component”，这些 Component 线性加成在一起就组成了 GMM 的概率密度函数：
+
+   
+
+   根据上面的式子，如果我们要从 GMM 的分布中随机地取一个点的话，实际上可以分为两步：首先随机地在这 K个Gaussian Component 之中选一个，每个 Component 被选中的概率实际上就是它的系数 pi(k)，选中了 Component 之后，再单独地考虑从这个 Component 的分布中选取一个点就可以了──这里已经回到了普通的 Gaussian 分布，转化为了已知的问题。
+
+   那么如何用 GMM 来做 clustering 呢？其实很简单，现在我们有了数据，假定它们是由 GMM 生成出来的，那么我们只要根据数据推出 GMM 的概率分布来就可以了，然后 GMM 的 K个 Component 实际上就对应了 K个 cluster 了。根据数据来推算概率密度通常被称作 density estimation ，特别地，当我们在已知（或假定）了概率密度函数的形式，而要估计其中的参数的过程被称作“参数估计”。
+
+   
+
+   2. 参数与似然函数：
+
+   现在假设我们有 N个数据点，并假设它们服从某个分布（记作 p(x)），现在要确定里面的一些参数的值，例如，在 GMM 中，我们就需要确定 影响因子pi(k)、各类均值pMiu(k)和 各类协方差pSigma(k)这些参数。 我们的想法是，找到这样一组参数，它所确定的概率分布生成这些给定的数据点的概率最大，而这个概率实际上就等于，我们把这个乘积称作似然函数 (Likelihood Function)。通常单个点的概率都很小，许多很小的数字相乘起来在计算机里很容易造成浮点数下溢，因此我们通常会对其取对数，把乘积变成加和，得到 log-likelihood function 。接下来我们只要将这个函数最大化（通常的做法是求导并令导数等于零，然后解方程），亦即找到这样一组参数值，它让似然函数取得最大值，我们就认为这是最合适的参数，这样就完成了参数估计的过程。
+
+   下面让我们来看一看 GMM 的 log-likelihood function ：
+
+   
+
+   
+
+   由于在对数函数里面又有加和，我们没法直接用求导解方程的办法直接求得最大值。为了解决这个问题，我们采取之前从 GMM 中随机选点的办法：分成两步，实际上也就类似于K-means的两步。
+
+   
+
+   
+
+   3. 算法流程：
+
+   1. 估计数据由每个 Component 生成的概率（并不是每个 Component 被选中的概率）：对于每个数据来说，它由第个 Component 生成的概率为
+
+
+   
+
+   其中N（xi | μk,Σk）就是后验概率。
+
+   
+
+   2. 通过极大似然估计可以通过求到令参数=0得到参数pMiu，pSigma的值。具体请见这篇文章第三部分。
+
+   
+
+   其中，并且也顺理成章地可以估计为。
+
+   
+
+   3.重复迭代前面两步，直到似然函数的值收敛为止。
+
+   
+
+   
+
+   4. matlab实现GMM聚类代码与解释：
+
+   
+
+   说明：fea为训练样本数据，gnd为样本标号。算法中的思想和上面写的一模一样，在最后的判断accuracy方面，由于聚类和分类不同，只是得到一些 cluster ，而并不知道这些 cluster 应该被打上什么标签，或者说。由于我们的目的是衡量聚类算法的 performance ，因此直接假定这一步能实现最优的对应关系，将每个 cluster 对应到一类上去。一种办法是枚举所有可能的情况并选出最优解，另外，对于这样的问题，我们还可以用Hungarian algorithm来求解。具体的Hungarian代码我放在了资源里，调用方法已经写在下面函数中了。
+
+   
+
+   注意：资源里我放的是Kmeans的代码，大家下载的时候只要用bestMap.m等几个文件就好~
+
+   
+
+   
+
+   1. gmm.m，最核心的函数，进行模型与参数确定。
+
+   
+
+   function varargout = gmm(X, K_or_centroids)
+% ============================================================
+% Expectation-Maximization iteration implementation of
+% Gaussian Mixture Model.
+%
+% PX = GMM(X, K_OR_CENTROIDS)
+% [PX MODEL] = GMM(X, K_OR_CENTROIDS)
+%
+%  - X: N-by-D data matrix.
+%  - K_OR_CENTROIDS: either K indicating the number of
+%components or a K-by-D matrix indicating the
+%choosing of the initial K centroids.
+%
+%  - PX: N-by-K matrix indicating the probability of each
+%component generating each point.
+%  - MODEL: a structure containing the parameters for a GMM:
+%MODEL.Miu: a K-by-D matrix.
+%MODEL.Sigma: a D-by-D-by-K matrix.
+%MODEL.Pi: a 1-by-K vector.
+% ============================================================
+% @SourceCode Author: Pluskid (http://blog.pluskid.org)
+% @Appended by : Sophia_qing (http://blog.csdn.net/abcjennifer)
+    
+
+%% Generate Initial Centroids
+    threshold = 1e-15;
+    [N, D] = size(X);
+ 
+    if isscalar(K_or_centroids) %if K_or_centroid is a 1*1 number
+ K = K_or_centroids;
+ Rn_index = randperm(N); %random index N samples
+ centroids = X(Rn_index(1:K), :); %generate K random centroid
+    else % K_or_centroid is a initial K centroid
+ K = size(K_or_centroids, 1); 
+ centroids = K_or_centroids;
+    end
+ 
+    %% initial values
+    [pMiu pPi pSigma] = init_params();
+ 
+    Lprev = -inf; %上一次聚类的误差
+    
+    %% EM Algorithm
+    while true
+ %% Estimation Step
+ Px = calc_prob();
+ 
+ % new value for pGamma(N*k), pGamma(i,k) = Xi由第k个Gaussian生成的概率
+ % 或者说xi中有pGamma(i,k)是由第k个Gaussian生成的
+ pGamma = Px .* repmat(pPi, N, 1); %分子 = pi(k) * N(xi | pMiu(k), pSigma(k))
+ pGamma = pGamma ./ repmat(sum(pGamma, 2), 1, K); %分母 = pi(j) * N(xi | pMiu(j), pSigma(j))对所有j求和
+ 
+ %% Maximization Step - through Maximize likelihood Estimation
+ 
+ Nk = sum(pGamma, 1); %Nk(1*k) = 第k个高斯生成每个样本的概率的和，所有Nk的总和为N。
+ 
+ % update pMiu
+ pMiu = diag(1./Nk) * pGamma' * X; %update pMiu through MLE(通过令导数 = 0得到)
+ pPi = Nk/N;
+ 
+ % update k个 pSigma
+ for kk = 1:K 
+     Xshift = X-repmat(pMiu(kk, :), N, 1);
+     pSigma(:, :, kk) = (Xshift' * ...
+  (diag(pGamma(:, kk)) * Xshift)) / Nk(kk);
+ end
+ 
+ % check for convergence
+ L = sum(log(Px*pPi'));
+ if L-Lprev &lt; threshold
+     break;
+ end
+ Lprev = L;
+    end
+ 
+    if nargout == 1
+ varargout = {Px};
+    else
+ model = [];
+ model.Miu = pMiu;
+ model.Sigma = pSigma;
+ model.Pi = pPi;
+ varargout = {Px, model};
+    end
+ 
+    %% Function Definition
+    
+    function [pMiu pPi pSigma] = init_params()
+ pMiu = centroids; %k*D, 即k类的中心点
+ pPi = zeros(1, K); %k类GMM所占权重（influence factor）
+ pSigma = zeros(D, D, K); %k类GMM的协方差矩阵，每个是D*D的
+ 
+ % 距离矩阵，计算N*K的矩阵（x-pMiu）^2 = x^2+pMiu^2-2*x*Miu
+ distmat = repmat(sum(X.*X, 2), 1, K) + ... %x^2, N*1的矩阵replicateK列
+     repmat(sum(pMiu.*pMiu, 2)', N, 1) - ...%pMiu^2，1*K的矩阵replicateN行
+     2*X*pMiu';
+ [~, labels] = min(distmat, [], 2);%Return the minimum from each row
+ 
+ for k=1:K
+     Xk = X(labels == k, :);
+     pPi(k) = size(Xk, 1)/N;
+     pSigma(:, :, k) = cov(Xk);
+ end
+    end
+ 
+    function Px = calc_prob() 
+ %Gaussian posterior probability 
+ %N(x|pMiu,pSigma) = 1/((2pi)^(D/2))*(1/(abs(sigma))^0.5)*exp(-1/2*(x-pMiu)'pSigma^(-1)*(x-pMiu))
+ Px = zeros(N, K);
+ for k = 1:K
+     Xshift = X-repmat(pMiu(k, :), N, 1); %X-pMiu
+     inv_pSigma = inv(pSigma(:, :, k));
+     tmp = sum((Xshift*inv_pSigma) .* Xshift, 2);
+     coef = (2*pi)^(-D/2) * sqrt(det(inv_pSigma));
+     Px(:, k) = coef * exp(-0.5*tmp);
+ end
+    end
+end
+
+   
+
+   2. gmm_accuracy.m调用gmm.m，计算准确率：
+
+   
+
+   function [ Accuracy ] = gmm_accuracy( Data_fea, gnd_label, K )
+%Calculate the accuracy Clustered by GMM model
+
+px = gmm(Data_fea,K);
+[~, cls_ind] = max(px,[],1); %cls_ind = cluster label 
+Accuracy = cal_accuracy(cls_ind, gnd_label);
+
+    function [acc] = cal_accuracy(gnd,estimate_label)
+ res = bestMap(gnd,estimate_label);
+ acc = length(find(gnd == res))/length(gnd);
+    end
+
+end
+
+   
+
+   3. 主函数调用
+
+   gmm_acc =gmm_accuracy(fea,gnd,N_classes);
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   写了本文进行总结后自己很受益，也希望大家可以好好YM下上面pluskid的gmm.m，不光是算法，其中的矩阵处理代码也写的很简洁，很值得学习。
+
+   另外看了两份东西非常受益，一个是pluskid大牛的《漫谈 Clustering (3): Gaussian Mixture Model》，一个是JerryLead的EM算法详解，大家有兴趣也可以看一下，写的很好。
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料与相关讨论将继续更新，敬请关注本博客和新浪微博Sophia_qing。

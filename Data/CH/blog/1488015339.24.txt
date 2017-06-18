@@ -1,0 +1,177 @@
+(三.1)通过几个例子看下seajs模块标识符(有图有真相)模块的标识，其实就是模块的命名，这涉及到文件查找路径，如果路径配置不对，会导致seajs下载文件失败。seajs官方文档对模块标识的解释也比较多，但是我认为介绍的太简单，不太好理解。至少我是费了一点工夫，经过自己的实践，才理解的，这里记录下自己的所得。
+
+
+   seajs模块标识分为3种：相对标识、顶级标识和普通标识。我们知道require()就需要一个模块标识，模块标识就是一个字符串。
+
+
+   相对标识：字符串以&quot;.&quot;或者&quot;..&quot;开头，这就是一个相对标识，如require(&quot;../guangdong/shenzhen&quot;)。
+
+
+   顶级标识：不以&quot;.&quot;或者&quot;..&quot;或&quot;/&quot;或&quot;:&quot;开头，而且只能由&quot;.&quot;或者&quot;..&quot;或者&quot;/&quot;或者文件名(目录名)构成。文件名和目录名不要包含一些特殊字符(如?或:或者!等)，作为模块标识，使用这些字符完全是给自己找麻烦，而且没有任何意义。
+
+
+   普通路径：不是相对标识，不是顶级标识，剩下的就是普通路径。
+
+
+   
+
+
+
+
+   现在我们就来通过几个例子理解下，我将项目部署在了tomcat中，通过浏览器进行访问。项目目录结构如下：
+
+
+   
+
+
+   demo/   项目的根路径,放在%TOMCAT_HOME%/webapps/下
+  |-- seajs    啥都没放,就是多了层目录,方便演示需要
+  |     |-- examples  
+  |     |		   |-- index.html   首页
+  |		|	|-- libs  jquery、seajs等第三方库
+  |     |   |--js
+  |		|		|--main.js   js入口
+
+   
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   很明显我们访问index.html的url是：http://127.0.0.1:8080/demo/seajs/examples/index.html，index.html和main.js源码如下：
+
+
+   
+
+
+   &lt;html&gt;
+&lt;head&gt;
+	&lt;script src=&quot;./libs/jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;./libs/seajs-3.0.0/dist/sea.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;	
+	seajs.config({
+		base: &quot;./..&quot;  // 目录是%TOMCAT_HOME%/webapps/demo/seajs	
+	});
+	// 加载入口模块
+	seajs.use(&quot;examples/js/main&quot;);	
+	&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;button id=&quot;b&quot;&gt;click me&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+   //main.js系统初始化入口
+define(function(require, exports, module) {
+	 console.log(&#39;main.js&#39;); 
+});可以看到能成功下载main.js文件，效果图如下：
+
+   
+
+
+   
+
+
+
+
+
+
+
+
+   现在万事俱备，我们来修改main.js，index.html不需要修改，去理解到底什么是相对标识、顶级标识、普通标识。
+
+相对标识
+
+   现在我们修改下main.js，代码和执行效果如下：
+
+
+   
+
+
+   //main.js系统初始化入口
+define(function(require, exports, module) {
+	 console.log(&#39;main.js&#39;); 
+	 require(&quot;./aty/a&quot;);
+	 require(&quot;../libs/jquery-1.11.1.js&quot;);
+});
+
+在main.js模块中我们使用相对标识，意思就是main.js中使用require()加载的模块，路径都是相对于main.js所在的路径。main.js所在的路径是：http://127.0.0.1:8080/demo/seajs/examples/js/main.js
+
+   
+
+
+   require(&quot;./aty/a&quot;) 最终解析后路径是：http://127.0.0.1:8080/demo/seajs/examples/js/aty/a.js
+
+
+
+
+   require(&quot;../libs/jquery-1.11.1.js&quot;)解析后路径是：http://127.0.0.1:8080/demo/seajs/examples/libs/jquery-1.11.1.js
+
+
+
+
+   很明显吧，都是相对于main.js模块所在的目录进行加载的。相对标识，就是相对于当前模块所在路径来加载的。
+
+
+   
+
+
+
+顶级标识
+
+顶级标识会相对SeaJS中的base路径来解析，就是seajs.config({base:''./../&quot;})这个base参数指定的路径来加载js文件的。我们再修改下main.js：
+
+
+
+
+   
+
+
+   //main.js系统初始化入口
+define(function(require, exports, module) {
+	 console.log(&#39;main.js&#39;); 
+	 require(&quot;aty&quot;);
+	 require(&quot;aty/as&quot;);
+	 require(&quot;aty/../b&quot;);
+});
+
+可以看到顶级标识，都是相对于base这个目录来加载的。
+
+   
+
+
+   
+
+
+
+普通路径
+
+   唯一有意义的也就是以&quot;/&quot;开头，或者是用别的服务器上的js了，如&quot;http://www.myname.com/lead/c.js&quot;这种&#26684;式。
+
+
+   
+
+
+   //main.js系统初始化入口
+define(function(require, exports, module) {
+	 console.log(&#39;main.js&#39;); 
+	 require(&quot;/aty/a.js&quot;);
+	 require(&quot;http://127.0.0.1:8080/demo/cc&quot;);
+});
+
+
+
+
+   
+
+
+   实际上还是顶级标识，最直观最好用，项目应该使用这种方式，其他2种意义不大。本文之所以不讨论特殊字符的问题，是因为比较麻烦，我试了好几种情况都不太一样，不知道怎么去总结，等有空看看源码就能完全明白seajs怎么实现路径解析的了。

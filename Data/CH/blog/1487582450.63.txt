@@ -1,0 +1,81 @@
+hdu 3309Roll The Cube
+
+   Time Limit: 3000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 91Accepted Submission(s): 40
+
+Problem Description
+
+This is a simple game.The goal of the game is to roll two balls to two holes each.'B' -- ball'H' -- hole'.' -- land'*' -- wallRemember when a ball rolls into a hole, they(the ball and the hole) disappeared, that is , 'H' + 'B' = '.'.Now you are controlling two balls at the same time.Up, down , left , right --- once one of these keys is pressed, balls exist roll to that direction, for example , you pressed up , two balls both roll up. A ball will stay where it is if its next point is a wall, and balls can't be overlap.Your code should give the minimun times you press the keys to achieve the goal.
+
+
+
+
+   
+
+Input
+
+First there's an integer T(T&lt;=100) indicating the case number.Then T blocks , each block has two integers n , m (n , m &lt;= 22) indicating size of the map.Then n lines each with m characters.There'll always be two balls(B) and two holes(H) in a map.The boundary of the map is always walls(*).
+
+
+
+
+   
+
+Output
+
+The minimum times you press to achieve the goal.Tell me "Sorry , sir , my poor program fails to get an answer." if you can never achieve the goal.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   4
+6 3
+***
+*B*
+*B*
+*H*
+*H*
+***
+
+4 4
+****
+*BB*
+*HH*
+****
+
+4 4
+****
+*BH*
+*HB*
+****
+
+5 6
+******
+*.BB**
+*.H*H*
+*..*.*
+******
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   3
+1
+2
+Sorry , sir , my poor program fails to get an answer.
+
+   BFS，与以往不同的是，这个题目中要求两个目标从不同的起点到达终点。
+
+   #include &lt;cstdio&gt;#include &lt;cstring&gt;#include &lt;algorithm&gt;using namespace std;#define MAXN 22typedef unsigned char que[MAXN * MAXN * MAXN * MAXN * 4];const int fx[] = {-1, 1, 0, 0};const int fy[] = { 0, 0,-1, 1};char mat[MAXN][MAXN];bool f[MAXN][MAXN][MAXN][MAXN][2][2]; // 注意，入洞的状态需要加维度que qx1, qx2, qy1, qy2, step, ql1, ql2;int sx1, sy1, sx2, sy2;int s, e, w, h;void bfs() { s = 0; e = 1; ql1[0] = 0; ql2[0] = 0; qx1[0] = sx1; qy1[0] = sy1; qx2[0] = sx2; qy2[0] = sy2; step[0] = 0; f[sx1][sy1][sx2][sy2][0][0] = true; int nx1, ny1, nx2, ny2, tx1, ty1, tx2, ty2, l1, l2; while (s != e) { nx1 = qx1[s]; ny1 = qy1[s]; nx2 = qx2[s]; ny2 = qy2[s]; if (ql1[s]) for (int i = 0; i &lt; 4; ++i) { tx2 = nx2 + fx[i]; ty2 = ny2 + fy[i]; switch (mat[tx2][ty2]) { case 'H': if (tx2 != nx1 || ty2 != ny1) { printf("%d/n", step[s] + 1); return; } else { if (!f[nx1][ny1][tx2][ty2][1][0]) { qx1[e] = nx1; qy1[e] = ny1; qx2[e] = tx2; qy2[e] = ty2; ql1[e] = 1; ql2[e] = 0; step[e] = step[s] + 1; ++e; f[nx1][ny1][tx2][ty2][1][0] = true; } } case '.': case'B': // 注意，B 也是能走的 if (!f[nx1][ny1][tx2][ty2][1][0]) { qx1[e] = nx1; qy1[e] = ny1; qx2[e] = tx2; qy2[e] = ty2; ql1[e] = 1; ql2[e] = 0; step[e] = step[s] + 1; ++e; f[nx1][ny1][tx2][ty2][1][0] = true; } } } else if (ql2[s])  for (int i = 0; i &lt; 4; ++i) { tx1 = nx1 + fx[i]; ty1 = ny1 + fy[i]; switch (mat[tx1][ty1]) { case 'H': if (tx1 != nx2 || ty1 != ny2) { printf("%d/n", step[s] + 1); return; } else { if (!f[tx1][ty1][nx2][ny2][0][1]) { qx1[e] = tx1; qy1[e] = ty1; qx2[e] = nx2; qy2[e] = ny2; ql1[e] = 0; ql2[e] = 1; step[e] = step[s] + 1; ++e; f[tx1][ty1][nx2][ny2][0][1] = true; } } case '.': case 'B': // 同上 if (!f[tx1][ty1][nx2][ny2][0][1]) { qx1[e] = tx1; qy1[e] = ty1; qx2[e] = nx2; qy2[e] = ny2; ql1[e] = 0; ql2[e] = 1; step[e] = step[s] + 1; ++e; f[tx1][ty1][nx2][ny2][0][1] = true; } } } else for (int i = 0; i &lt; 4; ++i) { tx1 = nx1 + fx[i]; ty1 = ny1 + fy[i]; tx2 = nx2 + fx[i]; ty2 = ny2 + fy[i]; if (mat[tx1][ty1] == '*') { tx1 = nx1; ty1 = ny1; } if (mat[tx2][ty2] == '*') { tx2 = nx2; ty2 = ny2; } if (tx1 != tx2 || ty1 != ty2) { if (mat[tx1][ty1] == 'H' &amp;&amp; mat[tx2][ty2] == 'H') { printf("%d/n", step[s] + 1); return; } else { l1 = 0; l2 = 0; if (mat[tx1][ty1] == 'H') l1 = 1; if (mat[tx2][ty2] == 'H') l2 = 1; if (!f[tx1][ty1][tx2][ty2][l1][l2]) { qx1[e] = tx1; qy1[e] = ty1; qx2[e] = tx2; qy2[e] = ty2; ql1[e] = l1; ql2[e] = l2; step[e] = step[s] + 1; ++e; f[tx1][ty1][tx2][ty2][l1][l2] = true; } } } } ++s; } puts("Sorry , sir , my poor program fails to get an answer.");}int main() { int t; char th; scanf("%d", &amp;t); for (int cas = 1; cas &lt;= t; ++cas) { sx1 = 0; memset(f, 0, sizeof(f)); scanf("%d%d", &amp;h, &amp;w); for (int i = 0; i &lt; h; ++i) { scanf("%c", &amp;th); for (int j = 0; j &lt; w; ++j) { scanf("%c", &amp;mat[i][j]); if (mat[i][j] == 'B') { if (sx1 == 0) { sx1 = i; sy1 = j; } else { sx2 = i; sy2 = j; } } } } bfs(); } return 0;}

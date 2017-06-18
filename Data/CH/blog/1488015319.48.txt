@@ -1,0 +1,31 @@
+maven打包：将webapp下的classes文件打包到单独的jar包中maven web工程打包默认情况下，会将编译后的class文件放到WEB-INF/classes文件夹下，如果你不想将class文件放到这个位置，而是作为一个单独的jar放到WEB-INF/lib下，那么可以使用如下的配置：
+
+
+   
+
+
+   &lt;!--将class文件打成jar--&gt;
+&lt;plugin&gt;
+	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+	&lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+	&lt;version&gt;2.6&lt;/version&gt;
+	&lt;configuration&gt;
+		&lt;encoding&gt;UTF-8&lt;/encoding&gt;
+	&lt;/configuration&gt;
+	&lt;executions&gt;
+		&lt;execution&gt;
+			&lt;phase&gt;package&lt;/phase&gt;
+			&lt;goals&gt;
+				&lt;goal&gt;jar&lt;/goal&gt;
+			&lt;/goals&gt;
+			&lt;configuration&gt;
+				&lt;classesDirectory&gt;${project.build.directory}/${project.build.finalName}/WEB-INF/classes&lt;/classesDirectory&gt;
+				&lt;finalName&gt;my_jar&lt;/finalName&gt;
+				&lt;outputDirectory&gt;${project.build.directory}/${project.build.finalName}/WEB-INF/lib&lt;/outputDirectory&gt;
+				&lt;includes&gt;
+					&lt;include&gt;com/**&lt;/include&gt;
+				&lt;/includes&gt;
+			&lt;/configuration&gt;
+		&lt;/execution&gt;
+	&lt;/executions&gt;
+&lt;/plugin&gt;

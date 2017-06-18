@@ -1,0 +1,90 @@
+machine learning实验7 矩阵求逆#include&quot;stdio.h&quot;
+#include &lt;math.h&gt;
+double function(double matrix[3][6],double theta[3],int sample_i)
+{
+ double ret=0.0;
+ for(int i=0;i&lt;3;++i)
+ {
+  ret+=matrix[sample_i][i]*theta[i];
+ }
+ return ret;
+}
+double theta[3]={1,1,1};
+int main(void)
+{
+ double matrix[3][6]={
+   {1,2,3,1,0,0},
+   {2,1,1,0,1,0},
+   {3,1,2,0,0,1},
+      };
+
+ double alfa = 0.1;
+ double c = 0;
+ double d = 1;
+ for(int z=0;z&lt;3;++z)
+ {
+  double loss = 0.0;
+  for(int j = 0;j&lt;3;++j)
+  {
+   double sum=function(matrix,theta,j);
+   loss += pow((pow(sum+c,d)-matrix[j][z+3]),2);
+  }
+//printf(&quot;loss : %lf\n&quot;,loss);  
+  for(int i=0;i&lt;200;++i)
+  {
+   for(int sample_i = 0; sample_i&lt;3;sample_i++)
+   {
+    double result = function(matrix,theta,sample_i)+c;
+    for(int j=0;j&lt;3;++j)
+    {
+     theta[j] = theta[j] - alfa*(pow(result,d)-matrix[sample_i][z+3])*d*pow((result),d-1)*matrix[sample_i][j];
+    }
+   }
+   double loss = 0.0;
+   for(int j = 0;j&lt;3;++j)
+   {
+    double sum=function(matrix,theta,j);
+    loss += pow((pow(sum+c,d)-matrix[j][z+3]),2);
+   }
+   //printf(&quot;%d,loss  now: %lf,%lf,%lf,%lf\n&quot;,i,loss,theta[0],theta[1],theta[2]);
+
+  }
+  printf(&quot;%lf,%lf,%lf\n&quot;,theta[0],theta[1],theta[2]);
+ }
+ return 0;
+}
+ 
+
+以上代码从实验6稍微修改而来
+
+   
+
+
+   求一个矩阵的逆阵，如下例：
+
+
+   1 2 3 x1 y1 z1  1 0 0
+
+2 1 1 x2 y2 z2  0 1 0
+
+3 1 2 x3 y3 z3  0 0 1
+
+
+
+精确结果应为：
+
+    -1/2  1/2   1/2
+
+    1/2  7/4   5/4
+
+    1/2  -3/2   3/4
+
+
+   迭代的结果为
+
+
+   -0.249835,0.250747,0.249447
+
+0.247973,1.740834,-1.243221
+
+0.253544,-1.233976,0.738149

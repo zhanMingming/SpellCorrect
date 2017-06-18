@@ -1,0 +1,9 @@
+算法导论习题[Exercises 9.3-7 ]Describe an O(n)-time algorithm that, given a set S of n distinct numbers and a positive integer k &le; n, determines the k numbers in S that are closest to the median of S.
+
+
+   solution:
+
+
+   1: procedure k_Closest(S, k) //S: a set of n numbers and k: an integer2: Output = nothing;3: m = Select(S, n,n/2) //O(n)4: for all sin Sand s != m //O(n)5: s.distance = |m &minus; s|6: end for7: md = Select(S.distance, k) //O(n)8: for all sin S9: if s.distance&lt;= md.distance then //O(n)10: Output = Output+ s11: end if12: end for13: return Output14: end procedure
+
+可见可以在线形时间能得到集合S的K个最邻近点

@@ -1,0 +1,57 @@
+int_ptr, long_ptr這些類型的含义The*_PTRtypes
+ were added to the Windows API in order to support Win64's 64bit addressing.
+
+
+   
+Because 32bit APIs are used to store pointers to things using data types likeDWORDS,
+ it was necessary to create new types for 64 bit compatibility that acted like aDWORDin
+ 32bits, but were extended to 64bits when used in a 64bit app.
+
+
+   
+So, for example, application developers who want to write code that works as 32bit OR 64bit the windows 32bit APISetWindowLong(HWND,int,LONG)was
+ changed to SetWindowLongPtr(HWND,int,LONG_PTR)`
+
+
+   
+In a 32bit build,SetWindowLongPtris
+ simply a macro that resolves toSetWindowLong,
+ andLONG_PTRis
+ likewise a macro that resolves toLONG.
+ In a 64bit build on the other hand,SetWindowLongPtris
+ an API that accepts a 64bit long as its 3rd parameter, andULONG_PTRis
+ typedef forunsigned
+ __int64.
+
+
+   
+By using these_PTRtypes,
+ one codebase can compile for both Win32 and Win64 targets.
+
+
+   
+
+
+
+
+   
+
+
+
+   
+When performing pointer arithmetic, these types should also be used in 32bit code that needs to be compatible with 64bit.
+
+
+   
+so, if you need to access an array with more than 4billion elements, you would need to use an INT_PTR rather than an INT
+
+
+    CHAR* pHuge = new CHAR[0x200000000]; // allocate 8 billion bytes
+ INT idx;
+ INT_PTR idx2;
+ pHuge[idx]; // can only access the 1st 4 billion elements.
+ pHuge[idx2]; // can access all 64bits of potential array space.
+
+   目的是为了在32位系统和64位系统保持兼容。举例来说，INT_PTR在32位系统下表示32bit的&#20540;，在64位系统下可表示64位的&#20540;。
+
+   就是这样。

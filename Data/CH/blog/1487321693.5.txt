@@ -1,0 +1,336 @@
+Web Server 架构浅谈-Simple Event-Driven Achitecture回顾前两节的内容：我们提到了简单的多线程架构和基于线程池的架构
+
+
+     本节首先给出关于架构评价的一些指标：
+
+
+   [H. Xie 2002]关于架构提出了micro performance和macro performance，以此为参考，在本系列中，对架构好坏的评价分析时也是从这两个层面来讨论，但内涵稍有不同：
+
+
+    用户角度：公平性，响应时间，吞吐率。其中响应时间有包括等待时间和处理时间。对人来说公平性是第一位的，如果一个架构是歧视性的，往往没有生命力，先进先出的策略是公认的公平的策略。每个用户都希望自己提交的任务可以尽快处理，但在耐受力上等待时间和处理时间有不同，去银行办业务，等待4分钟办理业务1分钟的体验和等待1分钟办理业务4分钟的体验会不同。由于任务的处理时间和任务的复杂程度以及资源的竞争使用有关，因此架构主要考虑的是减少等待时间，减少资源的竞争。吞吐率是单位时间处理的请求数，这也是评价服务质量的重要指标。
+
+
+    系统角度：每指令需要耗费的指令周期CPI，缓存命中率，资源的饱和使用程度，开发的难易程度，代码的可维护性等。在资源竞争程度高的架构上CPI会很高，在局部性不强的架构缓存命中率会很低，CPU占用率低，磁盘的IO低的架构是浪费的架构，开发难度大正确性很难保障的架构维护成本也会很大，因此架构越是自然，越是符合业务规律越是好架构。
+
+
+    回顾我们此前提到的架构，这里来做一个定性的评价：
+
+
+    
+
+
+
+
+
+    
+
+
+
+
+   公平性
+
+
+
+
+   响应时间
+
+
+
+
+   吞吐率
+
+
+
+
+   CPI
+
+
+
+
+   缓存命中率
+
+
+
+
+   开发难易程度
+
+
+
+
+   可维护性
+
+
+
+
+
+
+   简单多线程架构
+
+
+
+
+   差
+
+
+
+
+   短
+
+
+
+
+   低
+
+
+
+
+   高
+
+
+
+
+   低
+
+
+
+
+   易
+
+
+
+
+   高
+
+
+
+
+
+
+   线程池的架构
+
+
+
+
+   差
+
+
+
+
+   短
+
+
+
+
+   中
+
+
+
+
+   高
+
+
+
+
+   低
+
+
+
+
+   中
+
+
+
+
+   高
+
+
+
+
+
+
+
+
+   
+
+
+   
+
+
+   不再展开，开始讲Simple Event-Driven Achitecture。
+
+
+   说事件驱动就不能不说epoll，时下最流行的事件驱动最佳方案，在介绍epoll之前，先区分两个概念：边缘触发通知（edge-triggered readiness notification）和条件触发通知（level-triggered readiness notification）：
+
+
+   
+
+
+   边缘触发的含义是：在应用程序传给内核一个文件描述符(FD)后（一个SOCKET链接可以看做是一个FD），只有当该FD从not ready切换到ready状态（有字节可读）时，内核会通知这个状态变化，而不会通知是否已经读完，也就是后面需要由应用程序持续进行读取，直到读到EWOULDBLOCK为止，否则这个SOCKET的状态就一直保持在ready上，应用程序没有持续读到EWOULDBLOCK，出现了交互的僵死，双方都不明对方的状态。边缘触发读通知，也有称作为准备状态改变通知(readiness change notification)。 
+
+
+    条件触发的含义是：[J Lemon 2001]首次提出该术语，和边缘触发不同，条件触发的含义是&ldquo;there is unread data in the buffer&rdquo;，只要在SOCKET上还有未读完的数据，就会给出条件触发通知，通知应用程序有数据可读。
+
+
+   
+
+
+    在epoll方案在业界被普遍采用之前，最早是select方法，但由于可扩展性等问题，又推出了poll的方法。然而 无论是Select 还是Poll 在连接数增加时，性能急剧下降。这有两方面的原因：首先操作系统面对每次的select/poll 操作，都需要重新建立一个当前线程的关心事件列表，并把线程挂在这个复杂的等待队列上，这是相当耗时的。其次，应用软件在select/poll 返回后也需要对传入的句柄列表做一次扫描来dispatch，这也是很耗时的。这两件事都是和并发数相关，而I/O 事件的密度也和并发数相关，导致CPU 占用率和并发数近似成O(n2)的关系[C10K问题]。
+
+
+    我们先从一个图来看什么是事件驱动的架构，如下图所示。
+
+
+   
+
+
+   
+
+
+    上图是一个最简单的单进程事件驱动模型，epoll方法轮询取获取可读的socket，每个socket上的数据是用户的request。在获取了一把这样的socket后，依次进行处理，并返回给用户端响应的数据。
+
+
+   在用法上epoll和select,poll类似，[C10K问题]给出了一个简单的例子：
+
+
+   struct epoll_event ev, *events;
+
+
+   int kdpfd = epoll_create(100);
+
+
+   ev.events = EPOLLIN | EPOLLET;  // EPOLLET，指定了边缘触发
+
+
+   ev.data.fd =listener;
+
+
+   epoll_ctl(kdpfd, EPOLL_CTL_ADD, listener, &amp;ev);
+
+
+   for(;;) {
+
+
+   nfds = epoll_wait(kdpfd, events, maxevents, -1); //和selec，poll类似
+
+
+   for(n = 0; n &lt; nfds; ++n) {
+
+
+   if(events[n].data.fd == listener) {
+
+
+   client = accept(listener, (struct sockaddr *) &amp;local,&amp;addrlen);
+
+
+   if(client &lt; 0){
+
+
+   perror("accept");
+
+
+   continue;
+
+
+   }
+
+
+   else
+
+
+   {
+
+
+   setnonblocking(client);
+
+
+   ev.events = EPOLLIN | EPOLLET;
+
+
+   ev.data.fd = client;
+
+
+   if (epoll_ctl(kdpfd, EPOLL_CTL_ADD, client, &amp;ev) &lt; 0) {
+
+
+   fprintf(stderr, "epoll set insertion error: fd=%d&rdquo;,client);
+
+
+   return -1;
+
+
+   }
+
+
+   }
+
+
+   else{
+
+
+   do_use_fd(events[n].data.fd);//读或者写操作
+
+
+   }
+
+
+   }
+
+
+    }
+
+
+   
+
+
+   
+
+     epoll的操作十分简单，一共就4个API：epoll_create, epoll_ctl, epoll_wait和close。使用方便，本文不再赘述。对于事件驱动架构，我一直很难想到一个生活中的例子来说明，如果有人能给我这方面的提示，非常感谢。
+
+
+   
+
+
+     下文在对简单事件驱动架构做评价，以及分阶段的事件驱动架构staged event-driven architecture(SEDA),待续。
+
+
+
+
+   
+
+
+   
+
+
+    顺带推荐一下我出的一个题目《包子算法》：下面介绍到流水线和锁的时候会介绍到一些类似的思想。
+
+
+   
+
+   
+
+
+   推荐阅读：
+
+
+   [H. Xie 2002] H. Xie and L. Bhuyan and Y. K. Chang, &ldquo;Benchmarking Web Server Architectures: A Simulation Study on Micro Performance,&rdquo;Proceedings of the 5th Workshop on Computer Architecture Evaluation using Commercial Workloads, Feb.2002.
+
+
+   [C10K]http://www.kegel.com/c10k.html
+
+
+   [J Lemon 2001] Jonathan Lemon. Kqueue: A generic and scalable event notification facility. Proceedings of the FREENIX Track: 2001 USENIX Annual Technical Conference, p.141-153, June 25-30, 2001. 14
+
+
+   [C10K问题]搜狗实验室技术交流文档Vol.1:1http://www.sogou.com/labs/report/1-1.pdf
+
+
+   [Dukkipati 2010]N Dukkipati et al An argument for increasing TCP's initial congestion window，ACM SIGCOMM 2010
+
+
+   [L Mich 2003]L Mich, M Franch, L Gaio. Evaluating and Designing Web Site Quality - IEEE MULTIMEDIA, 2003 - computer.org
+
+
+   [J. K. Ousterhout 1996] J. K. Ousterhout. Why threads are a bad idea (for most purposes), Jan 1996. Presentation given at the USENIX Annual Technical Conference.
+
+
+   [Rob 2003]Rob von Behren, Jeremy Condit and Eric Brewer .Why Events Are A Bad Idea(for high-concurrency servers)

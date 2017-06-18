@@ -1,0 +1,274 @@
+sort与qsort的应用昨天做了一题，一直wa；改了俩小时终于想把qsort换成sort试试，居然ac了……我什么也不想说了！进入正题，说说sort和qsort的区别和应用。
+
+
+   =================================================================================================================
+
+
+   一、qsort
+
+
+   1.int
+
+
+   int num[100]; 
+
+int cmp ( const void *a , const void *b ) 
+{ 
+return *(int *)a - *(int *)b; //升序排列。if(a&gt;b) return true
+} 
+
+qsort(num,100,sizeof(num[0]),cmp); 
+
+
+
+   
+
+2.char
+
+
+   char word[100]; 
+int cmp( const void *a , const void *b )
+{ 
+	return *(char *)a - *(int *)b; 
+} 
+qsort(word,100,sizeof(word[0]),cmp); 
+
+
+
+   
+
+3.double
+
+
+   double in[100]; 
+int cmp( const void *a , const void *b ) 
+{ 
+	return *(double *)a &gt; *(double *)b ? 1 : -1; 
+} 
+qsort(in,100,sizeof(in[0]),cmp)； 
+
+
+
+   
+
+4.结构体
+
+
+   
+
+
+   
+   struct Nation
+{
+	int jin;
+	int jiang;
+	int people;
+	int index;
+	int num[6];
+};
+
+
+int mode;
+int comp(const void *A,const void* B)
+{
+	struct Nation* a=(Nation*)A;
+	struct Nation* b=(Nation*)B;
+
+
+	switch(mode)//都是降序
+	{
+	case 1:	
+		return b-&gt;jin-a-&gt;jin;
+	case 2:
+		return b-&gt;jiang-a-&gt;jiang;
+	case 3:
+		return b-&gt;jin*a-&gt;people-a-&gt;jin*b-&gt;people;
+	case 4:
+		return b-&gt;jiang*a-&gt;people-a-&gt;jiang*b-&gt;people;
+	}
+}
+qsort(s,100,sizeof(s[0]),cmp); 
+
+
+
+
+
+
+   
+
+
+   5、对字符串进行排序 
+
+
+   char str[100][100];
+int cmp(const void* a,const void* b )
+{
+    return strcmp((char *)a,(char*)b);
+}
+qsort(str,n,sizeof(str[0]),cmp);
+
+
+
+   
+
+
+   &#20540;得注意的是，上面的n，很有可能你会误认为是100，这里实际应该是你要排序的个数，比如说你实际上只有str[0],str[1],str[2]这三个字符串要排序，那么n就应该是3，而不是100；
+
+
+   
+
+
+   struct In 
+
+
+   { 
+
+
+   int data; 
+
+
+   char str[100]; 
+
+
+   }s[100]; 
+
+
+   //按照结构体中字符串str的字典顺序排序 
+
+
+   int cmp ( const void *a , const void *b ) 
+
+
+   { 
+
+
+   return strcmp( (*(In *)a)-&gt;str , (*(In *)b)-&gt;str ); 
+
+
+   } 
+
+
+   
+
+
+   qsort(s,100,sizeof(s[0]),cmp);
+
+
+   
+
+
+   二、sort
+
+
+   方法和qsort类&#20284;，std::sort是一个改进版的qsort. std::sort函数优于qsort的一些特点：对大数组采取9项取样，更完全的三路划分算法，更细致的对不同数组大小采用不同方法排序。
+
+
+   bool compare(int a,int b)
+{
+  return a&gt;b; //降序排列，如果改为return a&lt;b，则为升序
+}
+
+
+
+   
+
+
+
+
+   
+
+
+   struct Nation
+{
+	int jin;
+	int jiang;
+	int people;
+	int index;
+	int num[6];
+}c[100];
+
+int mode;
+bool comp(const Nation &amp;a,const Nation&amp; b)
+{
+	switch(mode)\\都是降序
+	{
+	case 1:	
+		return a.jin&gt;b.jin;
+	case 2:
+		return a.jiang&gt;b.jiang;
+	case 3:
+		return a.jin*b.people&gt;b.jin*a.people;
+	case 4:
+		return a.jiang*b.people&gt;b.jiang*a.people;
+	}
+}
+
+
+sort(c,c+m,comp);
+
+
+
+
+
+   
+
+
+   
+
+诺~同是降序，sort的comp函数是a&gt;b而qsort的函数是return b-a;
+
+
+   最后，还是推荐用sort！
+
+
+   =================================================================================================================
+
+
+   具体来说可以用下面这个例子说明两个实现相同功能的sort和qsort
+
+
+   
+
+
+   #include &quot;iostream&quot;
+#include &quot;algorithm&quot;
+#include &quot;time.h&quot;
+using namespace std;
+
+int comp(const void *a,const void *b)
+{
+	return *(int *)b-*(int *)a;
+}
+
+bool cmp(int a,int b)
+{
+	return a&gt;b;
+}
+
+int main()
+{
+	int n,m,i,j;
+	int a[1000];
+	srand((unsigned) time(NULL));
+	n=10;
+	printf(&quot;origin:\t&quot;);
+	for(i=0;i&lt;n;i++)
+	{
+		a[i]=rand()%1000;
+		printf(&quot;%d &quot;,a[i]);
+	}
+	cout&lt;&lt;endl;
+	qsort(a,10,sizeof(a[0]),comp);
+	printf(&quot;qsort:\t&quot;);
+	for (i=0;i&lt;n;i++)
+	{
+		printf(&quot;%d &quot;,a[i]);
+	}
+	printf(&quot;\nsort:\t&quot;);
+	sort(a,a+9,cmp);
+	for (i=0;i&lt;n;i++)
+	{
+		printf(&quot;%d &quot;,a[i]);
+	}
+	cout&lt;&lt;endl;
+}

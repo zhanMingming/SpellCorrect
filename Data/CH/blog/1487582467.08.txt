@@ -1,0 +1,44 @@
+DLL中GDIPlus初始化和退出时注意的问题转载的别人的文章，因为自己也在实际工程中遇到类&#20284;的问题。
+
+
+
+
+
+
+
+DLL工程中使用GDIPlus
+
+
+2009-08-04 14:51
+
+
+
+
+
+
+
+
+   前段时间项目的需求有所更改，因此我将工程中部分GDI改为了GDI&#43;，主要是为了增加图片&#26684;式的支持，没时间看东西了，而因为我以前对于GDI&#43;比较熟，所以就直接用GDI&#43;了。
+
+
+   一开始在几个工程的Dllmain中添加Gdiplus的GdiplusStartup和GdiplusShutdown，不过发现在生成时 注册输出一步老卡在那里不动，必须手动取消生成。在使用上倒没遇到什么大问题，因此也就暂时扔那里了。
+
+
+   今天工作暂告一段落，就来分析这个问题。首先定位到是gdiplus引起的，而后搜索了不少资料，发现是对于GDI&#43;的初始化有问题，在dll工程中不能在dllmain文件中进行GDI&#43;的初始化。
+
+
+   详见http://msdn.microsoft.com/en-us/library/ms534077(VS.85).aspx
+
+Remarks
+
+You must call GdiplusStartup before you create any GDI&#43; objects, and you must delete all of your GDI&#43; objects (or have them go out of scope) before you call GdiplusShutdown.
+
+You can call GdiplusStartup on one thread and call GdiplusShutdown on another thread as long as you delete all of your GDI&#43; objects (or have them go out of scope) before you call GdiplusShutdown.
+
+Do not call GdiplusStartup or GdiplusShutdown in DllMain or in any function that is called by DllMain. If you want to create a DLL that uses GDI&#43;, you should use one of the following techniques to initialize GDI&#43;:
+
+
+Require your clients to call GdiplusStartup before they call the functions in your DLL and to call GdiplusShutdown when they have finished using your DLL.
+Export your own startup function that calls GdiplusStartup and your own shutdown function that calls GdiplusShutdown. Require your clients to call your startup function before they call other functions in your DLL and to call your shutdown function when they
+ have finished using your DLL.
+Call GdiplusStartup and GdiplusShutdown in each of your functions that make GDI&#43; calls.

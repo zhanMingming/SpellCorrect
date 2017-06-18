@@ -1,0 +1,45 @@
+linux查看日志常用的一个命令linux看日志定位问题是开发人员必不可少的技能，最近学了一个很好用的命令。使用grep能够打印匹配内容的上下几行。
+
+
+   grep -5 'pattern'  打印匹配行的前后5行内容
+
+
+   
+
+
+
+
+   grep -C 5 'pattern'  打印匹配行的前后5行内容
+
+
+
+
+   
+
+
+
+
+   grep -A 5 'pattern'  打印匹配行的后5行内容
+
+
+
+
+   
+
+
+
+
+   grep -B 5 'pattern'  打印匹配行的前5行内容
+
+
+
+
+   
+
+
+
+
+   下面命令能够显示error前后100行的内容：
+
+
+   cat app.log | grep -C 100 &quot;error&quot;

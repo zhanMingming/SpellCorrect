@@ -1,0 +1,28 @@
+MFC 静态文本框修改内容待解决问题：MFC中静态文本框等静态控件的的修改
+
+
+   解决方案：
+
+
+   1. 修改静态控件ID（原始都是IDC_STATIC），改成别的任何的都可以，如这里我改成 IDC_TOTAL_CASES
+
+
+   2. 比如我想一打开dialog就显示，那么就在OnInitDialog()中写上SetDlgItemText(IDC_TOTAL_CASES,ss);
+
+
+   或者GetDlgItem(IDC_TOTAL_CASES)-&gt;SetWindowText(ss);
+
+
+   
+
+
+   如果在其他函数中修改原先静态变量的&#20540;的话可能会出现断言错误：……atlmfc\src\mfc\winocc.cpp Line: 154的assertion failure
+
+
+   这样的话还是放在OnInitDialog（）再DoModal（）比较保险。
+
+
+   
+
+
+   另外，如果你没出现上述错误，记得要在SetDlgItemText后进行UpdateData（false）；

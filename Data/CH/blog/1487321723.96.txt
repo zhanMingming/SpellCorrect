@@ -1,0 +1,52 @@
+搜索引擎早期重要论文推荐系列【1】从今天开始将会做一个论文推荐系列，如果大家搜索不到可以给我留邮箱索取。
+
+
+   
+
+
+    《Building a Distributed Full-Text Index for the Web》，本文的四位作者Sergey Melnik Sriram Raghavan Beverly Yang Hector Garcia-Molina
+
+
+    推荐理由：
+
+
+    工程价值 5星 
+
+
+    学术价值 4星 
+
+
+   可读性 5星
+
+
+   
+
+
+    文中对搜索引擎架构进行了深入浅出的分析。其中比较精华包括了
+
+
+   
+
+
+    （1）在索引的流水线的计算中，loading,processing,flushing三个步骤，N条流水线，的实现方案中，选择流水线Buffer的方法，通俗点说就是一次load多少内容，才能让流水线内部各阶段平衡。并给出了流水线和非流水线的效果差异，非流水线比流水线慢30-40%。
+
+
+   （2）在索引构造上提出了Full list，Single payload和Mixed list三种形式，特别对Mixed list进行了阐述，其中很多基本思想应用在目前的搜索引擎中，例如提到的Zig-zag joins，可以避免全部倒排表求交，其实已经是skipped list，只是因为Mixed索引方法自然地将大词的倒排表进行了切割，以便于形成skip。
+
+
+    （3）索引的分布，全局统计信息的获取，事实上，全局统计信息的获得不不要这么麻烦，如果仅仅从query匹配的角度，在分词的过程中已经知道query中word的大致文档频率，在搜索结果中给出的值，也没有必要那么精确，因此统计信息的精确获得只有学术意义。
+
+
+   
+
+
+    这篇论文堪称经典，特别是实验的方法，和实验的结论都非常漂亮，堪称论文写作典范。在《走进搜索引擎》中引用了这篇文章的部分内容和结论。
+
+
+   
+
+
+    
+
+
+    下载地址：http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.111.6826&amp;rep=rep1&amp;type=pdf

@@ -1,0 +1,129 @@
+Mat, IplImage, CvMat, Cvarr关系及元素获取因为之前查资料关于opencv几种坑爹类型CvMat, Mat, IplImage, Cvarr的详细讲解很多，但详细到多通道元素获取和涉及到类型转换的文章极少，还有更坑爹的一些误导文章，所以本文很简要地讲一下怎样获取这几种类型的元素，及其类型转换。
+
+   
+
+   1、Mat, IplImage,CvMat,CvArr的关系：
+
+   1.opencv文档中明确声明，CvMat已经过时了(CvMat is now obsolete, consider using Mat instead)不建议用；
+
+   2. 派生关系：CvArr -&gt; CvMat -&gt; IplImage
+
+   3. Mat用的一套东西是imread，imshow等，有别于CvArr及其子类的cvLoadImage()，cvShowImage()...
+
+   
+
+   
+
+   
+
+   2. 相互转换
+
+   所有代码已经过测试，但是这里我就示意一下，真正写的时候不要忘记初始化转化过去的变量。
+
+   
+
+   2.1 Mat与IplImage相互转换
+
+   IplImage* src;
+
+   某文章说，转换应该是Mat m(src); 而这不会复制内容，真正能复制内容的是：
+
+   Mat -&gt; IplImage:
+
+   
+
+   Mat m;
+IplImage* transIplimage = cvCloneImage(&amp;(IplImage) m);
+
+   
+
+   IplImage -&gt; Mat
+
+   
+
+   IplImage* transIplImage;
+Mat m = cvarrToMat(transIplImage,true);
+   
+
+   2.2 CvMat与IplImage相互转换
+
+   
+
+   IplImage* transIplImage;
+CvMat* cvmat;
+cvGetMat(transIplImage,cvmat);
+cvGetImage(cvmat,transIplImage);
+   
+
+   
+
+   
+
+   3. (多通道)Mat, IplImage,CvMat的元素获取
+
+   单通道的网上很多，这里只写多通道：
+
+   3.1 IplImage
+
+   
+
+   //i is the index of rows
+//j is the index of cols
+//c is the index of channel
+((uchar*)pImg-&gt;imageData+i*pImg-&gt;widthStep)[j*3+c]
+CV_IMAGE_ELEM(pImg,uchar,i,3*j+c) 3.2 Mat
+   
+
+   
+
+   	Mat m;
+	int h = m.rows; int w = m.cols;
+	int nc = m.channels();	
+	for (int i = 0;i&lt;h;i++)
+	{
+		for(int j = 0;j&lt;w;j++)
+		{
+			Vec3b&amp; elem = m.at&lt;Vec3b&gt;(i,j);
+			for (int c = 0; c&lt;nc; c++)
+			{
+				uchar uc = elem[c] ;//Mat(i,j) of channel c
+			}
+		}
+	}3.3 CvMat
+   
+
+   CV_MAT_ELEM(cvmat,uchar,i,3*j+c)
+
+   
+
+   
+
+   
+
+   4. 验证获取元素代码（Mat转IplImage）
+
+   此代码只用于验证多通道元素获取没有错误，具体用的时候最好还是用opencv直接给的吧（见第3小节）
+
+   
+
+   IplImage* cvcvt_mat2IplImage(Mat m)
+{
+	int h = m.rows; int w = m.cols;
+	int nc = m.channels();
+	IplImage* pImg = cvCreateImage(cvSize(w,h),8,nc);
+	
+	for (int i = 0;i&lt;h;i++)
+	{
+		for(int j = 0;j&lt;w;j++)
+		{
+			Vec3b&amp; elem = m.at&lt;Vec3b&gt;(i,j);
+			for (int c = 0; c&lt;nc; c++)
+			{
+				//以下两种都可以
+				//((uchar*)pImg-&gt;imageData+i*pImg-&gt;widthStep)[j*3+c] =  elem[c];
+			    CV_IMAGE_ELEM(pImg,uchar,i,3*j+c) = elem[c];
+			}
+		}
+	}
+	return pImg;
+}

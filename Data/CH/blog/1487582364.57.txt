@@ -1,0 +1,55 @@
+解决VS 编译 typedef void * POINTER_64 PVOID64错误编译时出现如下问题：
+
+
+   
+c:\program files\microsoft\v6.0\include\winnt.h(236) : error C2146: syntax error : missing ';' before identifier 'PVOID64'
+
+c:\program files\microsoft\v6.0\include\winnt.h(236) : error C2146: syntax error : missing ';' before identifier 'Buffer'
+
+
+   
+问题起因分析：
+
+
+   
+打开winnt.h文件，发现问题就是在winnt.h头文件中无POINTER_64的定义造成的。搜索vc下的头文件，发现在basetsd.h头文件中有POINTER_64的定义，而在winnt.h头文件中也包含了该头文件。该问题是头文件搜索顺序引起的，由于DX SDK的头文件搜索顺序在Platform SDK之前。而在DX SDK中也有basetsd.h头文件，而该文件无POINTER_64的定义，因此编译通不过。
+
+
+   
+
+
+
+
+
+   
+解决方案：
+
+
+   
+Solution1:
+
+
+   
+调整IDE中头文件目录路径顺序，将Platform SDK头文件目录放在DX SDK头文件目录前。
+
+
+
+
+   
+Solution 2.
+
+typedef void *PVOID;
+typedef void * POINTER_64 PVOID64;
+在它之前加下：
+#define POINTER_64 __ptr64
+
+Solution 3.
+typedef void *PVOID;
+typedef void * POINTER_64;
+typedef void * PVOID64;
+
+
+
+
+   
+//经本人测试，以上三种方法均有效。

@@ -1,0 +1,186 @@
+Guava Cache缓存容量管理内存空间是有限的，一些不用的缓存数据需要及时清除，否则容器导致内存溢出。guava最简单一种管理方式是：基于缓存数据个数，让缓存条目始终不能超过一个上限。
+
+
+   // 创建1个cache,最多能存放5个缓存条目
+Cache cache = CacheBuilder.newBuilder().recordStats().maximumSize(5).build();
+for (int i = 0; i &lt; 10; i++) {
+	cache.put(i, i);
+}
+// {6=6, 5=5, 9=9, 7=7, 8=8}
+System.out.println(cache.asMap());
+
+
+guava还提供基于权重的容量管理，相当于是让不同的缓存项占用不同的存储空间。我们的例子中，偶数占用的权重更大，在总权重固定的情况下，缓存能够放下更多的奇数。
+   // 创建1个cache,最大权重是100,如果缓存值是偶数占20个权重,奇数占5个权重
+Cache&lt;Integer, Integer&gt; cache = CacheBuilder.newBuilder().recordStats().
+		maximumWeight(100).weigher(new Weigher&lt;Integer, Integer&gt;() {
+	@Override
+	public int weigh(Integer key, Integer value) {
+		if (value % 2 == 0) {
+			return 20;
+		} else {
+			return 5;
+		}
+	}
+}).build();
+
+
+// 放偶数
+for (int i = 0; i &lt; 10; i += 2) {
+	cache.put(i, i);
+}
+
+// {6=6, 8=8, 2=2, 4=4}
+System.out.println(cache.asMap());
+
+// 清空所有缓存
+cache.invalidateAll();
+
+// 放奇数
+for (int i = 1; i &lt; 10; i += 1) {
+	cache.put(i, i);
+}
+
+// {6=6, 5=5, 8=8, 7=7, 2=2, 9=9, 3=3, 4=4}
+System.out.println(cache.asMap());
+
+   
+
+
+   
+
+
+
+
+   上面2种方式：基于缓存条目个数和总权重，是互斥的，只能二选一。
+
+
+   
+
+
+
+
+   第一种方式，如果每个条目占用内存空间都是相同的，那么基于缓存个数的方式，就等价于限制了缓存空间的总大小；如果每个缓存条目大小不定，那么就没有办法限制总的内存大小。
+
+
+   
+
+
+
+
+   第二种方式，更加灵活，我们完全可以用来控制内存。比如我们将总权重设置为1G(代表内存空间大小)，而每个缓存条目的权重都是缓存&#20540;实际占用的内存空间大小(比如可以使用java的instrumentation计算对象占用的内存)。
+
+
+   
+
+
+
+
+   缓存一般都可以设置过期时间，guava也提供了基于时间的缓存回收。expireAfterAccess：缓存项在给定时间内没有被读/写访问，则回收。expireAfterWrite：缓存项在给定时间内没有被写访问（创建或覆盖），则回收。
+
+
+   // 缓存5s内没有访问(包括读和写),则缓存会被移除
+Cache&lt;Integer, BigHeapObject&gt; cache = CacheBuilder.newBuilder().recordStats()
+		.expireAfterAccess(5, TimeUnit.SECONDS).build();
+
+cache.put(1, new BigHeapObject(1));
+System.out.println(cache.getIfPresent(1));//not null
+
+try {
+	Thread.sleep(5000);
+} catch (Exception e) {
+
+}
+
+System.out.println(cache.getIfPresent(1));//null
+
+   
+
+
+   
+
+
+
+基于时间的缓存回收可以和基于容量的缓存回收一起使用，这样可以避免：当缓存创建速度，远远大于过期速度的时候，堆内存溢出的问题。
+   // 缓存5s内没有访问(包括读和写),则缓存会被移除
+Cache&lt;Integer, BigHeapObject&gt; cache = CacheBuilder.newBuilder().recordStats().maximumSize(100)
+		.expireAfterAccess(5, TimeUnit.SECONDS).build();
+
+// BigHeapObject是一个大对象,占用1M的内存
+for (int i = 1; i &lt; 10000; i++) {
+	cache.put(i,new BigHeapObject(i));
+}
+
+
+
+guava允许我们手动回收某些不用的缓存，某些情况下，我们能够明确地知道某些缓存无用了，那么就可以手动删除这些缓存条目。
+   // 缓存5s内没有访问(包括读和写),则缓存会被移除
+Cache&lt;Integer, BigHeapObject&gt; cache = CacheBuilder.newBuilder().recordStats().build();
+
+for (int i = 1; i &lt; 100; i++) {
+	cache.put(i, new BigHeapObject(i));
+
+	if (i % 10 == 0) {
+		// 使用invalidate方法,手动清除缓存
+		cache.invalidateAll();
+		System.out.println(cache.asMap());
+	}
+}
+
+
+
+最后guava还提供了基于引用的回收策略，CacheBuilder.weakKeys()、CacheBuilder.weakValues()、CacheBuilder.softValues()。下面这段代码，如果去掉weakKeys()的话，很快就会OOM了；但是加上的话，是不会报OOM的，因为只有弱引用，JVM发生GC的时候会自动回收掉这些对象占用的内存。
+   LoadingCache&lt;Integer, BigHeapObject&gt; cache = CacheBuilder.newBuilder().recordStats().weakKeys().
+		build(new CacheLoader&lt;Integer, BigHeapObject&gt;() {
+			@Override
+			public BigHeapObject load(Integer id) throws Exception {
+				System.out.println(&quot;mock query db....&quot;+id);
+				return new BigHeapObject(id);
+			}
+		});
+
+
+for (int i = 0; i &lt; 10 * 10000; i++) {
+	try {
+		cache.get(i);
+	} catch (ExecutionException e) {
+		e.printStackTrace();
+	}
+}
+
+   
+
+
+   
+
+
+
+看下面这段代码：当JVM回收弱引用指向的对象之后，会将弱引用加入到ReferenceQueue。通过轮询这个队列，我们就可以知道，某个对象被回收了。
+
+
+   ReferenceQueue&lt;BigHeapObject&gt; referenceQueue = new ReferenceQueue&lt;&gt;();
+List&lt;Reference&gt; referenceList = new ArrayList&lt;&gt;();
+Reference firstReclaimed = null;
+
+int i = 0;
+while (true) {
+	i++;
+	WeakReference&lt;BigHeapObject&gt; weakRef = new WeakReference&lt;&gt;(new BigHeapObject(i), referenceQueue);
+	referenceList.add(weakRef);
+
+	firstReclaimed = (WeakReference) referenceQueue.poll();
+	if (firstReclaimed != null) {
+		break;
+	}
+}
+
+System.out.println(&quot;count=&quot; + i);
+System.out.println(&quot;softRefs size=&quot; + referenceList.size());
+System.out.println(&quot;is null=&quot; + firstReclaimed.get());//null
+
+   
+
+
+
+
+   更多垃圾回收、弱引用的知识，请参考我的文章：http://blog.csdn.net/aitangyong/article/details/39481955

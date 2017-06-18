@@ -1,0 +1,22 @@
+Chinese room是什么？Chinese room是人工智能领域的一个重要的假想实验(tought experiment)，这个实验在1980年出版的Behavioral and Brain Sciences中的一篇叫做&ldquo;Mind，Brains，and Programs"的论文中首次提到。该论文提出了这样一个问题：如果机器确实模拟出一个智能对话，那么机器是否一定需要理解这些对话的内容？
+
+
+    在这个实验中，Searle假定自己在一个room中，假设自己就是一个计算机，可以通过执行一些程序和规则来将自己模拟成一个中国人。屋子外面的人将中文写在便条上从门缝下塞进来。对Searle来说他本人不懂得中文，但却可以给屋子外面的人一个看上去合理（具有智能）的回复，现在的问题是，Searle的确懂得中文吗？正如Searle说的那样：&ldquo;按照Strong AI的观点，被特别编程过的计算机就具有了思维能力，在这个意义上，被赋予恰当程序的计算机确实可以被看作是理解或者说具有了认知的能力&rdquo;，但事实上，程序不能赋予计算机&ldquo;思维&rdquo;或者说&ldquo;理解力&rdquo;，无论计算机表现的多么智能。同时Searle认为程序既不是思维的本质也不是思维的必须。
+
+
+    
+
+
+   
+
+   参考
+
+
+   【1】http://en.wikipedia.org/wiki/Chinese_room
+
+【2】http://www.alexandria.nu/ai/blog/entry.asp?E=50
+
+   【3】http://www.macrovu.com/CCTMap4ChineseRm.html
+
+
+   【4】http://hi.baidu.com/%D2%D7%B9%FB/blog/item/0de24c824a1a1caf0df4d2f6.html

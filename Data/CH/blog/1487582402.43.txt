@@ -1,0 +1,120 @@
+Tri TilingTri Tiling
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:27 Accepted:16 
+
+
+   Description 
+
+
+   In how many ways can you tile a 3xn rectangle with 2x1 dominoes? Here is a sample tiling of a 3x12 rectangle.
+
+
+   Input 
+
+
+   Input consists of several test cases followed by a line containing -1. Each test case is a line containing an integer 0 &le; n &le; 30. 
+
+
+   Output 
+
+
+   For each test case, output one integer number giving the number of possible tilings. 
+
+
+   Sample Input 
+
+
+   
+
+   2
+8
+12
+-1
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   3
+153
+2131
+
+
+
+
+   
+
+
+   Source 
+
+
+   
+
+
+   
+
+   这个公式&hellip;&hellip;推得我太纠结了，这道题开始以为是上次给09出的阳台装修，做了半个小时没结果，就慌死了&hellip;&hellip;结果翻过去一看，不是！ = =! 10minA掉阳台装修，反过来再看,有些思路了。
+
+
+   首先只有是偶数才非零，只看偶数就可以了。来一个数n，它比上一个数差2，而2能摆出三种情况，这样如果这个2和前面是分开的，这种情况是 f[n-2] * 3，剩下就要考虑不分开的情况，这也是关键。 
+
+
+   与前面相连接。连接的方案有 2 * (a[i-2] + a[i-3] +......+a[0]); 
+
+
+   解释一下,2*a[i-X]是最右边有X列类似以下的结构的情况：
+
+
+
+
+   X=4列的情况： ；X=6列的情况；等等
+
+
+   
+
+   以上情况可以上下颠倒，故每种情况又有两种表示，所以需要乘以2。而以上的情况从4开始，然后每次递增2，所以递推式中这部分从i-4开始（如果大等于0的话），每次递减2。
+
+
+   综上，a[i] = 3*a[i-1] + 2*(a[i-2] + a[i-3] +......+a[0]);a[i-1] = 3*a[i-2] + 2*(a[i-3] + a[i-3] +......+a[0]);a[i-1] - a[i-2] = 2*(a[i-2] + a[i-3] +......+a[0]); 
+
+
+   ps: here Iregard each 2 columns to one
+
+
+   
+
+
+   可解得a[i] = a[i-1] * 4 - a[i-2];
+
+
+   
+
+
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+int main()
+{
+	int n;
+	int a[31];
+	a[0]=1;
+	a[2]=3;
+
+	int i;
+	for(i=1;i&lt;=30;i=i+2)
+		a[i]=0;
+	for (i=4;i&lt;=30;i=i+2)
+		a[i]=a[i-2]*4-a[i-4];
+	while (scanf("%d",&amp;n)&amp;&amp;n!=-1)
+		printf("%d/n",a[n]);
+	return 0;
+}

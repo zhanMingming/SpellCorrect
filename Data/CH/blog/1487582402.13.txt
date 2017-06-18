@@ -1,0 +1,177 @@
+hdu 3516 Tree construction DP+四边形不等式太感人了！
+
+
+   hdu 3516，你终于给我过了&hellip;&hellip;
+
+
+   四边形不等式&hellip;&hellip;看了许久，总算用上了一回，这道题和石子合并http://blog.csdn.net/abcjennifer/archive/2010/08/11/5805330.aspx的思路是一模一样的，详解见我上一篇《动态规划经典&mdash;&mdash;石子归并》。
+
+
+   由于点都是从左上往右下来的（Consider a two-dimensional space with a set of points (xi, yi) that satisfy xi &lt; xj and yi &gt; yj for all i &lt; j. ）且要求最后合并成一堆，所以和石子合并一样，每次相邻的两个才合并。
+
+
+   首先最基本的思路是DP，状态转移方程
+
+
+   
+
+
+   
+
+
+   其中f[i,j]是从i到j合并连续点的最优解，sum[i,j]是合并者相邻两堆需要加上的代价。
+
+
+   现在的复杂度是O(n3)，详细代码见上一篇
+
+
+   
+
+
+   [算法优化]：
+
+
+   怎么把复杂度降为O(n2)呢?
+
+
+   优化k！（k是i..j的分割点）
+
+
+   原来我是从i...j-1枚举k, 取f(i,j)=min{f[i,k]+f[k+1,j]}+sum(i,j);
+
+
+   而实际上我只需要从s[i,j-1]到s[i+1,j]枚举k就可以了。其中s[i,j]指f[i...j]取最优解的分割点，这样复杂度就变成O(n2)啦！
+
+
+   
+
+
+   
+
+Tree Construction
+
+   Time Limit: 4000/2000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 273Accepted Submission(s): 125
+
+Problem Description
+
+Consider a two-dimensional space with a set of points (xi, yi) that satisfy xi &lt; xj and yi &gt; yj for all i &lt; j. We want to have them all connected by a directed tree whose edges go toward either right (x positive) or upward (y positive). The figure below shows an example tree.Write a program that finds a tree connecting all given points with the shortest total length of edges.
+
+
+
+
+   
+
+Input
+
+The input begins with a line that contains an integer n (1 &lt;= n &lt;= 1000), the number of points. Then n lines follow. The i-th line contains two integers xi and yi (0 &lt;= xi, yi &lt;= 10000), which give the coordinates of the i-th point.
+
+
+
+
+   
+
+Output
+
+Print the total length of edges in a line.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   5
+1 5
+2 4
+3 3
+4 2
+5 1
+1
+10000 0
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   12
+0
+
+
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（8）&mdash;&mdash;Host by ECNU 
+
+
+
+
+   
+
+Recommend
+
+zhouzeyong
+
+#include &lt;iostream&gt;   
+using namespace std;
+#define M 1005
+#define INF 1000000000
+int n,f[M][M],sum[M][M],s[M][M];
+struct POINTS
+{
+	int x,y;
+}stone[M];
+
+int dis(POINTS a,POINTS b,POINTS c,POINTS d)//calculate from a to d; b,c is division point
+{
+	return abs(c.x-a.x)+abs(d.y-b.y);
+}
+
+int main()
+{
+	int i,j,k,t;
+	while(cin&gt;&gt;n)
+	{
+		for(i=1;i&lt;=n;i++)
+			scanf("%d%d",&amp;stone[i].x,&amp;stone[i].y);
+		memset(f,0,sizeof(f));
+
+		for(i=1;i&lt;=n;i++)
+		{
+			s[i][i]=i;
+		}
+
+		for(int len=2;len&lt;=n;len++)//归并的石子长度
+		{
+			for(i=1;i&lt;=n-len+1;i++)//i为起点，j为终点
+			{
+				j=i+len-1;
+				f[i][j]=INF;
+				for(k=s[i][j-1];k&lt;=s[i+1][j];k++)
+				{
+					if(f[i][j]&gt;f[i][k]+f[k+1][j]+dis(stone[i],stone[k],stone[k+1],stone[j]))
+					{
+						f[i][j]=f[i][k]+f[k+1][j]+dis(stone[i],stone[k],stone[k+1],stone[j]);
+						s[i][j]=k;
+					}
+				}
+			}
+		}
+		printf("%d/n",f[1][n]);
+	}
+	return 0;
+}

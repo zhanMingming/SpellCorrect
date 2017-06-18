@@ -1,0 +1,34 @@
+将进程或线程attach到一个特定CPU核上的方法(sched_setaffinity pthread_setaffinity_np example)详细参见：
+
+
+   http://www.thinkingparallel.com/2006/08/18/more-information-on-pthread_setaffinity_np-and-sched_setaffinity/
+
+
+   
+
+
+   其好处我就不用赘述了，在很多应用中特别是高并发程序，将每个task固定在特定CPU核上而减少来回切换是非常有必要的。
+
+
+   这样可以很好的应用流水线技术，否则高并发多线程仅切换成本就非常庞大。
+
+
+   
+
+
+   关于流水线技术的应用，可以参考sogou技术文档
+
+
+   
+
+
+   C10K问题---epoll简介
+
+
+   C10K与高性能程序续篇
+
+
+   
+
+
+   以及搜狗实验室其他技术资料：http://www.sogou.com/labs/reports.html

@@ -1,0 +1,142 @@
+K-SVD简述——字典学习，稀疏编码K-SVD
+
+   Rachel Zhang
+
+   
+
+   1. k-SVD introduction
+
+   1.K-SVD usage:
+
+   Design/Learn a dictionary adaptively to betterfit the model and achieve sparse signal representations.
+
+   2.Main Problem:
+
+   Y = DX
+
+   Where Y∈R(n*N), D∈R(n*K), X∈R(k*N), X is a sparse matrix.
+
+
+   N is # of samples;
+
+   n is measurement dimension;
+
+   K is the length of a coefficient.
+
+   
+
+   
+
+
+   
+
+   2. Derivation from K-Means
+
+   3. K-Means: 
+
+   1)The sparse representationproblem can be viewed as generalization of the VQ objective. K-SVD can be viewed as generalization of K-Means.
+
+   2)K-Means algorithm for vectorquantization:
+
+   Dictionary of VQ codewords is typically trained using K-Means algorithm.
+
+   When Dictionary D is given, each signal is represented as its closestcodeword (under l2-norm distance). I.e.
+
+   Yi = Dxi
+
+   Where xi = ej is a vector from the trivial basis,with all zero entries except a one in the j-th position.
+
+   3)VQ的字典训练：
+
+   K-Means被视作一个sparse coding的特例，在系数x中只有一个非零元，MSE定义为：
+
+   
+
+
+   
+
+   所以VQ的问题是：
+
+   
+
+   
+
+   4)K-Means 算法实现的迭代步骤：
+
+   1） 求X的系数编码
+
+   2） 更新字典
+
+
+   
+
+   
+
+   
+
+
+   
+
+   3. K-SVD，generalizing the K-Means
+
+   4. Objective function
+
+   
+
+   
+
+   5. K-SVD的求解 
+
+   Iterative solution: 求X的系数编码(MP/OMP/BP/FOCUSS),更新字典(Regression).
+
+   K-SVD优化：也是K-SVD与MOD的不同之处，字典的逐列更新：
+
+   假设系数X和字典D都是固定的，要更新字典的第k列dk，领稀疏矩阵X中与dk相乘的第k行记做，则目标函数可以重写为：
+
+
+   
+
+   
+
+
+   上式中，DX被分解为K个秩为1的矩阵的和，假设其中K-1项都是固定的，剩下的1列就是要处理更新的第k个。矩阵Ek表示去掉原子dk的成分在所有N个样本中造成的误差。
+
+   
+
+   6.    提取稀疏项
+
+   如果在5.中这一步就用SVD更新dk和，SVD能找到距离Ek最近的秩为1的矩阵，但这样得到的系数不稀疏，换句话说，与更新dk前的非零元所处位置和value不一样。那怎么办呢？直观地想，只保留系数中的非零值，再进行SVD分解就不会出现这种现象了。所以对Ek和做变换，中只保留x中非零位置的，Ek只保留dk和中非零位置乘积后的那些项。形成，将做SVD分解，更新dk。
+
+   
+
+   
+
+   7.   总结
+
+   K-SVD总可以保证误差单调下降或不变，但需要合理设置字典大小和稀疏度。
+
+   在我的实验中，随着字典的增大，K-SVD有整体效果提升的趋势，但不一定随着稀疏度的增大使得整体误差下降。
+
+   
+
+
+   
+
+
+   
+
+   
+
+   8. Reference:
+
+   1)K-SVD: An algorithm fordesigning overcomplete dictionaries for sparse representation (IEEE Trans. OnSignal Processing 2006)
+
+   2)From sparse solutions of systemsof equations to sparse modeling of signals and images (SIAM Review 2009 240') 
+
+   
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料与相关讨论将继续更新，敬请关注本博客和新浪微博Rachel____Zhang.

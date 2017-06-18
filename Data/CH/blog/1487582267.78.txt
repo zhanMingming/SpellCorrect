@@ -1,0 +1,402 @@
+Dialog System 总结本文包括对话系统分类、数据汇总、和一些目前对话系统paper的总结、评价。 
+
+以下paper的“一句话评论”均为个人观念，评价标准苛刻，也有可能夸大了论文的缺点，希望与持不同意见的各位有识之士共同讨论。
+
+
+
+   
+
+对话系统分类
+Data
+Papers
+Neural Responding Machine for Short-Text Conversation
+Conversational Contextual Cues The Case of Personalization and History for Response Ranking
+Building End-To-End Dialogue Systems Using Generative Hierarchical Neural Network Models
+ A Hierarchical Latent Variable Encoder-Decoder Model for Generating Dialogues
+End-to-End Generative Dialogue
+MemN2N based dialog system
+Memory Network
+End-to-End Memory Network
+Learning End-to-End Goal-Oriented Dialog
+
+
+Evaluating Prerequisite Qualities for Learning End-to-End Dialog Systems
+End-to-end LSTM-based dialog control optimized with supervised and reinforcement learning
+Sequence to Backward and Forward Sequences A Content-Introducing Approach to Generative Short-Text Conversation
+A Network-based End-to-End Trainable Task-oriented Dialogue System
+
+
+
+
+
+
+
+
+对话系统分类
+
+
+   对话系统按功能性分为goal-driven dialog system（比如功能机器人，Contana，出门问问）和open domain dialog system（比如闲聊机器人，小冰）。
+
+
+
+   PS：个人从产品角度觉得功能性机器人才是有用的，陪你聊天的机器人是伪需求，然而事实证明我错了，刚好相反，度秘的log分析表明能够留下用户聊10分钟的都是被他们调戏的闲聊话题，而且大量流量都是来闲聊的。
+
+
+
+   本文主要从数据、模型/算法方面看一看现在paper里的对话系统，是。。。怎样的不靠谱。。。
+
+
+
+
+Data
+
+
+   综述见文章Dialog data survey 。在后面Papers一章中也会介绍每篇所用的数据，但靠谱的数据总是少的。微博、twitter、贴吧上的数据噪声太大；人造/合成数据太容易被拟合； 
+
+
+
+
+
+
+Papers
+
+Neural Responding Machine for Short-Text Conversation
+
+
+   一句话评论：数据靠谱；方法现在来看无创新，但易实践； 
+
+李航老师团队发在ACL 15的paper。 
+
+data: 微博数据, 每句限长140个字。每条微博有平均20条回复，共约22w个微博，也就是约440w条问答对。 
+
+方法：带attention的seq2seq翻译模型
+
+
+
+
+Conversational Contextual Cues: The Case of Personalization and History for Response Ranking
+
+
+   一句话评论：数据很好，方法还算靠谱，不过是answer selection（因为answer selection需要大量备选语聊，而且，看起来还ok的结果是蒙对了呢还是真ok呢?  这些都不清楚，所以认为answer selection的做法本质上不是人工智能）。
+
+
+
+   Google的论文，对Reddit上的评论进行end-to-end的建模, 最后选用answer selection（而不是generation）的方式输出每一次对话的sentence，出发点两方面：对文本内容和personalization建模. 
+
+数据：Reddit上的1.33亿conversation，共21亿句对话。 
+
+模型如下图所示：
+
+
+
+   
+
+
+
+   网络输入input：dialog[i], context: dialog[0:i-1], author: 该评论作者的feature, 
+
+response: 正样本，response = 真实dialog[i+1], 此时输出final prediction=1. 负样本，response = 随机的一条其他地方的comment，此时输出final prediction = 0. 其中dialog[i]表示对话过程中的第i句话。
+
+
+
+   另外，文章还提出了multi-loss的方法，旨在度量以上网络中每个feature的有效性。分别对组合{response, input}, {response, context}, {response, author}求一个hidden layer, 将这3个hiddenlayer{h1, h2, h3} concatenate成一个总hidden layer h4, 将{h1, h2, h3, h4}分别得到的分类loss加和作为网络总loss进行优化，但最后prediction的时候只采用h4的输出结果。
+
+
+
+
+Building End-To-End Dialogue Systems Using Generative Hierarchical Neural Network Models
+
+
+   一句话评论： end2end，模型看着挺炫，但不一定好使
+
+
+
+   https://arxiv.org/pdf/1507.04808v3.pdf
+
+
+
+   seq2seq的典型方法，用前N-1句话生成第N句话。假如说现在A, B对话内容是：a1,b1,a2,b2a_1, b_1, a_2, b_2, 其中每个都表示一句话
+
+
+
+  
+   a1a_1 -&gt; [emb[word] for word in a1a_1] -&gt; RNN(a1a_1) 
+
+  b1b_1 -&gt; [emb[word] for word in b1b_1] -&gt; RNN(b1b_1) 
+
+  a2a_2 -&gt; [emb[word] for word in a2a_2] -&gt; RNN(a2a_2) 
+
+  b2b_2 -&gt; [emb[word] for word in b2b_2] -&gt; RNN(b2b_2)
+
+
+
+
+   本文重点是说，除了上面写的每句一个RNN，还加了一个句子之间的RNN：
+
+
+
+RNN（a1a_1）预测 b1b_1
+RNN（a1a_1, b1b_1) 预测 a2a_2
+RNN（a1a_1, b1b_1, a2a_2）预测 b2b_2
+这里的箭头表示再过一个句子之间的RNN
+
+
+
+   PS： 广告下，这个功能已经在paddle里实现了，可以直接调用recurrent_group层。
+
+
+
+   
+
+
+
+   然而，我的实验结果中证明，酱紫做并没有我把原始输入串联起来的效果好。解释起来也可以合情合理，毕竟相比串联，双层RNN的信息传递是有损的。
+
+
+
+
+ A Hierarchical Latent Variable Encoder-Decoder Model for Generating Dialogues
+
+
+   一句话评论：数据强，方法一般
+
+
+
+   在上一篇HRED（hierarchical encoder decoder model）的基础上，在decoder中加了一个latent variable。这个latent variable 根据当前对话的前n-1句话建立多元正态分布，与前n-1句话&amp;第n句话的前m-1个已生成word一起共同影响第n句话第m个word的生成。通过这个latent variable（表示隐状态）可能可以提高整体dialog随机性。
+
+
+
+   
+
+
+
+   数据：本文用了① Twitter Dialog Corpus, 含95w个对话，平均每个对话含6句话。 ② Ubuntu Dialogue Corpus, 含50w个对话，和ubuntu相关的专业问题。
+
+
+End-to-End Generative Dialogue
+
+
+   开源了基于lua实现的代码： 
+
+https://github.com/michaelfarrell76/End-To-End-Generative-Dialogue
+
+
+
+   分别用hierarchy RNN（和上文一样）和没有hierarchy的RNN（就是纯seq2seq）在电影对白数据集上做了一些实验。论文中实验结果可参考，但是感觉这份数据很不干净，结果也可能是有偏的。
+
+
+
+   此外，本文还采用了Jiwei Li 提出的，加入maximum mutual information（MMI）作为额外度量筛选结果的方法。因为对话系统容易生成简单的，无区别性的回答，如“I don’t know.” 这种回答的perplexity会很小（越小越好），影响判断, 但MMI会考虑到信息相关性。
+
+
+
+
+MemN2N based dialog system
+
+
+   FB 的一拨人先后搞了Memory Network和End-to-End Memory Network，接着又把这个结构用到了对话，就有了paper Learning End-to-End Goal-Oriented Dialog。 为了更好地理解，我们把这三篇文章简单串一下。
+
+
+Memory Network
+
+
+   Memory Network只是一个框架，不带有任何神经网络的实现，就类似于Alex Graves 14年的Neural Turing Machine， 只是给出了如何寻址、记录、读取、改写memory的策略，而并没有提及具体网络实现和memory用在哪。
+
+
+End-to-End Memory Network
+
+
+   End-to-End Memory Network基于Memory Network具体化出来了一个比较简单的网络，使其能够end-to-end, 并通过bp训练。具体例如在QA问题上，如下图(a)所示。 
+
+给定sentences（就是evidence）和query, 求answer。 
+
+1. sentences xi{x_i}表示有M个evidence，为了将这个evidence的句子集合表示在网络里，对每句话的BOW分别embedding得到memory ∈d∗M\in d*M, d表示embedding size。 
+
+2. uu表示query的embedding，同样size为d。 
+
+3. 通过attention得到query和M个memory entry中每条memory的相关性（pip_i=Softmax(uTmiu^Tm_i)）,并算出当前有用的memory信息（o=∑ipimio=\sum_i p_i m_i）。 
+
+4. 接着让controller结合query和有用memory信息(q2=o+uq_2=o+u),再做个softmax得到最终predicted answer（a=Softmax(W(q2))a=Softmax(W(q_2))）。 
+
+上面这四步可以通过stack的方式重复多次，每个stack采用不同的word embedding，并叠加, 如下图(b)所示。 
+
+
+
+
+
+   关于实验部分，用的是人造的QA数据。。。不过这20类问题分类结果倒是值得一看的（见原文Table 1）。
+
+
+
+
+Learning End-to-End Goal-Oriented Dialog
+
+
+   一句话评论：数据较弱，方法不实用。
+
+
+
+   本文就是End-to-End Memory Network的一个应用，基于End-to-End Memory Network的实验，最终也是answer selection(而不是answer generation). 数据为以餐馆预订为目的地bAbI数据集，模型定义得非常个性化，难以迁移。
+
+
+
+对话数据：文中所用数据并非全部为真实数据，有5个task都是simulated conversation. simulation的方法是，用43种pattern生成user utterance，用20种pattern生成bot utterance。（显然，和真实场景比还是太少了。。。）另一组真实task数据是从Dialog State Tracking Challenge的订餐数据中转过来的（并没有用数据中标注的dialog state）。
+Database: 每个restaurant的property包括：{口味，地点，价格区间，桌子大小（int，不是list），地址，电话，打分}
+network：网络结构和 End-to-End Memory Network中的网络结构一模一样，其中给定的sentence xi{x_i}为{user的前n-1句话和bot的前n-1句回答}，query为user的第n句话。不同之处是，End-to-End Memory Network这篇文中的output是一个word，softmax最后的embeddingq2q_2就ok了，但dialog是要生成整句话。这里，文中并没有采用生成，而是用的在一些给定回答中选一个score最高的。那给定回答怎么来的呢？给定回答是所有可能说的话和API calls。也就是说，得把Database中的7个type，填入刚才说的那20个pattern，线下生成所有可能说的话，和API calls，可以说是。。。非常的。。。task-oriented.
+OOV问题：在问题中经常会有电话号码和一个没见过的餐厅名之类的，这种要么成了OOV，要么就会分不开（因为embedding相近）。这种问题，本文的解决方法是，反正如第3点最后所说，已经生成了所有可能的utterance了，那就处理每个possible utterance yiy_i, 求yiy_i与当前这个对话中所有之前说的keyword（在knowledge base中的word）的交集, 然后将交集word所属的类别（总共就7个类别，如第2点database所说）的embedding都加到yiy_i的feature中，再求yiy_i的score。
+
+
+Evaluating Prerequisite Qualities for Learning End-to-End Dialog Systems
+
+
+   一句话评论：数据较靠谱，方法不实用。 
+
+Facebook在Reddit电影板块对话中，基于Memory Network做了QA、对话、推荐等5个任务，并与其他方法进行了比较。这里我们仅看对话吧。 
+
+- 任务目标：讨论电影 
+
+- 数据：Reddit 上爬的1M个对话，其中76%是单轮的，17%是两轮的。 
+
+- 模型：memory中包含历史对话信息和keyword（通过过滤掉高频词产生的）在kb中检索到的句子。最后出的final prediction 句子依然是选用answer selection的方式。但和上一个工作相比，这个case里的selection更不合理。answer candidate集合是从上面1M个对话中随机选取的1w个对话中的回答，外加一个真实回答。最终anwser也就是一个10001类的分类问题。
+
+
+
+   
+
+
+End-to-end LSTM-based dialog control optimized with supervised and reinforcement learning
+
+
+   一句话评论：数据太弱，但整体结构还算靠谱。
+
+
+
+   本文结合supervised learning 和 reinforcement learning, 
+
+1. 定义text action &amp; API calls集合 
+
+2. rnn训练对话数据 
+
+3. bot生成response， expert进行纠正 
+
+4. bot生成response，和普通人交互，给出reward/punishment
+
+
+
+   任务：给某人打电话，如果通讯录里有多个电话，询问类别，确认后再打。 
+
+model: 如下图所示
+
+
+
+   
+
+
+
+   共13步： 
+
+1. 用户提供Utterance（也就是一句话）。 
+
+2. 从Utterance中提取Entity。 
+
+3. Entity Input模块从提取的Entity中Resolve数据库中具体的Entity。 
+
+4. 从（2）、（3）以及API Call，以及（10）模块的输出提取一组Feature Vector。 
+
+5. Feature Vector输入到LSTM里，输出一个Template Action的Distribution。 
+
+6. 从Developer来的Code产生Action Mask，比如当电话号码还没Identity的时候要mask掉打电话操作。 
+
+7. 把需要mask的action，概率置零。 
+
+8. 重新把（7）的结果Re-normalize。 
+
+9. 从Distribution中选出一个Action。（无RL模式下，选最大概率的action；有RL模式下，从概率分布里采样） 
+
+10. 进入Entity Output模块，进行Entity替换。 
+
+11. 如果现在的Action是API，那走（12）。如果是Text，就走（13）。 
+
+12. 调用程序员写好的API接口。 
+
+13. 返回文字，等待用户再次输入。
+
+
+
+   结构清晰，符合逻辑。而且基本上只有database，action mask和API需要developer提供。 
+
+但，在experiment中，领域专家需要提供少量对话样本（非常少，本文中只给了21个对话样本，对话平均长度7个turns），且文章声明， 通过supervised learning 仅需20个对话样本就可以把LSTM训到per-turn accuracy达到90%。在此存疑，那应该是语法结构非常简单吧，果不其然，如附录所示，21个对话从语法结构和action flow方面看都很简单，必然容易拟合住，而且文中说到，step4的feature只有112维，而且包含“有几个名叫xxx的” &amp; “xxx存有几个电话”这种feature，并不含有复杂语义信息。
+
+
+
+   Reinforcement Learning部分中，本文在supervised learning基础上进行训练，顺利完成任务的return=1, else=0。 结论是RL和SL能够相互辅助。
+
+
+Sequence to Backward and Forward Sequences: A Content-Introducing Approach to Generative Short-Text Conversation
+
+
+   一句话评论：数据虽大，但百度贴吧的noise太大；方法一般，只支持单轮短文本问答，也是没有KB。 
+
+方法：本文分类两步：1. 提取keyword  2. seq2BF 
+
+第一步中，通过statistical的方法(最大互信息)找出response中和query最相关的word，且要求keyword为名词，记为keyword。 
+
+第二步中，原来的response被keyword一分为二，作者就希望通过query和keyword，分别以两个sub网络逆序地输出前半部分，正序地输出后半部分。seq2BF指seq2 backward &amp; forward，也就是分别训练output的正逆序输出。
+
+
+
+   
+
+
+
+   数据：dialog数据：百度贴吧上爬的50w问答对。另外为了方法中的第一步(statistical 部分)，还用了100M问答对。
+
+
+
+   本文的卖点主要就在提出来keyword然后分为前后两部分这块，但贴吧的数据噪声实在太大了，而且。。。在文中给的一些examples里我并没有看到明显的keyword，不过这样做确实可以解决response中有OOV的问题，只是不够普适。
+
+
+A Network-based End-to-End Trainable Task-oriented Dialogue System
+
+
+   一句话评论：数据靠谱但量不大，方法靠谱。
+
+
+
+   
+
+
+
+   任务：找餐馆 
+
+数据：众标，标了680轮对话，共1500个turns，都是人工写的。db中有99家餐厅，可根据 口味/地点/价格（这三个叫informable slot） 查询餐厅， 选定餐厅后可查询 电话、邮编等其他6项（这6个叫requestable slot）信息。 
+
+模型： 
+
+① Intent network 根据source query得到user intent vector; 
+
+② Belief Tracker 得到每个 informable slot的多元概率分布，和每个requestable slot的二项分布。用于在db中检索。 
+
+③ Database Operator 数据库中根据 informable slot项检索， 返回一个vector，符合的entry记为1，其他为0，entity指针指向vector label为1中的一个餐厅（这个pointer到Generation Network中用到）。 
+
+④ Policy Network 融合①，②，③中得到的vector，得到新的vector，表示当前状态 
+
+⑤ Generation Network 用seq2seq的方法，根据④得到的vector 生成整句话，然后用③中pointer所指向的db中的那个entity替换句中的一些项。
+
+
+
+   整个过程可追溯，出了badcase可以知道是哪个模块可以再进行优化；文中虽然用了”Policy Network”，也不是Reinforcement Learning里的策略，容易迁移；推荐。
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

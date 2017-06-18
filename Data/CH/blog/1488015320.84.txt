@@ -1,0 +1,77 @@
+搭建Spring4.1与Spring4.2 websock+stomp+activeMQ需要注意事项:spring4不同版本websocket差异上一篇博客我使用的是Spring4.2.4版本搭建的XML风&#26684;websocket应用，由于我们项目使用是Spring4.1.4，自然而然地我将下面的依赖加入到我们项目的pom.xml中，结果打出的war包websocket会报错。
+
+
+   &lt;dependency&gt;
+	&lt;groupId&gt;io.projectreactor&lt;/groupId&gt;
+	&lt;artifactId&gt;reactor-net&lt;/artifactId&gt;
+	&lt;version&gt;2.0.7.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;io.netty&lt;/groupId&gt;
+	&lt;artifactId&gt;netty-all&lt;/artifactId&gt;
+	&lt;version&gt;4.0.33.Final&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;
+	&lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;
+	&lt;version&gt;2.6.4&lt;/version&gt;
+&lt;/dependency&gt;
+
+   
+
+
+   
+
+
+
+
+   报错原因是：spring4.2.4版本使用的是reactor-net-2.0.7.RELEASE，但是spring4.1.4版本不能使用这个版本。下面源码是4.1.4版本的，需要reactor.io.encoding.Codec这个类，而这个类在reactor-core-2.0.7.RELEASE中删除了，但是reactor-core-1.1.6.RELEASE中有这个类。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   可以看到reactor 1.x 和2.x差异还是很大的，解决方案就很简单了：使用1.x版本的reactor即可。
+
+
+   &lt;dependency&gt;
+	&lt;groupId&gt;org.projectreactor&lt;/groupId&gt;
+	&lt;artifactId&gt;reactor-net&lt;/artifactId&gt;
+	&lt;version&gt;1.1.6.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;io.netty&lt;/groupId&gt;
+	&lt;artifactId&gt;netty-all&lt;/artifactId&gt;
+	&lt;version&gt;4.0.33.Final&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;
+	&lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;
+	&lt;version&gt;2.6.4&lt;/version&gt;
+&lt;/dependency&gt;

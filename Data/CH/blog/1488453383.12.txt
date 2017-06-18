@@ -1,0 +1,37 @@
+testrtmp://tbflive-push.alicdn.com/mediaplatform/495832627_1472033037569?auth_key=1472637837-0-0-8ea3a2ca243aaea1773b24b11ce2f948
+
+   
+
+   
+
+   http://tbflive.alicdn.com/mediaplatform/495832627_1472033037569.flv?auth_key=1472637837-0-0-e0293096c0fa8e30f126c2e8c5ade1e9
+
+   
+
+   
+
+   http://115.238.23.166/mediaplatform/495832627_1472033037569.flv?auth_key=1472637837-0-0-e0293096c0fa8e30f126c2e8c5ade1e9&amp;ali_redirect_domain=tbflive.alicdn.com&amp;ali_flv_retain=0s
+
+   
+
+   
+
+   http://tbflive.alicdn.com/mediaplatform/495832627_1472033037569.flv?auth_key=1472637837-0-0-e0293096c0fa8e30f126c2e8c5ade1e9&amp;ali_reserve_ts=on&amp;ali_flv_retain=0s
+
+   
+
+   
+
+   rtmp://tbflive-push.alicdn.com/mediaplatform/72520379_1471837223389?auth_key=1472442023-0-0-436d964144160f82d271ff5b83cecdef
+
+   
+
+   
+
+   http://115.238.23.166/mediaplatform/72520379_1471837223389.flv?auth_key=1472442023-0-0-d0b49e906074c4a45eb58cf02ab83449&amp;ali_redirect_domain=tbflive.alicdn.com&amp;ali_flv_retain=0s
+
+   
+
+   ===============================&gt;保持时戳不变
+
+   http://115.238.23.166/mediaplatform/495832627_1472033037569.flv?auth_key=1472637837-0-0-e0293096c0fa8e30f126c2e8c5ade1e9&amp;ali_redirect_domain=tbflive.alicdn.com&amp;ali_reserve_ts=on&amp;ali_flv_retain=0s

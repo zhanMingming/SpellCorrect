@@ -1,0 +1,52 @@
+找出同标签用户的设计方案有位朋友曾问我一个问题，给定sina微博的全部用户（1亿以上）和标签（uniq的标签30万左右）的关系，系统找出共有2个或以上标签的用户对，并给出这些标签是哪些。 
+
+
+   input_file： 
+
+
+    userid,taglist 
+
+
+    output_file: 
+
+
+   userid,userid,con-taglist (sizeof(con_taglist)&gt;=2) 
+
+
+   
+
+
+    例如 
+
+
+    AA，体育 新闻 清华 百年校庆 
+
+
+    BB，娱乐 八卦 清华 新闻 
+
+
+    CC，体育 娱乐 新闻 
+
+
+    DD，八卦 新闻 娱乐 
+
+
+   
+
+
+    则输出 
+
+
+    AA，BB 清华 新闻 
+
+
+    AA，CC 体育 新闻 
+
+
+    BB，CC 娱乐 新闻 
+
+
+    BB，DD 娱乐 八卦 新闻 
+
+
+    CC，DD 娱乐 新闻

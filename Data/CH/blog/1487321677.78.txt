@@ -1,0 +1,34 @@
+Bloom filter的若干证明因为要交个作业，因此陆续会写一些关于Bloom filter的东西。
+
+
+   
+
+
+   Bloom filter 由Burton Bloom于1970年提出，它用一个m个bit长的位向量V来表示一个集合S{s1,s2,...sn}，首先向量V初始化为0。Bloom Filter用K个哈希函数h1,h2,...hk将来自S集合的元素映射到位向量的h1(s),h2(s),...,hk(s)位置上设为1。对于任意一个，判断q是否是S的成员可以通过：检查h1(q),h2(q),...hk(q)是否为1进行判断。如果不全为1，则q必然不是S的成员。但如果全为1，可能会出现假阳性错误(false positive error)，这是由于其他成员将这些位置都置1造成的，这个错误我们定义为Eb。
+
+
+    
+
+
+   
+
+
+   因此可得结论：n个元素，每个元素占k个bit，m个bit长度的vector，r = ln(2)=0.7时，布隆过滤器的错误率最低。
+
+
+   该结论可用于已知2个变量估算另外一个变量的取值，例如已知集合元素个数和哈希函数个数，估计需要多少bit来表示位向量最佳等等。另外0.6185这个数值多么像黄金分割率啊，让人砰然心动，可惜差一点点。
+
+
+   
+
+
+   本文参考部分文献
+
+
+   (1)Spectral Bloom Filters Sarr Cohen,Yossi Matias SIGMOD 2003
+
+
+   (2)http://blog.csdn.net/jiaomeng/archive/2007/01/27/1495500.aspx
+
+
+   (3)http://www.google.com.hk/ggblog/googlechinablog/2007/07/bloom-filter_7469.html

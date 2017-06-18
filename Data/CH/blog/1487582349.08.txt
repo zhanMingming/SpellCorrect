@@ -1,0 +1,68 @@
+opencv 利用滚动条调整图像亮度/************************************************************************/
+/* 亮度调整    */
+/************************************************************************/
+
+IplImage*transimg,*srcimg;
+int bright2adj;
+
+void re_adjust_bright(int)
+{
+	assert(srcimg != NULL);
+	assert(transimg != NULL);
+	int x,y,i;
+	if(srcimg-&gt;nChannels==3)
+	{
+		for (i = 0; i &lt; 3; i++)//彩色图像需要处理3个通道，灰度图像这里可以删掉
+			for (y = 0; y &lt; srcimg-&gt;height; y++)
+				for (x = 0; x &lt; srcimg-&gt;width; x++)
+				{
+					float val = ((uchar*)(srcimg-&gt;imageData + srcimg-&gt;widthStep*y))[x*3+i];
+					val+=bright2adj;
+					if(val&lt;0)	val=0;
+					else if(val&gt;255)	val=255;
+					((uchar*)(transimg-&gt;imageData + transimg-&gt;widthStep*y))[x*3+i] = (uchar)val;
+				}
+	}
+	else
+	{
+		for (y = 0; y &lt; srcimg-&gt;height; y++)
+			for (x = 0; x &lt; srcimg-&gt;width; x++)
+			{
+				float val = ((uchar*)(srcimg-&gt;imageData + srcimg-&gt;widthStep*y))[x];
+				val+=bright2adj;
+				if(val&lt;0)	val=0;
+				else if(val&gt;255)	val=255;
+				((uchar*)(transimg-&gt;imageData + transimg-&gt;widthStep*y))[x] = (uchar)val;
+			}
+	}		
+	cvShowImage(&quot;image&quot;,transimg);
+}
+
+void on_mouse3(int event,int x,int y,int flags,void* param)
+{
+	if(event==CV_EVENT_LBUTTONUP)
+		re_adjust_bright(0);
+}
+
+void CCVMFCView::OnAdjustBrightness()
+{
+	srcimg=cvCloneImage(workImg);
+	cvFlip(srcimg);
+	transimg=cvCloneImage(srcimg);	
+
+	cvNamedWindow(&quot;image&quot;,CV_WINDOW_AUTOSIZE);  
+	cvCreateTrackbar(&quot;亮度&quot;, &quot;image&quot;, &amp;bright2adj, 255,re_adjust_bright);
+	//re_adjust_bright(0);
+	cvShowImage(&quot;image&quot;,srcimg);
+
+	cvSetMouseCallback(&quot;image&quot;,on_mouse3,0);
+
+	cvWaitKey(0);
+	cvDestroyWindow(&quot;image&quot;);
+	cvReleaseImage(&amp;srcimg);
+	cvFlip(transimg);
+	m_dibFlag=imageReplace(transimg,&amp;workImg);
+
+	m_ImageType=2;
+	Invalidate();
+}

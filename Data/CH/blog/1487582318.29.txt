@@ -1,0 +1,213 @@
+特征检测和跟踪经典理论特征检测和跟踪的经典文献是Shi and Tomasi 1994的文章（见参考文献），虽然年代久远但非常经典。这个paper中提出了一个特征提取方法，一个基于图像仿射变换模型(并论证了只需仿射变换中的translation分量而无需deformation分量)的跟踪算法和一个跟踪时进行特征监测（判断哪些是好feature，哪些是坏feature）的技术。特征提取针对最优化tracking设计，可以根据dissimilarity（between
+ predict-feature-position &amp; real-feature-position）进行坏feature的监测，以便删除。根据dissimilarity进行坏点监测 虽然不能检测出所有坏特征点，但是更改为特定的feature detection算法应该会得到更好tracking的结果。
+
+
+   本篇文章对其做以回顾，分以下几部分进行阐述：
+
+
+   1. 两个图像运动模型
+
+
+   2. 计算图像的运动
+
+
+   3. 纹理特征
+
+
+   4. frame差异dissimilarity
+
+
+   5. 特征点的监测（好坏特征判断）
+
+
+   
+
+
+
+
+   /*********************************两个图像运动模型——deformation &amp; transformation*********************************/
+
+
+   两幅图像（或两帧之间）图像变化：
+
+
+
+
+   假设两个时间点t,t&#43;r在点X(x,y)发生的偏移量为δ(ε,η),则δ是关于位置X的一个函数，δ=DX&#43;d,也就是一个仿射变换，其中D是一个deformation
+ matrix,
+
+
+   
+
+
+
+
+   d是特征窗口中心的translation平移量。图像坐标X取决于窗口中心。也就是说，两帧Image
+ 1 和 Image 2中一个点由X移动到AX&#43;d。A=E(单位矩阵)&#43;D。给出两幅图I和J,以及I中的一个特征窗口，tracking的过程就是决定D和d中的6个参数。
+
+
+   J(Ax &#43; d) = I(x) .
+
+
+
+
+   这个估计的好坏取决于特征窗口大小，窗口内图像的纹理，以及帧间相机移动幅度。当这个window很小的时候，D很难估计，因为motion变化难以估计，而小的窗口便于跟踪，因为不容易造成depth discontinuity. 因此如果只有平移变换（即δ=d）时有很好的实验效果，具有更高的可靠性和准确率。
+
+
+   /*********************************计算图像的运动（模型）*********************************/
+
+
+
+
+   由于仿射变换计算的A和d不够精确，将造成误差，我们的目的即最小化ξ
+
+
+   
+
+
+
+
+   其中，W是feature window，w(x)是权&#20540;函数，最简单的情况下设w(x)=1，或者w可以是一个高斯函数，在window 中心的权&#20540;最大。仅有平移变换的情况下，A=E；为了最小化上式，我们将deformation matrix D和平移变换矩阵d进行分离，并设置结果ξ为0，然后用截尾泰勒展开式线性化结果：
+
+
+   
+
+
+
+
+   也就是解6*6的线性方程：Tz=a，其中，将形变矩阵D和平移矩阵d结合起来，误差向量a:
+
+
+   
+
+
+
+
+   a取决于两幅图像的差。6*6的矩阵T可由下式获得：
+
+
+   
+
+
+
+
+   其中：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   文章中阐述，经常将D设置为零矩阵，因为D和d之间可以通过矩阵V相互影响，即我们可以将系统简化为只求d：Zd=e
+
+
+   这里，可写作：
+
+
+   
+
+
+
+
+   其中，z矩阵也称黑森矩阵。这样就可以通过Z和e求得平移变换d。
+
+
+   /*********************************纹理*********************************/
+
+
+   大多window中的特征检测方法都是拍拍脑袋想出来的，不能保证获得好的结果。本文写到，一个单纯的平移d无法很好地描述仿射变换，而一个好的特征可以被很好地跟踪。
+
+
+   已知对于某点的特征矩阵Z的两个特征&#20540;λ1，λ2，
+
+
+   1°λ1，λ2都很大——该点为特征点
+
+
+   2°λ1，λ2一大一小——该点为edge（undirected
+ texture pattern）
+
+
+   3°λ1，λ2都小——该点上没有任何明显变化
+
+
+   所以设定一个λ，当min(λ1，λ2)&gt;λ时，该点为特征点。
+
+
+   /*********************************Frame间差异（Dissimilarity）*********************************/
+
+
+   虽然帧间差异很小，但是25帧的累积误差就很大了。事实上，随着帧数的增加，dissimilarity增加很大，如下图：
+
+
+   
+
+
+
+
+   ——：仿射变换模型
+
+
+    ------：pure translation
+
+
+   °和&#43;分别表示两个样本集（两个帧序列）
+
+
+   图中有一部分突变为其中一个序列中的特征点部分突然遭遇occluded的原因，这样经过translation变换后得到的特征点位置就相当不准确。
+
+
+   /*********************************特征监测（Monitoring Features）*********************************/
+
+
+   为了限制特征点个数，且令图像中的每一部分只至多被使用一次，规定第一帧中，feature window互不重叠(即设置window大小)。
+
+
+    
+ 
+
+
+
+
+   Figure12中所示为一幅图中不同的特征点的跟踪情况，纵轴代表dissimilarity，可以看出feature 58,89的dissimilarity出奇地高，说明这两个点监测结果为坏特征点。再来看这两个feature窗口在不同帧的feature window图（Fig.14）：feature.58中，不仅有平移变换，不同帧下的图像发生了变化，那个竖杠逐渐变粗（the gap between the vertical edge in the foreground
+ and the letters in the background widens, and it becomes harder to warp the current window into the window in the first frame(关键原因),thereby leading to the rising dissimilarity），所以不仅仅是仿射变换了，因此该点被监测为bad feature point, and should
+ be deleted。feature.89 同理。
+
+
+   
+
+
+
+
+   然而，有些非刚性特征不会造成dissimilarity，但他们确实是bad feature. 如下图所示，关注feature 24和60，他们俩的tracking dissimilarity 一直在波动，这是为什么呢？
+
+
+   
+
+
+
+
+   原文是这样描述的：from the fourth row of fig.14,we see that feature 60 (and similarly feature 24) contains very small lettering, of size comparable to theimage’s pixel size (the feature window is 25 x 25 pixels). The matching between one frame and
+ the next ishaphazard, because the characters in the lettering arebadly aliased. 换言之，由于特征点过小，不能进行很好的匹配，经常会进行错误特征点检测，因此他们也是bad feature。
+
+
+   
+
+
+
+
+   参考文献：
+
+
+   Shi, J. and Tomasi, C. (1994). Good features to track. InIEEE Computer Society Conference on ComputerVision and Pattern Recognition (CVPR’94), pages 593–600, IEEE Computer Society, Seattle.

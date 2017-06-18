@@ -1,0 +1,99 @@
+pku 3621牛可以从任意点出发, 每个点有欢乐值, 一个点可以去多次, 但是欢乐值只增加一次, 每条边有时间消耗, 求一条回路使得 总欢乐值/总时间 最大.
+
+
+   #include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#define M 1005
+const double inf = 10000000000;
+
+int l, p;
+struct node
+{
+	int v, weight, next;
+}graph[5005];
+int pre[M], queue[M*M], count[M], f[M];
+
+int spfa(double mid)
+{
+	int i, front, tail;
+	double new_weight, dis[M];
+	bool visit[M];
+
+	memset(visit, 0, sizeof(visit));
+	memset(count, 0, sizeof(count));
+	for (i = 1; i &lt;= l; i++)
+	{
+		dis[i] = inf;
+	}
+	front = 0; tail = 1;
+	queue[front] = 1; visit[1] = true; dis[1] = 0;
+	while (tail &gt; front)
+	{
+		int t = queue[front++];
+		visit[t] = false;
+		for (i = pre[t]; i != -1; i = graph[i].next)
+		{ 
+			new_weight = graph[i].weight * mid - f[graph[i].v];
+			if (dis[graph[i].v] &gt; dis[t] + new_weight)
+			{
+				dis[graph[i].v] = dis[t] + new_weight;
+				if (!visit[graph[i].v])
+				{
+					visit[graph[i].v] = 1;
+					queue[tail++] = graph[i].v;
+					count[graph[i].v]++;
+					//有负权环的时候,路径将不断的减小,那么count一定大于所有的结点之和
+					if (count[graph[i].v] &gt; l)
+					{
+						return 1;
+					}
+				}
+			}
+		}
+	}
+	//没有负权环
+	return 0;
+}
+
+void init()
+{
+	int i, a, b, c, top;
+
+	for (i = 1; i &lt;= l; i++)
+	{
+		scanf("%d", &amp;f[i]);
+	}
+	top = 0;
+	memset(pre, -1, sizeof(pre));
+	for (i = 0; i &lt; p; i++)
+	{
+		scanf("%d%d%d", &amp;a, &amp;b, &amp;c);
+		graph[top].v = b;
+		graph[top].weight = c;
+		graph[top].next = pre[a];
+		pre[a] = top++;
+		//printf("%d %d %d %d/n", graph[top - 1].v, graph[top - 1].next, graph[top - 1].weight, head[top - 1]);
+	}
+}
+
+int main()
+{
+	while (scanf("%d%d", &amp;l, &amp;p) != EOF)
+	{
+		init();
+		double left = 0, right = 100;
+		for (int i = 0; i &lt;= 20; i++)
+		{
+			double mid = (left + right) / 2;
+			//01规划:E * mid - f;其中最优解为E*mid-f=0的时候
+			//当有负权环的时候,即E * mid - f&lt;0,mid需要增大,反之需要减小
+			if (spfa(mid))  
+				left = mid;
+			else
+				right = mid;
+		}
+		printf("%.2lf/n", left);
+	}
+
+	return 0;
+}

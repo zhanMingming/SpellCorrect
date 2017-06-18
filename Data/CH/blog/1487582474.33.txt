@@ -1,0 +1,68 @@
+开源日志系统 - log4cplus (六)开源日志系统 - log4cplus (六)收藏
+
+
+   ### 一些可以改进之处 ###
+
+   1. 用户自定义LogLevel的实现机制不够开放
+
+   在第五篇中曾经介绍过如何实现用户自行定义LogLevel，为了实现比较理想的效果，甚至还需要改log4cplus的源代码。：（
+
+   2. 生成Logger对象的机制可以改进
+
+   我在使用时候，经常需要在不同的文件、函数中操作同一个logger，虽然log4cplus实现了树状存储以及根据名称生成Logger，却没有充分利用这样的特点确保同一个名称对应的logger对象的唯一性，比如以下代码：
+
+    ... ...  Logger logger1 = Logger::getInstance("test"); Logger logger2 = Logger::getInstance("test");
+
+    Logger * plogger1 = &amp;logger1; Logger * plogger2 = &amp;logger2;
+
+    std::cout &lt;&lt; "plogger1: " &lt;&lt; plogger1 &lt;&lt; std::endl &lt;&lt; "plogger2: " &lt;&lt; plogger2 &lt;&lt; std::endl;  ... ...  运行结果：
+
+   plogger1: 0xbfffe5a0plogger2: 0xbfffe580
+
+   				从结果可以看出，明明是同一个Logger，但每次调用都会产生一个Logger副本，虽然结果是正确的（因为将存储和操作分开了），但是资源有些浪费，我看了一下log4cplus的代码，其实可以按照如下方式实现（示意性的）：
+
+   #include &lt;iostream&gt;#include &lt;string&gt;#include &lt;map&gt;
+
+   /* forward declaration */class Logger;
+
+   class LoggerContainer{public:
+
+    ~LoggerContainer();
+
+    Logger * getinstance(const std::string &amp; strLogger);
+
+   private:
+
+    typedef std::map&lt;:string,&gt; LoggerMap; LoggerMap loggerPtrs;};
+
+   class Logger{public: Logger() {std::cout &lt;&lt; "ctor of Logger " &lt;&lt; std::endl; } ~Logger() {std::cout &lt;&lt; "dtor of Logger " &lt;&lt; std::endl; }
+
+    static Logger * getInstance( const std::string &amp; strLogger) { static LoggerContainer defaultLoggerContainer; return defaultLoggerContainer.getinstance(strLogger); }};
+
+   LoggerContainer::~LoggerContainer(){ /* release all ptr in LoggerMap */ LoggerMap::iterator itr = loggerPtrs.begin();
+
+    for( ; itr != loggerPtrs.end(); ++itr ){ delete (*itr).second;}
+
+   }
+
+   Logger * LoggerContainer::getinstance(const std::string &amp; strLogger){ LoggerMap::iterator itr = loggerPtrs.find(strLogger);
+
+    if(itr != loggerPtrs.end()) { /* logger exist, just return it */ return (*itr).second; } else { /* return a new logger */ Logger * plogger = new Logger(); loggerPtrs.insert(std::make_pair(strLogger, plogger));
+
+    return plogger; }}
+
+   int main(){ Logger * plogger1 = Logger::getInstance("test"); Logger * plogger2 = Logger::getInstance("test");
+
+    std::cout &lt;&lt; "plogger1: " &lt;&lt; plogger1 &lt;&lt; std::endl &lt;&lt; "plogger2: " &lt;&lt; plogger2 &lt;&lt; std::endl;
+
+    return 0;}
+
+   				运行结果：
+
+   ctor of Loggerplogger1: 0x804fc30plogger2: 0x804fc30dtor of Logger
+
+   这里的LoggerContainer相当于log4cplus中的Hierarchy类，结果可以看出，通过同一个名称可以获取相同的Logger实例。
+
+   				还有一些小毛病比如RollingFileAppender和DailyRollingFileAppender的参数输入顺序可以调整成统一方式等等，就不细说了。
+
+   本部分提到了使用log4cplus时候感觉不爽的地方，最后一部分将介绍一下log4cplus中线程和套接字实现情况。

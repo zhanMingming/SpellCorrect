@@ -1,0 +1,99 @@
+Image classification with deep learning常用模型本文中，我会根据下大家image classification常用的cnn模型，针对cifar10（for 物体识别），mnist（for 字符识别）&amp; ImageNet（for 物体识别）做一个model 总结。
+
+   
+本文不讲coding（coding请见Convolution Neural Network (CNN) 原理与实现篇）本文不涉及公司内部资料，纯公开资料汇总
+   
+
+   好，本文就从数据集说起，对数据集不熟悉的小伙伴请先去了解下这3个数据集，下面我们针对每个数据集画出其通用模型。
+
+   
+
+   ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+   
+
+   1. Cifar10
+
+   60000张32*32彩色图，10类，每类5000张用于training，1000张用于testing，通常做object recognition／classification。
+
+   模型：（上面写的数字是该层节点数）
+
+   
+
+   
+
+   2. Mnist
+
+   黑白图，手写体，60000training，10000testing，已做好croping，28*28，用作classification。
+
+   LeNet模型：
+
+   
+
+   
+
+   
+
+   3. ImageNet
+
+   10w类，每类约1000张彩色图的大规模数据集 ,需要注册下载。从10年起每年都有imagenet的竞赛，分为detection, classification &amp; localization. 14年的比赛结果和方法见这里。
+
+   
+
+   3.1 2012 AlexNet
+
+   模型：
+
+   
+
+   
+
+   但是里面细节我一直没搞过，今天就任性了一把，把每一层列出来了大小及其对应操作。自认为看上去不如上图清晰，但是会对每一步的操作有更加深入的了解。。。
+
+   此图从下往上看，最下方是输入data（注意上图中224是错的，这里crop后的image实际上是227*227的）。
+
+   PS: crop 为将图片进行四个边界crop＋中心crop
+
+   
+
+   每一层data格式（batch size, # feature map, height of feature, width of feature）
+
+   每一次convolution（conv）的格式（＃output feature，＃conv feature map，kernel height，kernel width）
+
+   
+
+   
+
+   
+
+   这里我们看到了最后fc8（第8层，fully connect）接的是LABEL，这是一个loss层，多类分类，采用softmax loss做为loss function。这是训练时候优化参数定的，那测试的时候怎么搞？
+
+   ——
+
+   测试的时候，最后的特征fc8接一层probability，返回类型为softmax的概率，哪个最高结果就评定为哪一类。
+
+   如果做全局系统测评，可以再在后面加一层accuracy层，返回类型为ACCURACY.
+
+   
+
+   
+
+   3.2 2014 GoogLeNet
+
+   2014 ImageNet classification &amp; Detection的冠军，22层网络。。。给跪了，感兴趣的同学去看paper里的结构吧，这里我截图截不下来了。。。
+
+   
+
+   另外，给几个参考：
+
+   1. 初学者玩玩：可以用在线ConvNet试一下
+
+   2. DIY Deep learning Architecture
+
+   3. 其实最好的reference还是paper ＋ code啦，上面的architecture可以参考caffe中example／imagenet的prototxt。
+
+   
+
+   
+
+   感兴趣的同学欢迎大家一起交流～

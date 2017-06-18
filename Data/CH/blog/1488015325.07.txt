@@ -1,0 +1,79 @@
+hibernate中的实体名以及动态实体dynamic modelshibernate使用Session对数据库进行增删改查，我们一般会定义一个 POJO实体类，然后通过类&#20284;下面的代码，操作实体。
+
+
+   Session session = sessionFactory.openSession();
+Student stu = (Student)session.get(Student.class, 1);
+
+   
+
+
+   
+
+
+
+session.get还提供了另外一个版本的方法：public Object get(String entityName, Serializable id)，这个版本要求我们传递实体名称和实体主键。
+   Session session = sessionFactory.openSession();
+Student stu = (Student)session.get(&quot;net.aty.Student&quot;, 1);
+
+   
+
+
+
+上面这2端代码是等效的，都可以正确地从数据库查询出id=1的student。对于POJO实体类来说，类的全限定名就是实体类的名称。
+
+   
+
+
+
+
+   什么是动态实体呢？hibernate的manual上写道：
+
+
+   Persistent entities do not necessarily have to be represented as POJO classes or as JavaBean objects at runtime. 
+Hibernate also supports dynamic models (using Maps of Maps at runtime).
+With this approach, you do not write persistent classes, only mapping files.
+
+   
+
+
+   
+
+
+
+我们可以不用写实体类，而是使用Map来替代，Map比实体类具有更大的灵活性。在实体映射文件中，通过&lt;class&gt;元素的entity-name属性来设置实体名称。
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+	&lt;class entity-name=&quot;aty_dynamic_model&quot;&gt;
+		&lt;id name=&quot;id&quot; type=&quot;long&quot; column=&quot;ID&quot;&gt;
+			&lt;generator class=&quot;native&quot; /&gt;
+		&lt;/id&gt;
+		&lt;property name=&quot;name&quot; column=&quot;NAME&quot; type=&quot;string&quot; /&gt;
+		&lt;property name=&quot;address&quot; column=&quot;ADDRESS&quot; type=&quot;string&quot; /&gt;
+	&lt;/class&gt;
+&lt;/hibernate-mapping&gt;
+
+   
+
+
+   
+
+
+
+配置好实体映射文件之后，就可以使用类&#20284;下面的代码来保存动态实体(其实就是个Map)。
+
+
+   Session session = sessionFactory.openSession();
+session.beginTransaction();
+
+Map&lt;String, String&gt; record = new HashMap&lt;String, String&gt;();
+record.put(&quot;name&quot;, &quot;aty&quot;);
+record.put(&quot;address&quot;, &quot;shenzhen&quot;);
+
+session.save(&quot;aty_dynamic_model&quot;, record);
+
+session.getTransaction().commit();
+session.close();

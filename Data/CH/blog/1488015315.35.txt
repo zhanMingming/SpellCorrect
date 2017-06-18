@@ -1,0 +1,691 @@
+混合app开发：自己实现的页面历史记录管理模块，解决页面&quot;回退难&quot;的问题页面历史记录管理，其实和浏览器自带的前进和后退按钮很类&#20284;，就是为了保证在某个页面点击返回键的时候，能够正确地返回用户想要回到的上一个页面。对于浏览器来说，如果我们依次打开页面A--&gt;B--&gt;C--&gt;D，我们在D页面点浏览器的回退是回到C页面，C回到B，B回到A。但是对于一个业务系统来说，这种返回逻辑太简单了，不能满足一些特点场景的使用。
+
+
+   
+
+
+
+
+   比如我们的混合app主页是A(任务列表页面，一条一条的任务)，我们点击列表的某一条数据后，会跳转到B(router页面，用户不可见)，B页面会根据一些条件跳转到C或者D等页面。如果用户在C页面点返回，显然希望回到的是A页面，而不是B页面。我们的项目是这样的：定义open()和back()函数，open用来打开新页面，back用来从当前页面返回。
+
+
+   function open(url, parameter, config)
+{
+
+
+}
+
+function back()
+{
+
+}back函数不需要任何参数，而open参数必需要传页面的url。页面点返回的时候会调用back()，而打开页面调用的是open(url)。既然要打开一个新页面，当然你要告诉我页面地址，不然怎么知道打开哪儿一个页面呢。而返回的时候，显然不需要任何参数。当然如果你的返回逻辑十分诡异，那么这就不是back()的概念了，而是open()。
+
+   
+
+
+   
+
+
+
+
+   我做的历史记录其实就是：在open()不同页面的时候，记录一些配置信息，然后根据这些配置信息来决定：从当前页面返回的时候，到底应该回到哪一个页面。我在项目中实现的配置信息就2个：isHomePage和needRecordHistory。
+
+
+   /**
+ * 打开页面
+ *
+ * @param url: 页面url地址(可以唯一标识一个页面)
+ * @param parameters: 需要传递给页面的参数
+ * @param config: 配置信息{isHomePage:true, needRecordHistory:true}
+ *
+ * isHomePage: true代表需要打开的页面是首页,在首页点返回我们希望回到android桌面;
+ * needRecordHistory: 是否需要加入到历史记录之中.
+ *
+ * 考虑这种情况: A跳转到B,B可以跳转到C,也可以跳转到D.
+ * B其实只是一个router页面, 仅仅中转而已,是用户不可见的.
+ * 我们在C页面返回, 自然希望回到A, 而不是B, 也就是说B页面不需要记录到历史记录当中.
+ * 
+ * 我们假设当前页面currentPage=A, 那我们在A页面可以写这样的代码打开B页面: A-&gt;B
+ * open(&quot;B&quot;,{},{needRecordHistory:true}); 这意味着在B页面点返回,能够回到A页面;
+ *
+ * 在B页面可以通过下面的代码打开C页面:B-&gt;C
+ * open(&quot;C&quot;,{},{needRecordHistory:false}); 当前页面是B,打开页面C的时候,当前页面B不需要记录历史记录.
+ * 这样我们在C页面点返回键,会回到A
+ *
+ */
+function open(url, parameter, config)
+{
+	parameter = $.extend({}, parameter);
+	config = $.extend({},default_options, config);
+	
+	// 创建新页面
+	var target_page = buildMobilePage({url:url, parameter:parameter});
+	
+	if(!currentPage || config.isHomePage)
+	{
+		clear();
+		
+		// 忽略config,忽略parameter,因为从主页返回android桌面,不需要什么参数
+		record_page_back_relation(url, true, HOME_PAGE, {});
+	}
+	else
+	{
+		record_page_back_relation(url, config.needRecordHistory, currentPage.url, currentPage.parameter);
+	}
+	
+	// 改变当前页面
+	currentPage = target_page;
+	
+	// 显示当前页面
+	currentPage.show();
+}
+
+
+   
+
+
+
+open函数的使用很简单，实现逻辑也很容易理解，关键在于record_page_back_relation这个函数。
+   /**
+ * 假如依次新打开4个页面，A-&gt;B-&gt;C-&gt;D(A是我们的主页, A打开B, B打开C, C打开D).
+ * 那么在D页面点返回键回到C, C页面回到B, B页面回到A, A页面是主页无返回键.
+ 
+ * 接下来页面之间跳转无非以下3种情况:
+ * 1.C-&gt;E或A-&gt;F, 这个时候需要新增一条父子关系,记录是C页面打开了E页面.
+ *
+ * 2.A-&gt;C,这个时候需要更新下父子关系,以前是B打开了C页面,C页面返回到B;现在是A打开了C页面,C页面需要返回到A.
+ *
+ * 3.D-&gt;A或D-&gt;C, 啥也不需要做,只是页面返回而已,实际上页面之间的父子关系并没有发生变化.比如我们从D页面跳到B页面,
+ *  在B页面点返回的时候,我们还是希望回到A页面,而不是D页面.
+ * 
+ * @param target_url 需要打开的目标页面的url
+ *
+ * @param needRecordHistory 当前页面 -&gt; target_url是否需要加入历史记录.
+ * 即在target_url页面点返回,是回到当前页面,还是回到当前页面的父页面.
+ * 
+ * @param back_url target_url页面的上一个页面,其实就是currentPage的url
+ 
+ * @param back_parameter target_url的上一个页面需要的参数,其实就是currentPage的parameter
+ * 
+ */
+function record_page_back_relation(target_url, needRecordHistory, back_url, back_parameter)
+{
+	// 当前页面要求打开当前页面的情况，不需要记录历史记录.
+	if(target_url == back_url)
+	{
+		return;
+	}
+	
+	var parent_config = {&quot;needRecordHistory&quot;:needRecordHistory, &quot;back_parameter&quot;:back_parameter, &quot;back_url&quot;:back_url};
+	
+	var situation = which_case_belongto(target_url, back_url);
+	
+	if(situation == &quot;case1&quot;)
+	{
+		back_pages_map[target_url] = parent_config;
+		
+		// 新增打开关系
+		open_relation_list.push({&quot;parent&quot;:back_url,&quot;child&quot;:target_url});
+		
+		console.log(&quot;case1: add&quot;);
+	}
+	else if(situation == &quot;case2&quot;)
+	{
+		back_pages_map[target_url] = parent_config;
+		
+		// 更新打开关系
+		for (var i = 0; i &lt; open_relation_list.length; i++)
+		{
+			if(open_relation_list[i].child == target_url)
+			{
+				// 只会有一条记录
+				open_relation_list[i].parent = back_url;
+				break;
+			}
+		}
+		
+		console.log(&quot;case2: update&quot;);
+	}
+	else
+	{
+		console.log(&quot;case3: nothing need to do.&quot;);
+	}
+}
+
+//是否存在从target_url---&gt;back_url的打开关系,如果存在那么是情况3;如果不存在则是情况2
+// 比如打开关系是A--&gt;B--&gt;C--&gt;D,A--&gt;E--&gt;F
+// case1: target_url=M, back_url=C,就是从C页面跳转到M页面(back_pages_map[M]是undefined)
+// case2: target_url=F, back_url=C,就是从C页面跳到F页面属于情况2.(F已经有父页面E,但是不存在F-&gt;C的打开关系)
+// case3: target_url=A, back_url=C,就是从C页面跳回A页面,属于情况3.(存在A-&gt;C的打开关系)
+function which_case_belongto(target_url, back_url)
+{
+	if(back_pages_map[target_url] == undefined)
+	{
+		return &quot;case1&quot;;
+	}
+	else
+	{
+		var all_descendants = [];
+		add_all_descendants(target_url, all_descendants);
+		
+		if($.inArray(back_url, all_descendants) != -1)
+		{
+			return &quot;case3&quot;;
+		}
+		else
+		{
+			return &quot;case2&quot;;
+		}
+	}
+}
+
+// 找到parent页面,直接或者间接打开的所有页面,存入all_descendants数组中.
+// 比如打开关系是A--&gt;B--&gt;C--&gt;D,A--&gt;E--&gt;F
+// add_all_descendants(&quot;B&quot;) 结果是[&quot;C&quot;, &quot;D&quot;]
+// add_all_descendants(&quot;A&quot;) 结果是[&quot;B&quot;,&quot;C&quot;, &quot;D&quot;, &quot;E&quot;,&quot;F&quot;]
+// add_all_descendants(&quot;F&quot;) 结果是[]
+function add_all_descendants(parent, all_descendants)
+{
+	for (var i = 0; i &lt; open_relation_list.length; i++)
+	{
+		if(open_relation_list[i].parent == parent)
+		{
+			all_descendants.push(open_relation_list[i].child);
+			add_all_descendants(open_relation_list[i].child, all_descendants);
+		}
+	}
+}
+
+记录了这些配置信息后，我们就可以实现back函数了：
+   function back()
+{
+	if(currentPage == null)
+	{
+		to_android_desktop();
+	}
+	else
+	{
+		var child_url = find_back_page(currentPage.url);
+		var parent_config = back_pages_map[child_url];
+		
+		if(parent_config.back_url == HOME_PAGE)
+		{
+			to_android_desktop();
+		}
+		else
+		{
+			open(parent_config.back_url, parent_config.back_parameter,{});
+		}
+	}
+}
+
+function find_back_page(current_url)
+{
+	var result = null;
+	
+	while(result == null)
+	{
+		var my_parent_config = back_pages_map[current_url];
+		
+		// 如果父页面是需要记录在历史记录中的,那么直接返回即可
+		if(my_parent_config.needRecordHistory)
+		{
+			return current_url;
+		}
+		else
+		{
+			current_url = my_parent_config.back_url;
+		}
+	}
+	
+	console.log(&quot;dead code here.&quot;);
+	
+	return null;
+}
+
+   
+
+
+   
+
+
+
+下面是我自己列的几个测试用例：
+   // test1: 没有打开任何页面之直接退回,返回到android桌面
+console.log(&quot;test1 begin...&quot;);
+page_manager.clear();
+page_manager.back();//android
+console.log(&quot;test1 over...&quot;);
+
+// test2: 打开主页,之后返回到android桌面
+console.log(&quot;test2 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;aty&quot;});
+page_manager.back();//android
+console.log(&quot;test2 over...&quot;);
+
+console.log(&quot;test3 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.back();//b
+page_manager.back();//a
+page_manager.back();//android
+console.log(&quot;test3 over...&quot;);
+
+console.log(&quot;test4 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;},{needRecordHistory:false});
+page_manager.back();//a
+page_manager.back();//android
+console.log(&quot;test4 over...&quot;);
+
+console.log(&quot;test5 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;},{needRecordHistory:false});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.back();//b
+page_manager.back();//android
+console.log(&quot;test5 over...&quot;);
+
+console.log(&quot;test6 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.back();//b
+page_manager.back();//a
+page_manager.open(&quot;e&quot;,{&quot;name&quot;:&quot;e&quot;});
+page_manager.open(&quot;f&quot;,{&quot;name&quot;:&quot;f&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;fc&quot;});
+page_manager.back();//f
+console.log(&quot;test6 over...&quot;);
+
+console.log(&quot;test7 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.open(&quot;f&quot;,{},{isHomePage:true});
+page_manager.open(&quot;b&quot;,{});
+page_manager.open(&quot;a&quot;,{});
+page_manager.back();//b
+console.log(&quot;test7 over...&quot;);
+
+console.log(&quot;test8 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;task_router&quot;);
+page_manager.open(&quot;task_detail&quot;,{},{needRecordHistory:false});
+page_manager.open(&quot;complete&quot;);
+
+page_manager.back();//task_detail
+page_manager.back();//android
+console.log(&quot;test8 over...&quot;);
+
+console.log(&quot;test9 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;list&quot;);
+page_manager.open(&quot;router1&quot;);
+page_manager.open(&quot;router2&quot;,{},{needRecordHistory:false});
+page_manager.open(&quot;router3&quot;,{},{needRecordHistory:false});
+page_manager.open(&quot;a&quot;,{},{needRecordHistory:false});
+page_manager.back();//task_detail
+console.log(&quot;test9 over...&quot;);
+
+最后给出一个html页面，可以运行起来看看。
+   &lt;!--引入jquery主要是为了使用$.extend()和$.inArray()--&gt;
+&lt;script src=&quot;jquery-1.11.1.js&quot; type=&quot;text/javascript&quot;&gt; &lt;/script&gt;
+
+&lt;script&gt;  
+
+(function(window){
+
+var default_options = {
+	&quot;isHomePage&quot;:false, 
+	&quot;needRecordHistory&quot;:true
+};
+
+
+// homepage的标识
+var HOME_PAGE = &quot;homepage&quot;;
+
+// 当前打开的页面
+var currentPage = null;
+
+// map short-url to its back_page and back_config(ect:parameters)
+var back_pages_map = {};
+
+// 用来判断A页面跳转到B页面，是正向跳，还是返回跳
+// 最好用图来实现
+var open_relation_list = [];
+
+
+function clear()
+{
+	open_relation_list = [];
+	back_pages_map = {};
+	currentPage = null;
+}
+
+
+function back()
+{
+	if(currentPage == null)
+	{
+		to_android_desktop();
+	}
+	else
+	{
+		var child_url = find_back_page(currentPage.url);
+		var parent_config = back_pages_map[child_url];
+		
+		if(parent_config.back_url == HOME_PAGE)
+		{
+			to_android_desktop();
+		}
+		else
+		{
+			open(parent_config.back_url, parent_config.back_parameter,{});
+		}
+	}
+}
+
+function find_back_page(current_url)
+{
+	var result = null;
+	
+	while(result == null)
+	{
+		var my_parent_config = back_pages_map[current_url];
+		
+		// 如果父页面是需要记录在历史记录中的,那么直接返回即可
+		if(my_parent_config.needRecordHistory)
+		{
+			return current_url;
+		}
+		else
+		{
+			current_url = my_parent_config.back_url;
+		}
+	}
+	
+	console.log(&quot;dead code here.&quot;);
+	
+	return null;
+}
+
+/**
+ * 打开页面
+ *
+ * @param url: 页面url地址(可以唯一标识一个页面)
+ * @param parameters: 需要传递给页面的参数
+ * @param config: 配置信息{isHomePage:true, needRecordHistory:true}
+ *
+ * isHomePage: true代表需要打开的页面是首页,在首页点返回我们希望回到android桌面;
+ * needRecordHistory: 是否需要加入到历史记录之中.
+ *
+ * 考虑这种情况: A跳转到B,B可以跳转到C,也可以跳转到D.
+ * B其实只是一个router页面, 仅仅中转而已,是用户不可见的.
+ * 我们在C页面返回, 自然希望回到A, 而不是B, 也就是说B页面不需要记录到历史记录当中.
+ * 
+ * 我们假设当前页面currentPage=A, 那我们在A页面可以写这样的代码打开B页面: A-&gt;B
+ * open(&quot;B&quot;,{},{needRecordHistory:true}); 这意味着在B页面点返回,能够回到A页面;
+ *
+ * 在B页面可以通过下面的代码打开C页面:B-&gt;C
+ * open(&quot;C&quot;,{},{needRecordHistory:false}); 当前页面是B,打开页面C的时候,当前页面B不需要记录历史记录.
+ * 这样我们在C页面点返回键,会回到A
+ *
+ */
+function open(url, parameter, config)
+{
+	parameter = $.extend({}, parameter);
+	config = $.extend({},default_options, config);
+	
+	// 创建新页面
+	var target_page = buildMobilePage({url:url, parameter:parameter});
+	
+	if(!currentPage || config.isHomePage)
+	{
+		clear();
+		
+		// 忽略config,忽略parameter,因为从主页返回android桌面,不需要什么参数
+		record_page_back_relation(url, true, HOME_PAGE, {});
+	}
+	else
+	{
+		record_page_back_relation(url, config.needRecordHistory, currentPage.url, currentPage.parameter);
+	}
+	
+	// 改变当前页面
+	currentPage = target_page;
+	currentPage.show();
+}
+
+/**
+ * 假如依次新打开4个页面，A-&gt;B-&gt;C-&gt;D(A是我们的主页, A打开B, B打开C, C打开D).
+ * 那么在D页面点返回键回到C, C页面回到B, B页面回到A, A页面是主页无返回键.
+ 
+ * 接下来页面之间跳转无非以下3种情况:
+ * 1.C-&gt;E或A-&gt;F, 这个时候需要新增一条父子关系,记录是C页面打开了E页面.
+ *
+ * 2.A-&gt;C,这个时候需要更新下父子关系,以前是B打开了C页面,C页面返回到B;现在是A打开了C页面,C页面需要返回到A.
+ *
+ * 3.D-&gt;A或D-&gt;C, 啥也不需要做,只是页面返回而已,实际上页面之间的父子关系并没有发生变化.比如我们从D页面跳到B页面,
+ *  在B页面点返回的时候,我们还是希望回到A页面,而不是D页面.
+ * 
+ * @param target_url 需要打开的目标页面的url
+ *
+ * @param needRecordHistory 当前页面 -&gt; target_url是否需要加入历史记录.
+ * 即在target_url页面点返回,是回到当前页面,还是回到当前页面的父页面.
+ * 
+ * @param back_url target_url页面的上一个页面,其实就是currentPage的url
+ 
+ * @param back_parameter target_url的上一个页面需要的参数,其实就是currentPage的parameter
+ * 
+ */
+function record_page_back_relation(target_url, needRecordHistory, back_url, back_parameter)
+{
+	// 当前页面要求打开当前页面的情况，不需要记录历史记录.
+	if(target_url == back_url)
+	{
+		return;
+	}
+	
+	var parent_config = {&quot;needRecordHistory&quot;:needRecordHistory, &quot;back_parameter&quot;:back_parameter, &quot;back_url&quot;:back_url};
+	
+	var situation = which_case_belongto(target_url, back_url);
+	
+	if(situation == &quot;case1&quot;)
+	{
+		back_pages_map[target_url] = parent_config;
+		
+		// 新增打开关系
+		open_relation_list.push({&quot;parent&quot;:back_url,&quot;child&quot;:target_url});
+		
+		console.log(&quot;case1: add&quot;);
+	}
+	else if(situation == &quot;case2&quot;)
+	{
+		back_pages_map[target_url] = parent_config;
+		
+		// 更新打开关系
+		for (var i = 0; i &lt; open_relation_list.length; i++)
+		{
+			if(open_relation_list[i].child == target_url)
+			{
+				// 只会有一条记录
+				open_relation_list[i].parent = back_url;
+				break;
+			}
+		}
+		
+		console.log(&quot;case2: update&quot;);
+	}
+	else
+	{
+		console.log(&quot;case3: nothing need to do.&quot;);
+	}
+}
+
+//是否存在从target_url---&gt;back_url的打开关系,如果存在那么是情况3;如果不存在则是情况2
+// 比如打开关系是A--&gt;B--&gt;C--&gt;D,A--&gt;E--&gt;F
+// case1: target_url=M, back_url=C,就是从C页面跳转到M页面(back_pages_map[M]是undefined)
+// case2: target_url=F, back_url=C,就是从C页面跳到F页面属于情况2.(F已经有父页面E,但是不存在F-&gt;C的打开关系)
+// case3: target_url=A, back_url=C,就是从C页面跳回A页面,属于情况3.(存在A-&gt;C的打开关系)
+function which_case_belongto(target_url, back_url)
+{
+	if(back_pages_map[target_url] == undefined)
+	{
+		return &quot;case1&quot;;
+	}
+	else
+	{
+		var all_descendants = [];
+		add_all_descendants(target_url, all_descendants);
+		
+		if($.inArray(back_url, all_descendants) != -1)
+		{
+			return &quot;case3&quot;;
+		}
+		else
+		{
+			return &quot;case2&quot;;
+		}
+	}
+}
+
+// 找到parent页面,直接或者间接打开的所有页面,存入all_descendants数组中.
+// 比如打开关系是A--&gt;B--&gt;C--&gt;D,A--&gt;E--&gt;F
+// add_all_descendants(&quot;B&quot;) 结果是[&quot;C&quot;, &quot;D&quot;]
+// add_all_descendants(&quot;A&quot;) 结果是[&quot;B&quot;,&quot;C&quot;, &quot;D&quot;, &quot;E&quot;,&quot;F&quot;]
+// add_all_descendants(&quot;F&quot;) 结果是[]
+function add_all_descendants(parent, all_descendants)
+{
+	for (var i = 0; i &lt; open_relation_list.length; i++)
+	{
+		if(open_relation_list[i].parent == parent)
+		{
+			all_descendants.push(open_relation_list[i].child);
+			add_all_descendants(open_relation_list[i].child, all_descendants);
+		}
+	}
+}
+
+
+// 页面对象
+function buildMobilePage(options)
+{
+	return {
+		url: options.url,
+		parameter: options.parameter,
+		show: function(){
+			console.log(&quot;[&#39;&quot; + this.url + &quot;&#39;] already open.parameter=&quot;+JSON.stringify(this.parameter));
+		}
+	};
+}
+
+function to_android_desktop()
+{
+	console.log(&quot;Go back to native android desktop.&quot;);
+	clear();
+}
+
+window.page_manager = {
+	&quot;open&quot;: open,
+	&quot;back&quot;: back,
+	&quot;clear&quot;: clear	
+};
+
+})(window)
+
+
+// test1: 没有打开任何页面之直接退回,返回到android桌面
+console.log(&quot;test1 begin...&quot;);
+page_manager.clear();
+page_manager.back();//android
+console.log(&quot;test1 over...&quot;);
+
+// test2: 打开主页,之后返回到android桌面
+console.log(&quot;test2 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;aty&quot;});
+page_manager.back();//android
+console.log(&quot;test2 over...&quot;);
+
+console.log(&quot;test3 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.back();//b
+page_manager.back();//a
+page_manager.back();//android
+console.log(&quot;test3 over...&quot;);
+
+console.log(&quot;test4 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;},{needRecordHistory:false});
+page_manager.back();//a
+page_manager.back();//android
+console.log(&quot;test4 over...&quot;);
+
+console.log(&quot;test5 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;},{needRecordHistory:false});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.back();//b
+page_manager.back();//android
+console.log(&quot;test5 over...&quot;);
+
+console.log(&quot;test6 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.back();//b
+page_manager.back();//a
+page_manager.open(&quot;e&quot;,{&quot;name&quot;:&quot;e&quot;});
+page_manager.open(&quot;f&quot;,{&quot;name&quot;:&quot;f&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;fc&quot;});
+page_manager.back();//f
+console.log(&quot;test6 over...&quot;);
+
+console.log(&quot;test7 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;a&quot;,{&quot;name&quot;:&quot;a&quot;});
+page_manager.open(&quot;b&quot;,{&quot;name&quot;:&quot;b&quot;});
+page_manager.open(&quot;c&quot;,{&quot;name&quot;:&quot;c&quot;});
+page_manager.open(&quot;f&quot;,{},{isHomePage:true});
+page_manager.open(&quot;b&quot;,{});
+page_manager.open(&quot;a&quot;,{});
+page_manager.back();//b
+console.log(&quot;test7 over...&quot;);
+
+console.log(&quot;test8 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;task_router&quot;);
+page_manager.open(&quot;task_detail&quot;,{},{needRecordHistory:false});
+page_manager.open(&quot;complete&quot;);
+
+page_manager.back();//task_detail
+page_manager.back();//android
+console.log(&quot;test8 over...&quot;);
+
+console.log(&quot;test9 begin...&quot;);
+page_manager.clear();
+page_manager.open(&quot;list&quot;);
+page_manager.open(&quot;router1&quot;);
+page_manager.open(&quot;router2&quot;,{},{needRecordHistory:false});
+page_manager.open(&quot;router3&quot;,{},{needRecordHistory:false});
+page_manager.open(&quot;a&quot;,{},{needRecordHistory:false});
+page_manager.back();//task_detail
+console.log(&quot;test9 over...&quot;);
+
+&lt;/script&gt;

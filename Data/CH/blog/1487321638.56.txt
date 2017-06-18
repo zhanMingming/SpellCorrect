@@ -1,0 +1,22 @@
+sigmoid函数的用途sigmoid函数是一个良好的阈值函数,
+
+
+   连续，光滑严格单调关于(0,0.5)中心对称对阈值函数  _ 1, x &gt; /deltaf(x)= / / - 0, x &lt; -/delta的良好近似
+
+
+   其导数f'(x)=f(x)*[1-f(x)]，可以节约计算时间
+
+
+   
+
+
+   f(x) = 1/[1+e^(-x)].图形如上。如果x = a*r.其中a为倾斜系数，当a足够小，这个图形可以无限制接近你这个阈值函数
+
+
+   最为详细的说明参考该url.
+
+
+   参见:
+
+
+   http://computing.dcu.ie/~humphrys/Notes/Neural/sigmoid.html

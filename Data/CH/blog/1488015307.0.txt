@@ -1,0 +1,124 @@
+pom配置之：&lt;distributionManagement&gt;snapshot快照库和release发布库本文转载自： 铁木箱子的mzone的博客：
+
+
+   http://www.mzone.cc/article/277.html
+
+
+   http://www.mzone.cc/article/279.html
+
+
+   
+
+
+
+
+       在使用maven过程中，我们在开发阶段经常性的会有很多公共库处于不稳定状态，随时需要修改并发布，可能一天就要发布一次，遇到bug时，甚至一天要发布N次。我们知道，maven的依赖管理是基于版本管理的，对于发布状态的artifact，如果版本号相同，即使我们内部的镜像服务器上的组件比本地新，maven也不会主动下载的。如果我们在开发阶段都是基于正式发布版本来做依赖管理，那么遇到这个问题，就需要升级组件的版本号，可这样就明显不符合要求和实际情况了。但是，如果是基于快照版本，那么问题就自热而然的解决了，而maven已经为我们准备好了这一切。
+
+
+
+
+
+      maven中的仓库分为两种，snapshot快照仓库和release发布仓库。snapshot快照仓库用于保存开发过程中的不稳定版本，release正式仓库则是用来保存稳定的发行版本。定义一个组件/模块为快照版本，只需要在pom文件中在该模块的版本号后加上-SNAPSHOT即可(注意这里必须是大写)，如下：
+
+
+   &lt;groupId&gt;cc.mzone&lt;/groupId&gt;
+&lt;artifactId&gt;m1&lt;/artifactId&gt;
+&lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
+&lt;packaging&gt;jar&lt;/packaging&gt;
+
+   maven会根据模块的版本号(pom文件中的version)中是否带有-SNAPSHOT来判断是快照版本还是正式版本。如果是快照版本，那么在mvn deploy时会自动发布到快照版本库中，而使用快照版本的模块，在不更改版本号的情况下，直接编译打包时，maven会自动从镜像服务器上下载最新的快照版本。如果是正式发布版本，那么在mvn deploy时会自动发布到正式版本库中，而使用正式版本的模块，在不更改版本号的情况下，编译打包时如果本地已经存在该版本的模块则不会主动去镜像服务器上下载。
+
+   
+
+
+   
+
+   所以，我们在开发阶段，可以将公用库的版本设置为快照版本，而被依赖组件则引用快照版本进行开发，在公用库的快照版本更新后，我们也不需要修改pom文件提示版本号来下载新的版本，直接mvn执行相关编译、打包命令即可重新下载最新的快照库了，从而也方便了我们进行开发。
+
+
+
+
+   
+
+
+
+
+   接下来要介绍的是如何在项目中应用snapshot和release库，应用snapshot和release库达到不同环境下发布不同的版本的目的，首先看一个pom文件的定义：
+
+
+   &lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+  xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;net.aty.mybatis&lt;/groupId&gt;
+    &lt;artifactId&gt;mybatis-demo&lt;/artifactId&gt;
+    &lt;packaging&gt;jar&lt;/packaging&gt;
+    &lt;version&gt;${project.release.version}&lt;/version&gt;
+    &lt;name&gt;mybatis-demo&lt;/name&gt;
+    &lt;url&gt;http://maven.apache.org&lt;/url&gt;
+	
+	&lt;properties&gt;
+ &lt;project.release.version&gt;0.1-SNAPSHOT&lt;/project.release.version&gt;
+    &lt;/properties&gt;
+	
+
+    &lt;profiles&gt;
+ &lt;profile&gt;
+     &lt;id&gt;release&lt;/id&gt;
+	    &lt;properties&gt;
+ 	 &lt;project.release.version&gt;0.1&lt;/project.release.version&gt;
+	    &lt;/properties&gt;
+ &lt;/profile&gt;
+    &lt;/profiles&gt;
+	
+	
+	&lt;!--定义snapshots库和releases库的nexus地址--&gt;
+    &lt;distributionManagement&gt;
+ &lt;repository&gt;
+     &lt;id&gt;nexus-releases&lt;/id&gt;
+     &lt;url&gt;
+  http://172.17.103.59:8081/nexus/content/repositories/releases/
+     &lt;/url&gt;
+ &lt;/repository&gt;
+ &lt;snapshotRepository&gt;
+     &lt;id&gt;nexus-snapshots&lt;/id&gt;
+     &lt;url&gt;
+  http://172.17.103.59:8081/nexus/content/repositories/snapshots/
+     &lt;/url&gt;
+ &lt;/snapshotRepository&gt;
+    &lt;/distributionManagement&gt;
+
+&lt;/project&gt;
+
+
+
+    首先我们看到pom文件中version的定义是采用占位符的形式，这样的好处是可以根据不同的profile来替换版本信息，比如maven默认是使用0.1-SNAPSHOT作为该模块的版本。
+
+1、如果在发布时使用mvn deploy -P release 的命令，那么会自动使用0.1作为发布版本，那么根据maven处理snapshot和release的规则，由于版本号后不带-SNAPSHOT故当成是正式发布版本，会被发布到release仓库；
+
+
+
+2、如果发布时使用mvn deploy命令，那么就会使用默认的版本号0.1-SNAPSHOT，此时maven会认为是快照版本，会自动发布到快照版本库。
+
+   
+
+
+
+
+      在distributionManagement段中配置的是snapshot快照库和release发布库的地址，我这里是采用nexus作为镜像服务器。对于版本库主要是id和url的配置，配置完成后就可以通过mvn deploy进行发布了，当然了，如果你的镜像服务器需要用户名和密码，那么还需要在maven的settings.xml文件中做如下配置：
+
+
+   &lt;server&gt;
+  &lt;id&gt;nexus-releases&lt;/id&gt;
+  &lt;username&gt;admin&lt;/username&gt;
+  &lt;password&gt;admin123&lt;/password&gt;
+&lt;/server&gt;
+
+&lt;server&gt;
+  &lt;id&gt;nexus-snapshots&lt;/id&gt;
+  &lt;username&gt;admin&lt;/username&gt;
+  &lt;password&gt;admin123&lt;/password&gt;
+&lt;/server&gt; 注意这里配置的server的id必须和pom文件中的distributionManagement对应仓库的id保持一致，maven在处理发布时会根据id查找用户名称和密码进行登录和文件的上传发布。
+
+
+
+  我们这里通过profile的定义就可以在发布灵活切换snapshot快照版本和release正式版本了，在被依赖的组件中也可以使用profile来定义在开发阶段使用快照库，在发布阶段使用正式库的功能，只需要在不同的profile中覆盖默认的properties属性&#20540;即可。

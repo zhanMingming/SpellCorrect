@@ -1,0 +1,67 @@
+搜索引擎早期重要论文推荐系列【4】《The Connectivity Server: fast access to linkage information on the Web》Krishna Bharata, Andrei Brodera, Monika Henzingera, Puneet Kumara, and Suresh Venkatasubramanianb
+
+
+   
+
+
+   下载地址：http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.109.2464&amp;rep=rep1&amp;type=pdf
+
+
+   
+
+
+   这是一篇很有趣的文章，是很经典的日志挖掘很分析系统，我曾经做过类似的工作。
+
+
+   例如我们可能会对下面一些信息感兴趣：
+
+
+   （1）一个网页中不同link的权重
+
+
+   在一个网页中存在N个外链(link)，但每个link的价值不同，相关新闻的link点击肯定多余广告link的点击，图片的link可能比文字的link有更多的点击，相同的广告，相关性更好的link可能点击更多。获得这样的信息后，对计算Pagerank的改进有很大帮助。
+
+
+   
+
+
+   （2）网页，子域名，网站的流量关系
+
+
+   以百度为例，百度这些产品相互之间流量导入导出的关系是怎样的，产品内部流量导入导出的关系是怎样的，主要的通道是哪些？
+
+
+   用户路径是怎样的情况。
+
+
+   
+
+
+   （3）包含一个网页的引用有哪些
+
+
+   这个功能在目前主流的搜索引擎，均会提供这个功能，例如输入：http://blog.csdn.net/pennyliang，在百度中搜索，除了给出博客的导航外，还会给出包含该URL的网站，
+
+
+   即本文中提到的predecessors。该功能非常适合网站推广人员，考察推广的效果，predecessors越多，说明效果越好。
+
+
+   alexa.com中有一个类似的概念为Sites Linking In，导入本站的外部站点越多，说明权威性越高。
+
+
+   
+
+
+   这篇论文如此古老的论文（1998年），以至于demo都显得那么古朴，原始。文章中值强调了连接关系，而没有考虑到流量关系。
+
+
+   如果把&lt;link,link&gt;得关系和&lt;link,link,date,visit_info&gt;都结合起来，会显得更加有趣。
+
+
+   
+
+
+   btw,
+
+
+   华章&amp;W3China《C++程序设计原理与实践》赠书及试评员招募活动有兴趣的朋友可以参加一下。http://www.ieee.org.cn/dispbbs.asp?boardid=61&amp;id=85421&amp;star=1#85421

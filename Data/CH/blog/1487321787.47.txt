@@ -1,0 +1,31 @@
+数据结构中一些概念在国内的不同提法Decision tree 在国内的教材有【判定树】、【决策树】两种提法。
+
+
+   http://en.wikipedia.org/wiki/Decision_tree
+
+
+   
+
+
+   Binary search Tree有【二叉搜索树】【二叉排序树】【二叉查找树】三种提法
+
+
+   http://en.wikipedia.org/wiki/Binary_search_tree
+
+
+   其中二叉排序树(Binary sorting tree or Binary sort tree)可能是国内教材杜撰，至少在国内二叉搜索树和二叉排序树是一个意思。
+
+
+   其中二叉查找和二叉搜索是两个不同的译法。
+
+
+   其实都是BST，这个对学术交流和论文都会有很大误导。
+
+
+   
+
+
+   提法的不同害死人，这个里面会陆续把这些内容整理出来。呼吁国内教材能够快速建立标准，统一学术术语。
+
+
+   未完待续。

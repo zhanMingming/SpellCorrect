@@ -1,0 +1,998 @@
+计算机方向 会议级别AREA: Artificial Intelligence and Related Subjects
+
+
+
+
+
+Rank 1:
+
+  AAAI: American Association for AI National Conference
+
+
+
+     CVPR: IEEE Conf on Comp Vision and Pattern Recognition
+
+
+     ECCV: European Conference on Computer Vision 
+
+  IJCAI: Intl Joint Conf on AI
+
+  ICCV: Intl Conf on Computer Vision
+
+  ICML: Intl Conf on Machine Learning
+
+  KDD: Knowledge Discovery and Data Mining
+
+  KR: Intl Conf on Principles of KR &amp; Reasoning
+
+  NIPS: Neural Information Processing Systems
+
+  UAI: Conference on Uncertainty in AI
+
+  ICAA: International Conference on Autonomous Agents
+
+  ACL: Annual Meeting of the ACL (Association of Computational Linguistics)
+
+
+
+
+
+Rank 2:
+
+  NAACL: North American Chapter of the ACL
+
+  AID: Intl Conf on AI in Design
+
+  AI-ED: World Conference on AI in Education
+
+  CAIP: Inttl Conf on Comp. Analysis of Images and Patterns
+
+  CSSAC: Cognitive Science Society Annual Conference
+
+  EAI: European Conf on AI
+
+  EML: European Conf on Machine Learning
+
+  GP: Genetic Programming Conference
+
+  IAAI: Innovative Applications in AI
+
+  ICIP: Intl Conf on Image Processing
+
+  ICNN/IJCNN: Intl (Joint) Conference on Neural Networks
+
+  ICPR: Intl Conf on Pattern Recognition
+
+  ICDAR: International Conference on Document Analysis and Recognition
+
+  ICTAI: IEEE conference on Tools with AI
+
+  AMAI: Artificial Intelligence and Maths
+
+  DAS: International Workshop on Document Analysis Systems
+
+  WACV: IEEE Workshop on Apps of Computer Vision
+
+  COLING: International Conference on Computational Liguistics
+
+  EMNLP: Empirical Methods in Natural Language Processing
+
+  EACL: Annual Meeting of European Association Computational Lingustics
+
+  CoNLL: Conference on Natural Language Learning
+
+Rank 3:
+
+  PRICAI: Pacific Rim Intl Conf on AI
+
+  AAI: Australian National Conf on AI
+
+  ACCV: Asian Conference on Computer Vision
+
+  AI*IA: Congress of the Italian Assoc for AI
+
+  ANNIE: Artificial Neural Networks in Engineering
+
+  ANZIIS: Australian/NZ Conf on Intelligent Inf. Systems
+
+  CAIA: Conf on AI for Applications
+
+  CAAI: Canadian Artificial Intelligence Conference
+
+  ASADM: Chicago ASA Data Mining Conf: A Hard Look at DM
+
+  EPIA: Portuguese Conference on Artificial Intelligence
+
+  FCKAML: French Conf on Know. Acquisition &amp; Machine Learning
+
+  ICANN: International Conf on Artificial Neural Networks
+
+  ICCB: International Conference on Case-Based Reasoning
+
+  ICGA: International Conference on Genetic Algorithms
+
+  ICONIP: Intl Conf on Neural Information Processing
+
+  IEA/AIE: Intl Conf on Ind. &amp; Eng. Apps of AI &amp; Expert Sys
+
+  ICMS: International Conference on Multiagent Systems
+
+  ICPS: International conference on Planning Systems
+
+  IWANN: Intl Work-Conf on Art &amp; Natural Neural Networks
+
+  PACES: Pacific Asian Conference on Expert Systems
+
+  SCAI: Scandinavian Conference on Artifical Intelligence
+
+  SPICIS: Singapore Intl Conf on Intelligent System
+
+  PAKDD: Pacific-Asia Conf on Know. Discovery &amp; Data Mining
+
+  SMC: IEEE Intl Conf on Systems, Man and Cybernetics
+
+  PAKDDM: Practical App of Knowledge Discovery &amp; Data Mining
+
+  WCNN: The World Congress on Neural Networks
+
+  WCES: World Congress on Expert Systems
+
+  INBS: IEEE Intl Symp on Intell. in Neural \&amp; Bio Systems
+
+  ASC: Intl Conf on AI and Soft Computing
+
+  PACLIC: Pacific Asia Conference on Language, Information and Computation
+
+  ICCC: International Conference on Chinese Computing
+
+  ICADL: International Conference on Asian Digital Libraries
+
+  RANLP: Recent Advances in Natural Language Processing
+
+  NLPRS: Natural Language Pacific Rim Symposium
+
+Others:
+
+  ICRA: IEEE Intl Conf on Robotics and Automation
+
+  NNSP: Neural Networks for Signal Processing
+
+  ICASSP: IEEE Intl Conf on Acoustics, Speech and SP
+
+  GCCCE: Global Chinese Conference on Computers in Education
+
+  ICAI: Intl Conf on Artificial Intelligence
+
+  AEN: IASTED Intl Conf on AI, Exp Sys &amp; Neural Networks
+
+  WMSCI: World Multiconfs on Sys, Cybernetics &amp; Informatics
+
+  LREC: Language Resources and Evaluation Conference
+
+
+
+
+
+AREA: Hardware and Architecture
+
+
+
+
+
+Rank 1:
+
+  ASPLOS: Architectural Support for Prog Lang and OS
+
+  ISCA: ACM/IEEE Symp on Computer Architecture
+
+  ICCAD: Intl Conf on Computer-Aided Design
+
+  DAC: Design Automation Conf
+
+  MICRO: Intl Symp on Microarchitecture
+
+  HPCA: IEEE Symp on High-Perf Comp Architecture
+
+Rank 2:
+
+  FCCM: IEEE Symposium on Field Programmable Custom Computing Machines
+
+  SUPER: ACM/IEEE Supercomputing Conference
+
+  ICS: Intl Conf on Supercomputing
+
+  ISSCC: IEEE Intl Solid-State Circuits Conf
+
+  HCS: Hot Chips Symp
+
+  VLSI: IEEE Symp VLSI Circuits
+
+  ISSS: International Symposium on System Synthesis
+
+  DATE: IEEE/ACM Design, Automation &amp; Test in Europe Conference
+
+Rank 3:
+
+  ICA3PP: Algs and Archs for Parall Proc
+
+  EuroMICRO: New Frontiers of Information Technology
+
+  ACS: Australian Supercomputing Conf
+
+Unranked:
+
+  Advanced Research in VLSI
+
+  International Symposium on System Synthesis
+
+  International Symposium on Computer Design
+
+  International Symposium on Circuits and Systems
+
+  Asia Pacific Design Automation Conference
+
+  International Symposium on Physical Design
+
+  International Conference on VLSI Design
+
+
+
+
+
+AREA: Applications
+
+
+
+
+
+Rank 1:
+
+  I3DG: ACM-SIGRAPH Interactive 3D Graphics
+
+  SIGGRAPH: ACM SIGGRAPH Conference
+
+  ACM-MM: ACM Multimedia Conference
+
+  DCC: Data Compression Conf
+
+  SIGMETRICS: ACM Conf on Meas. &amp; Modelling of Comp Sys
+
+  SIGIR: ACM SIGIR Conf on Information Retrieval
+
+  PECCS: IFIP Intl Conf on Perf Eval of Comp \&amp; Comm Sys
+
+  WWW: World-Wide Web Conference
+
+Rank 2:
+
+  EUROGRAPH: European Graphics Conference
+
+  CGI: Computer Graphics International
+
+  CANIM: Computer Animation
+
+  PG: Pacific Graphics
+
+  NOSSDAV: Network and OS Support for Digital A/V
+
+  PADS: ACM/IEEE/SCS Workshop on Parallel \&amp; Dist Simulation
+
+  WSC: Winter Simulation Conference
+
+  ASS: IEEE Annual Simulation Symposium
+
+  MASCOTS: Symp Model Analysis \&amp; Sim of Comp \&amp; Telecom Sys
+
+  PT: Perf Tools - Intl Conf on Model Tech \&amp; Tools for CPE
+
+  NetStore: Network Storage Symposium
+
+  MMCN: ACM/SPIE Multimedia Computing and Networking
+
+  JCDL: Joint Conference on Digital Libraries
+
+Rank 3:
+
+  ACM-HPC: ACM Hypertext Conf
+
+  MMM: Multimedia Modelling
+
+  ICME: Intl Conf on MMedia &amp; Expo
+
+  DSS: Distributed Simulation Symposium
+
+  SCSC: Summer Computer Simulation Conference
+
+  WCSS: World Congress on Systems Simulation
+
+  ESS: European Simulation Symposium
+
+  ESM: European Simulation Multiconference
+
+  HPCN: High-Performance Computing and Networking
+
+  Geometry Modeling and Processing
+
+  WISE
+
+  DS-RT: Distributed Simulation and Real-time Applications
+
+  IEEE Intl Wshop on Dist Int Simul and Real-Time Applications
+
+  ECIR: European Colloquium on Information Retrieval
+
+Un-ranked:
+
+  DVAT: IS\&amp;T/SPIE Conf on Dig Video Compression Alg \&amp; Tech
+
+  MME: IEEE Intl Conf. on Multimedia in Education
+
+  ICMSO: Intl Conf on Modelling, Simulation and Optimisation
+
+  ICMS: IASTED Intl Conf on Modelling and Simulation
+
+
+
+
+
+AREA: System Technology (Including networking and security)
+
+
+
+
+
+Rank 1:
+
+  SIGCOMM: ACM Conf on Comm Architectures, Protocols &amp; Apps
+
+  SPAA: Symp on Parallel Algms and Architecture
+
+  PODC: ACM Symp on Principles of Distributed Computing
+
+  PPoPP: Principles and Practice of Parallel Programming
+
+  MassPar: Symp on Frontiers of Massively Parallel Proc
+
+  RTSS: Real Time Systems Symp
+
+  SOSP: ACM SIGOPS Symp on OS Principles
+
+  OSDI: Usenix Symp on OS Design and Implementation
+
+  CCS: ACM Conf on Comp and Communications Security
+
+  S&amp;P (Oakland): IEEE Symposium on Security and Privacy
+
+  MOBICOM: ACM Intl Conf on Mobile Computing and Networking
+
+  MOBIHOC: ACM International Symposium on Mobile Ad Hoc Networking and Computing
+
+  ICNP: Intl Conf on Network Protocols
+
+  OPENARCH: IEEE Conf on Open Arch and Network Prog
+
+  PACT: Intl Conf on Parallel Arch and Compil Tech
+
+  INFOCOM: Annual Joint Conf IEEE Comp &amp; Comm Soc
+
+Rank 2:
+
+  USENIX Symp on Internet Tech and Sys 
+
+  CC: Compiler Construction
+
+  IPDPS: Intl Parallel and Dist Processing Symp
+
+  MOBISYS: International Conference on Mobile Systems, Applications, and Services
+
+  SenSys: ACM Conference on Embedded Networked Sensor Systems
+
+  ICPP: Intl Conf on Parallel Processing
+
+  ICDCS: IEEE Intl Conf on Distributed Comp Systems
+
+  SRDS: Symp on Reliable Distributed Systems
+
+  MPPOI: Massively Par Proc Using Opt Interconns
+
+  ASAP: Intl Conf on Apps for Specific Array Processors
+
+  Euro-Par: European Conf. on Parallel Computing
+
+  Usenix Security Symposium
+
+  NDSS: ISOC Network and Distributed System Security Symposium
+
+  ESORICS: European Symposium on Research in Computer Security
+
+  RAID: International Symposium on Recent Advances in Intrusion Detection
+
+  DSN: The International Conference on Dependable Systems and Networks
+
+  ACSAC: Annual Computer Security Applications Conference
+
+  WCW: Web Caching Workshop
+
+  LCN: IEEE Annual Conference on Local Computer Networks
+
+  IPCCC: IEEE Intl Phoenix Conf on Comp &amp; Communications
+
+  CCC: Cluster Computing Conference
+
+  ICC: Intl Conf on Comm
+
+  WCNC: IEEE Wireless Communications and Networking Conference
+
+  IPSN: International Conference on Information Processing in Sensor Networks
+
+  IPTPS: Annual International Workshop on Peer-To-Peer Systems
+
+  CSFW: IEEE Computer Security Foundations Workshop
+
+Rank 3:
+
+  MPCS: Intl. Conf. on Massively Parallel Computing Systems
+
+  GLOBECOM: Global Comm
+
+  IMC: Internet Measurement Conference
+
+  IC3N: Intl Conf on Comp Comm and Networks
+
+  ICCC: Intl Conf on Comp Communication
+
+  NOMS: IEEE Network Operations and Management Symp
+
+  CONPAR: Intl Conf on Vector and Parallel Processing
+
+  VAPP: Vector and Parallel Processing
+
+  ICPADS: Intl Conf. on Parallel and Distributed Systems
+
+  Public Key Cryptosystems
+
+  Fast Software Encryption
+
+  SecureComm: Int. Conf on Security and Privacy for Emerging Areas in Communication Networks
+
+  AsiaCCS: ACM Symposium on Information, Computer and Communications Security
+
+  ACNS: International Conference on Applied Cryptography and Network Security
+
+  Annual Workshop on Selected Areas in Cryptography
+
+  Australasia Conference on Information Security and Privacy
+
+  Int. Conf on Inofrm and Comm. Security
+
+  Financial Cryptography
+
+  Workshop on Information Hiding
+
+  Smart Card Research and Advanced Application Conference
+
+  ICON: Intl Conf on Networks
+
+  IMSA: Intl Conf on Internet and MMedia Sys
+
+  NCC: Nat Conf Comm
+
+  IN: IEEE Intell Network Workshop
+
+  Softcomm: Conf on Software in Tcomms and Comp Networks
+
+  INET: Internet Society Conf
+
+  Workshop on Security and Privacy in E-commerce
+
+  EEE: IEEE Conference on e-Technology, e-Commerce and e-Service (Suggested by Roy Grønmo. Thanks)
+
+
+
+
+
+Un-ranked:
+
+  PARCO: Parallel Computing
+
+  SE: Intl Conf on Systems Engineering
+
+ 
+
+
+
+AREA: Programming Languages and Software Engineering
+
+
+
+
+
+Rank 1:
+
+  POPL: ACM-SIGACT Symp on Principles of Prog Langs
+
+  PLDI: ACM-SIGPLAN Symp on Prog Lang Design &amp; Impl
+
+  OOPSLA: OO Prog Systems, Langs and Applications
+
+  ICFP: Intl Conf on Function Programming
+
+  JICSLP/ICLP/ILPS: (Joint) Intl Conf/Symp on Logic Prog
+
+  ICSE: Intl Conf on Software Engineering
+
+  FSE: ACM Conference on the Foundations of Software Engineering (inc: ESEC-FSE when held jointly)
+
+  FM/FME: Formal Methods, World Congress/Europe
+
+  CAV: Computer Aided Verification
+
+Rank 2:
+
+  CP: Intl Conf on Principles &amp; Practice of Constraint Prog
+
+  TACAS: Tools and Algos for the Const and An of Systems
+
+  ESOP: European Conf on Programming
+
+  ICCL: IEEE Intl Conf on Computer Languages
+
+  PEPM: Symp on Partial Evalutation and Prog Manipulation
+
+  SAS: Static Analysis Symposium
+
+  RTA: Rewriting Techniques and Applications
+
+  ESEC: European Software Engineering Conf
+
+  IWSSD: Intl Workshop on S/W Spec &amp; Design
+
+  CAiSE: Intl Conf on Advanced Info System Engineering
+
+  ITC: IEEE Intl Test Conf
+
+  IWCASE: Intl Workshop on Cumpter-Aided Software Eng
+
+  SSR: ACM SIGSOFT Working Conf on Software Reusability
+
+  SEKE: Intl Conf on S/E and Knowledge Engineering
+
+  ICSR: IEEE Intl Conf on Software Reuse
+
+  ASE: Automated Software Engineering Conference
+
+  PADL: Practical Aspects of Declarative Languages
+
+  ISRE: Requirements Engineering
+
+  ICECCS: IEEE Intl Conf on Eng. of Complex Computer Systems
+
+  IEEE Intl Conf on Formal Engineering Methods
+
+  Intl Conf on Integrated Formal Methods
+
+  FOSSACS: Foundations of Software Science and Comp Struct
+
+Rank 3:
+
+  FASE: Fund Appr to Soft Eng
+
+  APSEC: Asia-Pacific S/E Conf
+
+  PAP/PACT: Practical Aspects of PROLOG/Constraint Tech
+
+  ALP: Intl Conf on Algebraic and Logic Programming
+
+  PLILP: Prog, Lang Implentation &amp; Logic Programming
+
+  LOPSTR: Intl Workshop on Logic Prog Synthesis &amp; Transf
+
+  ICCC: Intl Conf on Compiler Construction
+
+  COMPSAC: Intl. Computer S/W and Applications Conf
+
+  CSM: Conf on Software Maintenance
+
+  TAPSOFT: Intl Joint Conf on Theory &amp; Pract of S/W Dev
+
+  WCRE: SIGSOFT Working Conf on Reverse Engineering
+
+  AQSDT: Symp on Assessment of Quality S/W Dev Tools
+
+  IFIP Intl Conf on Open Distributed Processing
+
+  Intl Conf of Z Users
+
+  IFIP Joint Int'l Conference on Formal Description Techniques and Protocol Specification, Testing, And Verificati
+
+  PSI (Ershov conference)
+
+  UML: International Conference on the Unified Modeling Language
+
+  EDOC: IEEE Conference on Enterprise Computing (Suggested by Roy Grønmo.)
+
+Un-ranked:
+
+  Australian Software Engineering Conference
+
+  IEEE Int. W'shop on Object-oriented Real-time Dependable Sys. (WORDS)
+
+  IEEE International Symposium on High Assurance Systems Engineering
+
+  The Northern Formal Methods Workshops
+
+  Formal Methods Pacific
+
+  Int. Workshop on Formal Methods for Industrial Critical Systems
+
+  JFPLC - International French Speaking Conference on Logic and Constraint Programming
+
+  L&amp;L - Workshop on Logic and Learning
+
+  SFP - Scottish Functional Programming Workshop
+
+  HASKELL - Haskell Workshop
+
+  LCCS - International Workshop on Logic and Complexity in Computer Science
+
+  VLFM - Visual Languages and Formal Methods
+
+  NASA LaRC Formal Methods Workshop
+
+  (1) FATES - A Satellite workshop on Formal Approaches to Testing of Software
+
+  (1) Workshop On Java For High-Performance Computing
+
+  (1) DSLSE - Domain-Specific Languages for Software Engineering
+
+  (1) FTJP - Workshop on Formal Techniques for Java Programs
+
+  (*) WFLP - International Workshop on Functional and (Constraint) Logic Programming
+
+  (*) FOOL - International Workshop on Foundations of Object-Oriented L anguages
+
+  (*) SREIS - Symposium on Requirements Engineering for Information Sec urity
+
+  (*) HLPP - International workshop on High-level parallel programming and applications
+
+  (*) INAP - International Conference on Applications of Prolog
+
+  (*) MPOOL - Workshop on Multiparadigm Programming with OO Languages
+
+  (*) PADO - Symposium on Programs as Data Objects
+
+  (*) TOOLS: Int'l Conf Technology of Object-Oriented Languages and Systems
+
+  (*) Australasian Conference on Parallel And Real-Time Systems
+
+
+
+
+
+AREA: Algorithms and Theory
+
+
+
+Rank 1:
+
+  STOC: ACM Symp on Theory of Computing
+
+  FOCS: IEEE Symp on Foundations of Computer Science
+
+  COLT: Computational Learning Theory
+
+  LICS: IEEE Symp on Logic in Computer Science
+
+  SCG: ACM Symp on Computational Geometry
+
+  SODA: ACM/SIAM Symp on Discrete Algorithms
+
+  SPAA: ACM Symp on Parallel Algorithms and Architectures
+
+  PODC: ACM Symp on Principles of Distributed Computing
+
+  ISSAC: Intl. Symp on Symbolic and Algebraic Computation
+
+  CRYPTO: Advances in Cryptology
+
+  EUROCRYPT: European Conf on Cryptography
+
+Rank 2:
+
+  CONCUR: International Conference on Concurrency Theory
+
+  ICALP: Intl Colloquium on Automata, Languages and Prog
+
+  STACS: Symp on Theoretical Aspects of Computer Science
+
+  CC: IEEE Symp on Computational Complexity
+
+  WADS: Workshop on Algorithms and Data Structures
+
+  MFCS: Mathematical Foundations of Computer Science
+
+  SWAT: Scandinavian Workshop on Algorithm Theory
+
+  ESA: European Symp on Algorithms
+
+  IPCO: MPS Conf on integer programming &amp; comb optimization
+
+  LFCS: Logical Foundations of Computer Science
+
+  ALT: Algorithmic Learning Theory
+
+  EUROCOLT: European Conf on Learning Theory
+
+  WDAG: Workshop on Distributed Algorithms
+
+  ISTCS: Israel Symp on Theory of Computing and Systems
+
+  ISAAC: Intl Symp on Algorithms and Computation
+
+  FST&amp;TCS: Foundations of S/W Tech &amp; Theoretical CS
+
+  LATIN: Intl Symp on Latin American Theoretical Informatics
+
+  RECOMB: Annual Intl Conf on Comp Molecular Biology
+
+  CADE: Conf on Automated Deduction
+
+  IEEEIT: IEEE Symposium on Information Theory
+
+  Asiacrypt
+
+Rank 3:
+
+  MEGA: Methods Effectives en Geometrie Algebrique
+
+  ASIAN: Asian Computing Science Conf
+
+  CCCG: Canadian Conf on Computational Geometry
+
+  FCT: Fundamentals of Computation Theory
+
+  WG: Workshop on Graph Theory
+
+  CIAC: Italian Conf on Algorithms and Complexity
+
+  ICCI: Advances in Computing and Information
+
+  AWTI: Argentine Workshop on Theoretical Informatics
+
+  CATS: The Australian Theory Symp
+
+  COCOON: Annual Intl Computing and Combinatorics Conf
+
+  UMC: Unconventional Models of Computation
+
+  MCU: Universal Machines and Computations
+
+  GD: Graph Drawing
+
+  SIROCCO: Structural Info &amp; Communication Complexity
+
+  ALEX: Algorithms and Experiments
+
+  ALG: ENGG Workshop on Algorithm Engineering
+
+  LPMA: Intl Workshop on Logic Programming and Multi-Agents
+
+  EWLR: European Workshop on Learning Robots
+
+  CITB: Complexity &amp; info-theoretic approaches to biology
+
+  FTP: Intl Workshop on First-Order Theorem Proving (FTP)
+
+  CSL: Annual Conf on Computer Science Logic (CSL)
+
+  AAAAECC: Conf On Applied Algebra, Algebraic Algms &amp; ECC
+
+  DMTCS: Intl Conf on Disc Math and TCS
+
+Un-ranked:
+
+  Information Theory Workshop
+
+
+
+
+
+AREA: Data Bases
+
+
+
+
+
+Rank 1:
+
+  SIGMOD: ACM SIGMOD Conf on Management of Data
+
+  PODS: ACM SIGMOD Conf on Principles of DB Systems
+
+  VLDB: Very Large Data Bases
+
+  ICDE: Intl Conf on Data Engineering
+
+  ICDT: Intl Conf on Database Theory
+
+Rank 2:
+
+  SSD: Intl Symp on Large Spatial Databases
+
+  DEXA: Database and Expert System Applications
+
+  FODO: Intl Conf on Foundation on Data Organization
+
+  EDBT: Extending DB Technology
+
+  DOOD: Deductive and Object-Oriented Databases
+
+  DASFAA: Database Systems for Advanced Applications
+
+  CIKM: Intl. Conf on Information and Knowledge Management
+
+  SSDBM: Intl Conf on Scientific and Statistical DB Mgmt
+
+  CoopIS - Conference on Cooperative Information Systems
+
+  ER - Intl Conf on Conceptual Modeling (ER)
+
+Rank 3:
+
+  COMAD: Intl Conf on Management of Data
+
+  BNCOD: British National Conference on Databases
+
+  ADC: Australasian Database Conference
+
+  ADBIS: Symposium on Advances in DB and Information Systems
+
+  DaWaK - Data Warehousing and Knowledge Discovery
+
+  RIDE Workshop
+
+  IFIP-DS: IFIP-DS Conference
+
+  IFIP-DBSEC - IFIP Workshop on Database Security
+
+  NGDB: Intl Symp on Next Generation DB Systems and Apps
+
+  ADTI: Intl Symp on Advanced DB Technologies and Integration
+
+  FEWFDB: Far East Workshop on Future DB Systems
+
+  MDM - Int. Conf. on Mobile Data Access/Management (MDA/MDM)
+
+  ICDM - IEEE International Conference on Data Mining
+
+  VDB - Visual Database Systems
+
+  IDEAS - International Database Engineering and Application Symposium
+
+Others:
+
+  ARTDB - Active and Real-Time Database Systems
+
+  CODAS: Intl Symp on Cooperative DB Systems for Adv Apps
+
+  DBPL - Workshop on Database Programming Languages
+
+  EFIS/EFDBS - Engineering Federated Information (Database) Systems
+
+  KRDB - Knowledge Representation Meets Databases
+
+  NDB - National Database Conference (China)
+
+  NLDB - Applications of Natural Language to Data Bases
+
+  KDDMBD - Knowledge Discovery and Data Mining in Biological Databases Meeting
+
+  FQAS - Flexible Query-Answering Systems
+
+  IDC(W) - International Database Conference (HK CS)
+
+  RTDB - Workshop on Real-Time Databases
+
+  SBBD: Brazilian Symposium on Databases
+
+  WebDB - International Workshop on the Web and Databases
+
+  WAIM: Interational Conference on Web Age Information Management
+
+  (1) DASWIS - Data Semantics in Web Information Systems
+
+  (1) DMDW - Design and Management of Data Warehouses
+
+  (1) DOLAP - International Workshop on Data Warehousing and OLAP
+
+  (1) DMKD - Workshop on Research Issues in Data Mining and Knowledge Discovery
+
+  (1) KDEX - Knowledge and Data Engineering Exchange Workshop
+
+  (1) NRDM - Workshop on Network-Related Data Management
+
+  (1) MobiDE - Workshop on Data Engineering for Wireless and Mobile Access
+
+  (1) MDDS - Mobility in Databases and Distributed Systems
+
+  (1) MEWS - Mining for Enhanced Web Search
+
+  (1) TAKMA - Theory and Applications of Knowledge MAnagement
+
+  (1) WIDM: International Workshop on Web Information and Data Management
+
+  (1) W2GIS - International Workshop on Web and Wireless Geographical Information Systems
+
+  * CDB - Constraint Databases and Applications
+
+  * DTVE - Workshop on Database Technology for Virtual Enterprises
+
+  * IWDOM - International Workshop on Distributed Object Management
+
+  * IW-MMDBMS - Int. Workshop on Multi-Media Data Base Management Systems
+
+  * OODBS - Workshop on Object-Oriented Database Systems
+
+  * PDIS: Parallel and Distributed Information Systems
+
+
+
+
+
+AREA: Miscellaneous
+
+
+
+
+
+Rank 1:
+
+Rank 2:
+
+  AMIA: American Medical Informatics Annual Fall Symposium
+
+  DNA: Meeting on DNA Based Computers
+
+Rank 3:
+
+  MEDINFO: World Congress on Medical Informatics
+
+  International Conference on Sequences and their Applications
+
+  ECAIM: European Conf on AI in Medicine
+
+  APAMI: Asia Pacific Assoc for Medical Informatics Conf
+
+  SAC: ACM/SIGAPP Symposium on Applied Computing
+
+  ICSC: Internal Computer Science Conference
+
+  ISCIS: Intl Symp on Computer and Information Sciences
+
+  ICSC2: International Computer Symposium Conference
+
+  ICCE: Intl Conf on Comps in Edu
+
+  Ed-Media
+
+  WCC: World Computing Congress
+
+  PATAT: Practice and Theory of Automated Timetabling
+
+
+
+
+
+
+
+Not Encouraged (NO INTENTION TO OFFEND THESE ORGANIZERS):
+
+  International Multiconferences in Computer Science
+
+  SCI: World Multi confs on systemics, sybernetics and informatics
+
+  SSGRR: International conf on Advances in Infrastructure for e-B, e-Edu and e-Science and e-Medicine
+
+
+
+     IASTED conferences

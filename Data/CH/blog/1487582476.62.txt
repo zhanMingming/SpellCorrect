@@ -1,0 +1,112 @@
+开源日志系统 - log4cplus (一)### 简介 ###
+
+
+
+
+   log4cplus是C++编写的开源的日志系统，前身是java编写的log4j系统.受Apache Software License保护。作者是Tad E. Smith。log4cplus具有线程安全、灵活、以及多粒度控制的特点，通过将信息划分优先级使其可以面向程序调试、运行、测试、和维护等全生命周期； 你可以选择将信息输出到屏幕、文件、NT event log、甚至是远程服务器；通过指定策略对日志进行定期备份等等。
+
+
+
+
+
+   ### 下载 ###
+
+
+
+
+
+   最新的log4cplus可以从以下网址下载 http://log4cplus.sourceforge.net
+
+
+
+
+
+   ### 安装 ###
+
+
+
+
+
+   1. linux下安装
+
+
+
+
+
+   tar xvzf log4cplus-x.x.x.tar.gzcd log4cplus-x.x.x./configure --prefix=/where/to/installmakemake install
+
+
+
+
+
+   这里我采用缺省安装路径：/usr/local，下文如无特别说明，均以此路径为准。
+
+
+
+
+
+   2. windows下安装
+
+
+
+
+
+   不需要安装，有一个msvc8存放着各种dsp和slb文件,可以用visual studio 2005打开，使用之前请先编译"log4cplus_dll class"工程生成dll，或者编译"log4cplus_static class"工程生成lib.如果有编译上的问题，可以联系
+
+   我: bicheng.gui@gmail.com.
+
+   
+
+
+
+
+
+   ### 使用前的配置 ###
+
+
+
+
+
+   1. linux下的配置
+
+
+
+
+
+   确保你的Makefile中包含 /usr/local/lib/liblog4cplus.a（静态库）或 -llog4cplus（动态库）即可，头文件在/usr/local/include/log4cplus目录下。对于动态库，要想正常使用，还得将库安装路径加入到LD_LIBRARY_PATH 中，我一般是这样做的：以管理员身份登录，在/etc/ld.so.conf中加入安装路径，这里是/usr/local/lib，然后执行ldconfig使设置生效即可。
+
+
+
+
+
+   2. windows下的配置
+
+
+
+
+
+   将"log4cplus_dll class"工程或"log4cplus_static class"工程的dsp 文件插入到你的工程中，或者直接把两个工程编译生成的库以及头文件所在目录放到你的工程的搜索路径中，如果你使用静态库，请在你的工程中"project/setting/C++"的preprocessor definitions中加入LOG4CPLUS_STATIC。
+
+    构成要素介绍 
+
+
+
+
+
+   虽然功能强大，应该说log4cplus用起来还是比较复杂的，为了更好地使用它，先介绍一下它的基本要素。
+
+
+
+
+
+   Layouts ：布局器，控制输出日志的格式和布局.
+
+   Appenders：负责控制日志记录操作的输出，与布局器紧密配合，将特定格式的消息输出到所代表的输出终端. 		可支持屏幕，文件,socket等。
+
+   Logger ：logger对象，保存并管理对象日志信息变更的实体，当你需要对一个对象进行   记录时，就需要生成一个logger。
+
+   Categories ：分类器，层次化（hierarchy）的结构，用于对被记录信息的分类，层次中 		  每一个节点维护一个logger的所有信息。
+
+   Priorities ：日志优先级别，包括TRACE, DEBUG, INFO, WARNING, ERROR, FATAL。
+
+   				本文介绍了log4cplus基本概念，以及如何安装，配置，下一篇将通过例子介绍如何使用log4cplus。

@@ -1,0 +1,46 @@
+获得进程可执行文件的路径： GetModuleFileNameEx， GetProcessImageFileName， QueryFullProcessImageName想获得进程可执行文件的路径通常有三个方法：
+
+
+   一： 调用GetModuleFileNameEx函数获得可执行文件的模块路径这个函数从Windows NT 4.0开始到现在的Vista系统都能使用，向后兼容性比较好。
+
+
+   
+
+
+   二：调用GetProcessImageFileName函数，这个函数在Windows XP及其以后的系统中都能使用。
+
+
+   
+
+
+   三：调用Windows Vista新增的函数QueryFullProcessImageName，由于是Vista新增的，所以兼容性不好。
+
+
+   
+
+
+   下面来看看这三个函数的原型：
+
+
+   DWORDGetModuleFileNameEx(HANDLE hProcess,HMODULE hModule,LPTSTR lpFilename,DWORD nSize) hProcess是目标进程的句柄、hModule是目标模块的句柄(当此参数为NULL时函数返回的是进程可执行文件的路径)、lpFilename是存放路径的字符串缓冲区、nSize表示缓冲区的大小。函数调用失败将返回0。注：进程的句柄须有PROCESS_QUERY_INFORMATION和PROCESS_VM_READ权限。
+
+
+   
+
+
+   DWORDGetProcessImageFileName(HANDLE hProcess,LPTSTR lpImageFileName,DWORD nSize) hProcess是目标进程的句柄、lpImageFileName是存放路径的字符串缓冲区、nSize表示缓冲区的大小。函数失败将返回0。注：进程句柄需要有PROCESS_QUERY_INFORMATION的权限。
+
+
+   
+
+
+   BOOLQueryFullProcessImageName(HANDLE hProcess,DWORD dwFlags,LPTSTR lpExeName,PDWORD lpdwSize) hProcess是目标进程的句柄、dwFlags一般设为0(表示返回的路径是Win32的路径格式，如"C:/..."，如将其设为PROCESS_NAME_NATIVE将返回"/Device/HarddiskVolume1/..."这样的格式路径)、lpExeName是存放路径的字符串缓冲区、lpdwSize表示缓冲区的大小。函数失败将返回FALSE。注：调用此函数的句柄须有PROCESS_QUERY_INFORMATION或这是PROCESS_QUERY_LIMITED_INFORMATION的权限，并且只能在Vista或更高版本的系统中使用。
+
+
+   
+
+
+    调用GetModuleFileNameEx和GetProcessImageFileName需要包含Psapi.h头文件，并链接到Psapi.lib
+
+
+   #include &lt;Psapi.h&gt;#pragma comment (lib,"Psapi.lib")

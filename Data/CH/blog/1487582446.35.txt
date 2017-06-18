@@ -1,0 +1,7 @@
+MFC中标准库的使用比如现在我要用栈~
+
+
+   
+
+
+   在MFC中有三个现成的数据结构类：CArray, CList和CMap（数组、链表和映射），没有栈类（没有见过CStack）呵呵。不过栈的内部容器也是数组或者链表，所以我们可以在CArray或CList的基础上设计自己的栈类。另外也可以使用STL（标准模板库）中的栈（stack），使用的时候记得加上这两句：#include&lt;stack&gt; using namespace std; //这句一定要注意加上！事实上，STL中的栈也是用向量(vector)、线性表(list)或双向队列(deque)来实现的。

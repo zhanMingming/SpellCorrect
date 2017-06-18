@@ -1,0 +1,32 @@
+spring websocket stomp 连接开启了用户名和密码认证的ActiveMQ之前写的关于spring websocket的博客，使用ActiveMQ没有开启用户和密码认证，实际项目中访问MQ肯定是需要认证的。可以再activemq.xml文件的&lt;broker&gt;元素增加下面的配置，开启用户名和密码认证：
+
+
+   &lt;plugins&gt;   
+	&lt;simpleAuthenticationPlugin&gt;   
+		&lt;users&gt;   
+			&lt;authenticationUser username=&quot;${activemq.username}&quot; password=&quot;${activemq.password}&quot; groups=&quot;users,admins&quot;/&gt;   
+		&lt;/users&gt;   
+	&lt;/simpleAuthenticationPlugin&gt;   
+&lt;/plugins&gt; 
+
+
+
+
+   
+
+
+   然后修改spring的websocket xml的配置：
+
+
+   &lt;websocket:stomp-broker-relay prefix=&quot;/topic,/queue&quot;
+	relay-host=&quot;127.0.0.1&quot; relay-port=&quot;61613&quot; system-login=&quot;system&quot; system-passcode=&quot;manager&quot; client-login=&quot;system&quot; client-passcode=&quot;manager&quot;/&gt;
+
+   
+
+
+   
+
+
+
+
+   这里需要注意：必需同时设置system-login和client-login的用户名和密码，不然会报下面的错误。

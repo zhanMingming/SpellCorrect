@@ -1,0 +1,248 @@
+程序设计上机作业题1原题
+
+
+   
+
+/// Mid - Exam @ 20120421 14:00 -17:00
+
+# include &lt;iostream &gt; // cout , endl
+
+# include &lt;cstring &gt; // strlen , strcpy
+
+using namespace std;
+
+class bug
+
+{
+
+    char * data_ ;
+
+    public :
+
+    bug( const char * str )
+
+    {
+
+        data_ = new char [ strlen (str )&#43;1];
+
+        strcpy (data_ , str );
+
+    }
+
+    ~bug ()
+
+    {
+
+        delete data_ ;
+
+    }
+
+    void show ()
+
+    {
+
+        cout &lt;&lt; data_ &lt;&lt; endl ;
+
+    }
+
+};
+
+void test (bug str1 )
+
+{
+
+    str1.show ();
+
+    bug str2 (&quot; tsinghua &quot;);
+
+    str2.show ();
+
+    str2 = str1 ;
+
+    str2.show ();
+
+}
+
+int main ()
+
+{
+
+    bug str1 (&quot;2011&quot;);
+
+    str1.show ();
+
+    test( str1 );
+
+    str1.show ();
+
+    return 0;
+
+}
+
+   
+
+
+
+
+   解答：
+
+
+   #include &lt;iostream&gt; // cout , endl
+
+using namespace std;
+
+class bug
+
+{
+
+    char * data_ ;
+
+    public :
+
+    bug( const char * str )
+
+    {
+
+        data_ = new char [ strlen (str )&#43;1];
+
+        strcpy (data_ , str );
+
+    }
+
+    ~bug ()
+
+    {
+
+        delete [] data_ ;
+
+        data_ = NULL;
+
+    }
+
+    int size()
+
+    {
+
+        if( data_ = NULL )
+
+            return -1;
+
+        else
+
+            return strlen(data_);
+
+    }
+
+    bool reget( const char* str)
+
+    {
+
+        delete [] data_;
+
+        data_ = new char [ strlen (str )&#43;1];
+
+        if( NULL == data_ )
+
+        {
+
+            return false;
+
+        }
+
+        else
+
+        {
+
+            strcpy (data_ , str );
+
+            return true;
+
+        }
+
+    }
+
+    bool get_str(char* &amp; str)
+
+    {
+
+        if(NULL != str )
+
+        {
+
+            delete[] str;
+
+            str = NULL;
+
+        }
+
+        str = new char [strlen(data_)&#43;1];
+
+        if( NULL == str) return false;
+
+        strcpy(str,data_);
+
+        return true;
+
+    }
+
+    void show ()
+
+    {
+
+        cout &lt;&lt; data_ &lt;&lt; endl ;
+
+    }
+
+    bug&amp; operator= (bug&amp; right)
+
+    {
+
+        char* str = NULL;
+
+        if(right.get_str(str))
+
+        {
+
+            reget(str);
+
+            delete[] str;
+
+        }
+
+    }
+
+
+   };
+
+
+   void test (bug&amp; str1 )
+
+{   
+
+    str1.show ();
+
+    bug str2 (&quot; tsinghua &quot;);
+
+    str2.show ();
+
+    str2 = str1 ;
+
+    str2.show ();
+
+}
+
+int main ()
+
+{
+
+    bug str1 (&quot;2011&quot;);
+
+    str1.show ();
+
+    test( str1 );
+
+    str1.show ();
+
+    return 0;
+
+}

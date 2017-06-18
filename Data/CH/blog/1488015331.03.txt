@@ -1,0 +1,103 @@
+HTML5新特性：自定义数据属性data-*html是允许我们自定义标签和属性的，我们一般经常用自定义属性在界面存储一些数据，类&#20284;于使用Hidden控件。
+
+
+   &lt;script&gt;
+window.onload = function(){
+	console.log($(&quot;#test1&quot;).attr(&quot;name&quot;));
+	console.log(document.getElementById(&quot;test2&quot;).getAttribute(&quot;name&quot;));
+
+	$(&quot;#test1&quot;).attr(&quot;age&quot;,25);
+	document.getElementById(&quot;test2&quot;).setAttribute(&quot;age&quot;,25);
+}
+&lt;/script&gt;
+
+&lt;body&gt;
+	&lt;div id=&quot;test1&quot; name=&quot;aty&quot; age=&quot;26&quot;&gt;&lt;/div&gt;
+	&lt;div id=&quot;test2&quot; name=&quot;aty&quot; age=&quot;26&quot;&gt;&lt;/div&gt;	
+&lt;/body&gt;
+
+   
+
+
+   
+
+
+
+可以看到我们能够像操作html内置属性(name)一样，操作我们自定义的属性(age)。
+
+   
+
+
+
+
+
+
+   一些常见的前端框架比如angularJS使用了很多自定义的标签和属性，比如ng-model，ng-repeat等。这种自定义属性的方式没有标准，使用也很随意，容易导致混乱和冲突。HTML5规范里增加了一个自定义data属性.自定义data属性的用法非常的简单, 就是你可以往HTML标签上添加任意以 &quot;data-&quot;开头的属性, 这些属性页面上是不显示的,它不会影响到你的页面布局和风&#26684;,但它却是可读可写的。
+
+
+   
+
+
+
+
+   比如下面这段html中，我们使用data-*自定义属性。
+
+
+   &lt;div id=&quot;a&quot; data-name=&quot;a&quot; data-hobby_list=&quot;swim&quot; data-config-options=&#39;{&quot;type&quot;:&quot;a&quot;}&#39;&gt;
+&lt;/div&gt;
+
+   
+
+
+   
+
+
+
+
+   自定义属性的读取和设置操作方式如下：
+
+
+   window.onload = function(){
+	var element = document.getElementById(&quot;a&quot;);
+	console.log(element.dataset.name);
+	console.log(element.dataset.hobby_list);
+
+	// html里面的连字符转换成驼峰式
+	console.log(element.dataset.configOptions);
+
+	element.dataset.name = &quot;update&quot;;
+	element.dataset.non_exsit = &quot;oo&quot;;
+
+	// 驼峰式转换成html里面的连字符
+	element.dataset.hisLover = &quot;xx&quot;;
+}
+
+   
+
+
+
+最后生成的dom如下图：
+
+   
+
+
+
+使用HTML5中自定义属性的几点总结：
+
+
+   1.自定义属性名称不要使用大写字母、连字符等特殊符号。上面我们看到连字符会被转换成驼峰式。我们就用：小写字母和下划线就好了，比如his_lover这种命名方式，既简单易读也不会有特殊字符的影响。
+
+
+
+
+
+
+   2.js中如果要获取或者设置自定义属性的&#20540;，需要去掉data-这个固定前缀。
+
+
+   
+
+
+
+
+   3.如果修改了自定义属性的&#20540;，会导致HTML中dom的刷新。这一点很好理解，这里提一下是因为后面我们会使用jQuery来操作自定义属性，但是jquery不会刷新dom。

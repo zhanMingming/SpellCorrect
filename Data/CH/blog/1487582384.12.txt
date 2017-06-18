@@ -1,0 +1,96 @@
+数学，需要细心I 
+
+
+Time limit: 5000MS  Memory limit: 32768K Total Submit: 49  Accepted: 18 
+
+
+
+
+
+
+   Program Source File: I.C, I.CPPA group of N Internet Service Provider companies (ISPs) use a private communication channel that has 
+
+
+   a maximum capacity of C traffic units per second. Each company transfers T traffic units per second through the
+
+
+   channel and gets a profit that is directly proportional to the factor T(C - T N). The problem is to compute 
+
+
+   T_optim, the smallest value of T that maximizes the total profit the N ISPs can get from using the channel. 
+
+
+   Notice that N, C, T, and T_optim are integer numbers.
+
+
+   
+
+
+   Write a program that reads sets of data from an input text file. Each data set corresponds to an instance of the
+
+
+   problem above and contains two integral numbers &ndash; N and C &ndash; with values in the range from 0 to 10^9. 
+
+
+   The input data are separated by white spaces, are correct, and terminate with an end of file. For each data set
+
+
+   the program computes the value of T_optim according to the problem instance that corresponds to the data set. 
+
+
+   The result is printed on the standard output from the beginning of a line. There must be no empty 
+
+
+   lines on the output. An example of input/output is shown below.Input 1 00 14 32 83 2725 1000000000 Output0002420000000
+
+
+   
+
+
+   注意可能会超出范围，所以用所得的结果减一下判断，还有就是注意不是单纯的求导得出来结果取整就好了，要在他附近几个值判断！
+
+
+   
+
+
+   #include&lt;iostream&gt; 
+using namespace std; 
+
+int main() 
+{ 
+    double n,k; 
+    while(scanf("%lf%lf",&amp;n,&amp;k)!=EOF) 
+    { 
+ double t; 
+ if(n==0) 
+ { 
+     t=0; 
+     printf("0/n"); 
+     continue; 
+ } 
+ else t=k/2/n; 
+ t=(int)t; 
+ int t1=t-1,t2=t,t3=t+1,ans1,ans2,ans3; 
+ /*ans1=t1*(k-n*t1); 
+ ans2=t2*(k-n*t2); 
+ ans3=t3*(k-n*t3);*/ 
+ ans1=2*n*t-n-k; 
+ ans2=2*n*t-k+n; 
+ ans3=4*n*t-2*k; 
+ if(ans1&gt;=0) 
+ { 
+     if(ans3&gt;=0) 
+  t=t1; 
+     else 
+  t=t3; 
+ } 
+ else 
+ { 
+     if(ans2&gt;=0) 
+  t=t2; 
+     else 
+  t=t3; 
+ } 
+ printf("%d/n",(int)t); 
+    } 
+}

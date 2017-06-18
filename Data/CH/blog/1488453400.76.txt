@@ -1,0 +1,5 @@
+临时记录些东西Vitamio——http://www.vitamio.org/
+
+   
+
+   mediacodec是支持视频硬解码的。

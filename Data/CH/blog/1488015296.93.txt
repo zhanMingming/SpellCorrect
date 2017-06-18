@@ -1,0 +1,292 @@
+(九)通过几段代码，理清angularJS中的$injector、$rootScope和$scope的概念和关联关系$injector、$rootScope和$scope是angularJS框架中比较重要的东西，理清它们之间的关系，对我们后续学习和理解angularJS框架都非常有用。
+
+
+   1、$injector其实是一个IOC容器，包含了很多服务(类&#20284;于spring框架中的bean)，其它代码能够通过   $injector.get(&quot;serviceName&quot;)的方式，从injector中获取所需要的服务。详情参考这篇文章
+
+
+   2、scope是angularJS中的作用域(其实就是存储数据的地方)，很类&#20284;javascript的原型链。搜索的时候，优先找自己的scope，如果没有找到就沿着作用域链向上搜索，直至到达根作用域rootScope。
+
+
+   3、$rootScope是由angularJS加载模块的时候自动创建的，每个模块只会有1个rootScope。rootScope创建好会以服务的形式加入到$injector中。也就是说通过$injector.get(&quot;$rootScope&quot;);能够获取到某个模块的根作用域。更准确的来说，$rootScope是由angularJS的核心模块ng创建的。
+
+
+   
+
+
+
+
+   示例1：
+
+
+   
+
+
+   // 新建一个模块
+var module = angular.module(&quot;app&quot;,[]);
+
+// true说明$rootScope确实以服务的形式包含在模块的injector中
+var hasNgInjector = angular.injector([&#39;app&#39;,&#39;ng&#39;]);  
+console.log(&quot;has $rootScope=&quot; + hasNgInjector.has(&quot;$rootScope&quot;));//true
+
+// 获取模块相应的injector对象,不获取ng模块中的服务
+// 不依赖于ng模块,无法获取$rootScope服务
+var noNgInjector = angular.injector([&#39;app&#39;]);
+console.log(&quot;no $rootScope=&quot; + noNgInjector.has(&quot;$rootScope&quot;));//false
+
+// 获取angular核心的ng模块
+var ngInjector = angular.injector([&#39;ng&#39;]);  
+console.log(&quot;ng $rootScope=&quot; + ngInjector.has(&quot;$rootScope&quot;));//true上面的代码的确可以说明：$rootScope的确是由核心模块ng创建的，并以服务的形式存在于injector中。
+
+   
+
+
+   如果创建injector的时候，指定了ng模块，那么该injector中就会包含$rootScope服务；否则就不包含$rootScope。
+
+
+   
+
+
+
+
+   示例2：
+
+
+   
+
+
+   &lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+	&lt;head&gt;
+	   &lt;meta charset=&quot;utf-8&quot;&gt;
+	   &lt;script src=&quot;angular-1.2.25.js&quot;&gt;&lt;/script&gt;
+	   &lt;script&gt;
+	  
+		var module = angular.module(&quot;app&quot;,[]);
+		// 控制器里的$injector,是由angular框架自动创建的
+		function FirstController($scope,$injector,$rootScope)
+		{
+			$rootScope.name=&quot;aty&quot;;
+		}
+		
+		//自己创建了个injector,依赖于app和ng模块
+		var myInjector = angular.injector([&quot;app&quot;,&quot;ng&quot;]);
+		var rootScope = myInjector.get(&quot;$rootScope&quot;);
+		alert(rootScope.name);//udefined
+				
+	   &lt;/script&gt; 
+
+	&lt;/head&gt;
+	
+	&lt;body ng-app=&quot;app&quot;&gt;
+		&lt;div id=&quot;first&quot; ng-controller=&quot;FirstController&quot;&gt;
+			&lt;input type=&quot;text&quot; ng-model=&quot;name&quot;&gt;
+			&lt;br&gt;
+			{{name}}
+		&lt;/div&gt;	
+	&lt;/body&gt;
+	
+&lt;/html&gt;
+
+   
+
+
+   angular.injector()可以调用多次，每次都返回新建的injector对象。所以我们自己创建的myInjector和angular自动创建的$injector不是同一个对象，那么得到的rootScope也就不是同一个。更详细的可以看另一篇文章中的
+
+
+   angular.injector()章节。
+
+
+
+
+   
+
+
+
+
+   示例3：
+
+
+   
+
+
+   &lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+	&lt;head&gt;
+	   &lt;script src=&quot;angular-1.2.25.js&quot;&gt;&lt;/script&gt;
+	   &lt;script&gt;
+	  
+		function FirstController($scope,$injector,$rootScope)
+		{
+			// true
+			console.log(&quot;scope parent :&quot; + ($scope.$parent ==$rootScope));
+		}
+	
+	   &lt;/script&gt; 
+	&lt;/head&gt;
+	
+	&lt;body ng-app&gt;
+		&lt;div id=&quot;first&quot; ng-controller=&quot;FirstController&quot;&gt;
+			&lt;input type=&quot;text&quot; ng-model=&quot;name&quot;&gt;
+			&lt;br&gt;
+			{{name}}
+		&lt;/div&gt;	
+	&lt;/body&gt;
+	
+&lt;/html&gt;ng-controller指令给所在的DOM元素创建了一个新的$scope对象,并作为rootScope的子作用域。$scope是由$rootScope创建的，$scope不会包含在$injector中。
+
+
+
+
+   
+
+
+   示例4：
+
+
+   
+
+
+   &lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+	&lt;head&gt;
+	   &lt;meta charset=&quot;utf-8&quot;&gt;
+	   &lt;title&gt;scope()&lt;/title&gt;
+	   &lt;script src=&quot;jquery-1.11.1.js&quot;&gt;&lt;/script&gt;
+	   &lt;script src=&quot;angular-1.2.25.js&quot;&gt;&lt;/script&gt;
+	   
+	   &lt;script&gt;
+	    
+		//记住rootScope，用来判断跨控制器是否相等
+		var first_rootScope = null;
+		//记住scope，用来判断跨控制器是否相等
+		var first_scope = null;
+		//记住injector，用来判断跨控制器是否相等
+		var first_injectot = null;
+		
+		// 第1个angular控制器
+		function FirstController($scope,$injector,$rootScope)
+		{
+			$rootScope.name = &quot;aty&quot;;
+			first_rootScope = $rootScope;
+			first_injectot = $injector;
+			first_scope = $scope;	
+		
+		}
+		
+		// 第2个angular控制器,主要是来测试跨controller时injector和scope的表现
+		function SecondController($scope,$injector,$rootScope)
+		{
+			console.log(&quot;first_rootScope==second_rootScope:&quot; + (first_rootScope==$rootScope));//true
+			console.log(&quot;first_injectot==second_injector:&quot; + (first_injectot==$injector));//true
+			console.log(&quot;first_scope==second_scope:&quot; + (first_scope==$scope));//false
+		}
+	   
+	   &lt;/script&gt; 
+
+	&lt;/head&gt;
+	
+	&lt;body ng-app&gt;
+		&lt;div id=&quot;first&quot; ng-controller=&quot;FirstController&quot;&gt;
+			&lt;input type=&quot;text&quot; ng-model=&quot;name&quot;&gt;
+			&lt;br&gt;
+			&lt;div id=&quot;tips&quot;&gt;&lt;/div&gt; 
+		&lt;/div&gt;
+		
+		&lt;h2&gt;outside of controller&lt;/h2&gt;
+		
+		&lt;br&gt;
+		&lt;!--访问每一个应用(模块)的rootScope--&gt;
+		{{$root.name}}
+		&lt;div id=&quot;noControllerDiv&quot;/&gt;
+		
+		&lt;div ng-controller=&quot;SecondController&quot;&gt;
+			
+		&lt;/div&gt;
+		
+		
+	&lt;/body&gt;
+	
+&lt;/html&gt;ng-app定义了一个angular模块，每个模块只有一个$rootScope，只有一个$injector，但可以有多个$scope。
+
+
+
+
+   
+
+
+   弄清了$injector、$rootScope和$scope这3者之间的关系，我们看下angular提供的2个API，一个是scope()，一个是injector()。使用angular.element()返回的DOM对象，都会包含这2个方法，用来获取与之关联的scope和injector。
+
+
+   由于每个模块的injector是唯一的，所以angular.element().injector()直接返回元素所在模块的injector。
+
+
+   angular.element().scope()可以获取到当前元素的scope或父scope。如果当前元素有scope，则返回自己的scope;如果没有则向父亲方向寻找,如果找不到返回rootScope。即返回作用域链上，距离该元素最近的scope。
+
+
+
+
+   
+
+
+   &lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+	&lt;head&gt;
+	   &lt;meta charset=&quot;utf-8&quot;&gt;
+	   &lt;title&gt;scope()&lt;/title&gt;
+	   &lt;script src=&quot;jquery-1.11.1.js&quot;&gt;&lt;/script&gt;
+	   &lt;script src=&quot;angular-1.2.25.js&quot;&gt;&lt;/script&gt;
+	   
+	   &lt;script&gt;
+
+		function FirstController($scope,$injector,$rootScope)
+		{
+			//获取body对象
+			var domBody = document.getElementsByTagName(&#39;body&#39;)[0];
+			
+			// 通过ng-app指令所在的DOM元素获取rootScope
+			var rtScope = angular.element(domBody).scope();	
+			
+			//当前元素没有新作用域,获取父作用域即rootScope
+			var noScope = angular.element(&quot;#noControllerDiv&quot;).scope();	
+			
+			// true
+			console.log(&quot;rtScope==noScope:&quot; + (rtScope==noScope));
+			
+			//ng-controller所在的元素,返回的scope
+			var scopeOnController = angular.element(&quot;#first&quot;).scope();
+			
+			// ng-controller内部的元素返回所在的scope
+			var inController = angular.element(&quot;#tips&quot;).scope();
+			
+			//true
+			console.log(&quot;scopeOnController==inController:&quot; + (scopeOnController==inController));
+			
+			//验证通过DOM获取的scope是否与注入的$scope和$rootScope一致
+			//true
+			console.log(&quot;result1:&quot; + (rtScope==$rootScope));
+			//true
+			console.log(&quot;result2:&quot; + (inController==$scope));
+
+		}
+	   
+	   &lt;/script&gt; 
+
+	&lt;/head&gt;
+	
+	&lt;body ng-app&gt;
+		&lt;div id=&quot;first&quot; ng-controller=&quot;FirstController&quot;&gt;
+			&lt;input type=&quot;text&quot; ng-model=&quot;name&quot;&gt;
+			&lt;br&gt;
+			&lt;div id=&quot;tips&quot;&gt;&lt;/div&gt; 
+		&lt;/div&gt;
+		
+		&lt;h2&gt;outside of controller&lt;/h2&gt;
+		
+		&lt;br&gt;
+		&lt;!--访问每一个应用(模块)的rootScope--&gt;
+		{{$root.name}}
+		&lt;div id=&quot;noControllerDiv&quot;/&gt;	
+		
+	&lt;/body&gt;
+	
+&lt;/html&gt;

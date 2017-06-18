@@ -1,0 +1,168 @@
+Ancient Printer 字典树 hdu 3460Ancient Printer
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 131072/65536 K (Java/Others)Total Submission(s): 466Accepted Submission(s): 224
+
+Problem Description
+
+The contest is beginning! While preparing the contest, iSea wanted to print the teams' names separately on a single paper.Unfortunately, what iSea could find was only an ancient printer: so ancient that you can't believe it, it only had three kinds of operations:● 'a'-'z': twenty-six letters you can type● 'Del': delete the last letter if it exists● 'Print': print the word you have typed in the printerThe printer was empty in the beginning, iSea must use the three operations to print all the teams' name, not necessarily in the order in the input. Each time, he can type letters at the end of printer, or delete the last letter, or print the current word. After printing, the letters are stilling in the printer, you may delete some letters to print the next one, but you needn't delete the last word's letters.iSea wanted to minimize the total number of operations, help him, please.
+
+
+
+
+   
+
+Input
+
+There are several test cases in the input.Each test case begin with one integer N (1 &le; N &le; 10000), indicating the number of team names.Then N strings follow, each string only contains lowercases, not empty, and its length is no more than 50.The input terminates by end of file marker.
+
+
+
+
+   
+
+Output
+
+For each test case, output one integer, indicating minimum number of operations.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2
+freeradiant
+freeopen
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   21
+Hint
+The sample's operation is:
+f-r-e-e-o-p-e-n-Print-Del-Del-Del-Del-r-a-d-i-a-n-t-Print
+ 
+
+
+
+
+
+
+   
+
+Author
+
+iSea @ WHU
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（3）&mdash;&mdash;Host by WHU 
+
+
+
+
+   
+
+Recommend
+
+zhouzeyong
+
+字典树：
+
+遍历所有节点，个数*2，再减去最长的一条链。
+
+#include&lt;iostream&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string.h&gt;
+using namespace std;
+
+struct dictree
+{
+	struct dictree *child[26];
+	int n;
+};
+struct dictree *root;
+void insert(char *source)
+{
+	int len,i,j;
+	struct dictree *current,*newnode;
+	len=strlen(source);
+	if(len==0)  
+		return ;
+	current=root;
+	for(i=0;i&lt;len;i++)
+	{
+		if(current-&gt;child[source[i]-'a']!=0)
+		{
+			current=current-&gt;child[source[i]-'a'];
+			current-&gt;n++;
+		}
+		else
+		{
+			newnode=(struct dictree *)malloc(sizeof(struct dictree));
+			for(j=0;j&lt;26;j++)
+				newnode-&gt;child[j]=0;
+			current-&gt;child[source[i]-'a']=newnode;
+			current=newnode;
+			current-&gt;n=1;
+		}
+	}
+}
+
+int num=0;
+int traversal(dictree * t)
+{
+	int i;
+	struct dictree *current=t;
+	for(i=0;i&lt;26;i++)
+	{
+		if(t-&gt;child[i]==0)
+			continue;
+		num++;
+		traversal(t-&gt;child[i]);
+	}	
+	return num;
+}
+
+int n;
+int main()
+{
+	char temp[51];
+	int i,j;
+	while(cin&gt;&gt;n)
+	{
+		root=(struct dictree *)malloc(sizeof(struct dictree));
+		root-&gt;n=2;
+		for(i=0;i&lt;26;i++)
+			root-&gt;child[i]=0;
+		int tt=n;
+		getchar();
+		int maxn=-1;
+		while(n--)
+		{
+			gets(temp);
+			int len=strlen(temp);
+			if(len&gt;=maxn)
+				maxn=len;
+			insert(temp);
+		}
+		num=0;
+		cout&lt;&lt;traversal(root)*2-maxn+tt&lt;&lt;endl;
+	}
+}

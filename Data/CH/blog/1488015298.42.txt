@@ -1,0 +1,203 @@
+java并发编程实践学习（二）由可重入锁想到的在《java并发编程实践》的第二章，介绍到了“可重入锁”的概念和作用，并且指出java的内置锁synchronized就是一种可重入锁。其中提到了Widget和LogginWidget，源码如下:
+
+
+   public class Widget {
+    public synchronized void doSomething() {
+ // do somethig here...
+    }
+}
+
+public class LoggingWidget extends Widget {
+    public synchronized void doSomething() {
+ System.out.println(toString() + &quot;: calling doSomething&quot;);
+ super.doSomething();
+    }
+}书中的描述如下：
+
+   
+
+
+   子类覆写了父类的synchonized方法，然后调用父类中的方法，此时如果没有重入的锁，那么这段代码将产生死锁。由于Widget 和LoggingWidget 中的doSomething方法都是synchonized方法，因此每个doSomething方法执行前都会获取Widget 上的锁。然而如果内置锁不是可重入的，那么在调用super.doSomething()时将无法获取Widget
+ 上的锁，因为这个锁已经被持有，从而线程将永远停顿下去，等待一个永远也无法获得的锁。
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   看到红色部分的字体，想必大家会觉得疑惑。线程进入LoggingWidget.doSomething()时获取的锁不应该是LoggingWidget对象锁吗?怎会是Widget上的锁?super.doSomething()获取的究竟是哪个对象锁呢？对于喜欢追究细节的我来说，此时有了种种疑问，尤其是写完第一篇博客：java并发编程实践学习（一）java的类锁和对象锁。按照字面的意思，貌&#20284;是说：执行子类对象的同步方法时候，也会获取父对象的锁，如果不是可重入锁的话，再次调用super.doSomething()想要第二次获取Widget对象的锁，就不会成功。
+
+
+   
+
+
+
+
+   这里就产生了1个问题：什么是子类对象，什么是父类对象？是不是创建子类对象,肯定会创建一个父类的对象?
+
+
+   首先创建一个子类对象的时候是不会创建一个父类对象的，父类对象是根本不存在的。我们可以使用反证法，假如说创建子类对象的同时会创建一个父类对象，那如果父类是抽象类，不能实例化呢？我们知道使用A a = new A()这种方式创建对象的时候，JVM会在后台给我们分配内存空间，然后调用构造函数执行初始化操作，最后返回内存空间的引用。即构造函数只是进行初始化，并不负责分配内存空间（创建对象）。所以呢其实创建子类对象的时候，JVM会为子类对象分配内存空间，并调用父类的构造函数。我们可以这样理解：创建了一个子类对象的时候，在子类对象内存中，有两份数据，一份继承自父类，一份来自子类，但是他们属于同一个对象（子类对象），只不过是java语法提供了this和super关键字来让我们能够按照需要访问这2份数据而已。这样就产生了子类和父类的概念，但实际上只有子类对象，没有父类对象。
+
+
+   
+
+
+
+
+   到这里，我们也就能够理解《java并发编程实践》中的话了。
+
+
+   LoggingWidget  widget = new LoggingWidget();
+widget.doSomengthing();
+
+由于doSomething()是synchronized方法，所以执行的时候，会先获取widget对象的锁；当执行到super.doSomething()的时候，由于父类中的方法也是synchronized方法，所以也必须先获取对象的锁。因为不存在所谓的父对象，或者说父对象就是子对象，所以需要获取的也是widget对象的锁。这样如果不是可重入的锁的话，就会产生死锁。
+
+   
+
+
+   
+
+
+
+
+   接下来我们就通过例子来证明：父类对象就是子类对象，即父类的synchronized方法和子类的synchronized方法属于同一个对象。
+
+
+   package net.aty.lock.extend;
+
+public class BaseClass
+{
+	public synchronized void doSomeThing()
+	{
+		System.out.println(&quot;parent class：begin.....doSomeThing&quot;);
+		try
+		{
+			Thread.sleep(200);
+		} catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		System.out.println(&quot;parent class：end.....doSomeThing&quot;);
+	}
+
+}
+
+   package net.aty.lock.extend;
+
+public class ChildClass extends BaseClass
+{
+
+	public synchronized void childMethod()
+	{
+		System.out.println(&quot;---child class：begin.....childMethod&quot;);
+		try
+		{
+			Thread.sleep(200);
+		} catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		System.out.println(&quot;---child class：end.....childMethod&quot;);
+		
+	}
+
+}
+
+
+
+   package net.aty.lock.extend.thread;
+
+import net.aty.lock.extend.BaseClass;
+
+public class DemoThread1 extends Thread
+{
+	private BaseClass base = null;
+	
+	public DemoThread1(BaseClass base)
+	{
+		this.base = base;
+	}
+			
+	@Override
+	public void run()
+	{
+		base.doSomeThing();
+	}
+}
+   package net.aty.lock.extend.thread;
+
+import net.aty.lock.extend.ChildClass;
+
+public class DemoThread2 extends Thread
+{
+	private ChildClass child = null;
+
+	public DemoThread2(ChildClass child)
+	{
+		this.child = child;
+	}
+
+	@Override
+	public void run()
+	{
+		child.childMethod();
+	}
+}
+
+
+我的测试思路是：让一个线程去访问父类中的synchronized方法，然后再让另一个线程访问子类的synchronized方法。由于2个线程竞争的是同一个对象的锁，那么线程1不执行完毕，线程2是不会开始执行的。
+
+   
+
+
+   package net.aty.lock.extend;
+
+public class ChildClass extends BaseClass
+{
+
+	public synchronized void childMethod()
+	{
+		System.out.println(&quot;---child class：begin.....childMethod&quot;);
+		try
+		{
+			Thread.sleep(200);
+		} catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		System.out.println(&quot;---child class：end.....childMethod&quot;);
+		
+	}
+
+}
+
+
+执行结果是：
+
+   
+
+
+   parent class：begin.....doSomeThing
+
+...main running...
+
+...main running...
+
+parent class：end.....doSomeThing
+
+---child class：begin.....childMethod
+
+---child class：end.....childMethod
+
+
+
+
+   很显然程序符合了我们的预期，的确不存在父对象，访问父类的同步方法，跟访问子类的同步方法没有什么实质性的差别，都是要获取子类对象的锁。

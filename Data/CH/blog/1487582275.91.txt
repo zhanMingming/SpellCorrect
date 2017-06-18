@@ -1,0 +1,304 @@
+HOG特征-理解篇网上去找关于HOG的资料，发现理解性的较少，而且较为冗长，为方便大家理解便自己写了篇，希望能对奋斗在特征提取第一线的同志们有所帮助：
+
+
+   
+
+
+   HOG即histogram of oriented gradient, 是用于目标检测的特征描述子，该技术将图像局部出现的方向梯度次数进行计数，该方法和边缘方向直方图、scale-invariant feature transform类&#20284;，不同的是hog的计算基于一致空间的密度矩阵来提高准确率。Navneet
+ DalalandBill Triggs首先在05年的CVPR中提出HOG，用于静态图像or视频的行人检测。
+
+
+   
+
+
+
+
+   HOG特征原理：
+
+
+   HOG的核心思想是所检测的局部物体外形能够被光强梯度或边缘方向的分布所描述。通过将整幅图像分割成小的连接区域（称为cells），每个cell生成一个方向梯度直方图或者cell中pixel的边缘方向，这些直方图的组合可表示出（所检测目标的目标）描述子。为改善准确率，局部直方图可以通过计算图像中一个较大区域(称为block)的光强作为measure被对比标准化，然后用这个&#20540;(measure)归一化这个block中的所有cells.这个归一化过程完成了更好的照射/阴影不变性。
+
+
+   与其他描述子相比，HOG得到的描述子保持了几何和光学转化不变性（除非物体方向改变）。因此HOG描述子尤其适合人的检测。
+
+
+   通俗的讲：
+
+
+   HOG特征提取方法就是将一个image：
+
+
+   1.灰度化（将图像看做一个x,y,z（灰度）的三维图像）
+
+
+   2.划分成小cells（2*2）
+
+
+   3.计算每个cell中每个pixel的gradient（即orientation）
+
+
+   4.统计每个cell的梯度直方图（不同梯度的个数），即可形成每个cell的descriptor
+
+
+   
+
+
+
+
+   再小谈下Hog、SIFT与PCA-SIFT的应用与区别：
+
+
+   Hog没有旋转和尺度不变性，因此计算量小；而SIFT中每个feature需要用128维的向量来描述，因此计算量相对很大。
+
+
+   那么行人检测中怎么应用HOG呢？
+
+
+   对于解决Scale-invariant 的问题：将图片进行不同尺度的缩放，就相当于对模板进行不同尺度scale的缩放
+
+
+   对于解决Rotation-invariant 的问题：建立不同方向的模版（一般取15*7的）进行匹配
+
+
+
+
+   总的来说，就是在不同尺度上的图像进行不同方向的模板（15*7）匹配，每个点形成一个8方向的梯度描述。
+
+
+   
+
+
+
+
+   SIFT由于其庞大计算量不用与行人检测，而PCA-SIFT的方法过滤掉很多维度的信息，只保留20个主分量，因此只适用于行为变化不大的物体检测。
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+   method
+
+
+
+
+   Time
+
+
+
+
+   Scale
+
+
+
+
+   Rotation
+
+
+
+
+   Blur
+
+
+
+
+   Illumination
+
+
+
+
+   Affine
+
+
+
+
+
+
+
+   Sift
+
+
+
+
+   common
+
+
+
+
+   best
+
+
+
+
+   best
+
+
+
+
+   common
+
+
+
+
+   common
+
+
+
+
+   good
+
+
+
+
+
+
+
+   PCA-sift
+
+
+
+
+   good
+
+
+
+
+   good
+
+
+
+
+   good
+
+
+
+
+   best
+
+
+
+
+   good
+
+
+
+
+   best
+
+
+
+
+
+
+
+   Surf
+
+
+
+
+   best
+
+
+
+
+   common
+
+
+
+
+   common
+
+
+
+
+   good
+
+
+
+
+   best
+
+
+
+
+   good
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+   
+
+关于sift的其他讲解:
+
+
+   
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7639681
+
+
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7372880
+
+
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7365882
+
+
+   
+
+
+
+
+   
+
+
+
+
+   关于computer vision的更多讨论与交流，敬请关注本博客和新浪微博Sophia_qing。

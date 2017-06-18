@@ -1,0 +1,69 @@
+javascript正则表达式：非捕获分组的一个使用例子最近在看JsonSQL的时候，通过源码中的一段正则表达式，了解到了什么是非捕获分组以及它的使用场景。在js中，正常的捕获分组&#26684;式是(XX)，非捕获分组&#26684;式为(?:XX)。我们先从正则表达式数量词说起，如果我们要求字符b至少出现一次，可以使用正则/b&#43;/；如果要求ab至少出现一次，那么必需使用/(ab)&#43;/，不能用/ab&#43;/。也就是说，如果想对多个字符使用数量词，必需要用圆括号。
+
+
+   var str = &quot;a1***ab1cd2***c2&quot;;
+var reg1 = /((ab)+\d+)((cd)+\d+)/i;
+var reg2 = /((?:ab)+\d+)((?:cd)+\d+)/i;
+alert(str.match(reg1));//ab1cd2,ab1,ab,cd2,cd
+alert(str.match(reg2));//ab1cd2,ab1,cd2
+
+   
+
+
+   
+
+
+
+
+   可以看出捕获分组和非捕获分组的区别了吧：非捕获分组，只是用来匹配，并不会提取分组内容。也就是说，如果我们只想用圆括号将一些字符用数量词修饰，并不需要这个分组的内容，这就是非捕获分组。
+
+
+   
+
+
+
+
+   下面这段代码用来提取sql语句中的各个子片段，大量使用了非捕获分组，可以细细品味下。
+
+
+   var returnfields = sql.match(/^\s*SELECT\s+((?:[0-9A-Za-z_]+\s*,\s*)+[0-9A-Za-z_]+ |\*|[0-9A-Za-z_]+)\s+FROM\s+([a-z0-9A-Z_]+)(?: where\s+\((.+)\))?(?:\s+order\s+by\s+([a-z0-9_A-Z]+)(?:\s+(asc|desc|ascnum|descnum)?))?(?:\s+limit\s+(\d+,\d+))?/i);
+
+var ops = { 
+	fields: returnfields[1].replace(&#39;\s&#39;,&#39;&#39;).split(&#39;,&#39;), 
+	from: returnfields[2].replace(&#39;\s&#39;,&#39;&#39;), 
+	where: (returnfields[3] == undefined)? &quot;true&quot;:returnfields[3],
+	orderby: (returnfields[4] == undefined)? []:returnfields[4].replace(&#39;\s&#39;,&#39;&#39;).split(&#39;,&#39;),
+	order: (returnfields[5] == undefined)? &quot;asc&quot;:returnfields[5],
+	limit: (returnfields[6] == undefined)? []:returnfields[6].replace(&#39;\s&#39;,&#39;&#39;).split(&#39;,&#39;)
+};
+
+   
+
+
+   
+
+
+
+关于这段正则有几个地方解释下：
+
+   1.字段名和表明只能由大小写字母、数字和下划线组成。
+
+
+   2.where后面的条件必须放在()中，否则不能匹配。这个和真正的SQL是不同的。
+
+
+   3.select后面的字段有3种&#26684;式：单个字段、多个字段(以逗号分隔)、所有字段(用*表示)。
+
+
+   4.where子语句、order by子语句、limit子语句都是可选的。
+
+
+   
+
+
+
+
+   如下面这段文本，能够匹配上面的正则：
+
+
+   select age from data where (name=='aty')

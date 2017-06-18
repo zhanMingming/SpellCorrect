@@ -1,0 +1,335 @@
+CUDA系列学习（一）An Introduction to GPU and CUDA本文从软硬件层面讲一下CUDA的结构，应用，逻辑和接口。分为以下章节：
+
+   （一）、GPU与CPU
+
+   （二）、CUDA硬件层面
+
+   （三）、CUDA安装
+
+   （四）、CUDA 结构与接口
+
+    4.1 Kernels
+
+    4.2 Thread，Block, Grid
+
+    4.3 Memory
+
+    4.4 Execution
+
+   （五）、码HelloWorld——数组求和
+
+   
+
+   希望感兴趣的同学可以一起讨论。
+
+   
+
+   (一)、GPU与CPU
+
+   对于浮点数操作能力，CPU与GPU的能力相差在GPU更适用于计算强度高，多并行的计算中。因此，GPU拥有更多晶体管，而不是像CPU一样的数据Cache和流程控制器。这样的设计是因为多并行计算的时候每个数据单元执行相同程序，不需要那么繁琐的流程控制，而更需要高计算能力，这也不需要大cache。
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   （二）、CUDA硬件层面：
+
+   Nvidia于2006年引入CUDA，一个GPU内嵌通用并行计算平台。CUDA支持C, C++, Fortran, Java, Python等语言。
+
+   那么一个多线程CUDA程序如何执行的呢？
+
+   GPU建立在一组多处理器（SMX，Streaming Multiprocessors）附近。
+
+   一个SMX的配置：
+192 cores（都是SIMT cores（Single Instruction Multiple Threads） and 64k registers（如下图所示）
+    GPU中的SIMT对应于CPU中的SIMD（Single Instruction Multiple Data）
+64KB of shared memory / L1 cache8KB cache for constants48KB texture cache for read-only arraysup to 2K threads per SMX
+   
+
+   
+
+   不同显卡有不同配置（即SMX数量不同），几个例子：
+
+   
+
+   
+
+   每个multi-thread程序的execution kernel instance（kernel定义见下一节,instance指block）在一个SMX上执行，一个多线程程序会分配到blocks of threads（每个block中负责一部分线程）中独立执行。所以GPU中的处理器越多执行越快（因为如果SMX不够给每个kernel instance分配一个，就要几个kernel抢一个SMX了）。具体来讲，如果SMX上有足够寄存器和内存（后面会讲到，shared memory），就多个kernel instance在一个SMX上执行，否则放到队列里等。
+
+   
+
+   
+
+   图：表示不同SM数带来的执行速度差异。
+
+   
+
+   GPU工作原理：首先通过主接口读取中央处理器指令，GigaThread引擎从系统内存中获取特定的数据并拷贝到显存中，为显存控制器提供数据存取所需的高带宽。GigaThread引擎随后为各个SMX创建和分派线程块（warp, 详细介绍见SIMT架构或者CUDA系列学习（二）），SMX则将多个Warp调度到各CUDA核心以及其他执行单元。在图形流水线出现工作超载的时候，GigaThread引擎还负责进行工作的重新分配。
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   （三）、CUDA安装
+
+   装CUDA主要装以下3个组建：
+
+   1. driver
+low-level software that controls the graphics card
+   2. toolkit
+nvcc CUDA compilerprofiling and debugging toolsseveral libraries
+   3. SDK
+lots of demonstration examplessome error-checking utilitiesnot officially supported by NVIDIAalmost no documentation
+   
+
+   详情请见CUDA 安装与配置
+
+   
+
+   
+
+   （四）、CUDA 结构与接口
+
+   4.1 Kernels
+
+   CUDA C 中可通过定义kernel，每次被调用就在N个CUDA thread中并行执行。
+
+   kernel的定义：
+声明 __global__配置kernel_routine&lt;&lt;&lt;gridDim, Blockdim&gt;&gt;&gt;(args)
+    其中gridDim和Blockdim变量可以是int或dim3（&lt;=3维）类型的变量。gridDim表示每个grid中block结构(the number of instances(blocks) of the kernel)，Blockdim表示每个block中thread结构。那么。。thread，block，grid又是啥？往下看。。。见4.2节
+每个执行该kernel的thread都会通过被分配到一个unique thread ID，就是built-in变量：threadIdx
+   
+
+   
+
+   4.2 Thread，Block，Grid
+
+   很多threads组成1维，2维or3维的thread block. 为了标记thread在block中的位置（index），我们可以用上面讲的threadIdx。threadIdx是一个维度&lt;=3的vector。还可以用thread index（一个标量）表示这个位置。
+
+   thread的index与threadIdx的关系：
+
+   
+Thread index
+1T
+2T.x + T.y * Dx
+3T.x+T.y*Dx+z*Dx*Dy
+
+   <!-- 
+		BODY,DIV,TABLE,THEAD,TBODY,TFOOT,TR,TH,TD,P { font-family:"DejaVu Sans"; font-size:x-small }
+		 -->
+
+   其中T表示变量threadIdx。（Dx, Dy, Dz）为block的size（每一维有多少threads）。
+
+   
+
+   因为一个block内的所有threads会在同一处理器内核上共享内存资源，所以block内有多少threads是有限制的。目前GPU限制每个 block最多有1024个threads。但是一个kernel可以在多个相同shape的block上执行，效果等效于在一个有N*#thread per block个thread的block上执行。
+
+   
+
+   Block又被组织成grid。同样，grid中block也可以被组织成1维，2维or3维。一个grid中的block数量由系统中处理器个数或待处理的数据量决定。
+
+   
+
+   
+
+   和threadIdx类似，对于block有built-in变量blockDim（block dimension）和blockIdx（block index）。
+
+   回过头来看4.1中的configureation，举个栗子，假设A，B，C都是大小[N][N]的二维矩阵，kernel MatAdd目的将A，B对应位置元素加和给C的对应位置。
+
+   声明：
+
+   // Kernel definition
+__global__ void MatAdd(float A[N][N], float B[N][N],
+float C[N][N])
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	int j = blockIdx.y * blockDim.y + threadIdx.y;
+	if (i &lt; N &amp;&amp; j &lt; N)
+	C[i][j] = A[i][j] + B[i][j];
+}
+int main()
+{
+	...
+	// Kernel invocation
+	dim3 threadsPerBlock(16, 16);
+	dim3 numBlocks(N / threadsPerBlock.x, N / threadsPerBlock.y);
+	MatAdd&lt;&lt;&lt;numBlocks, threadsPerBlock&gt;&gt;&gt;(A, B, C);
+	...
+}
+
+   
+
+   这里threadsPerBlock(16,16)一般是标配。例子中，我们假定grid中block足够多，保证N/threadsPerBlock不会超限。
+
+   
+
+   
+
+   
+
+   4.3 Memory
+
+   前面提到了Block中的threads共享内存，那么怎样同步呢？在kernel中调用内部__synthreads()函数，其作用是block内的所有threads必须全部执行完，程序才能继续往下走。那么thread到底怎样使用memory呢？
+每个thread有private local memory每个block有shared memory所有thread都能访问到相同的一块global memory所有thread都能访问两块read-only memory：constant &amp; texture array(通常放查找表)
+   其中，global，constant，texture memory伴随kernel生死。
+
+   
+
+   CUDA程序执行的时候，GPU就像一个独立的设备一样，kernel部分由GPU执行，其余部分CPU执行。于是memory就被分为host memory（for CPU）&amp; device memory（for GPU）。因此，一个程序需要在CUDA运行时管理device memory的分配，释放和device &amp; host memory之间的data transfer。
+
+   
+
+   
+
+   4.4 Execution
+
+   从执行角度看，程序经过了以下步骤：
+
+   1. initialises card2. allocates memory in host and on device3. copies data from host to device memory4. launches multiple instances of execution “kernel” on device5. copies data from device memory to host6. repeats 3-5 as needed7. de-allocates all memory and terminates
+
+   总结：每个kernel放在一个grid上执行，1个kernel有多个instance，每个instance在一个block上执行，每个block只能在一个SM上执行，如果block数&gt;SM数，多个block抢SM用。kernel的一个instance在SMX上通过一组进程来执行。如下图所示：
+
+   
+
+   
+
+   
+
+   总结：
+
+   CUDA的3个key abstraction：thread groups, shared memories, 和barrier synchronization
+
+   CUDA中的built-in变量：gridDim, blockDim, blockIdx（block在grid中的index）, threadIdx, warpSize（threads的warp size）
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   （五）、码HelloWorld
+kernel code很像MPI，从单线程的角度coding需要think about每个变量放在哪块内存
+   
+
+   这里我们以数组对应元素相加为例，看下Code ：
+
+   
+
+   #include&lt;cutil_inline.h&gt;
+#include&lt;iostream&gt;
+using namespace std;
+
+#define N 32
+
+// Kernel definition
+__global__ void MatAdd(float A[N], float B[N], float* C)
+{
+	int i = blockIdx.x * blockDim.x + threadIdx.x; //get thread index by built-in variables
+	if (i &lt; N)
+		C[i] = A[i] + B[i];
+}		
+
+int main()
+{
+	float A[N],B[N]; // host variable
+	float *dA, *dB; // device variable, to have same value with A,B
+	float *device_res, *host_res; // device and host result, to be device and host variable respectively
+
+	// initialize host variable
+	memset(A,0,sizeof(A));
+	memset(B,0,sizeof(B));
+	A[0] = 1;
+	B[0] = 2;
+
+
+	// allocate for device variable and set value to them
+	cudaMalloc((void**) &amp;dA,N*sizeof(float));
+	cudaMalloc((void**) &amp;dB,N*sizeof(float));
+	cudaMemcpy(dA, A, N*sizeof(float),cudaMemcpyHostToDevice);
+	cudaMemcpy(dB, B, N*sizeof(float),cudaMemcpyHostToDevice);
+
+	//malloc for host and device variable
+	host_res = (float*) malloc(N*sizeof(float));
+	cudaMalloc((void**)&amp;device_res, N*sizeof(float));
+
+	// Kernel invocation
+	int threadsPerBlock = 16;
+	int numBlocks = N/threadsPerBlock; 
+	MatAdd&lt;&lt;&lt;numBlocks, threadsPerBlock&gt;&gt;&gt;(dA, dB, device_res);
+
+	cudaMemcpy(host_res, device_res, N*sizeof(float),cudaMemcpyDeviceToHost); //copy from device to host
+	
+	// validate
+	int i;
+	float sum = 0;
+	for(i=0;i&lt;N;i++)
+		sum += host_res[i];
+	cout&lt;&lt;sum&lt;&lt;endl;
+
+	//free variables
+	cudaFree(dA);
+	cudaFree(dB);
+
+	cudaFree(device_res);
+	free(host_res);
+}
+
+   
+
+   编译：
+
+    nvcc -I ~/NVIDIA_GPU_Computing_SDK/C/common/inc/ Matadd.cu 运行结果：
+
+    3
+
+   OK，大功告成。
+
+   这里注意kernel部分的code，所有变量都必须是device variable，即需要通过cudaMalloc分配过memory的。之前我忘记将A，B数组cudaMemcpy到dA,dB，而直接传入MatAdd kernel就出现了运行一次过后卡住的问题。
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   参考：
+
+   1. CUDA C Programming Guide
+
+   2. An Introduction to CUDA
+
+   3. CUDA 安装与配置
+
+   4. CUDA调试工具——CUDA GDB
+
+   5. GPU工作方式
+
+   6. Fermi 架构白皮书（GPU继承了Fermi的很多架构特点）
+
+   7. GTX460架构

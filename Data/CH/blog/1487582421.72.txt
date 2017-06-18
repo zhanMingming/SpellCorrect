@@ -1,0 +1,220 @@
+计算数学表达式的值包括括号、浮点数等（二叉树实现）
+
+
+   
+
+
+   #include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string.h&gt;
+
+#define TRUE 1
+#define FALSE 0
+#define MAXNUM 1000
+
+
+typedef int DataType;
+
+
+struct BinTreeNode;
+typedef struct BinTreeNode*PBinTreeNode;
+struct BinTreeNode
+{
+    DataType info;
+    PBinTreeNode llink;
+    PBinTreeNode rlink;
+};
+typedef struct BinTreeNode*BinTree;
+typedef BinTree*PBinTree;
+
+int extoBinTree(PBinTree pbtree,const char *ex,int n)
+/*从中缀表达式ex(长度为n)创建二叉树。若是一个合法的表达式，则返回TRUE，且算法结束时*pbtree存放二叉树的根节点的地址；否则返回FALSE*/
+{
+    char c;
+    int index,i,bracket;
+    int have_bracket=FALSE;     /*记录表达式中是否包含括号*/
+    int num,state_int,nint;
+    int tag1,tag2;
+
+    if(ex[0]==' '||ex[0]=='/t'||ex[0]=='/n')
+ return extoBinTree(pbtree,ex+1,n-1);/*忽略掉左边的若干空字符*/
+    if(ex[n-1]==' '||ex[0]=='/t'||ex[0]=='/n')
+ return extoBinTree(pbtree,ex,n-1);/*忽略掉右边的若干空字符*/
+    if(ex[0]=='('&amp;&amp;ex[n-1]==')')
+ return extoBinTree(pbtree,ex+1,n-2);/*忽略掉左右的成对括号*/
+
+    bracket=0;
+    index=n;
+    for(i=n-1;i&gt;=0;i--)/*从后向前搜索，寻找到第一个不在括号中的优先级最低的运算符*/
+ {
+     c=ex[i];
+     if(c==')')/*进入一层括号*/
+  {
+      have_bracket=TRUE;
+      bracket++;
+  }
+     if(c=='(') bracket--;/*出一层括号*/
+     if(bracket&lt;0)/*左右括号不相匹配，表达式非法*/
+  {
+      *pbtree=NULL;
+      return FALSE;
+  }
+     if(bracket&gt;0) continue;/*若当前位置在某层括号中，直接搜索下个位置*/
+     if(c=='+'||c=='-')
+  if(index==n||ex[index]=='*'||ex[index]=='/')
+      index=i;
+     if(c=='*'||c=='/')
+  if(index==n)
+      index=i;
+ }
+    if(bracket!=0) return FALSE;/*左右括号不相匹配，表达式非法*/
+
+    if(index==n)/*说明这是一个只含一个数字和若干空字符的表达式，相应地创建一棵只含一个根节点的二叉树*/
+ {
+     if(have_bracket==TRUE)
+  {
+      *pbtree=NULL;
+      return FALSE;
+  }/*不应含有括号*/
+     nint=0;/*nint记录表达式中含有的整数个数*/
+     state_int=FALSE;/*state_int记录当前读入的字符是否是数字字符*/
+     num=0;
+     for(i=0;i&lt;n;i++)
+  {
+      c=ex[i];
+      switch(c)
+   {
+case'0':case'1':case'2':case'3':case'4':
+case'5':case'6':case'7':case'8':case'9':
+    if(state_int==FALSE)
+ {
+     num=c-'0';
+     state_int=TRUE;
+     nint++;
+ }
+    else
+ {
+     num=num*10+c-'0';
+ }
+    break;
+case' ':case'/t':case'/n':
+    state_int=FALSE;
+    break;
+default:    /*出现了非法字符*/
+    *pbtree=NULL;
+    return FALSE;
+   }
+  }
+     if(nint!=1)
+  {
+      *pbtree=NULL;
+      return FALSE;
+  }
+     *pbtree=(BinTree)malloc(sizeof(struct BinTreeNode));
+     (*pbtree)-&gt;info=num;
+     (*pbtree)-&gt;llink=NULL;
+     (*pbtree)-&gt;rlink=NULL;
+     return TRUE;    /*成功创建了一棵只含一个根节点的二叉树*/
+ }
+    *pbtree=(BinTree)malloc(sizeof(struct BinTreeNode));
+    (*pbtree)-&gt;info=ex[index];
+
+    tag1 =extoBinTree(&amp;(*pbtree)-&gt;llink,ex,index);/*递归调用本算法创建左子数*/
+    tag2 =extoBinTree(&amp;(*pbtree)-&gt;rlink,ex+index+1,n-index-1);/*递归调用本算法创建右子数*/
+    if(tag1==TRUE&amp;&amp;tag2==TRUE)  return TRUE;
+    return FALSE;
+}
+
+int cal(BinTree btree,int*presult)/*计算二叉树btree所代表的表达式的值。若是一个合法的表达式，则返回TRUE，且算法结束时*presult中存放计算结果；否则，返回FALSE.*/
+    {
+ int result1,result2;
+ if(btree==NULL)     return FALSE;   /*空树，无法计算*/
+ if(btree-&gt;llink==NULL&amp;&amp;btree-&gt;rlink==NULL)  /*只有一个节点，直接计算*/
+     {
+  *presult=btree-&gt;info;
+  return TRUE;
+     }
+ if(btree-&gt;llink==NULL||btree-&gt;rlink==NULL)  /*只有左子树或只有右子树，无法计算*/
+     return FALSE;
+ switch(btree-&gt;info)
+     {
+  case'+':
+      if(cal(btree-&gt;llink,&amp;result1)==FALSE) return FALSE;
+      if(cal(btree-&gt;rlink,&amp;result2)==FALSE) return FALSE;
+      *presult=result1+result2;
+      return TRUE;
+  case'-':
+      if(cal(btree-&gt;llink,&amp;result1)==FALSE) return FALSE;
+      if(cal(btree-&gt;rlink,&amp;result2)==FALSE) return FALSE;
+      *presult=result1-result2;
+      return TRUE;
+  case'*':
+      if(cal(btree-&gt;llink,&amp;result1)==FALSE) return FALSE;
+      if(cal(btree-&gt;rlink,&amp;result2)==FALSE) return FALSE;
+      *presult=result1*result2;
+      return TRUE;
+
+  case'/':
+      if(cal(btree-&gt;llink,&amp;result1)==FALSE) return FALSE;
+      if(cal(btree-&gt;rlink,&amp;result2)==FALSE) return FALSE;
+      *presult=result1/result2;
+      return TRUE;
+  default:
+      return FALSE;
+     }
+    }
+
+
+void delete_BTree(PBinTree ptree)
+{
+    BinTree temp=(*ptree);
+    if(temp==NULL)  return;
+    delete_BTree(&amp;(temp-&gt;llink));
+    delete_BTree(&amp;(temp-&gt;rlink));
+    free(temp);
+}
+
+
+void getline(char *line,int limit)/*从标准输入中读入一行，作为字符串line*/
+{
+    char c;
+    int i=0;
+    while(i&lt;limit-1&amp;&amp;(c=getchar())!=EOF&amp;&amp;c!='/n')
+ line[i++]=c;
+    line[i]='/0';
+}
+
+
+int main()
+{
+    char c,ex[MAXNUM];
+    int result,flag=TRUE;
+    BinTree btree;
+
+    while(flag==TRUE)
+ {
+     printf("Please input the expression:");
+     getline(ex,MAXNUM);/*读入中缀表达式*/
+
+     if(extoBinTree(&amp;btree,ex,strlen(ex))==FALSE)
+  {
+      printf("Wrong input!/n");
+      delete_BTree(&amp;btree);
+      printf("/nContinue?(y/n)");
+      scanf("%c",&amp;c);
+      if(c=='n'||c=='N')  flag=FALSE;
+      while(getchar()!='/n');
+      printf("/n");
+      continue;
+  }
+
+     if(cal(btree,&amp;result)==TRUE)  printf("Result:%d/n",result);
+     else printf("Wrong input!/n");
+     delete_BTree(&amp;btree);
+     printf("/nContinue?(y/n)");
+     scanf("%c",&amp;c);
+     if(c=='n'||c=='N')  flag=FALSE;
+     while(getchar()!='/n');
+     printf("/n");
+ }
+}

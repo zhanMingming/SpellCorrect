@@ -1,0 +1,219 @@
+firefox 17.0 编包记（fedora 17）前不久某神秘老板，找我聊天，说他们有个大计划，最后苦恼在做一个浏览器上，我说如果你们需求不复杂，编译个开源的，不就完了，他表示他们的研发队伍还没有建立，so，需要一个做demo的炮灰。找一些外包吧，价钱也贵，看我执行力这么好，so，让我来执行~~~。
+
+
+       我在江湖上的炮灰形象太高大了吧，我断然拒绝了他，但我想我确实也没编译过浏览器，自己编一个玩玩，没想到这事档了我1天时间，我把整个过程记录下来。那老板要windows版的，我编个linux版的，他看了也干着急，嗨嗨。
+
+
+   
+
+
+
+
+       一开始我找到官网手册，然后按照手册上的过程编包
+
+
+       https://developer.mozilla.org/en-US/docs/Developer_Guide/Build_Instructions/
+
+
+   1) 【安装准备】安装编包必要的软件和工具（详细参见：https://developer.mozilla.org/en-US/docs/Developer_Guide/Build_Instructions/Linux_Prerequisites）
+
+
+   
+
+
+   sudo yum groupinstall 'Development Tools' 'Development Libraries' 'GNOME Software Development'
+sudo yum install mercurial autoconf213 glibc-static libstdc&#43;&#43;-static yasm wireless-tools-devel mesa-libGL-devel alsa-lib-devel libXt-devel
+
+     因为安装mercurial很顺利，所以没用到链接里面的手动安装过程。
+
+   
+
+
+        确认系统安装了python2
+
+
+        看了下安装需求：
+
+
+       For debug builds: at least 2 GB free disk space (2.5 GB recommended)
+
+     For optimized builds: at least 600 MB free disk space (1 GB recommended)
+
+
+       我这个虚拟机当时做的时候只给了8G，安装完后剩余空间也就3.5G，一看，正合适（问题在此埋下伏笔）
+
+
+   
+
+
+       2）【下载】然后在这里找到ftp地址：https://developer.mozilla.org/en-US/docs/Developer_Guide/Source_Code/Downloading_Source_Archives
+
+
+         下载了个最新的firefox19.0b4.source.tar.gz2
+
+
+         tar -xvffirefox19.0b4.source.tar.gz2
+
+
+         
+
+
+       3) 【配置】参见：https://developer.mozilla.org/en-US/docs/Configuring_Build_Options
+
+
+         cd到解压后的目录里，生成一个.mozconfig的文件，再写入如下内容：
+
+
+        ac_add_options --enable-debug
+
+      ac_add_options --enable-application=browser
+
+      ac_add_options --enable-optimize
+
+      ac_add_options --enable-debug
+
+      mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-@CONFIG_GUESS@
+
+      mk_add_options MOZ_MAKE_FLAGS=&quot;-j4&quot;
+
+
+         保存退出
+
+
+       4）【编译】参见：https://developer.mozilla.org/en-US/docs/Build_and_Install
+
+
+         make -f client.mk build
+
+
+         然后就是各种错误，缺这个缺哪个，不要急缺什么就安装什么，比如发现缺 libcurlXX，就yum list | grep curl ，然后一律安装带devel的，比如libcurl_devel.x86_64这类的。没有为什么，保险。
+
+
+         然后configure的过程终于过了，开始编包，我去喝水，聊天去了。
+
+
+   
+
+
+
+
+         一会回来发现编译错误，no space left，美帝害人啊，说2.5GB搓搓有余，怎么会不够呢（后来我编译出来的大约是5GB大小）。
+
+
+         怎么办，加硬盘吧，把机器关闭，然后VM里面expand一个新盘，参见：http://blog.csdn.net/pennyliang/article/details/6171679 
+
+
+         然后启动虚拟机的linux，发现启动不起来了，一搜索，启动盘磁盘full了，系统确实启动不了，苍天啊。
+
+
+         赶紧进入recovery模式，命令行引导起来（什么grub引导，太麻烦了），把新盘，加载分区，却意外地发现这个我之前写得博客有个地方不靠谱，写了必须reboot才能认新盘，这几年害了多少人，partprobe一下就行了。
+
+
+   
+
+
+
+
+         然后把安装文件都mv到新盘上，reboot，启动了，这时已经是晚上10点多了。
+
+
+         然后继续编译，这次编译持续的时间好长，1个多小时，总是编完了
+
+
+         cd obj-x86_64-unknown-linux-gnu/dist/bin/  （不同人的机器环境 obj-后面这个不同，我的系统@CONFIG_GUESS =x86_64-unknown-linux-gnu 你们懂的
+
+
+         然后一运行，苍天啊，报错了。
+
+
+        
+
+
+   
+     Error: Platform version '17.0.1' is not compatible with
+
+
+   
+     minVersion &gt;= 19.0
+
+
+   
+     maxVersion &lt;= 19.0
+
+
+   
+     于是各种搜索，各种try
+
+
+   
+     aplication.ini 改成17.0.1 不行
+
+
+   
+     后来我想，怎么这么巧是17呢，难道是fedora的版本是17，不可能啊，但没办法只要下载一个firefox-17.0.source.tar.bz2来try。按照前面的套路跑一遍，跑到这个地方，还是出现这个compatible的错误，苦就一个字，这时差不多夜里2 hour。外面按喇叭的车都是少了，很安静。
+
+
+   
+
+
+
+
+
+   
+     要说还是我有直觉，我看了看我这台机器上默认安装的ff的版本，果然是17.0.1，苍天啊。
+
+
+   
+     马上卸载
+
+
+   
+     rpm -aq | grep firefox
+
+
+   
+     rpm -e firefoxXXXXX(看到的那个17.0.1XXX的东西）
+
+
+   
+     再run，还是不兼容问题，苍天啊~~~~，这时外面风都不吹了。
+
+
+   
+     
+
+
+   
+     怎么办捏？全部删了，再编译一把看看。龙套再跑一遍，run，居然run起来了，如下图，很土。
+
+
+   
+     如果需要编一个tar包，就在 obj-XXX目录下，执行make package(我这里是进入这个目录 cdobj-x86_64-unknown-linux-gnu，在执行make package）
+
+
+   
+     tar包在obj-XXX/dist/ 目录下，形如：firefox-17.0.en-US.linux-x86_64.tar.bz2
+
+
+   
+     过程很曲折，结果就这样，记录这个过程，留给自己看，很多人说我写博客太繁琐，删除个firefox也要步骤写那么清楚，昨天周鸿祎上天天向上，说他们的产品是站在小白的角度上做的，其实我写博客是站在小白的角度写的，写给我自己看，我就是小白。我记忆力不好，我经常看自己之前的博客，自己渡自己，也顺带渡了别人。
+
+
+          
+
+
+          备注：
+
+
+         【安装包】
+
+
+          美帝那边的地址：ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/17.0/source/firefox-17.0.source.tar.bz2
+
+
+          我下载后传到百度云上：http://pan.baidu.com/share/link?shareid=246167&amp;uk=1510319874
+
+
+
+
+          两个是一样的，我不放心，怕美帝那边删除了，就麻烦了。

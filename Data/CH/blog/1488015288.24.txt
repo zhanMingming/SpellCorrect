@@ -1,0 +1,289 @@
+java泛型的一些常见用法本文主要参考下面几篇文章：
+
+
+   http://blog.csdn.net/seu_calvin/article/details/52230032
+
+
+
+http://blog.csdn.net/orzlzro/article/details/7017435
+
+
+
+http://sharewind.iteye.com/blog/1622164
+
+
+
+https://www.zhihu.com/question/20400700
+
+
+
+
+   
+
+
+
+
+   1、 泛型类(接口)的写法以及继承
+
+
+   // 类似java.util.function.Function
+public interface GenericInterface&lt;T, R&gt; {
+    public R apply(T t);
+}
+
+// 类似java.util.stream.IntStream
+public interface InheritGeneric0 extends GenericInterface&lt;String, Integer&gt; {
+}
+
+// 类似java.util.function.UnaryOperator
+public interface InheritGeneric1&lt;T&gt; extends GenericInterface&lt;T, T&gt; {
+}
+
+// 类似java.util.HashMap
+public interface InheritGeneric2&lt;T, R&gt; extends GenericInterface&lt;T, R&gt; {
+
+}
+
+// JDK库尚未找到类似的
+public interface InheritGeneric3&lt;V, T, R&gt; extends GenericInterface&lt;T, R&gt; {
+    public V apply2(T t, R r);
+}
+
+   
+
+
+   
+
+
+
+
+
+2、泛型方法的写法
+   public class Retryer&lt;T&gt; {
+    private T value;
+
+    private int id = 0;
+
+    public Retryer() {
+
+    }
+
+    public Retryer(int id) {
+ this.id = id;
+    }
+
+    public T getValue() {
+ return value;
+    }
+
+    public void setValue(T value) {
+ this.value = value;
+    }
+
+    public int getId() {
+ return id;
+    }
+
+    public void setId(int id) {
+ this.id = id;
+    }
+}
+
+// 泛型的声明：方法的修饰符(public,static,final,abstract等)之后, 返回值(void,int等)之前
+public class SpecificClass {
+
+    // 入参泛型,返回值非泛型
+    public &lt;L, R&gt; int sum(L[] left, R[] right) {
+ return left.length + right.length;
+    }
+
+    // 入参非泛型,返回值泛型
+    public static &lt;T&gt; Retryer&lt;T&gt; build() {
+ return new Retryer&lt;T&gt;();
+    }
+
+    // 入参泛型,返回值泛型
+    public &lt;L, R, V&gt; Retryer&lt;V&gt; buildLength(L[] left, R[] right) {
+ return new Retryer&lt;V&gt;(left.length + right.length);
+    }
+
+    // 限制泛型: 只能是某个类的子类或者只能是实现了某些接口的类
+    // &lt;T extends Comparable&gt;
+    // &lt;T extends Number&amp;Serializable&gt;
+    // &lt;T extends Comparable&amp;Serializable&gt;
+    public &lt;L extends Number, R extends Number&gt; double add(L left, R right) {
+ return left.doubleValue() + right.doubleValue();
+    }
+
+}
+
+
+
+
+   
+
+
+   3、泛型的一些基本特性：不能实例化对象和数组
+
+
+   import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+public class GenericBasicFeature {
+    public static void main(String[] args) {
+ test1();
+
+ String[] stringArray = (String[]) Array.newInstance(String.class, 5);
+ System.out.println(&quot;stringArray.length=&quot; + stringArray.length);
+
+ String[] stringArray2 = GenericBasicFeature.test2(5, String.class);
+ System.out.println(&quot;stringArray2.length=&quot; + stringArray2.length);
+    }
+
+    // 泛型只在编译期有效
+    // http://blog.csdn.net/seu_calvin/article/details/52230032
+    public static void test1() {
+ List&lt;String&gt; stringList = new ArrayList&lt;String&gt;();
+ stringList.add(&quot;aaa&quot;);
+
+ // 编译报错
+ // stringList.add(new Object());
+
+ // 运行时通过反射添加元素
+ try {
+     Class clazz = stringList.getClass();
+     Method method = clazz.getMethod(&quot;add&quot;, Object.class);
+     method.invoke(stringList, 100);
+ } catch (Exception e) {
+     e.printStackTrace();
+ }
+
+ // [aaa, 100]
+ System.out.println(stringList);
+    }
+
+    // java不支持创建泛型数组
+    // http://blog.csdn.net/orzlzro/article/details/7017435
+    public static &lt;T&gt; T[] test2(int length, Class&lt;T&gt; newType) {
+ // T t = new T(); 编译错误
+ // T[] wrong = new T[length]; 编译错误
+ // T[] newArray = (T[]) new Object[length]; 运行时ClassCastException
+
+ // 参考Arrays.copyOf
+ T[] newArray = (T[]) Array.newInstance(newType, length);
+ return newArray;
+    }
+
+}
+
+
+   
+
+
+   4、泛型的super和extend的PECS原则
+
+
+   // PECS（Producer Extends Consumer Super）
+public class Demo {
+    static class Food {
+    }
+
+    static class Fruit extends Food {
+    }
+
+    static class Apple extends Fruit {
+    }
+
+    public void testExtend() {
+ List&lt;? extends Food&gt; flist = new ArrayList&lt;Food&gt;();
+ flist.add(new Apple());  //compile error
+ flist.add(new Fruit()); //compile error
+ flist.add(new Object()); //compile error
+
+ Food fruit = flist.get(0); //ok
+    }
+
+    public void testSuper() {
+ List&lt;? super Food&gt; flist = new ArrayList&lt;Food&gt;();
+ flist.add(new Food()); //ok
+ flist.add(new Fruit()); //ok
+ flist.add(new Apple()); //ok
+
+ Food f = flist.get(0);// compile error
+    }
+}
+
+   
+
+
+
+
+   
+
+
+
+5、一种使用例子
+   public class ExtendsContainer&lt;T&gt; {
+
+    private T data;
+
+    public ExtendsContainer(T data) {
+ this.data = data;
+    }
+
+    public T getData() {
+ return data;
+    }
+
+    public void setData(T data) {
+ this.data = data;
+    }
+}
+
+public class Demo {
+    static class Food {
+    }
+
+    static class Fruit extends Food {
+    }
+
+    static class Apple extends Fruit {
+    }
+
+    public static void main(String[] args) {
+ ExtendsContainer&lt;Food&gt; food = new ExtendsContainer&lt;Food&gt;(new Food());
+ ExtendsContainer&lt;Fruit&gt; fruit = new ExtendsContainer&lt;Fruit&gt;(new Fruit());
+ ExtendsContainer&lt;Apple&gt; apple = new ExtendsContainer&lt;Apple&gt;(new Apple());
+ ExtendsContainer&lt;String&gt; string = new ExtendsContainer&lt;String&gt;(&quot;abc&quot;);
+
+ getDataNoLimit(food);
+ getDataNoLimit(fruit);
+ getDataNoLimit(apple);
+ getDataNoLimit(string);
+
+ getDataOnlyFood(food);
+ getDataOnlyFood(fruit);
+ getDataOnlyFood(apple);
+ getDataOnlyFood(string);
+
+ getDataAnyFood(food);
+ getDataAnyFood(fruit);
+ getDataAnyFood(apple);
+ getDataAnyFood(string);
+    }
+
+    public static void getDataNoLimit(ExtendsContainer&lt;?&gt; container) {
+ System.out.println(&quot;data:&quot; + container.getData());
+    }
+
+    public static void getDataOnlyFood(ExtendsContainer&lt;Food&gt; container) {
+ System.out.println(&quot;data:&quot; + container.getData());
+    }
+
+    public static void getDataAnyFood(ExtendsContainer&lt;? extends Food&gt; data) {
+ System.out.println(&quot;data :&quot; + data.getData());
+    }
+
+}

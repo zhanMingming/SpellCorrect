@@ -1,0 +1,345 @@
+DataList 分页GridView功能很强大，但往往gridlist对于函数的实现（edit,delete,cancel...）的实现更为简洁，可他有个缺点就是，不能实现自动分页
+
+
+   
+
+
+   搞了半个下午，终于搞定了，算是比较简洁的code吧，实现了GridList 分页
+
+
+   
+
+
+   明天就要过19岁birthday了，今天记录一下成绩，鼓励一下！
+
+
+   
+
+
+   1.第一步是在.aspx里插入一个DataList控件，并在编辑模板中分别用table实现ItemTemplate和EditItemTemplate列表，字段绑定（当然，也可以用SqlDataSource自动搞定）
+
+
+   
+
+
+   &lt;asp:DataList ID="DataList1" runat="server" CellPadding="4" 
+ DataKeyField="UserName" ForeColor="#333333" 
+ OnEditCommand="DataList1_EditCommand" 
+ OnCancelCommand="DataList1_CancelCommand"
+ OnDeleteCommand="DataList1_DeleteCommand"
+ OnUpdateCommand="DataList1_UpdateCommand"
+ Width="431px"&gt;
+ &lt;FooterStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" /&gt;
+ &lt;AlternatingItemStyle BackColor="White" /&gt;
+ &lt;ItemStyle BackColor="#EFF3FB" /&gt;
+ &lt;EditItemTemplate&gt;
+     &lt;table class="style1"&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   用户名&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label1" runat="server" Text='&lt;%# Eval("UserName") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   真实姓名&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label3" runat="server" Text='&lt;%# Eval("RealName") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   性别&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label2" runat="server" Text='&lt;%# Eval("Gender") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   学校&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:TextBox ID="TextBox4" runat="server" Text='&lt;%# Eval("Colledge") %&gt;'&gt;&lt;/asp:TextBox&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   班级&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:TextBox ID="TextBox5" runat="server" Text='&lt;%# Eval("Classes") %&gt;'&gt;&lt;/asp:TextBox&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   学号&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:TextBox ID="TextBox6" runat="server" Text='&lt;%# Eval("StudentID") %&gt;'&gt;&lt;/asp:TextBox&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   权限&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:DropDownList ID="DropDownList1" runat="server" 
+SelectedValue='&lt;%# Bind("Role") %&gt;'&gt;
+&lt;asp:ListItem&gt;Administrator&lt;/asp:ListItem&gt;
+&lt;asp:ListItem&gt;NBU-acmer&lt;/asp:ListItem&gt;
+&lt;asp:ListItem&gt;NormalStudent&lt;/asp:ListItem&gt;
+   &lt;/asp:DropDownList&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   电话&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:TextBox ID="TextBox8" runat="server" Text='&lt;%# Eval("Phone") %&gt;'&gt;&lt;/asp:TextBox&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   电子邮箱&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:TextBox ID="TextBox9" runat="server" Text='&lt;%# Eval("Email") %&gt;'&gt;&lt;/asp:TextBox&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+     &lt;/table&gt;
+     &lt;br /&gt;
+     &lt;asp:LinkButton ID="LinkButton3" runat="server" CommandName="update"&gt;更改&lt;/asp:LinkButton&gt;
+     &lt;br /&gt;
+     &lt;asp:LinkButton ID="LinkButton4" runat="server" CommandName="cancel"&gt;取消&lt;/asp:LinkButton&gt;
+ &lt;/EditItemTemplate&gt;
+ &lt;SelectedItemStyle BackColor="#D1DDF1" Font-Bold="True" ForeColor="#333333" /&gt;
+ &lt;HeaderTemplate&gt;
+     &lt;asp:Label ID="Label4" runat="server" Text="用户信息"&gt;&lt;/asp:Label&gt;
+ &lt;/HeaderTemplate&gt;
+ &lt;HeaderStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" /&gt;
+ &lt;ItemTemplate&gt;
+     &lt;table class="style1"&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   用户名&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label1" runat="server" Text='&lt;%# Eval("UserName") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   真实姓名&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label3" runat="server" Text='&lt;%# Eval("RealName") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   性别&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label2" runat="server" Text='&lt;%# Eval("Gender") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   学校&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label5" runat="server" Text='&lt;%# Eval("Colledge") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   班级&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label6" runat="server" Text='&lt;%# Eval("Classes") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   学号&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label7" runat="server" Text='&lt;%# Eval("StudentID") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   权限&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label8" runat="server" Text='&lt;%# Eval("Role") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   电话&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label9" runat="server" Text='&lt;%# Eval("Phone") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+      &lt;td&gt;
+   电子邮箱&lt;/td&gt;
+      &lt;td&gt;
+   &lt;asp:Label ID="Label10" runat="server" Text='&lt;%# Eval("Email") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/td&gt;
+  &lt;/tr&gt;
+     &lt;/table&gt;
+     &lt;br /&gt;
+     &lt;asp:LinkButton ID="LinkButton1" runat="server" CommandName="edit" on
+ &gt;编辑&lt;/asp:LinkButton&gt;
+     &lt;br /&gt;
+     &lt;asp:LinkButton ID="LinkButton2" runat="server" CommandName="delete"&gt;删除&lt;/asp:LinkButton&gt;
+     &lt;br /&gt;
+ &lt;/ItemTemplate&gt;
+    &lt;/asp:DataList&gt; 
+
+
+   
+
+
+   2. 实现编辑、删除功能：
+
+
+    ItemTemplate中 插入LinkButton（编辑、删除分别对应的CommandName为edit和delete）
+
+
+    EditItemTemplate中 插入LinkButton（更改、取消分别对应的CommandName为update和cancel）
+
+
+   
+
+
+   3. LinkButton 的实现：
+
+
+    详见上面code，注意 OnEditCommand="DataList1_EditCommand"  OnCancelCommand="DataList1_CancelCommand" OnDeleteCommand="DataList1_DeleteCommand" OnUpdateCommand="DataList1_UpdateCommand"
+
+
+    这几句的添加
+
+
+   
+
+
+   4. 实现Edit,cancel,delete,update的代码：
+
+
+   //.cs中
+    protected void DataList1_EditCommand(object s, DataListCommandEventArgs e)
+    {
+ DataList1.EditItemIndex = e.Item.ItemIndex;
+ DataList1.DataBind();
+    }
+    protected void DataList1_CancelCommand(object source, DataListCommandEventArgs e)
+    {
+ DataList1.EditItemIndex = -1;
+ DataList1.DataBind();
+    }
+    protected void DataList1_DeleteCommand(object source, DataListCommandEventArgs e)
+    {
+ //int Username = (int)DataList1.DataKeys[e.Item.ItemIndex];
+ //SqlDataSource1.DeleteParameters["UserName"].DefaultValue = Username.ToString();
+ //SqlDataSource1.Delete();
+ Label d = (Label)e.Item.FindControl("Label1");
+ string userName = d.Text.ToString();
+ new UserBLL().DeleteByID(userName);
+    }
+    protected void DataList1_UpdateCommand(object source, DataListCommandEventArgs e)
+    {
+ string userName = ((Label)e.Item.FindControl("Label1")).Text.ToString();
+ string school = ((TextBox)e.Item.FindControl("TextBox4")).Text.ToString();
+ string classes = ((TextBox)e.Item.FindControl("TextBox5")).Text.ToString();
+ string studentid = ((TextBox)e.Item.FindControl("TextBox6")).Text.ToString();
+ string role = ((DropDownList)e.Item.FindControl("DropDownList1")).Text.ToString();
+ string phone = ((TextBox)e.Item.FindControl("TextBox8")).Text.ToString();
+ string email = ((TextBox)e.Item.FindControl("TextBox9")).Text.ToString();
+
+ UserBLL userbll = new UserBLL();
+ Users user = userbll.FindByID(userName);
+ user.UserName = userName;
+ user.Colledge = school;
+ user.Classes = classes;
+ user.StudentID = studentid;
+ user.Role = role;
+ user.Phone = phone;
+ user.Email = email;
+
+ userbll.UpdateUserInfo(user);
+ DataList1.EditItemIndex = -1;
+ DataList1.DataBind();
+    }
+ 
+
+
+   
+
+
+   5. 哈哈！重点来啦！！！实现DataList分页！
+
+
+   代码如下：
+
+
+   
+
+
+   首先给.aspx中加上一个Label和两个HyperLink
+
+
+   当前页为&lt;asp:Label ID="lblCurrentPage" runat="server" Text="当前页"&gt;&lt;/asp:Label&gt;
+    &lt;asp:HyperLink ID="lnkPrev" runat="server"&gt;上一页&lt;/asp:HyperLink&gt;
+    &lt;asp:HyperLink ID="lnkNext" runat="server"&gt;下一页&lt;/asp:HyperLink&gt;
+
+   
+ 
+
+
+   
+
+
+   then, it comes to 后台 code
+
+
+   //.cs
+public static bool flag = false;
+    public void Page_Load(object src, EventArgs e)
+    {
+ if (!flag)
+ {
+     DataSet ds = new DataSet();
+     ds = new UserBLL().FindAll();
+
+     //对PagedDataSource 对象的相关属性赋值 
+     PagedDataSource objPds = new PagedDataSource();
+     objPds.DataSource = ds.Tables[0].DefaultView;
+     objPds.AllowPaging = true;
+     objPds.PageSize = 3;
+     int CurPage;
+
+     //当前页面从Page查询参数获取 
+     if (Request.QueryString["Page"] != null)
+  CurPage = Convert.ToInt32(Request.QueryString["Page"]);
+     else
+  CurPage = 1;
+
+     objPds.CurrentPageIndex = CurPage - 1;
+     lblCurrentPage.Text = "Page: " + CurPage.ToString();
+
+     if (!objPds.IsFirstPage)
+  lnkPrev.NavigateUrl = Request.CurrentExecutionFilePath + "?Page=" + Convert.ToString(CurPage - 1);
+
+     if (!objPds.IsLastPage)
+  lnkNext.NavigateUrl = Request.CurrentExecutionFilePath + "?Page=" + Convert.ToString(CurPage + 1);
+
+     //把PagedDataSource 对象赋给DataList控件 
+     DataList1.DataSource = objPds;
+     DataList1.DataBind();
+ }
+    } 
+
+
+   
+
+
+   that's all!
+
+
+   
+
+
+   Thanks for watching!

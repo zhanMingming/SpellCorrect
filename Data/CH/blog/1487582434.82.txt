@@ -1,0 +1,114 @@
+Code FormatterCode FormatterTime Limit: 1 Second  Memory Limit: 32768 KB <!--
+ Problem text file for ZheJiang University Online Judge
+ Created by LiuYaoting
+-->
+   Some companies have special requirements for source code format, and it is also good for programmers to keep consistent code style. You are asked to write a simple code formatter for the company to help the poor programmers. 
+
+   The first thing you need to do is to check whether the source code contains tabs (represented as the escape character '/t'), since different terminals have different ways to display tabs, it's better not to use them, but replace them with spaces. The code formatter should replace each tab of the source code with 4(four) blank spaces. 
+
+   Then you need to remove trailing spaces of the source file. Trailing spaces are one or more consecutive whitespaces right before the EOL (end of line, represented as the escape character '/n'), and they usually have no meaning in most programming language, so they can be safely removed. 
+
+   Input
+
+   The input contains multiple test cases! 
+
+   The first line is an integer N indicating the number of test cases. Each test case is the source which contains not more than 100 lines given to you to format. A single line containing only &quot;##&quot; marks the end of a test case. 
+
+   Output
+
+   For each test case, output a log of the formatter in two lines of the following format: 
+
+   #A tab(s) replaced #B trailing space(s) removed Where #A is the number of tabs replaced and #B is the number of trailing spaces removed. 
+
+   Sample Input
+
+   2
+include &lt;stdio.h&gt;
+
+int main()
+{
+	int a,b;
+	while(scanf(&quot;%d %d&quot;,&amp;a, &amp;b) != EOF) 
+		printf(&quot;%d/n&quot;,a+b);
+
+}
+##
+
+##
+
+   Sample Output
+
+   4 tab(s) replaced22 trailing space(s) removed0 tab(s) replaced0 trailing space(s) removed
+
+   Note
+
+   In order to show the whitespaces precisely, all the characters in sample input are underlined. They are not the underscore character
+
+   
+
+   
+
+   这是07年浙江省赛的一道题，一看AC率吓一跳，看题目并不难，那就是输入输出和其他的问题了……
+
+   
+
+   关键点：
+
+   有可能出现这种情况：
+
+   先空格后Tab为一行，也就是说tab必须转换成空格，而不是单单数数的问题了；
+
+   在此贴上我的代码：
+
+   
+
+   
+   /*
+2164027 2010-04-15 20:17:29 Accepted  2851 C++ 0 184 zhangruiqing 
+*/
+#include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+char str[110];
+
+int main()
+{
+	int end=0,tab=0,blank=0,tb=0,cases;
+	scanf(&quot;%d&quot;,&amp;cases);
+	getchar();
+	while(cases--)
+	{
+		while(gets(str))
+		{
+			tb=0;
+			if(strcmp(str,&quot;##&quot;)!=0)
+			{
+				for(int i=0;i&lt;=strlen(str);i++)
+				{
+					if(str[i]=='\t')
+					{
+						tab++;
+						tb+=4;
+					}
+					else if (str[i]==' ')
+					{
+						tb++;
+					}
+					else if(str[i]=='\0')
+					{
+						blank+=tb;
+						tb=0;
+					}
+					else tb=0;
+				}
+			}
+			else
+			{
+				printf(&quot;%d tab(s) replaced\n%d trailing space(s) removed\n&quot;,tab,blank);
+				end=tab=blank=tb=0;
+			}
+		}
+	}
+	return 0;
+}

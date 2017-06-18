@@ -1,0 +1,88 @@
+CBitmap, HBITMAP和LoadImage联系与应用（MFC加载图片笔记）hbitmap是bitmap的指针，
+
+
+   msdn中：
+
+
+   Handle to a bitmap.typedef HANDLE HBITMAP;
+
+
+   
+
+
+   cbitmap是mfc中封装bitmap的类；
+
+
+   msdn中：
+
+
+   Encapsulates（囊括） a Windows graphics device interface (GDI) bitmap and provides member functions to manipulate（操作） the bitmap. 
+
+
+    class CBitmap : public CGdiObject转化方法两种:
+
+
+   Attach和FromHandle：
+
+
+   CBitmap bmp;
+
+
+   bmp.LoadBitmap(IDB_BITMAP1);
+
+
+   HBITMAP hbm = (HBITMAP)bmp;
+
+
+   CBitmap bmp1;
+
+
+   bmp1.Attach(hbm);
+
+
+   
+
+
+   
+
+
+   HBITMAP = CBitmap.m_hObjectCBitmap* = CBitmap.FromHandle(HBITMAP)//已知HBITMAP hbit;
+
+
+   CBitmap cb;
+
+
+   cb.FromHandle(hbit);//已知CBitmap cb;
+
+
+   HBITMAP hbit=(HBITMAP)cb;CBitmap bmp;
+
+
+   HBITMAP hBmp;
+
+
+   
+
+
+   相互转换：
+
+
+   hBmp=(HBITMAP)bmp.GetSafeHandle();
+
+
+   bmp.Attach(hBmp);
+
+
+   
+
+
+   注意点：Attach和FromHandle的区别FromHandle得到的指针是临时变量，,通过Attach连接的句柄可以长久保留,但通过FromHandle得到的只是暂时的,大概只在一个消息区间内有效,很快便会被删除,所以基本上不能用。我用了FromHandle然后一直出错！！！
+
+
+   
+
+
+   重点：CBitmap 无法从文件中加载位图，可以用下面的方法解决。
+
+
+   HBITMAP hBitmap;//hBitmap = (HBITMAP)::LoadImage(::AfxGetInstanceHandle(), "NetFriend.bmp", IMAGE_BITMAP, 0,0,LR_LOADFROMFILE|LR_CREATEDIBSECTION);//从文件中加载，hBitmap = (HBITMAP)::LoadImage(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_BITMAP1), IMAGE_BITMAP, 0,0,LR_CREATEDIBSECTION);//从资源文件中加载

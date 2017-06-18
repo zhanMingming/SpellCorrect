@@ -1,0 +1,39 @@
+MFC 贴图MFC非背景贴图（也可以用于背景贴图）：
+
+
+   在OnDraw中实现:
+
+
+   
+
+
+   void CintelligentjudgingView::OnDraw(CDC* pDC)
+{
+	CintelligentjudgingDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	int x=60,y=50;
+
+	pDC-&gt;SetTextColor(RGB(200,0,0));
+	pDC-&gt;TextOutW(x-40,y,(CString)("分析结果："));
+	CDC memDC;
+	memDC.CreateCompatibleDC(pDC);
+
+	CBitmap bmp;
+	bmp.LoadBitmap(IDB_BITMAP1);
+	HBITMAP hbm = (HBITMAP)bmp;
+	memDC.SelectObject(hbm);
+	CRect rect;
+	GetClientRect(&amp;rect);
+	BITMAP bm;
+	::GetObject(hbm,sizeof(bm),&amp;bm);
+	pDC-&gt;StretchBlt(x+100,y+20,500,300,&amp;memDC,0,0,bm.bmWidth,bm.bmHeight,SRCCOPY);
+	memDC.DeleteDC();
+	hbm-&gt;unused;
+
+	CView::OnDraw(pDC);
+	if (!pDoc)
+		return;
+
+	// TODO: 在此处为本机数据添加绘制代码
+}

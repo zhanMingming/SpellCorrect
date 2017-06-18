@@ -1,0 +1,279 @@
+Kaka&#39;s Matrix Travels(减弱版) DP版Kaka's Matrix Travels(减弱版)
+
+
+   Time Limit:5000MS Memory Limit:65536KTotal Submit:15 Accepted:8 
+
+
+   Description 
+
+
+   On an N &times; N chessboard with a non-negative number in each grid, Kaka starts his matrix travels with SUM = 0. For each travel, Kaka moves one rook from the left-upper grid to the right-bottom one, taking care that the rook moves only to the right or down. Kaka adds the number to SUM in each grid the rook visited, and replaces it with zero. It is not difficult to know the maximum SUM Kaka can obtain for his first travel. Now Kaka is wondering what is the maximum SUM he can obtain after his 2th travel. Note the SUM is accumulative during the 2 travels.
+
+
+   Input 
+
+
+   The first line contains one integers N (1 &le; N &le; 50) described above. The following N lines represents the matrix. You can assume the numbers in the matrix are no more than 1000. 
+
+
+   Output 
+
+
+   The maximum SUM Kaka can obtain after his 2th travel.
+
+
+   Sample Input 
+
+
+   
+
+   3
+1 2 3
+0 2 1
+1 4 2
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   15
+
+
+
+   
+
+
+   Source 
+
+
+   
+
+
+   TLE版本1：
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define N 51
+#define left -1
+#define up 1
+int a[N][N];
+int dp[N][N][N][N];
+int n;
+int dir[4][2][2]=
+{
+	1,0,1,0,
+	1,0,0,1,
+	0,1,1,0,
+	0,1,0,1
+};
+
+inline int max(int a,int b)
+{	return a&gt;b?a:b;  }
+
+void travel(int x1,int y1,int x2,int y2)
+{
+	for(int d=0;d&lt;4;d++)
+	{
+		if(x1&gt;n||y1&gt;n||x2&gt;n||y2&gt;n)
+			continue ;
+		int tx1=x1+dir[d][0][0];
+		int ty1=y1+dir[d][0][1];
+		int tx2=x2+dir[d][1][0];
+		int ty2=y2+dir[d][1][1];
+		int temp=(tx1==tx2&amp;&amp;ty1==ty2)?0:a[tx2][ty2];
+		if(dp[tx1][ty1][tx2][ty2]&lt;dp[x1][y1][x2][y2]+a[tx1][ty1]+temp)
+		{
+			dp[tx1][ty1][tx2][ty2]=dp[x1][y1][x2][y2]+a[tx1][ty1]+temp;
+		}
+	}
+}
+
+int DP()
+{
+	int i,j,flag,v,w;
+	memset(dp,-1,sizeof(dp));
+	dp[1][1][1][1]=a[1][1];
+	travel(1,1,1,1);
+	for(i=1;i&lt;=n;i++)
+	{
+		for(j=1;j&lt;=n;j++)
+		    for(int k=1;k&lt;=n;k++)
+				for(int t=1;t&lt;=n;t++)
+					travel(i,j,k,t);
+	}
+	return dp[n][n][n][n];
+}
+
+int main()
+{
+	int i,j;	
+	while(scanf("%d",&amp;n)!=EOF)
+	{
+		for(i=1;i&lt;=n;i++)
+			for(j=1;j&lt;=n;j++)
+				scanf("%d",&amp;a[i][j]);
+		printf("%d/n",DP());
+	}
+} 
+
+
+   TLE原因：
+
+
+   travel函数中每个点更新时只要比当前值大就更新一次，而事实上只需要从四种情况中那个最大的情况往下走就好了，所以每个点不只走一次！必然超时！
+
+
+   
+
+
+   TLE版本2：
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define N 51
+#define left -1
+#define up 1
+int a[N][N];
+int dp[N][N][N][N];
+int n;
+int dir[4][2][2]=
+{
+	1,0,1,0,
+	1,0,0,1,
+	0,1,1,0,
+	0,1,0,1
+};
+
+inline int max(int a,int b)
+{	return a&gt;b?a:b;  }
+
+int DP()
+{
+	int i,j,flag,v,w;
+	memset(dp,-1,sizeof(dp));
+	dp[1][1][1][1]=a[1][1];
+	for(i=1;i&lt;=n;i++)
+	{
+		for(j=1;j&lt;=n;j++)
+			for(int k=1;k&lt;=n;k++)
+				for(int t=1;t&lt;=n;t++)
+					for(int d=0;d&lt;4;d++)
+					{
+						int tx1=i+dir[d][0][0];
+						int ty1=j+dir[d][0][1];
+						int tx2=k+dir[d][1][0];
+						int ty2=t+dir[d][1][1];
+						if(tx1&gt;n||ty1&gt;n||tx2&gt;n||ty2&gt;n)
+							continue;
+						int temp=(tx1==tx2&amp;&amp;ty1==ty2)?0:a[tx2][ty2];
+						if(dp[tx1][ty1][tx2][ty2]&lt;dp[i][j][k][t]+a[tx1][ty1]+temp)
+						{
+							dp[tx1][ty1][tx2][ty2]=dp[i][j][k][t]+a[tx1][ty1]+temp;
+						}
+					}
+	}
+	return dp[n][n][n][n];
+}
+
+int main()
+{
+	int i,j;	
+	while(scanf("%d",&amp;n)!=EOF)
+	{
+		for(i=1;i&lt;=n;i++)
+			for(j=1;j&lt;=n;j++)
+				scanf("%d",&amp;a[i][j]);
+		printf("%d/n",DP());
+	}
+} 
+
+
+   
+
+
+   TLE原因：
+
+
+   现在改成4个for循环，复杂度 50*50*50*50*4； 
+
+
+   Memory:26648KTime:3546MS是不是还可以减少状态呢？
+
+
+   我是同步的走，由于每次只能忘右或下走，所以坐标必然是递增的，所以&hellip;&hellip;同步走道的两个点P1,P2必然能够保证P1.x+P1.y==P2.x+P2.y
+
+
+   
+
+
+   所以&hellip;&hellip;就出现了AC代码：
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define N 51
+int a[N][N];
+int dp[N][N][N][N];
+int n;
+
+inline int max(int a,int b,int c,int d)
+{
+	int m1,m2;
+	m1=a&gt;b?a:b;
+	m2=c&gt;d?c:d;
+	return m1&gt;m2?m1:m2;
+}
+
+int DP()
+{
+	int i,j,flag,v,w;
+	for(i=1;i&lt;=n;i++)
+		for(j=1;j&lt;=n;j++)
+			for(int k=1;k&lt;=n;k++)
+				for(int t=1;t&lt;=n;t++)
+					dp[i][j][k][t]=0;
+	dp[1][1][1][1]=a[1][1];
+	for(i=1;i&lt;=n;i++)
+		for(j=1;j&lt;=n;j++)
+			for(int k=1;k&lt;=n;k++)
+				for(int t=1;t&lt;=n;t++)
+					if (i+j==k+t) 
+						dp[i][j][k][t]=max(dp[i-1][j][k-1][t],dp[i-1][j][k][t-1],dp[i][j-1][k][t-1],dp[i][j-1][k-1][t])+a[i][j]+a[k][t]*((i!=k)||(j!=t));
+	return dp[n][n][n][n];
+}
+
+int main()
+{
+	int i,j; 
+	while(scanf("%d",&amp;n)!=EOF)
+	{
+		for(i=1;i&lt;=n;i++)
+			for(j=1;j&lt;=n;j++)
+				scanf("%d",&amp;a[i][j]);
+		printf("%d/n",DP());
+	}
+} 
+
+
+   
+
+
+   if (i+j==k+t) 多了这个限制条件，事情就好办多了！
+
+
+   Memory:26452KTime:296MS
+
+
+   当然，这道题中当路的条数不确定时不能弄2*n维DP&hellip;&hellip;通解是网络流，貌似最大费用流吧，等我做了再说吧！

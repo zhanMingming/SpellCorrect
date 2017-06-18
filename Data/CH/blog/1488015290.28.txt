@@ -1,0 +1,38 @@
+消息摘要、MAC(消息认证码)、数字签名扫盲贴本文主要是对维基百科的翻译，原文Message authentication code。
+
+
+   
+
+
+
+
+   In cryptography(密码学), a message authentication code (MAC) is a short piece of information used to authenticate(鉴定) a message—in other words, to confirm that the message came from the stated(特定的、规定的) sender (its authenticity(可靠性、真实性))
+ and has not been changed in transit(在途中) (its integrity(完整性))。也就是说MAC用来保证消息的完整性，之前的文章&quot;消息摘要及其算法扫盲贴&quot;也提到过消息摘要也可以保证消息完整性。消息摘要和消息认证码有什么区别呢？后面我们再看这个问题。
+
+
+
+A MAC algorithm, sometimes called a keyed (cryptographic加密的) hash function (which is somewhat misleading(误导性的), since a cryptographic hash function is only one of the possible ways to generate a MAC), accepts as input a secret key and an arbitrary(任意的)-length
+ message to be authenticated, and outputs a MAC (sometimes known as a tag). The MAC value protects both a message's data integrity as well as its authenticity, by allowing verifiers(核验者) (who also possess(拥有) the secret key) to detect(探测) any changes to the
+ message content.也就是说：MAC是通过mac算法&#43;秘钥&#43;消息生成的。mac算法其实有很多种，不过最常用的还是hash算法，比如MD5、SHA等。用hash算法作为mac算法，通过计算得到的mac，也就是HMAC，所以MAC与HMAC没有太大差别。
+
+
+
+
+   
+
+
+
+
+   现在我们明确下：消息摘要与MAC的区别，消息摘要只能保证消息的完整性，MAC不仅能够保证完整性，还能够保证真实性。比如客户端A想给服务端B发送一条消息，A需要把消息内容和对应的消息摘要都发给B；B通过同样的摘要算法，自然可以知道消息是否被篡改。比如攻击者C将A发送的原始消息和摘要，都篡改成新的消息和摘要，那么这个消息对B来说也是完整的，只不过不是A发的。因为MAC含有秘钥(只有A和B知道)，如果A将消息内容和MAC发给B，虽然C是仍然可以修改消息内容和MAC，但是由于C不知道秘钥，所以无法生成与篡改后内容匹配的MAC。
+
+
+   
+
+
+
+
+   MACs differ from digital signatures(数字签名) as MAC values are both generated and verified using the same secret key. This implies that the sender and receiver of a message must agree on the same key before initiating communications,
+ as is the case with symmetric encryption(对称加密). For the same reason, MACs do not provide the property of non-repudiation(不可抵赖性) offered by signatures specifically in the case of a network-wide(网络范围) shared secret key: any user who can verify a MAC is also
+ capable(有能力的) of generating MACs for other messages. In contrast(作为对比), a digital signature is generated using the private key of a key pair, which is public-key cryptography(公钥密码体制). Since this private key is only accessible to its holder, a digital signature
+ proves that a document was signed by none other than that holder. Thus, digital signatures do offer non-repudiation. However, non-repudiation can be provided by systems that securely(安全地) bind key(关键的) usage information to the MAC key; the same key is in the
+ possession of two people, but one has a copy of the key that can be used for MAC generation while the other has a copy of the key in a hardware security module that only permits MAC verification. This is commonly done in the finance industry(金融业).也就是说：MAC不能保证消息的不可抵赖性，而数字签名可以保证。因为数字签名使用的是公钥密码体制，私钥只有你自己才知道；而MAC使用对称加密，既然一方能够验证你的MAC，就能够伪造你的MAC，因为发送方和接收方的秘钥是一样的。当然如果你在MAC中绑定一些关键信息，并通过某些手段，让一方只能生成MAC，另一方只能验证MAC，其实也是可以实现签名效果的。

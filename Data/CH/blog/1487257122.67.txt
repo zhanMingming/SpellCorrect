@@ -1,0 +1,44 @@
+tar.gz 文件坏了，崩溃了，有恢复办法的1)首先需要安装 gzrt
+
+
+    例如;
+
+
+    yum list | grep gzrt
+
+
+    yum install gzrt.x86_64  
+
+
+   2)运行cpio 看是否安装了，如果没装也要装，最新版本的linux一般都安装了，比如我的就安装了
+
+
+   
+
+
+
+
+   3）按照下面的例子做恢复
+
+
+   $ ls *.gz
+
+my-corrupted-backup.tar.gz
+
+$ gzrecover my-corrupted-backup.tar.gz
+
+$ ls *.recovered
+
+my-corrupted-backup.tar.recovered
+
+$ cpio -F my-corrupted-backup.tar.recovered -i -v
+
+
+
+
+   
+
+
+
+
+   4）详细参见：http://www.urbanophile.com/arenn/coding/gzrt/gzrt.html

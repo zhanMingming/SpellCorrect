@@ -1,0 +1,126 @@
+Imaginary Date hdu 3569Imaginary Date
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 125Accepted Submission(s): 85
+
+Problem Description
+
+XMM met his ex-girlfriend on Double Seventh Festival Day. Though what happened between these two little kids was in the past, there did exist some strange and complicated feelings or something you can call it desire, which XMM cannot deny and tried as hard as he can to keep those things inside to ensure nobody else knows. But as his friends, just to be clear, it is so obvious to us.So, today is a day. How could XMM possibly give up this wonderful chance? He once again asked XLZ out and then took her to a nice restaurant and prepared to give some delicious chocolate to XLZ to satisfy her which we think is useless.There are n kinds of chocolate in the restaurant, XLZ likes them in varying degrees. To simplify this, every chocolate have a integer value vi(1 &lt;= vi &lt;= 1000 for all 1 &lt;= i &lt;= n &lt;= 1000). This implies how much XLZ likes it. But since it has been such a long time that XMM Broke up with XLZ, XMM didn&rsquo;t know it. So he&rsquo;d like to randomly choose a chocolate every minute to give it to her. The total time XMM has is m minutes (1 &lt;= m &lt;= 1000).But there is another restriction: the kitchen is not so effective so after XMM buy a chocolate, it needs k (1 &lt;= k &lt;= n) minutes to make this kind of chocolate which means the next time XMM can order this is at least k minutes later.Now we want to know the expect value XLZ gets on that special night.
+
+
+
+
+   
+
+Input
+
+The first line is a single integer T indicating the number of cases that follow. For each case, three integers n, m, k are give in the first line which is mentioned above. The next line contains n integers which are the value of the n chocolates. 
+
+
+
+
+   
+
+Output
+
+For each case just output the result in a single line in the format of "Case x: d" in which x is the case number counted from one and d is the expect value that Xlz gets, rounded to 5 digits after the decimal point. 
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2
+
+3 3 1
+1 3 5
+
+4 4 4
+1 2 3 4
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   Case 1: 9.00000
+Case 2: 10.00000
+
+
+
+
+
+
+   
+
+Author
+
+totalfrank
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（13）&mdash;&mdash;Host by UESTC 
+
+
+
+
+   
+
+Recommend
+
+zhouzeyong
+
+数学题，要不是网断了昨天比赛时候就能A了&hellip;&hellip;555
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+#define N 1010
+#define min(a,b)a&gt;b?b:a
+
+int n;
+
+int main()
+{
+	int T;
+	scanf("%d",&amp;T);
+	int i,j,n,m,k,a[N],b;
+	for(i=1;i&lt;=T;i++)
+	{
+		scanf("%d%d%d",&amp;n,&amp;m,&amp;k);
+		double ans=0;
+		double sum=0;
+		for(j=1;j&lt;=n;j++)
+		{
+			scanf("%d",&amp;a[j]);
+			sum+=a[j];
+		}
+
+		if(k&lt;=n)
+			ans=sum*1.0*m/n;
+		else
+		{
+			ans+=m/k*sum;
+			if(m%k&lt;n)
+				ans+=sum/n*(m%k);
+			else
+				ans+=n;
+		}
+		printf("Case %d: %.5lf/n",i,ans*1.0);
+	}
+}

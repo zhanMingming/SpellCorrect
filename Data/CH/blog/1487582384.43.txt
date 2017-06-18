@@ -1,0 +1,125 @@
+pku 3258 River HopscotchRiver Hopscotch
+
+
+
+
+
+
+	Time Limit: 2000MS
+
+	Memory Limit: 65536K
+
+
+
+	Total Submissions: 2433
+
+	Accepted: 1064
+
+
+
+
+
+
+   Description
+
+
+
+   Every year the cows hold an event featuring a peculiar version of hopscotch that involves carefully jumping from rock to rock in a river. The excitement takes place on a long, straight river with a rock at the start and another rock at the end, L units away from the start (1 &le; L &le; 1,000,000,000). Along the river between the starting and ending rocks, N (0 &le; N &le; 50,000) more rocks appear, each at an integral distance Di from the start (0 &lt; Di &lt; L).
+
+
+   To play the game, each cow in turn starts at the starting rock and tries to reach the finish at the ending rock, jumping only from rock to rock. Of course, less agile cows never make it to the final rock, ending up instead in the river.
+
+
+   Farmer John is proud of his cows and watches this event each year. But as time goes by, he tires of watching the timid cows of the other farmers limp across the short distances between rocks placed too closely together. He plans to remove several rocks in order to increase the shortest distance a cow will have to jump to reach the end. He knows he cannot remove the starting and ending rocks, but he calculates that he has enough resources to remove up to M rocks (0 &le; M &le; N).
+
+
+   FJ wants to know exactly how much he can increase the shortest distance *before* he starts removing the rocks. Help Farmer John determine the greatest possible shortest distance a cow has to jump after removing the optimal set of M rocks.
+
+
+
+
+   Input
+
+Line 1: Three space-separated integers: L, N, and M Lines 2..N+1: Each line contains a single integer indicating how far some rock is away from the starting rock. No two rocks share the same position.
+
+
+   Output
+
+Line 1: A single integer that is the maximum of the shortest distance a cow has to jump after removing M rocks
+
+
+   Sample Input
+
+
+   25 5 2
+2
+14
+11
+21
+17
+
+   Sample Output
+
+
+   4
+
+   Hint
+
+Before removing any rocks, the shortest jump was a jump of 2 from 0 (the start) to 2. After removing the rocks at 2 and 14, the shortest required jump is a jump of 4 (from 17 to 21 or from 21 to 25).
+
+
+   Source
+
+USACO 2006 December Silver
+
+二分判断每个长度的间隔是否能满足去掉的石头数&lt;=m
+
+#include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+#define N 50010
+int len[N];
+
+int n,m,l;
+bool judge(int inv)//interval
+{
+	int seq[N],top=0,num=0;
+	seq[0]=-1;
+	for(int i=0;i&lt;n;i++)
+	{
+		if(len[i]-seq[top]&lt;inv)
+			num++;
+		else
+			seq[++top]=len[i];
+	}
+	if(l-seq[top]&lt;inv)
+		return false;
+	if(num&gt;m)
+		return false;
+	return true;
+}
+
+int main()
+{
+	while(scanf("%d%d%d",&amp;l,&amp;n,&amp;m)!=EOF)
+	{
+		int i,j,k;
+		for(i=0;i&lt;n;i++)
+			scanf("%d",&amp;len[i]);
+		sort(len,len+n);
+		int ans;
+		int low=0,high=l;
+		while(low&lt;=high)
+		{
+			int mid=(low+high)&gt;&gt;1;
+			if(judge(mid))
+			{
+				low=mid+1;
+				ans=mid;
+			}
+			else
+				high=mid-1;
+		}
+		printf("%d/n",ans);
+	}
+}

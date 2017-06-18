@@ -1,0 +1,144 @@
+通过JAXB看XML外部实体注入(XML External Entity)我们先使用JAXB提供的注解标记下java类和XML映射关系：
+
+
+   package jaxb;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Student {
+
+	@XmlElement(name = &quot;name&quot;)
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [name=&quot; + name + &quot;]&quot;;
+	}
+
+}
+
+
+   
+
+
+   
+
+
+
+
+   下面这个类使用JAXB的API进行对象和xml直接的相互转换：
+
+
+   package jaxb;
+
+import java.io.FileInputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
+public class Main {
+
+	public static void main(String[] args) throws Exception {
+		String xml = readContent(&quot;src/jaxb/1.xml&quot;);
+		Object obj = xmlToObjectXXE(xml, Student.class);
+		System.out.println(objectToXML(obj, Student.class));
+	}
+
+	public static String readContent(String file) throws Exception {
+		FileInputStream input = new FileInputStream(file);
+		byte[] content = new byte[2 * 1024];
+		int realBytes = input.read(content);
+		input.close();
+		return new String(content, 0, realBytes, &quot;UTF-8&quot;);
+	}
+
+	public static Object xmlToObjectXXE(String xml, Class&lt;?&gt; klass) throws Exception {
+		JAXBContext context = JAXBContext.newInstance(klass);
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		return unmarshaller.unmarshal(new StringReader(xml));
+	}
+
+	public static Object xmlToObjectSafe(String xml, Class&lt;?&gt; klass) throws Exception {
+		JAXBContext context = JAXBContext.newInstance(klass);
+
+		XMLInputFactory xif = XMLInputFactory.newFactory();
+		xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+		xif.setProperty(XMLInputFactory.SUPPORT_DTD, true);
+		XMLStreamReader xsr = xif.createXMLStreamReader(new StringReader(xml));
+
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		return unmarshaller.unmarshal(xsr);
+	}
+
+	public static String objectToXML(Object obj, Class&lt;?&gt; klass) throws Exception {
+		JAXBContext jaxbContext = JAXBContext.newInstance(klass);
+		Marshaller marshaller = jaxbContext.createMarshaller();
+
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, &quot;UTF-8&quot;);
+		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, false);
+
+		StringWriter writer = new StringWriter();
+		marshaller.marshal(obj, writer);
+		writer.close();
+
+		return writer.toString();
+	}
+}
+xmlToObjectXXE()这个方法解析xml，存在XXE注入；而xmlToObjectSafe是安全的解析方式。
+
+   
+
+
+   
+
+
+
+
+   比如我们xml内容是：
+
+
+   &lt;!DOCTYPE student[ 
+
+ &lt;!ENTITY my_outer_entity SYSTEM &quot;file:///c:/demo.txt&quot;&gt;  
+ 
+]&gt;
+
+&lt;student&gt;
+	&lt;name&gt;&amp;my_outer_entity;&lt;/name&gt;
+&lt;/student&gt;
+
+
+
+
+如果使用xmlToObjectXXE得到的结果是：可以明显地看到XXE攻击，读取了c:/demo.txt的内容
+
+   
+
+
+
+
+   
+
+
+
+
+   如果使用xmlToObjectSafe解析得到结果是：

@@ -1,0 +1,103 @@
+使用MFC控件：1.单选按钮
+
+
+   radio button
+
+
+   默认情况下，一个对话框上的all按钮都属于同一组button
+
+
+   如果需要分组，去属性里找Group选项
+
+
+   
+
+
+   2.Tab Control
+
+
+   设置一个tab control 关联的变量 m_tab
+
+
+   在函数中写：
+
+
+   BOOL CQue::OnInitDialog(){CDialog::OnInitDialog();m_tabcontrol.InsertItem(0,_T("职业兴趣"));m_tabcontrol.InsertItem(0,_T("适合方向"));
+
+
+   // TODO: 在此添加额外的初始化
+
+
+   return TRUE; // return TRUE unless you set the focus to a control// 异常: OCX 属性页应返回 FALSE}
+
+
+   
+
+
+   需要动态创建，方法如下：     1、首先创建一个MFC对话框框架，在对话框资源上从工具箱中添加上一个Tab  Control  控件，根据需要修改一下属性，然后右击控件，为这个控件添加一个变量，将此控件跟一个CTabCtrl类变量绑定在一起，这里设为m_tabctrl   2、创建3个新的对话框资源，其属性作如下修改：   Border：none  //边界为空,这样它就没了标题栏   Style  ：Child  //  这样这个模板就可以当作另一个窗口的子窗口了。      其它如果没有必要，就不用改了。   在上面加一些控件什么的，具体操作跟普通对话框没有区别。   完成后从这两个对话框模板生成3个新的对话框类。   3、在主对话框中为新添加进来的两个类增加3个变量：   如：
+
+
+    CDialog1 page1;   CDialog2 page2;  
+
+
+    CDialog3 page3; 4、在主对话框的OnInitDialog()函数中添加如下类似的代码：       TCITEM  item;   item.mask  =  TCIF_TEXT;   item.pszText  =  "第一页";     m_tabctrl.InsertItem  (0,&amp;item);   item.pszText  ="第二页";   m_tabctrl.InsertItem  (1,&amp;item);     m_mm1.Create  (IDD_DIALOG1,&amp;m_tabctrl);   m_mm2.Create  (IDD_DIALOG2,&amp;m_tabctrl);     m_mm1.SetWindowPos  (NULL,10,30,400,100,SWP_SHOWWINDOW);   m_mm2.SetWindowPos  (NULL,10,30,400,100,SWP_HIDEWINDOW  );     解释如下：   两个InsertItem函数的调用是为了给标签控件增加两个标签页面，文本是标题。   SetWindowPos()函数设置这两个对话框在Z顺序中的位置，显示或隐藏状态.。   5、在主对话中为标签控件添加一个标签选择改变（TCN_SELCHANGE）的控件通知消息，以便在用户选择标签时通知主对话框。在主对话框的编辑界面右击标签控件，选择添加一个事件可以完成这个操作。   在事件处理中添加如下代码，如下例：   void  CtabdialogDlg::OnTcnSelchangeTab1(NMHDR  *pNMHDR,  LRESULT  *pResult)   {   CRect  r;   m_tabctrl.GetClientRect  (&amp;r);     switch(m_tabctrl.GetCurSel())   {   case  0:   m_mm1.SetWindowPos  (NULL,10,30,r.right  -20,r.bottom  -40,SWP_SHOWWINDOW);   m_mm2.SetWindowPos  (NULL,10,30,r.right  -20,r.bottom  -40,SWP_HIDEWINDOW  );     break;   case  1:   m_mm1.SetWindowPos  (NULL,10,30,r.right  -20,r.bottom  -40,SWP_HIDEWINDOW);   m_mm2.SetWindowPos  (NULL,10,30,r.right  -20,r.bottom  -40,SWP_SHOWWINDOW  );     break;   }   *pResult  =  0;   }   要想知道用户选择那个标签页，要通过m_tabctrl.GetCurSel()  函数。为了不使显示的子对话框覆盖标签控件的显示，所以要获得标签控件的尺寸然后设置各页面的尺寸。 
+
+
+   
+
+
+   或者：
+
+
+   
+
+
+   m_tabcontrol.InsertItem(0,_T("第一页"));
+	m_tabcontrol.InsertItem(1,_T("第二页"));
+	m_tabcontrol.InsertItem(2,_T("第三页"));
+
+	page1.Create(IDD_DIALOG2,&amp;m_tabcontrol);
+	page2.Create(IDD_DIALOG3,&amp;m_tabcontrol);
+	page3.Create(IDD_DIALOG4,&amp;m_tabcontrol);
+
+	page1.SetWindowPos (NULL,10,30,430,239,SWP_SHOWWINDOW);  
+	page2.SetWindowPos (NULL,10,30,420,200,SWP_HIDEWINDOW  );
+	page3.SetWindowPos (NULL,10,30,420,200,SWP_HIDEWINDOW  );
+
+
+
+
+
+   然后写标签控件的响应函数：
+
+
+   
+
+
+   void CQue::OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CRect     r;   
+    m_tabcontrol.GetClientRect(&amp;r);    
+
+	switch(m_tabcontrol.GetCurSel())
+	{
+	case 0:
+		 page1.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_SHOWWINDOW); 
+		 page2.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW   );
+		 page3.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW   );
+		 break;
+	case 1:
+		 page1.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW); 
+		 page2.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_SHOWWINDOW);
+		 page3.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW   );
+		 break;
+	case 2:
+		 page1.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW   ); 
+		 page2.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW   );
+		 page3.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_SHOWWINDOW);
+		 break;
+
+	}
+	*pResult = 0;
+}

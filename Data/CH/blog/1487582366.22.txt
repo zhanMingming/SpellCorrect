@@ -1,0 +1,104 @@
+已知先序遍历和中序遍历求后序遍历——二叉树思想数据结构课都讲过，就是从pre下手，因为处理pre是连续的一段段，头上的都是根节点，所以接口函数为：
+
+
+   void solve(tree* root,int low,int high,int rootpos)
+
+
+   root为当前节点，low，high都是相对于mid串而言的；rootpos为根节点在pre串中的位置
+
+
+   思路递归，代码如下：
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;string&quot;
+using namespace std;
+
+struct tree
+{
+	char name;
+	tree* left;
+	tree* right;
+};
+string pre,mid;
+
+//tree* solve(tree* root,int low,int high,int rootpos)
+//{
+//	if (low&gt;high)
+//		return NULL;
+//	if(low==high)
+//	{
+//		tree *temp=(tree*) malloc(sizeof(tree*));
+//		temp-&gt;left=temp-&gt;right=NULL;
+//		temp-&gt;name=mid[low];
+//		return temp;
+//	}
+//	int rpos=-1;
+//	while (mid[++rpos]!=pre[rootpos]);
+//	root-&gt;name=pre[rootpos];
+//	root-&gt;left=(tree*) malloc(sizeof(tree*));
+//	root-&gt;right=(tree*) malloc(sizeof(tree*));
+//	root-&gt;left=solve(root-&gt;left,low,rpos-1,rootpos+1);
+//	root-&gt;right=solve(root-&gt;right,rpos+1,high,rpos+1);
+//	return root;
+//}
+
+void solve(tree* root,int low,int high,int rootpos)
+{
+	if(low==high)
+	{
+		root-&gt;left=root-&gt;right=NULL;
+		root-&gt;name=mid[low];
+		return;
+	}
+	int rpos=-1;
+	while (mid[++rpos]!=pre[rootpos]);
+	root-&gt;name=pre[rootpos];
+	root-&gt;left=root-&gt;right=NULL;
+	if (low&lt;=rpos-1)
+	{
+		root-&gt;left=(tree*) malloc(sizeof(tree*));
+		solve(root-&gt;left,low,rpos-1,rootpos+1);
+	}
+	if(rpos+1&lt;=high)
+	{
+		root-&gt;right=(tree*) malloc(sizeof(tree*));
+		solve(root-&gt;right,rpos+1,high,rpos+1);
+	}
+}
+
+void TraversalPost(tree* node)
+{
+	if (node)
+	{
+		TraversalPost(node-&gt;left);
+		TraversalPost(node-&gt;right);
+		printf(&quot;%c &quot;,node-&gt;name);
+	}
+}
+
+void main()
+{
+	int i,j;
+	tree* root=(tree*)malloc(sizeof(tree*));
+	while (cin&gt;&gt;pre&gt;&gt;mid)
+	{
+		root-&gt;left=root-&gt;right=NULL;
+		root-&gt;name=mid[0];
+		solve(root,0,mid.length()-1,0);
+		TraversalPost(root);
+		cout&lt;&lt;endl;
+	}
+}
+
+其中被注释掉的那部分也能用的，和下面同名函数是同种方法，两种形式。
+
+
+   调用就是root=solve(root,0,mid,length()-1,0);
+
+
+   =======================================================================
+
+
+   Hope you enjoy it !

@@ -1,0 +1,322 @@
+学习AspectJ框架(一)：AspectJ开发环境搭建与Hello WorldAOP大家都不陌生，它是一种编程理念，一种规范，有很多的实现者如Spring AOP，JBoss AOP，还有我们今天要讲的AspectJ。我们平时项目用到最多的是Spring AOP，它是用纯Java实现的，不需要专门的编译过程，不需要特殊的类加载器，它在运行期通过JDK动态代理或者Cglib动态代理的方式向目标类织入增强代码。而AspectJ是语言级的AOP实现，它定义了自己的AOP语法和专门的编译期用来生成符合java字节码规范的class文件。
+
+
+   
+
+
+
+
+   我们平时开发用的都是Eclipse，现在我们看下如何在Eclipse开发Aspectj代码。首先必须安装插件：AJDT，可以从这里挑选适合所有Eclipse版本的插件。比如我用的是4.4版本的eclipse：那我就选择AJDT
+ 2.2.4版本的插件。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   解压后的结果如下：像安装其他Eclipse插件一样，将features和plugins下面的内容复制到Eclipse对应目录下，之后重启eclipse即可。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   因为我们AJDT插件已经安装成功，所以我们可以创建一个aspectj工程(跟普通的java工程没有什么区别)。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   编写普通的Main.java和MyService.java，代码如下：
+
+
+   package net.aty.aspectj;
+
+public class Main {
+
+	public static void main(String[] args) {
+		System.out.println(&quot;main begin...&quot;);
+		MyService service = new MyService();
+		service.sayHello();
+		System.out.println(&quot;main end...&quot;);
+	}
+}
+   package net.aty.aspectj;
+
+public class MyService {
+
+	public void sayHello() {
+		System.out.println(&quot;Hello World.&quot;);
+	}
+}
+
+
+   
+
+
+   
+
+
+
+现在我们建立一个aspectj文件，用来对MyService.sayHello()进行前置增强和后置增强。
+
+   
+
+
+
+这跟建立一个java文件也是类&#20284;的，只不过差别在于java文件能被eclipse编译，而aspecj文件eclipse默认不认识。由于安装了AJDT插件，所以eclipse也能够编译aspect文件。HelloAspect.aj源码如下：
+
+
+   package net.aty.aspectj;
+
+public aspect HelloAspect {
+
+	pointcut HelloWorldPointCut() : execution(* net.aty.aspectj.MyService.*(..));
+
+	before() : HelloWorldPointCut(){
+		System.out.println(&quot;begin intercept&quot;);
+	}
+	
+	after() : HelloWorldPointCut(){
+		System.out.println(&quot;end intercept&quot;);
+	}
+}
+
+
+在eclipse中运行Main.java执行结果如下：可以看到成功地对目标类进行了增强。
+
+   
+
+
+
+
+
+
+   我们的aspectj工程如下：这跟正常的java工程差别不大。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   使用AJDT插件能够极大地方便我们开发，让aspectj工程和.aj文件与普通的java工程和.java文件一致。代码还是上面的代码，现在我们看下如何在命令行自己编译.aj文件和运行，这跟在命令行使用javac和java命令很类&#20284;。为了使用javac和java，我们必须安装JRE(或JDK)，同样地我们也需要安装Aspectj开发工具包。可以从这里下载。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   下载完成后运行aspectj-1.8.8.jar，就可以进行安装页面了。之后指定JRE位置下一步即可安装成功，很容易。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   最终安装成功后的结果如下：bin目录下提供了一些命令能够让我们自己编译.aj文件。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   项目结构如下：
+
+
+   javac文件夹：存放使用javac命令编译得到的class文件
+
+
+   aspectj文件夹：存放使用ajc命令编译得到的class文件
+
+
+   use_aspectj_compile.bat：使用ajc将java文件和aj文件编译到aspectj文件夹
+
+
+
+
+   use_javac_compile.bat：使用javac命令将java文件(javac命令是不认识aj文件的)编译到javac文件夹
+
+
+
+
+   run.bat：调用use_aspectj_compile.bat和use_javac_compile.bat，并执行编译后得到的class文件。
+
+
+   
+
+
+
+
+   注意：这3个bat文件是必需的，javac和aspectj文件夹会自动创建。
+
+
+   
+
+
+
+
+   use_javac_compile.bat内容如下：
+
+
+   @echo off
+
+rem get the directory of current bat file.
+set &quot;CURRENT_DIR=%cd%&quot;
+echo current directory is: %CURRENT_DIR%
+
+
+rem remove exist temp file.
+set &quot;srclist=srclist.txt&quot;
+if exist %srclist% (
+	del %srclist%
+)
+
+rem show all .java files
+echo all java files are: 
+for /R %CURRENT_DIR%/src %%s in (*.java) do ( 
+	echo %%s 
+	echo %%s &gt;&gt; %srclist%
+) 
+
+set &quot;class_dir=javac&quot;
+if exist %class_dir% (
+	rd /s/q %class_dir% 
+)
+
+mkdir %class_dir% 
+
+rem use javac to compile all java files.
+javac -d %class_dir%  @%srclist%
+
+
+   
+
+
+   
+
+
+
+use_aspectj_compile.bat内容如下：
+   @echo off
+
+set &quot;CURRENT_DIR=%cd%&quot;
+echo current directory is: %CURRENT_DIR%
+
+rem remove exist temp file.
+set &quot;srclist=srclist.txt&quot;
+if exist %srclist% (
+	del %srclist%
+)
+
+echo all java files are: 
+for /R %CURRENT_DIR%/src %%s in (*.java *.aj) do ( 
+	echo %%s 
+	echo %%s &gt;&gt; %srclist%
+) 
+
+set &quot;class_dir=aspectj&quot;
+if exist %class_dir% (
+	rd /s/q %class_dir%
+)
+
+mkdir %class_dir%
+
+rem use javac to compile all java files.
+ajc -d %class_dir% -classpath C:/aspectj1.8/lib/aspectjrt.jar @%srclist%
+
+
+   
+
+
+
+run.bat内容如下：
+   @echo off
+
+echo use aspectj to compile...
+call use_aspectj_compile.bat
+echo use aspectj compile success...
+
+echo=
+
+echo use javac to compile...
+call use_javac_compile.bat
+echo use javac compile success...
+
+echo=
+
+echo run classes(use javac to compile)...
+java -classpath javac net.aty.aspectj.Main
+echo=
+
+echo run classes(use aspectj to compile)...
+java -classpath aspectj;&quot;C:/aspectj1.8/lib/aspectjrt.jar&quot; net.aty.aspectj.Main
+
+
+   
+
+
+   
+
+
+
+我们执行run.bat运行结果如下：可以看到使用ajc编译后的class文件被增强了，而使用javac则并没有。
+
+   
+
+
+
+
+   
+
+
+
+
+   使用aspectj的ajc命令会编译出：HelloAspect.class和MyService.class，我们可以使用反编译工具jd-gui查看代码。可以看出MyService被增强了。

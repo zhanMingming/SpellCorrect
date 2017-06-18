@@ -1,0 +1,952 @@
+CUDA系列学习（五）GPU基础算法: Reduce, Scan, Histogram喵~不知不觉到了CUDA系列学习第五讲，前几讲中我们主要介绍了基础GPU中的软硬件结构，内存管理，task类型等；这一讲中我们将介绍3个基础的GPU算法：reduce，scan，histogram，它们在并行算法中非常常用，我们在本文中分别就其功能用处，串行与并行实现进行阐述。
+
+
+
+
+———-
+
+
+
+
+
+
+
+
+1. Task complexity
+
+
+   task complexity包括step complexity（可以并行成几个操作） &amp; work complexity（总共有多少个工作要做）。 
+
+e.g. 下面的tree-structure图中每个节点表示一个操作数，每条边表示一个操作，同层edge表示相同操作，问该图表示的task的step complexity &amp; work complexity分别是多少。
+
+
+
+   
+
+
+
+   Ans: 
+
+step complexity: 3； 
+
+work complexity: 6。 
+
+下面会有更具体的例子。
+
+
+
+
+
+   
+
+
+
+2. Reduce
+
+
+   引入：我们考虑一个task：1+2+3+4+… 
+
+1) 最简单的顺序执行顺序组织为((1+2)+3)+4… 
+
+2) 由于operation之间没有依赖关系，我们可以用Reduce简化操作，它可以减少serial implementation的步数。 
+
+
+
+
+
+2.1 what is reduce?
+
+
+   Reduce input:
+
+
+
+set of elements
+reduction operation 
+
+binary: 两个输入一个输出
+操作满足结合律： (a@b)@c = a@(b@c), 其中@表示operator 
+
+ e.g +, 按位与 都符合；a^b(expotentiation)和减法都不是
+
+
+
+    
+
+
+
+
+
+
+2.1.1 Serial implementation of Reduce:
+
+
+   reduce的每一步操作都依赖于其前一个操作的结果。比如对于前面那个例子，n个数相加，work complexity 和 step complexity都是O(n)（原因不言自明吧~）我们的目标就是并行化操作，降下来step complexity. e.g add serial reduce -&gt; parallel reduce。 
+
+
+
+
+
+2.1.2 Parallel implementation of Reduce:
+
+
+   
+
+
+
+   也就是说，我们把step complexity降到了log2nlog_2n
+
+
+
+   举个栗子，如下图所示： 
+
+
+
+
+
+   
+ 
+
+那么如果对2102^{10}个数做parallel reduce add，其step complexity就是10. 那么在这个parallel reduce的第一步，我们需要做512个加法，这对modern gpu不是啥大问题，但是如果我们要对2202^{20}个数做加法呢？就需要考虑到gpu数量了，如果说gpu最多能并行做512个操作，我们就应将2202^{20}个数分成1024*1024(共1024组)，每次做2102^{10}个数的加法。这种考虑task规模和gpu数量关系的做法有个理论叫Brent’s Theory. 下面我们具体来看：
+
+
+
+   
+
+
+
+   也就是进行两步操作，第一步分成1024个block，每个block做加法；第二步将这1024个结果再用1个1024个thread的block进行求和。kernel code：
+
+
+
+   __global__ void parallel_reduce_kernel(float *d_out, float* d_in){
+    int myID = threadIdx.x + blockIdx.x * blockDim.x;
+    int tid = threadIdx.x;
+
+    //divide threads into two parts according to threadID, and add the right part to the left one, lead to reducing half elements, called an iteration; iterate until left only one element
+    for(unsigned int s = blockDim.x / 2 ; s&gt;0; s&gt;&gt;=1){
+ if(tid&lt;s){
+     d_in[myID] += d_in[myID + s];
+ }
+ __syncthreads(); //ensure all adds at one iteration are done
+    }
+    if (tid == 0){
+ d_out[blockIdx.x] = d_in[myId];
+    }
+}
+
+
+   
+
+
+
+
+   Quiz: 看一下上面的code可以从哪里进行优化？
+ 
+
+Ans：我们在上一讲中提到了global，shared &amp; local memory的速度，那么这里对于global memory的操作可以更改为shared memory，从而进行提速：
+
+
+
+   __global__ void parallel_shared_reduce_kernel(float *d_out, float* d_in){
+    int myID = threadIdx.x + blockIdx.x * blockDim.x;
+    int tid = threadIdx.x;
+    extern __shared__ float sdata[];
+    sdata[tid] = d_in[myID];
+    __syncthreads();
+
+    //divide threads into two parts according to threadID, and add the right part to the left one, lead to reducing half elements, called an iteration; iterate until left only one element
+    for(unsigned int s = blockDim.x / 2 ; s&gt;0; s&gt;&gt;=1){
+ if(tid&lt;s){
+     sdata[tid] += sdata[tid + s];
+ }
+ __syncthreads(); //ensure all adds at one iteration are done
+    }
+    if (tid == 0){
+ d_out[blockIdx.x] = sdata[myId];
+    }
+}
+
+
+   
+优化的代码中还有一点要注意，就是声明的时候记得我们第三讲中说过的kernel通用表示形式：
+
+
+
+   kernel&lt;&lt;&lt;grid of blocks, block of threads, shmem&gt;&gt;&gt;
+
+
+最后一项要在call kernel的时候声明好，即:
+
+
+
+
+
+
+
+
+   parallel_reduce_kernel&lt;&lt;&lt;blocks, threads, threads*sizeof(float)&gt;&gt;&gt;(data_out, data_in);
+
+
+
+好，那么问题来了，对于这两个版本（parallel_reduce_kernel 和 parallel_shared_reduce_kernel）, parallel_reduce_kernel比parallel_shared_reduce_kernel多用了几倍的global memory带宽？
+
+
+Ans:
+分别考虑两个版本的读写操作：
+
+
+
+
+
+
+
+
+
+   parallel_reduce_kernel
+
+
+
+
+
+
+    	    Times
+    	    Read Ops
+    	    Write Ops
+
+
+
+
+    	    1
+    	    1024
+    	    512
+
+
+
+
+    	    2
+    	    512
+    	    256
+
+
+
+
+    	3
+    	    256
+    	    128
+
+
+
+
+    	    …
+    	
+    	
+
+
+
+
+    	    n
+    	    1
+    	    1
+
+
+
+
+
+
+
+
+
+   parallel_shared_reduce_kernel
+
+
+
+
+
+
+
+    	    Times
+    	    Read Ops
+    	    Write Ops
+
+
+
+
+    	    1
+    	    1024
+    	    1
+
+
+
+
+
+
+   所以，parallel_reduce_kernel所需的带宽是parallel_shared_reduce_kernel的3倍。
+
+
+
+
+
+
+3. Scan
+
+
+
+3.1 what is scan?
+
+
+
+   Example:
+
+
+input: 1,2,3,4
+operation: Add
+ouput: 1,3,6,10（out[i]=sum(in[0:i])）
+
+   目的：解决难以并行的问题
+
+
+
+
+   拍拍脑袋想想上面这个问题O(n)的一个解法是out[i] = out[i-1] + in[i].下面我们来引入scan。
+
+
+
+   Inputs to scan:
+
+
+
+input array
+操作：binary &amp; 满足结合律（和reduce一样）
+identity element [I op a = a], 其中I 是identity element  
+
+quiz: what is the identity for 加法，乘法，逻辑与，逻辑或？ 
+
+Ans：
+
+
+
+ 
+
+     	op
+     	Identity
+ 
+ 
+
+     	加法
+     	0
+ 
+ 
+
+     	乘法
+     	1
+ 
+ 
+
+     	逻辑或||
+     	False
+ 
+ 
+
+     	逻辑与&amp;&amp;
+     	True
+ 
+
+
+
+   
+
+
+
+
+
+3.2 what scan does?
+
+
+
+
+
+  I/O
+  content
+  
+  
+  
+  
+
+
+
+
+  	input
+  [a0a_0
+  a1a_1
+  a2a_2
+  …
+  ana_n]
+
+
+
+  	output
+  [II
+  a0a_0
+  a0⨂a1a_0\bigotimes a_1
+  …
+  a0⨂a1⨂a_0\bigotimes a_1\bigotimes …⨂an\bigotimes a_n]
+
+
+
+
+
+   其中⨂\bigotimes是scan operator，I 是⨂\bigotimes的identity element
+
+
+
+
+
+   
+
+
+
+
+
+3.2.1 Serial implementation of Scan
+
+
+   很简单：
+
+
+
+
+
+   int acc = identity;
+for(i=0;i&lt;elements.length();i++){
+    acc = acc op elements[i];
+    out[i] = acc;
+}
+
+
+   work complexity: O(n)O(n) 
+
+step complexity: O(n)O(n)
+
+
+
+   那么，对于scan问题，我们怎样对其进行并行化呢？
+
+
+
+   
+
+
+
+
+
+3.2.1 Parallel implementation of Scan
+
+
+   考虑scan的并行化，可以并行计算n个output，每个output元素i相当于a0⨂a1⨂a_0\bigotimes a_1\bigotimes …⨂ai\bigotimes a_i，是一个reduce operation。
+
+
+
+   Q: 那么问题的work complexity和step complexity分别变为多少了呢？ 
+
+Ans: 
+
+
+
+step complexity: 
+
+取决于n个reduction中耗时最长的，即O(log2n)O(log_2n)
+work complexity: 
+
+对于每个output元素进行计算，总计算量为0+1+2+…+(n-1)，所以复杂度为O(n2)O(n^2). 
+
+
+
+   可见，step complexity降下来了，可惜work complexity上去了，那么怎么解决呢？这里有两种Scan算法：
+
+
+
+    
+
+ 	
+ 	more step efficiency
+ 	more work efficiency
+    
+    
+
+ hillis + steele （1986）
+ √
+ 	
+    
+    
+
+ blelloch （1990）
+ 	
+ √
+    
+
+
+
+   
+
+
+
+
+
+
+Hillis + Steele
+ 
+
+对于Scan加法问题，hillis+steele算法的解决方案如下：
+
+
+
+   
+
+
+
+   即streaming’s 
+
+step 0: out[i] = in[i] + in[i-1]; 
+
+step 1: out[i] = in[i] + in[i-2]; 
+
+step 2: out[i] = in[i] + in[i-4]; 
+
+如果元素不存在（向下越界）就记为0；可见step 2的output就是scan 加法的结果(想想为什么，我们一会再分析)。
+
+
+
+   那么问题来了。。。 
+
+Q: hillis + steele算法的work complexity 和 step complexity分别为多少？
+
+
+
+Hillis + steele Algorithm complexity
+
+
+    	
+    	log(n)log(n)
+    	O(n‾‾√)O(\sqrt n)
+    	O(n)O(n)
+    	O(nlogn)O(nlogn)
+    	O(n^2)
+
+
+
+
+	work complexity
+	
+	
+	
+√
+	
+
+
+
+
+	step complexity
+√
+	
+	
+	
+	
+
+
+
+
+   解释：
+
+
+
+   为了不妨碍大家思路，我在表格中将答案设为了白色，选中表格可见答案。
+
+
+
+step complexity： 
+
+因为第i个step的结果为上一步输出作为in, out[idx] = in[idx] + in[idx - 2^i], 所以step complexity = O(log(n))O(log(n)) 
+work complexity: 
+
+workload = (n−1)+(n−2)+(n−4)+...(n-1) + (n-2)+ (n-4)+ ...  ，共有log(n)log(n)项元素相加，所以可以近似看做一个矩阵，对应上图，长log(n)log(n), 宽n，所以复杂度为 nlog(n)nlog(n)。
+
+
+
+   
+
+
+
+
+
+
+   2 .Blelloch
+
+
+
+
+   基本思路：Reduce + downsweep
+
+
+
+   还是先讲做法。我们来看Blelloch算法的具体流程，分为reduce和downsweep 两部分，如图所示。
+
+
+
+   
+
+
+
+   
+
+
+
+
+
+   reduce部分： 
+
+每个step对相邻两个元素进行求和，但是每个元素在input中只出现一次，即window size=2, step = 2的求和。 
+
+Q: reduce部分的step complexity 和 work complexity？ 
+
+Ans：
+
+
+
+Reduce part in Blelloch
+
+
+    	
+    	log(n)log(n)
+    	O(n‾‾√)O(\sqrt n)
+    	O(n)O(n)
+    	O(nlogn)O(nlogn)
+    	O(n^2)
+
+
+
+
+    	work complexity
+    	
+    	
+    √
+    	
+    	
+
+
+
+
+    	step complexity
+    √
+    	
+    	
+    	
+    	
+
+
+
+
+   我们依然将答案用白色标出，请选中看答案。 
+
+    
+
+
+
+   downsweep部分： 
+
+简单地说，downsweep部分的输入元素是reduce部分镜面反射的结果，对于每一组输入in1 &amp; in2有两个输出，左边输出out1 = in2，右边输出out2 = in1 op in2 （这里的op就是reduce部分的op），如图：
+
+
+
+
+   
+ 
+
+     
+
+
+   
+
+
+
+   如上上图中的op为加法，那举个例子就有：in1 = 11, in2 = 10, 可得out1 = in2 = 10， out2 = in1 + in2 = 21。由此可以推出downsweep部分的所有value，如上上图。 
+
+这里画圈的元素都是从reduce部分直接“天降”（镜面反射）过来的，注意，每一个元素位置只去reduce出来该位置的最终结果，而且由于是镜面反射，step层数越大的reduce计算结果“天降”越快，即从reduce的“天降”顺序为
+
+
+
+    
+
+ 	36
+    
+    
+
+ 	10
+    
+    
+
+ 	3, 11
+    
+    
+
+ 	1, 3, 5, 7
+    
+
+
+
+   Q: downsweep部分的step complexity 和 work complexity？ 
+
+And：downsweep是reduce部分的mirror，所以当然和reduce部分的complexity都一样啦。
+
+
+
+   综上，Blelloch方法的work complexity为O(n)O(n)，step 数为2⋅log(n)2\cdot log(n).这里我们可以看出相比于Hillis + Steele方法，Blelloch的总工作量更小。那么问题来了，这两种方法哪个更快呢？
+
+
+
+   ANS：这取决于所用的GPU，问题规模，以及实现时的优化方法。这一边是一个不断变化的问题：一开始我们有很多data（work &gt; processor）, 更适合用work efficient parallel algorithm (e.g Blelloch), 随着程序运行，工作量被减少了（processor &gt; work），适合改用step efficient parallel algorithm，这样而后数据又多起来啦，于是我们又适合用work efficient parallel algorithm…
+
+
+
+
+
+   总结一下，见下表为每种方法的complexity，以及适于解决的问题：
+
+
+
+    
+
+ 	
+ 	serial
+ 	Hillis + Steele
+ 	Blelloch
+    
+    
+
+ 	work
+ O(n)
+ O(nlogn)
+  O(n)
+    
+    
+
+ 	step
+ n
+ log(n)
+ 2*log(n)
+    
+    
+
+ 	512个元素的vector
+512个processor
+ 	
+ √
+ 	
+    
+    
+
+ 	一百万的vector
+512个processor
+ 	
+ 	
+ √
+    
+    
+
+ 	128k的vector
+1个processor
+ √
+ 	
+ 	
+    
+
+
+
+   
+
+
+
+
+
+
+   
+
+
+
+
+
+4. Histogram
+
+
+
+4.1. what is histogram?
+
+
+   顾名思义，统计直方图就是将一个统计量在直方图中显示出来。
+
+
+
+
+4.2. Histogram 的 Serial 实现：
+
+
+   分两部分：1. 初始化，2. 统计
+
+
+
+
+
+   for(i = 0; i &lt; bin.count; i++)
+    res[i] = 0;
+for(i = 0; i&lt;nElements; i++)
+    res[computeBin(i)] ++;
+
+
+
+4.3. Histogram 的 Parallel 实现：
+
+
+直接实现：
+
+
+
+   kernel:
+
+
+
+
+
+   __global__ void naive_histo(int* d_bins, const int* d_in, const in BIN_COUNT){
+    int myID = threadIdx.x + blockDim.x * blockIdx.x;
+    int myItem = d_in[myID];
+    int myBin = myItem % BIN_COUNT;
+    d_bins[myBin]++;
+}
+
+
+   来想想这样有什么问题？又是我们上次说的read-modify-write问题，而serial implementation不会有这个问题，那么想实现parallel histogram计算有什么方法呢？
+
+
+
+   法1. accumulate using atomics  
+
+即，将最后一句变成 
+
+atomicAdd(&amp;(d_bins[myBin]), 1); 
+
+但是对于atomics的方法而言，不管GPU多好，并行线程数都被限制到histogram个数N，也就是最多只有N个线程并行。 
+
+
+ 
+
+法2. local memory + reduce 
+
+设置n个并行线程，每个线程都有自己的local histogram（一个长为bin数的vector）；即每个local histogram都被一个thread顺序访问，所以这样没有shared memory，即便没有用atomics也不会出现read-modify-write问题。
+然后，我们将这n个histogram进行合并（即加和），可以通过reduce实现。 
+
+
+
+
+
+
+   法3. sort then reduce by key 
+
+将数据组织成key-value对，key为histogram bin，value为1，即
+
+
+
+    
+
+ 	key
+ 	2
+ 	1
+ 	1
+ 	2
+ 	1
+ 	0
+ 	2
+ 	2
+    
+    
+
+ 	value
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+    
+
+
+
+   将其按key排序，形成：
+
+
+
+    
+
+ 	key
+ 	0
+ 	1
+ 	1
+ 	1
+ 	2
+ 	2
+ 	2
+ 	2
+    
+    
+
+ 	value
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+ 	1
+    
+
+
+
+   然后对相同key进行reduce求和，就可以得到histogram中的每个bin的总数。
+
+
+
+
+
+   综上，有三种实现paralle histogram的方法： 
+
+1. atomics 
+
+2. per_thread histogram, then reduce 
+
+3. sort, then reduce by key
+
+
+
+
+
+
+5. 总结：
+
+
+   本文介绍了三个gpu基础算法：reduce，scan和histogram的串行及并行实现，并巩固了之前讲过的gpu memory相关知识加以运用。
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

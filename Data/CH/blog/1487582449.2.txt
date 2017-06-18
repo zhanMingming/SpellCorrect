@@ -1,0 +1,241 @@
+hdu 1828 picture 线段树Picture 
+
+   Time Limit: 6000/2000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 249Accepted Submission(s): 144
+
+Problem Description
+
+A number of rectangular posters, photographs and other pictures of the same shape are pasted on a wall. Their sides are all vertical or horizontal. Each rectangle can be partially or totally covered by the others. The length of the boundary of the union of all rectangles is called the perimeter. Write a program to calculate the perimeter. An example with 7 rectangles is shown in Figure 1. The corresponding boundary is the whole set of line segments drawn in Figure 2. The vertices of all rectangles have integer coordinates. 
+
+
+
+
+   
+
+Input
+
+Your program is to read from standard input. The first line contains the number of rectangles pasted on the wall. In each of the subsequent lines, one can find the integer coordinates of the lower left vertex and the upper right vertex of each rectangle. The values of those coordinates are given as ordered pairs consisting of an x-coordinate followed by a y-coordinate. 0 &lt;= number of rectangles &lt; 5000 All coordinates are in the range [-10000,10000] and any existing rectangle has a positive area.Please process to the end of file.
+
+
+
+
+   
+
+Output
+
+Your program is to write to standard output. The output must contain a single line with a non-negative integer which corresponds to the perimeter for the input rectangles.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   7
+-15 0 5 10
+-5 8 20 25
+15 -4 24 14
+0 -6 16 4
+2 15 10 22
+30 10 36 20
+34 0 40 16
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   228
+
+
+
+
+
+   
+
+Source
+
+IOI 1998 
+
+当作线段数模板吧&hellip;&hellip;太经典了
+
+//Problem : 1828 ( Picture )#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;cmath&gt;
+using namespace std;
+const int N=20000;
+struct Line //表示平行与y轴的边
+{
+    int y1,y2;
+    int x;
+    bool left;//是否为矩形的左边
+    bool operator &lt;(const Line t) const
+    {
+ return x&lt;t.x;
+    }
+};
+struct Node//线段树的节点
+{
+    int count;  //节点是被线段完全覆盖的次数
+    int len; //节点上线段的测度
+    int lines; //节点上所包含的线段的段数
+    int lcover,rcover; //节点的左右端点是否被覆盖
+    bool update; //节点是否更新过
+};
+Node tree[4*N];
+Line line[2*N];
+int x[2*N],y[2*N];//x，y轴上的分割点，
+int n;
+void Build(int p,int left,int right)//left，right为y轴上分割点的下标
+{
+    tree[p].count=0;
+    tree[p].len=0;
+    tree[p].lines=0;
+    tree[p].lcover=0;
+    tree[p].rcover=0;
+    tree[p].update=true;
+    if(left==right-1)//叶节点
+ return;
+    int m=(left+right)/2;
+    Build(2*p,left,m);
+    Build(2*p+1,m,right);
+}
+void Insert(int p,int l,int r,int y1,int y2)
+{
+    if(y1&lt;=y[l]&amp;&amp;y[r]&lt;=y2)//覆盖整个树p
+    {
+ tree[p].count++;
+ tree[p].update=false;
+ //return; 这里不能返回，不然WA
+    }
+    if(l==r-1)
+ return;
+    int m=(l+r)/2;
+    if(y1&lt;y[m])//插入到左子树
+    {
+ tree[p].update=false;
+ Insert(2*p,l,m,y1,y2);
+    }
+    if(y[m]&lt;y2)//插入到右子树
+    {
+ tree[p].update=false;
+ Insert(2*p+1,m,r,y1,y2);
+    }
+}
+void Delete(int p,int l,int r,int y1,int y2)
+{
+    if(y1&lt;=y[l]&amp;&amp;y[r]&lt;=y2)//从跟中删除
+    {
+ tree[p].count--;
+ tree[p].update=false;
+ //return;  这里不能返回，不然WA
+    }
+    if(l==r-1)
+ return;
+    int m=(l+r)/2;
+    if(y1&lt;y[m])//从左子树中删除
+    {
+ tree[p].update=false;
+ Delete(2*p,l,m,y1,y2);
+    }
+    if(y[m]&lt;y2)//从右子树中删除
+    {
+ tree[p].update=false;
+ Delete(2*p+1,m,r,y1,y2);
+    }
+}
+void Update(int p,int l,int r)
+{
+    if(tree[p].update)//剪枝，不然TLE
+ return;
+    if(tree[p].count&gt;0)//被完全覆盖
+    {
+ tree[p].len=y[r]-y[l];
+ tree[p].lcover=true;
+ tree[p].rcover=true;
+ tree[p].lines=1;
+    }
+    else if(l==r-1) //叶节点并且count==0
+    {
+ tree[p].len=0;
+ tree[p].lcover=false;
+ tree[p].rcover=false;
+ tree[p].lines=0;
+    }
+    else//不是也节点并且没被完全覆盖
+    {
+ int m=(l+r)/2;
+ Update(2*p,l,m);//更新子节点
+ Update(2*p+1,m,r);
+ tree[p].len=tree[2*p].len+tree[2*p+1].len;//从子节点得到根节点的信息
+ tree[p].lcover=tree[2*p].lcover;
+ tree[p].rcover=tree[2*p+1].rcover;
+ tree[p].lines=tree[2*p].lines+tree[2*p+1].lines;
+ if(tree[2*p].rcover&amp;&amp;tree[2*p+1].lcover)
+     tree[p].lines--;
+    }
+}
+void Init()
+{
+    int x1,y1,x2,y2;
+    int k;
+    for(int i=1;i&lt;=n;i++)
+    {
+ scanf("%d%d%d%d",&amp;x1,&amp;y1,&amp;x2,&amp;y2);
+ k=2*i-2;
+ x[k+1]=x1;//预留x[0]
+ x[k+2]=x2;
+ y[k]=y1;
+ y[k+1]=y2;
+ line[k].y1=line[k+1].y1=y1;
+ line[k].y2=line[k+1].y2=y2;
+ line[k].x=x1;
+ line[k].left=true;
+ line[k+1].x=x2;
+ line[k+1].left=false;
+    }
+    sort(x+1,x+2*n+1);
+    x[0]=x[1];//在出入与删除时，不需要特殊处理第一个线段
+    sort(y,y+2*n);
+    sort(line,line+2*n);
+}
+void Solve()
+{
+    int r=2*n-1;
+    Build(1,0,r);
+    int Lastlen=0;
+    int ans=0;
+    for(int i=0;i&lt;2*n;i++)//对所有线段插入或者删除。因为x[0]==x[1]，直接处理
+    {
+ if(line[i].left)
+     Insert(1,0,r,line[i].y1,line[i].y2);
+ else
+     Delete(1,0,r,line[i].y1,line[i].y2);
+ ans+=tree[1].lines*2*(x[i+1]-x[i]);//上下边数*长度
+ Lastlen=tree[1].len;
+ Update(1,0,r);
+ ans+=fabs((float)Lastlen-tree[1].len);//左右边的长度
+    }
+    printf("%d/n",ans);
+}
+int main()
+{
+    while(scanf("%d",&amp;n)!=EOF)
+    {
+ if(n==0)
+ {
+     printf("0/n");
+     continue;
+ }
+ Init();
+ Solve();
+    }
+}

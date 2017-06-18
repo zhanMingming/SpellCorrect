@@ -1,0 +1,28 @@
+python perl脚本经过cvs提交后无法直接执行解决python perl脚本经过cvs提交后无法直接执行
+
+python perl脚本经过cvs提交后无法直接执行
+
+
+原因是windows下换行和linux下换行时不一样的。而Eclipse在提交的时候，设置的又是ASCII格式。
+
+
+
+解决的方法是：
+
+1、设置Eclipse工程属性，换行类型为Unix
+
+
+
+2、设置Eclipse的cvs属性：把脚本的类型设置为二进制，而不是ASCII。
+
+
+
+
+
+
+
+
+
+如果已经是无法执行了，可以通过下面的命令来更改文件的换行符：sed -i 's/\r$//' *.py
+
+或者用vim：set ff=unix

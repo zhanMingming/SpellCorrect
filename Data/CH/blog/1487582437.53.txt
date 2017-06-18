@@ -1,0 +1,75 @@
+C#入门基础using System;
+using System.Text;
+using System.Collections;
+class Test
+{
+    static void Main()
+    {
+ string s = "yes";
+ string t = string.Copy(s);
+ Stack stack = new Stack();
+ stack.Push(4);
+ stack.Push("zrq");
+ while (stack.Count &gt; 0)
+ {
+     Object obj;
+     obj = stack.Pop();
+     Console.WriteLine("Type: {0}/tContent: {1}", obj.GetType().ToString(), obj);
+ }
+    }
+}
+/*
+ * 输出结果：
+Type: System.String     Content: zrq
+Type: System.Int32      Content: 4
+*/
+
+
+using System;
+using System.Text;
+using System.Collections;
+class Test
+{
+    static void Swap(ref int a, ref int b)//引用参数用于&ldquo;传址调用&rdquo;参数传递
+    {
+ int temp = a;
+ a = b;
+ b = temp;
+    }
+    static void Main()
+    {
+ int w = 1;
+ int t = 2;
+ Console.WriteLine("w={0}, t={1}", w, t);
+ Swap(ref w,ref t);//引用参数用ref修饰，在具体调用参数的时候，也必须在参数前指定ref关键字
+ Console.WriteLine("w={0}, t={1}", w, t);
+    }
+}
+/*
+ * 输出结果：
+w=1, t=2
+w=2, t=1
+*/
+
+using System;
+class Test
+{
+    static void Divide(int a, int b, out int result, out int remainder)
+    {
+ result = a / b;
+ remainder = a % b;
+    }
+    static void Main()
+    {
+ for (int i = 1; i &lt; 10; i++)
+     for (int j = 1; j &lt; 10; j++)
+     {
+  int ans, r;
+  Divide(i, j, out ans, out r);
+  Console.WriteLine("{0} / {1} = 商{2}余{3}", i, j, ans, r);
+     }
+    }
+}
+/*
+ * 对于输出参数来说，调用者提供的自变量的初始值并不重要，除此之外，输出参数与引用参数类似。输出参数是用 out 修饰符声明的。
+*/

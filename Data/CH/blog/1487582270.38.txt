@@ -1,0 +1,114 @@
+python代码覆盖率工具——coverage今天发现了一个好用的python代码覆盖率检查工具：coverage， 可以高亮显示代码中哪些语句未被执行，哪些执行了，方便单测。
+
+
+
+
+   环境： 
+
+Linux  
+
+x86_64 
+
+（不能连外网）
+
+
+   下载： 
+
+上 https://pypi.python.org/pypi/coverage 下 coverage.tar.gz 
+
+(我下的3.7.1)
+
+
+   安装： 
+
+python setup.py install
+
+
+   统计代码覆盖率
+
+
+
+
+   将原先运行的
+
+
+
+   python testSpider.py
+
+
+   改为
+
+
+
+    coverage run (--branch) testSpider.py
+
+
+   （如果有参数也同样跟在.py后面） 
+
+
+ 
+
+ 
+
+ 
+
+其中，
+   
+
+
+
+    
+
+    	Stmts
+    	总的有效代码行数（不包含空行和注释行）
+    
+    
+
+    	Miss
+    	未执行的代码行数（不包含空行和注释行）
+    
+    
+
+    	Branch
+    	总分支数
+    
+    
+
+    	BrMiss
+    	未执行的分支数
+    
+    
+
+    	Cover
+    	代码覆盖率
+    
+    
+
+    	Missing
+    	未执行的代码部分在源文件中行号
+       
+
+
+
+   
+ 
+
+5. html可视化   
+
+
+
+   可以通过coverage html -d ${html_dir} 生成名为 ${html_dir}  的文件夹， 包含上面三个py文件，每个文件中高亮显示未执行的行。
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

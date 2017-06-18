@@ -1,0 +1,34 @@
+matlab用来度量图像区域属性的函数——regionprops详细regionprops声明参考http://course.bnu.edu.cn/course/mathmodel/zuoxinian/mat_region.html#ConvexArea
+
+
+   
+
+
+
+
+   在此用regionprops实现了二&#20540;图像划region，找质心
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+   clc; clear all; close all;
+I=imread('D:\毕业设计\Images\pic_loc\1870563180305041500.jpg');
+I1 = im2bw(I);
+figure; imshow(I, []);
+figure; imshow(I1, []);
+L = bwlabel(I1);
+stats = regionprops(L, 'all');
+ hold on;
+for i = 1 : length(stats)
+    temp = stats(i).Centroid;
+    plot(temp(1), temp(2), 'r.');
+end

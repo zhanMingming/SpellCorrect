@@ -1,0 +1,121 @@
+python装饰器学习总结装饰器可以用于AOP(面向切面编程).
+
+   
+
+   1、 装饰器本质上来说就是函数（或者是可调用对象），他们接受函数对象。装饰器仅仅用来装饰或者修饰函数的包装，返回一个修改后的函数对象，并将其赋值原来的标示符，并永久失去对原有函数的访问。
+
+   2、 什么是带参数的装饰器？其实就是一个函数，这个函数可以返回一个装饰器，同时这个函数可以接受参数。
+
+   3、 不带参数的装饰器要返回一个函数，这个函数就是用来替换原有的标示符的。
+
+   def decofun(fun):
+
+    def _mydeco(*args,**kwargs):
+
+    print('before fun!')
+
+    ret =fun(*args, **kwargs)
+
+    print('after fun', ret)
+
+    return ret
+
+    return _mydeco#新的函数，用于替换原有标示符
+
+   @decofun
+
+   def funtest():#funtest被替换为decofun
+
+    print('now in funtest!')
+
+    return 1
+
+   funtest()
+
+   4、 装饰器是可以重叠的，那么他们的顺序怎么样：
+
+   a)@decofun2
+
+   b)@decofun
+
+   c)def funtest():
+
+   d)print('now in funtest!')
+
+   e)return 1
+
+   f)原理是，funtest首先被decofun包装，然后再被decofun2包装。也就是，调用的时候，首先调用的是最上面的装饰器（也就是decofun2）的函数前面部分，然后再调用decofun的函数前面部分，之后再调用funtest。funtest返回后，首先调用的是decofun的函数后面部分，再调用decofun2后面部分。类似于一个栈的结构。
+
+   5、 装饰器不要滥用。如果一个装饰器只用了一次，要考虑他存在的必要了。
+
+   6、 携带参数的装饰器：
+
+   7、def decoarg(arg):
+
+   a)def decofun3(fun):
+
+   b)def _mydeco(*args, **kwargs):
+
+   c)print('decoargbefore fun!', arg)
+
+   d)ret = fun(*args, **kwargs)
+
+   e)print('decoargafter fun', ret)
+
+   f)return ret
+
+   g)return _mydeco
+
+   h)return decofun3
+
+   8、 装饰器用到的一个最重要的技术，就是闭包。装饰器函数返回的其实就是一个闭包。
+
+   9、 装饰器也可以修饰类的__方法：
+
+   class testc:
+
+    def __init__(self):
+
+    self.i = 1
+
+    
+
+    @decoarg(1)
+
+    @decofun2
+
+    @decofun
+
+    def __call__(self):
+
+    print('i is %d' % self.i)
+
+   注意：装饰器修饰类方法是无法被子类继承的（或者说子类的方法是没有被修饰的）。因为他本质上就是一个函数。
+
+   10、 装饰器也可以使对象，比如：
+
+   a) class obj:
+
+   b) def __init__(self,fun):
+
+   c) self.fun =fun
+
+   d) 
+
+   e) def __call__(self,*args, **kwargs):
+
+   f) print('decofunbefore fun!', args, kwargs)
+
+   g) ret = self.fun(*args,**kwargs)
+
+   h) print('decofunafter fun', ret)
+
+   i) return ret
+
+   j) @objdeco
+
+   k) def funtest(a, b=2):
+
+   l) print('funtest1a , b =', a, b)
+
+   a) 这种方法看起来复杂了，但是可能会在有时候会比较有用。

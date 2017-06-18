@@ -1,0 +1,277 @@
+无监督特征学习——Unsupervised feature learning and deep learning无监督学习近年来很热，先后应用于computer vision, audio classification和 NLP等问题，通过机器进行无监督学习feature得到的结果，其accuracy大多明显优于其他方法进行training。本文将主要针对Andrew的unsupervised learning，结合他的视频：unsupervised feature learning by Andrew Ng做出导论性讲解。
+
+   
+
+   关键词：unsupervised learning，feature extraction，feature learning，Sparse Coding，Sparse DBN，Sparse Matrix，Computer Vision，Audio Classification，NLP
+
+   
+
+   Unsupervised feature learning and deep learning 是斯坦福大学机器学习大牛Andrew Y Ng. 近年来研究的主要领域，他在今年的一份工作Building high-level features using large scale unsupervised learning中就通过unsupervised learning解决了从only unlabeled data上建立高维feature detectors的问题。
+
+   
+
+   
+
+   
+
+   =========================第一部分：传统方法Pattern Recognition=========================
+
+   通常的，我们进行pattern recognition是这样的：
+
+   
+
+   对于不同类别的feature extraction都是必备的一部分，computer进行detection的 perception就是这样的：
+
+   
+
+   
+
+   下面分别就这三类问题，&lt;Object detection&gt;&lt;Audio Classification&gt;&lt;NLP&gt;进行经典feature回顾：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   人类的视觉系统、听觉系统 应该说是非常之complex，如果想要获得我们视觉系统看到的东西（computer perception），有两种方法：
+
+   一种方法就是描述出我们的视觉系统在观察object的时候提取的那些特征（比如各种不同物体间的parts在2D、3D中的内容，是哪些特征让我们看出物体的区别，object parts之间的连接关系等）。
+
+   另一种方法更为general，我们能否挖掘出一个general 的 算法，它可以揭示大多数perception的形成（换言之，就是揭示一种人眼从看到识别出的算法）。
+
+   不知道这里我讲明白没？
+
+   没的话可以参考下下面两段：
+
+   We can try to directly implement what the adult visual (oraudio) system is doing. (E.g., implement features thatcapture different types of invariance, 2d and 3d context,relations between object parts, …).Or, if there is a more general computationalprincipal/algorithm that underlies most of perception, canwe instead try to discover and implement that? 
+
+   对于下面的audio，和图像是一样的道理，我们能不能用一种算法学习出其feature，对一幅图像或者一段audio进行描述？
+
+   
+
+   
+
+   对于图像，最直观的描述方法及就是用pixels，传统的方法为supervised learning, 给定一组正样本和一组负样本，通过提取feature训练进行学习，并进行识别测试：
+
+   
+
+   不同于有监督学习，Unsupervised learning通过训练一些列有label的和无label的数据集学习一幅图像中的feature（学习出什么样的feature是motocycle的，什么样的feature是car的）……
+
+   
+
+   
+
+   那么，怎样学习有哪些feature呢？下面先介绍unsupervised learning中的一种方法——Sparse Coding，读者可以试着和前面我讲过的压缩感知系列相结合来想想看。
+
+   
+
+   
+
+   
+
+   
+
+   =================第二部分：Sparse Coding——A unsupervised learning Algorithm=================
+
+   Sparse Coding 是 Unsupervised Learning Algorithm中的一种，可以用于Feature learning.
+
+   
+
+   
+
+   下面是我对Sparse Coding的解释，做的笔记……
+
+   
+
+   
+
+   用Sparse Coding的例子进行说明。
+
+   比如在图像的Feature Extraction的最底层要做Edge Detector的生成，那么这里的工作就是从Natural Images中randomly选取一些小patch，通过这些patch生成能够描述他们的”基“，也就是右边的8*8=64个basis组成的basis（具体选取基的方法可以参考我的两篇文章——压缩感知初识及压缩感知之HelloWorld），然后给定一个test patch, 我们可以按照上面的式子通过basis的线性组合得到，而sparse matrix就是a，下图中的a中有64个维度，其中非零项只有3个，故称”sparse“。
+
+   
+
+   这里可能大家会有疑问，为什么把底层作为Edge Detector呢？上层又是什么呢？这里做个简单解释大家就会明白，之所以是Edge Detector是因为不同方向的Edge就能够描述出整幅图像，所以不同方向的Edge自然就是图像的basis了……
+
+   而上一层的basis组合的结果，上上层又是上一层的组合basis……（具体请往下看）
+
+   如下图所示：
+
+   
+
+   其他的例子同理：注意看下面的文字（第二条）
+
+   
+
+   下图所示为从为标号的audio上学习出的20个基函数（如小波变换）：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   ===================第三部分：Learning Features Hierachy &amp; Sparse DBN===================
+
+   所建立的自动feature学习过程是一个自底向上逐渐学习features的sparse coding过程：
+
+   
+
+   
+
+   
+
+   以Sparse DBN：Training on Faces为例，这里从下向上依次是上图的hierarchy的Input Image，Model V1(Edge Detector)，Model V2（Object Parts），Model V3（Object Models），具体讲解见下面我做的笔记：
+
+   
+
+   下面是对上图的解释，请对照着看：
+
+   图中所示最下方的24个basis function用于Edge Detection, 比如最左上角的那个基用于检测85°的edge；
+
+   中间的32个基（Object Parts）分别是 eye detector, nose detector……其之所以为基是因为，一张face可有这些parts组合而成；
+
+   最上面一层的24个基就是face model了。
+
+   
+
+   ==========================
+
+   在不同object上做training是，所得的edge basis 是非常相似的，但object parts和models 就会completely different了：
+
+   
+
+   当训练数据由4类图像组成时，上层提取出的feature会不同，最终生成的object model也会包含4类图像特定的模型：
+
+   
+
+   下图是动作识别上，不同算法的准确率比较：
+
+   
+
+   Sparse DBN on Audio同理，对于一个Spectrogram，逐层提取feature过程如下图所示：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   ===================第四部分：技术问题——Scaling Up===================
+
+   
+
+   进行Pattern Recognition的一个重大问题就是特征提取，而上面这幅图中我们可以看出不同算法在Features数目不同的情况下，其交叉验证（Cross Validation在ML第六课中讲过）的Accuracy，可见feature越多，给出的参考信息越多，所得accuracy一般越好。那么，有哪些方法进行feature的挖掘使得scaling up呢？有兴趣的可以研究研究，互相交流下哈！
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   ===================第五部分：Learning Recursive Representations===================
+
+   这部分我们主要以NLP为例，看一下怎么样递归的进行语义分析，自然语言组成：
+
+   首先我们看下用多维向量（图中简化为2维）表示一个单词的形式：
+
+   
+
+   
+
+   一句话：The cat sat on the mat. 进行自底向上的feature学习，可以发现，有的neuron上有意义，如图中箭头所指的那个neuron就不make sense.
+
+   
+
+   
+
+   training process：Parsing a Sentence
+
+   
+
+   
+
+   就这样recursively选择make sense的neuron成为该层新的神经元：
+
+   
+
+   
+
+   我们在每层选取有意义的神经元后建立起最终的句型：
+
+   
+
+   
+
+   好了，说完了NLP的parsing sentence问题，我们回头来看image processing（IP）, 其实，他们的道理相同，都是找到make sense的小patch再将其进行combine，就得到了上一层的feature，递归地向上learning feature。该图中，上面是NLP，下面是IP。
+
+   
+
+   
+
+   
+
+   
+
+   ===================小结===================
+
+   最后我们对Unsupervised feature Learning做一个小结：
+
+   • Features 由 机器学习，而非人为指定
+
+   • 找到perception下隐藏的feature基
+
+   • Sparse coding 和 deep learning在CV和Audio Recogization上的识别率非常好，几乎是state of art的程度。
+
+   
+
+   
+
+   
+
+   Reference ：
+
+   http://ufldl.stanford.edu/wiki/index.php/UFLDL_Tutorial
+
+   Deep Learning
+
+   Sparse DBN (Deep Belief Nets)
+
+   
+A tutorial on Deep Learning
+   
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

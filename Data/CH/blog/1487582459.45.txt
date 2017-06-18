@@ -1,0 +1,298 @@
+c++文件流基本用法(fstream, ifstream, ostream)前言：c++的文件流处理其实很简单，前提是你能够理解它。文件流本质是利用了一个buffer中间层。有点类似标准输出和标准输入一样。
+
+
+   c++ IO的设计保证IO效率，同时又兼顾封装性和易用性。本文将会讲述c++文件流的用法。
+
+
+   有错误和疏漏的地方，欢迎批评指证。
+
+
+   需要包含的头文件： &lt;fstream&gt;
+
+
+   名字空间: std
+
+
+   也可以试用&lt;fstream.h&gt;fstream提供了三个类，用来实现c++对文件的操作。（文件的创建，读写）。  ifstream-- 从已有的文件读
+
+
+     ofstream      -- 向文件写内容
+
+
+     fstream - 打开文件供读写
+
+
+   支持的文件类型
+
+
+   实际上，文件类型可以分为两种： 文本文件和二进制文件. 
+
+
+   文本文件保存的是可读的字符， 而二进制文件保存的只是二进制数据。利用二进制模式，你可以操作图像等文件。用文本模式，你只能读写文本文件。否则会报错。
+
+
+   
+
+
+   例一: 写文件
+
+
+   声明一个ostream变量
+
+
+调用open方法,使其与一个文件关联
+写文件
+调用close方法.
+
+
+
+
+
+   #include &lt;fstream.h&gt;
+
+void main
+{
+	ofstream file;
+
+	file.open("file.txt");		
+
+	file&lt;&lt;"Hello file/n"&lt;&lt;75;		
+
+	file.close();				
+}
+
+
+
+
+
+
+
+
+   可以像试用cout一样试用操作符&lt;&lt;向文件写内容.Usages:
+
+
+
+
+
+   
+	file&lt;&lt;"string/n";
+	file.put('c');
+
+
+
+
+
+
+
+
+   例二: 读文件
+
+
+   1. 声明一个ifstream变量.
+
+
+   2. 打开文件.
+
+
+   3. 从文件读数据
+
+
+   4. 关闭文件.
+
+
+
+
+
+   #include &lt;fstream.h&gt;
+
+void main
+{
+	ifstream file;
+	char output[100];
+	int x;
+
+	file.open("file.txt");
+
+	file&gt;&gt;output;		
+	cout&lt;&lt;output;		
+	file&gt;&gt;x;			
+	cout&lt;&lt;x;			
+
+	file.close();		
+}
+
+同样的，你也可以像cin一样使用&gt;&gt;来操作文件。或者是调用成员函数
+Usages:
+
+
+
+
+
+
+
+
+
+
+
+   
+	file&gt;&gt;char *;		
+	file&gt;&gt;char;			
+	file.get(char);		
+	file.get(char *,int);	
+	file.getline(char *,int sz);
+	file.getline(char *,int sz,char eol);
+
+
+
+
+
+
+
+
+   1.同样的，你也可以使用构造函数开打开一个文件、你只要把文件名作为构造函数的
+
+
+   第一个参数就可以了。
+
+
+
+
+
+   	ofstream file("fl.txt");
+	ifstream file("fl.txt");
+
+
+
+
+
+
+
+
+   上面所讲的ofstream和ifstream只能进行读或是写，而fstream则同时提供读写的功能。   void main()
+
+
+
+
+
+   {
+	fstream file;
+
+	file.open("file.ext",iso::in|ios::out)
+
+	//do an input or output here
+
+	file.close();
+}
+
+
+
+
+
+
+
+
+   open函数的参数定义了文件的打开模式。总共有如下模式
+
+
+
+
+
+   			属性列表
+
+ios::in 		读
+ios::out		写
+ios::app		从文件末尾开始写
+ios::binary二进制模式
+ios::nocreate	打开一个文件时，如果文件不存在，不创建文件。
+ios::noreplace	打开一个文件时，如果文件不存在，创建该文件
+ios::trunc		打开一个文件，然后清空内容
+ios::ate		打开一个文件时，将位置移动到文件尾
+
+
+
+
+
+
+
+
+   Notes
+
+
+默认模式是文本
+默认如果文件不存在，那么创建一个新的
+多种模式可以混合，用|(按位或)
+文件的byte索引从0开始。（就像数组一样）
+
+
+   我们也可以调用read函数和write函数来读写文件。
+
+
+   
+
+
+   文件指针位置在c++中的用法：
+
+
+
+
+
+   	ios::beg		文件头
+	ios::end		文件尾
+	ios::cur		当前位置
+例子：
+
+
+
+
+
+
+
+
+
+
+
+   	file.seekg(0,ios::end);		
+
+ int fl_sz = file.tellg();		
+	
+	file.seekg(0,ios::beg);		
+
+
+
+
+   常用的错误判断方法:
+
+
+
+
+
+
+
+
+
+   	good()		如果文件打开成功
+	bad()		打开文件时发生错误
+	eof()			到达文件尾
+例子：
+
+
+
+
+
+
+
+
+
+
+
+   	char ch;
+	ifstream file("kool.cpp",ios::in|ios::out);
+
+	if(file.good()) cout&lt;&lt;"The file has been opened without problems;
+	else cout&lt;&lt;"An Error has happend on opening the file;	
+
+	while(!file.eof())
+	{
+		file&gt;&gt;ch;
+		cout&lt;&lt;ch;
+	}

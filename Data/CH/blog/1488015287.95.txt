@@ -1,0 +1,67 @@
+maven资源过滤导致打包后文件变大今天遇到一个问题，我们有个ip.dat二进制文件，通过里面内容可以解析ip所在的地域信息，本地单元测试都是OK的，部署到测试环境后，发现解析ip的时候报错。拿测试环境打印出的IP地址，在本地单元测试也么有问题。最后发现：代码库的ip.dat文件大小只有3.5M左右，而测试环境的ip.dat文件大小在5M左右。
+
+
+   
+
+
+
+
+   问题在于：为什么ip.dat通过maven打包后文件变大了？由于maven打包的时候，会将这个文件从src/main/resources/下面拷贝的conf目录下。我直接将ip.dat放在conf目录下，而不是resources目录下，发现打包后大小正常。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   也就是说maven打包的过程中，只是将src/main/resources/目录下的文件变大了。因为我们在pom中开启了资源过滤。
+
+
+   &lt;resources&gt;
+	&lt;resource&gt;
+		&lt;directory&gt;src/main/resources&lt;/directory&gt;
+		&lt;filtering&gt;true&lt;/filtering&gt;
+	&lt;/resource&gt;
+&lt;/resources&gt;
+
+
+
+
+   
+
+
+   解决方案就很简单了：直接将ip.dat放到conf目录下不参与资源过滤就可以了。如果一定要将ip.dat放在resources目录下，那么可以通过下面配置解决。
+
+
+   &lt;resources&gt;
+	&lt;!--排除ip.dat，不打包到classpath下，自然就不会过滤--&gt;
+	&lt;resource&gt;
+		&lt;directory&gt;src/main/resources&lt;/directory&gt;
+		&lt;filtering&gt;true&lt;/filtering&gt;
+		&lt;excludes&gt;
+			&lt;exclude&gt;ip.dat&lt;/exclude&gt;
+		&lt;/excludes&gt;
+	&lt;/resource&gt;
+	
+	&lt;!--将ip.dat打包到classpath下，但是不进行资源过滤--&gt;
+	&lt;resource&gt;
+		&lt;directory&gt;src/main/resources&lt;/directory&gt;
+		&lt;filtering&gt;false&lt;/filtering&gt;
+		&lt;includes&gt;
+			&lt;include&gt;ip.dat&lt;/include&gt;
+		&lt;/includes&gt;
+	&lt;/resource&gt;
+&lt;/resources&gt;
+
+
+
+
+   
+
+
+   使用maven进行资源过滤的时候，只要过滤需要过滤的文件，一些二进制文件，比如https证书等，就不要参与资源过滤，否则打包后会破坏文件内容。

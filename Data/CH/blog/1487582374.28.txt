@@ -1,0 +1,255 @@
+NS-2仿真中移动节点的设置要做一个4个节点的Ad
+ hoc网络仿真，实验环境和要求是：
+采 用的无线网拓扑结构，主机节点数共有4个；节点1到4的初始位置坐标分别为(0,1 000)、(0,800)、(0,600)和(400,600)，节点1和2在仿真中保持静止不动，节点3和4则以60m/s速度分别向坐标(0,0)和 (400,0)位置方向垂直移动。系统带宽为2Mbps，系统节点缺省无线传输半径约为500m。仿真使用的业务流量为FTP，每包发送512字节，发送 速度10包/s。采用静态路由方式，节点1在1.5s发包给节点2，节点3在3.5s发包给节点4。仿真时间一共10s，选取节点2处的估计可用带宽进行
+ 分析。
+
+
+
+
+下面是基本环境仿真的adhoc.tcl源码：
+
+
+
+# This script is created by emile.Y.S Xiang
+#===================================
+# 定义模拟变量
+#===================================
+set val(chan) Channel/WirelessChannel ;# channel type
+set val(prop) Propagation/TwoRayGround ;# radio-propagation model
+set val(netif) Phy/WirelessPhy ;# network interface type
+set val(mac) Mac/802_11 ;# MAC type
+set val(ifq) Queue/DropTail/PriQueue ;# interface queue type
+set val(ll) LL ;# link layer type
+set val(ant) Antenna/OmniAntenna ;# antenna model
+set val(x) 1000 ;# X dimension of topology
+set val(y) 1000 ;# Y dimension of topology
+set val(cp) &quot;&quot; ;# node movement model file
+set val(sc) &quot;&quot; ;# traffic model file
+set val(ifqlen) 50 ;# max packet in ifq
+set val(nn) 4 ;# number of mobilenodes
+set val(seed) 0.0
+set val(stop) 10.0 ;# time of simulation end
+set val(tr) adhoc.tr ;# trace file name
+set val(rp) DSDV ;# routing protocol
+set AgentTrace ON
+set RouterTrace ON
+set MacTrace OFF
+#===================================
+# 建立相关档案
+#===================================
+# Initialize Global Variables
+set ns_ [new Simulator] ;#产生ns simulator实例
+$ns_ color 1 Blue
+$ns_ color 2 Red
+
+# 设定trace file
+$ns_ use-newtrace ;#使用新的trace format
+set namfd [open adhoc.nam w] ;#产生nam trace file
+$ns_ namtrace-all-wireless $namfd $val(x) $val(y) ;#模拟时产生需要的结果文件
+set tracefd [open $val(tr) w] ;#产生trace file
+$ns_ trace-all $tracefd ;#模拟时产生需要的结果文件
+
+#建立topology对象,以记录mobilenodes在拓扑內移动的情况
+set topo [new Topography]
+# 拓扑的范围为 1000m x 1000m
+$topo load_flatgrid $val(x) $val(y)
+
+# 建立channel
+set chan [new $val(chan)]
+
+# 创建god
+set god_ [create-god $val(nn)]
+#===================================
+# 无线节点配置
+#===================================
+# Create the specified number of mobile nodes [$val(nn)] and &quot;attach&quot; them to
+# the channel. Four nodes are created : node(0), node(1), node(2) and node(3)
+# 设定Mobile Node的参数
+$ns_ node-config -adhocRouting $val(rp) \
+ -llType $val(ll) \
+ -macType $val(mac) \
+ -ifqType $val(ifq) \
+ -ifqLen $val(ifqlen) \
+ -antType $val(ant) \
+ -propType $val(prop) \
+ -phyType $val(netif) \
+ -channel $chan \
+ -topoInstance $topo \
+ -agentTrace ON \
+ -routerTrace OFF \
+ -macTrace OFF \
+ -movementTrace OFF
+#===================================
+# 新建Node
+#===================================
+for {set i 0} {$i &lt; $val(nn) } {incr i} {
+set node_($i) [$ns_ node]
+$node_($i) random-motion 0 ;# 使各节点非随机移动
+}
+
+# Provide initial (X,Y, for now Z=0) co-ordinates for mobilenodes
+# 建立第0个Node，开始时，位置在(0.0, 1000.0)
+$node_(0) set X_ 0.0
+$node_(0) set Y_ 1000.0
+$node_(0) set Z_ 0.0
+# 建立第1个Node，开始时，位置在(0.0, 800.0)
+$node_(1) set X_ 0.0
+$node_(1) set Y_ 800.0
+$node_(1) set Z_ 0.0
+# 建立第2个Node，开始时，位置在(0.0, 600.0)
+$node_(2) set X_ 0.0
+$node_(2) set Y_ 600.0
+$node_(2) set Z_ 0.0
+# 建立第3个Node，开始时，位置在(400.0, 600.0)
+$node_(3) set X_ 400.0
+$node_(3) set Y_ 600.0
+$node_(3) set Z_ 0.0
+
+# Load the god object with shortest hop information
+# 在节点0和节点1之间最短的hop数为1
+$god_ set-dist 0 1 1
+# 在节点1和节点2之间最短的hop数为1
+$god_ set-dist 1 2 1
+# 在节点0和节点2之间最短的hop数为2
+$god_ set-dist 0 2 2
+# 在节点2和节点3之间最短的hop数为1
+$god_ set-dist 2 3 1
+# 在节点0和节点3之间最短的hop数为1
+$god_ set-dist 0 3 1
+# 在节点1和节点3之间最短的hop数为1
+$god_ set-dist 1 3 1
+#===================================
+# 产生Movement
+#===================================
+# Now produce some simple node movements
+# Node_(2) and Node_(3) starts to move downward
+set god_ [God instance]
+
+
+# 从0秒开始，节点2开始从位置(0,600)移動到(0,0)，速度為60.0 m/s
+$ns_ at 0.0 &quot;$node_(2) setdest 0.0 0.0 60.0&quot;
+# 从0秒开始，节点3开始从位置(400,600)移動到(400,0)，速度為60.0 m/s
+$ns_ at 0.0 &quot;$node_(3) setdest 400.0 0.0 60.0&quot;
+#===================================
+# 建立FTP业务，基于TCP来承载
+#===================================
+# 在节点0和节点1间设定第0个连线(FTP-TCP)，且在时间为1.5秒开始发送
+set tcp0 [new Agent/TCP/Newreno]
+$tcp0 set fid_ 1
+set sink0 [new Agent/TCPSink]
+$ns_ attach-agent $node_(0) $tcp0
+$ns_ attach-agent $node_(1) $sink0
+$ns_ connect $tcp0 $sink0
+set ftp0 [new Application/FTP]
+$ftp0 attach-agent $tcp0
+$ns_ at 1.5 &quot;$ftp0 start&quot;
+$ns_ at 10.0 &quot;$ftp0 stop&quot;
+
+# 在节点2和节点3间设定第1个连线(FTP-TCP)，且在时间为3.5秒开始发送
+set tcp1 [new Agent/TCP/Newreno]
+$tcp1 set fid_ 2
+set sink1 [new Agent/TCPSink]
+$ns_ attach-agent $node_(2) $tcp1
+$ns_ attach-agent $node_(3) $sink1
+$ns_ connect $tcp1 $sink1
+set ftp1 [new Application/FTP]
+$ftp1 attach-agent $tcp1
+$ns_ at 3.5 &quot;$ftp1 start&quot;
+$ns_ at 10.0 &quot;$ftp1 stop&quot;
+
+# 在nam中定义节点初始所在位置
+for {set i 0} {$i &lt; $val(nn)} {incr i} {
+# The function must be called after mobility model is defined.
+$ns_ initial_node_pos $node_($i) 60
+}
+
+# 告诉MobileNode模拟已结束
+for {set i 0} {$i &lt; $val(nn) } {incr i} {
+$ns_ at $val(stop) &quot;$node_($i) reset&quot;;
+}
+#===================================
+# 结束模拟
+#===================================
+# 结束nam与模拟器
+$ns_ at $val(stop) &quot;$ns_ nam-end-wireless $val(stop)&quot;
+$ns_ at $val(stop) &quot;stop&quot;
+$ns_ at $val(stop) &quot;puts \&quot;NS EXITING...\&quot; ; $ns_ halt&quot;
+
+# 设定模拟器用的stop function
+proc stop {} {
+global ns_ tracefd namfd
+$ns_ flush-trace
+close $tracefd
+close $namfd
+exec nam adhoc.nam &amp;
+exit 0
+}
+
+puts $tracefd &quot;M 0.0 nn $val(nn) x $val(x) y $val(y) rp $val(rp)&quot;
+puts $tracefd &quot;M 0.0 sc $val(sc) cp $val(cp) seed $val(seed)&quot;
+puts $tracefd &quot;M 0.0 prop $val(prop) ant $val(ant)&quot;
+puts &quot;Starting Simulation...&quot;
+$ns_ run
+
+
+
+运行ns adhoc.tcl命令后，报错信息如下：
+ns: _o46 setdest 0.0 600.0 60.0:
+ (_o46 cmd line 1)
+ invoked from within
+&quot;_o46 cmd setdest 0.0 600.0 60.0&quot;
+ invoked from within
+&quot;catch &quot;$self cmd $args&quot; ret&quot;
+ invoked from within
+&quot;if [catch &quot;$self cmd $args&quot; ret] {
+set cls [$self info class]
+global errorInfo
+set savedInfo $errorInfo
+error &quot;error when calling class $cls: $args&quot; $...&quot;
+ (procedure &quot;_o46&quot; line 2)
+ (SplitObject unknown line 2)
+ invoked from within
+&quot;_o46 setdest 0.0 600.0 60.0&quot;
+
+
+可以看出问题出在使得两个移动节点移动的代码处（tcl源码中红色部分标记），把移动节点移动的两行代码去掉，ns-2仿真就不报错了，一加上就报错。
+我的4个节点是2个固定，2个移动。
+
+反复调试不得其解，于是仔细检查了一下源代码
+在MobileNode::command(int argc, const char*const* argv)的处理setdest命令的接口中，有一句判断
+
+
+
+CODE:if (set_destination(atof(argv[2]), atof(argv[3]), atof(argv[4])) &lt; 0)
+ return TCL_ERROR;
+再去看这个函数：MobileNode::set_destination(double x, double y, double s)，会发现里面有这一段：
+
+
+
+CODE:if(x &gt;= T_-&gt;upperX() || x &lt;= T_-&gt;lowerX())
+return -1;
+if(y &gt;= T_-&gt;upperY() || y &lt;= T_-&gt;lowerY())
+return -1;
+也就是说，你不能让你的Node移动到边界，所以，当把脚本改成：
+# 从0秒开始，节点2开始从位置(0,600)移動到(0,0)，速度為60.0 m/s
+$ns_ at 0.0 &quot;$node_(2) setdest 0.1 0.1 60.0 &quot;
+# 从0秒开始，节点3开始从位置(400,600)移動到(400,0)，速度為60.0 m/s
+$ns_ at 0.0 &quot;$node_(3) setdest 400.0 0.1 60.0 &quot;
+
+
+   
+就好了
+
+
+   
+
+
+
+
+
+   
+Copy From
+
+
+   
+http://cmdblock.blog.51cto.com/415170/93311

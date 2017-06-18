@@ -1,0 +1,87 @@
+zoj 3410 Layton&#39;s Escape贪心：
+
+
+   
+
+
+   1.先固定攻克trap的次序：按di升序排列
+
+
+   
+
+
+   2.确定哪一步进行hp--：
+
+
+    设置队列存放状态，按排好序的依次入队,队列中按ti从大到小排列，当遇到total time&gt;di的时候就将队头元素（ti花费最大的出队），并给hp++，这样必然时刻保持hp花费最小的，所以hp达到k时跳出
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+#include&lt;queue&gt;
+#include&lt;stdio.h&gt;
+using namespace std;
+#define N 25010
+struct Status
+{
+	int ti;
+	int di;
+	bool operator &lt;(const Status a)const
+	{
+		return ti&lt;a.ti;
+	}
+}trap[N],now,temp;
+
+int comp(Status a,Status b)
+{
+	return a.di&lt;b.di;
+}
+
+int n,k;
+
+int bfs()
+{
+	int i,j;
+	int total=0;
+	int hp=0;
+	priority_queue&lt;Status&gt;Q;
+	for(i=0;i&lt;n;i++)
+	{
+		now.di=trap[i].di;
+		now.ti=trap[i].ti;
+		if(total+now.ti&lt;=now.di)
+		{
+			total+=now.ti;
+			Q.push(now);
+		}
+		else
+		{
+			total+=now.ti;
+			Q.push(now);
+			if(total&gt;now.di)
+			{
+				temp=Q.top();
+				Q.pop();
+				total-=temp.ti;
+				hp++;
+				if(hp==k)
+					return -1;
+			}
+		}
+	}
+	return hp;
+}
+
+int main()
+{
+	while(scanf("%d%d",&amp;n,&amp;k)!=EOF)
+	{
+		for(int i=0;i&lt;n;i++)
+			scanf("%d%d",&amp;trap[i].ti,&amp;trap[i].di);
+		sort(trap,trap+n,comp);
+		printf("%d/n",bfs());
+	}
+}

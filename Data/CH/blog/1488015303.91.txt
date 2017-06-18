@@ -1,0 +1,327 @@
+guava-retrying重试工具库: 隔多长时间重试guava-retrying提供了WaitStrategy接口，用来控制2次重试的时间间隔，这个接口与StopStrategy有的类&#20284;。内置的等待策略在WaitStrategies中定义。
+
+
+   
+
+
+
+
+   import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.Callable;
+
+public class AlwaysExceptionTask implements Callable&lt;Boolean&gt; {
+
+    private static final SimpleDateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss,SSS&quot;);
+    private int times = 1;
+
+    @Override
+    public Boolean call() throws Exception {
+ System.out.println(df.format(new Date()));
+ int thisTimes = times;
+ times++;
+
+ if (thisTimes == 1) {
+     throw new NullPointerException();
+ } else if (thisTimes == 2) {
+     throw new IOException();
+ } else if (thisTimes == 3) {
+     throw new ArithmeticException();
+ } else {
+     throw new Exception();
+ }
+    }
+}
+
+
+
+
+   
+
+
+   WaitStrategies.noWait()失败后立刻重试，没有等待时间。
+
+
+   Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.noWait())
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new AlwaysExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+System.out.println(&quot;end...&quot; + df.format(new Date()));
+
+
+
+
+   
+
+
+   WaitStrategies.fixedWait(1, TimeUnit.SECONDS)间隔固定时间之后重试，比如每隔1s重试一次。
+
+
+   Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new AlwaysExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+
+
+
+   
+
+
+   WaitStrategies.randomWait(3, TimeUnit.SECONDS)间隔随机时间后重试，比如间隔0~3中随机时间后重试。
+
+
+   Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.randomWait(3, TimeUnit.SECONDS))
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new AlwaysExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+System.out.println(&quot;end...&quot; + df.format(new Date()));
+
+
+   
+
+
+   
+
+
+
+
+   WaitStrategies.randomWait(2, TimeUnit.SECONDS, 5, TimeUnit.SECONDS)最小&#20540;，最大&#20540;之间的随机时间。
+
+
+   Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.randomWait(2, TimeUnit.SECONDS, 5, TimeUnit.SECONDS))
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new AlwaysExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+System.out.println(&quot;end...&quot; + df.format(new Date()));
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   WaitStrategies.incrementingWait增量重试，重试的次数越多，等待时间间隔越长。incrementingWait需要传递2个参数，一个是initialSleepTime(第一次到第二次尝试的间隔)，一个是increment(每增加一次尝试，需要增加的时间间隔)。第一次尝试是不需要等待的，因为guava-retrying中的第一次尝试，对应正常的第一次调用。从第二次重试开始，第n-1次到n次间隔是：initialSleepTime
+ &#43; (n-2)*increment。
+
+
+   1、WaitStrategies.incrementingWait(0, TimeUnit.SECONDS, 0, TimeUnit.SECONDS)等价于  WaitStrategies.noWait()。
+
+
+
+
+   2、 WaitStrategies.incrementingWait(1, TimeUnit.SECONDS, 0, TimeUnit.SECONDS)等价于WaitStrategies.fixedWait(1, TimeUnit.SECONDS)
+
+
+
+
+   3、 WaitStrategies.incrementingWait(0, TimeUnit.SECONDS, 1, TimeUnit.SECONDS)等价于WaitStrategies.fixedWait(1,
+ TimeUnit.SECONDS)。
+
+
+
+
+   
+
+
+
+
+   4、WaitStrategies.incrementingWait(1, TimeUnit.SECONDS, 1, TimeUnit.SECONDS)
+
+
+   
+
+
+
+
+   
+
+
+
+
+   WaitStrategies.fibonacciWait()按照斐波那契数列等待。fibonacciWait(long multiplier,long maximumTime,TimeUnit maximumTimeUnit)，multiplier单位固定是ms，maximumTime最大等待时间。n=1的时候，是无需等待的。当n&gt;=2的时候，开始符合斐波那契数列。n=2的时候，等待1
+ *multiplier毫秒；n=3的时候，等待1 *multiplier毫秒；n=4的时候，等待2 *multiplier毫秒；n=5的时候，等待3
+ *multiplier毫秒；n=6的时候，等待5 *multiplier毫秒；n=7的时候，等待8 *multiplier毫秒；n=8的时候，等待15
+ *multiplier毫秒；......但是等待时间最长不超过maximumTime。
+
+
+   Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.fibonacciWait(100, 10, TimeUnit.SECONDS))
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new AlwaysExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+
+
+
+   
+
+
+   WaitStrategies.exponentialWait按照指数递增(2的n次方)来等待，各个参数含义与fibonacciWait相同。
+
+
+
+
+   
+
+
+   Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.exponentialWait(100, 10, TimeUnit.SECONDS))
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new AlwaysExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+
+
+
+   
+
+
+   WaitStrategies.exceptionWait根据抛出的异常来决定等待的时间长短，没有什么实际用处，不过作为学习还是可以了解下，说不定将来能排上用场呢。下面我们定义1个任务，随机抛出不同异常。
+
+
+   class RandomExceptionTask implements Callable&lt;Boolean&gt; {
+	@Override
+	public Boolean call() throws Exception {
+		int round = (int) Math.floor(Math.random() * 8);
+		System.out.println(&quot;round=&quot; + round + &quot;,time=&quot; + df.format(new Date()));
+		if (round == 1) {
+			throw new NullPointerException();
+		} else if (round == 2) {
+			throw new IOException();
+		} else if (round == 3) {
+			throw new ArithmeticException();
+		} else if (round == 4) {
+			throw new IllegalStateException();
+		} else if (round == 5) {
+			throw new IndexOutOfBoundsException();
+		} else {
+			return true;
+		}
+	}
+}
+
+   
+
+
+   
+
+
+
+如果我们希望实现这种效果：如果出现了NullPointerException，那么等待1s后再重试；如果抛出IOException，那等待2s后再重试；如果出现了ArithmeticException，那么等待3s后再重试；如果出现了IllegalStateException，那么等待4s后再重试；如果出现了IndexOutOfBoundsException，那么等待5s后再重试；否则不等待，立刻重试。
+   // 根据不同异常,等待不同时间后重试
+private static &lt;T extends Throwable&gt; Function&lt;T, Long&gt; itsFunction(Class&lt;T&gt; exceptionClass) {
+	Function&lt;T, Long&gt; result = new Function&lt;T, Long&gt;() {
+		@Nullable
+		@Override
+		public Long apply(@Nullable T input) {
+			if (input instanceof NullPointerException) {
+				return 1 * 1000L;
+			} else if (input instanceof IOException) {
+				return 2 * 1000L;
+			} else if (input instanceof ArithmeticException) {
+				return 3 * 1000L;
+			} else if (input instanceof IllegalStateException) {
+				return 4 * 1000L;
+			} else if (input instanceof IndexOutOfBoundsException) {
+				return 5 * 1000L;
+			} else {
+				return 0L;
+			}
+		}
+	};
+	return result;
+}
+
+   
+
+
+   
+
+
+
+
+   下面是测试代码，可以看出不同的异常确实会导致不同的重试间隔。
+
+
+   WaitStrategy exceptionJoin = WaitStrategies.join(
+		WaitStrategies.exceptionWait(NullPointerException.class, itsFunction(NullPointerException.class)),
+		WaitStrategies.exceptionWait(IOException.class, itsFunction(IOException.class)),
+		WaitStrategies.exceptionWait(ArithmeticException.class, itsFunction(ArithmeticException.class)),
+		WaitStrategies.exceptionWait(IllegalStateException.class, itsFunction(IllegalStateException.class)),
+		WaitStrategies.exceptionWait(IndexOutOfBoundsException.class, itsFunction(IndexOutOfBoundsException.class))
+		);
+
+Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(exceptionJoin)
+		.build();
+
+System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+try {
+	retryer.call(new RandomExceptionTask());
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}
+
+System.out.println(&quot;end...&quot; + df.format(new Date()));

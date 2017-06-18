@@ -1,0 +1,50 @@
+Sobel算子实现水平边缘检测、垂直边缘检测；45度、135度角边缘检测%File Discription:
+%45°和135°角边缘检测；用于那些边界不明显的图片
+%不太适用于复杂图，复杂图用水平和垂直边缘检测
+%Author:Zhang Ruiqing
+%CreateTime:2011.8.8（What a good day!(*^__^*) ）
+
+SourcePic=imread('D:\Images\pic_loc\1870378220205041520.jpg');
+subplot(221);
+imshow(SourcePic),title('原图');
+
+grayPic=rgb2gray(SourcePic);
+grayPic=im2double(grayPic);
+%使用指定45度角Sobel算子滤波器，指定阂值
+
+a45=[-2 -1 0;-1 0 1;0 1 2];
+SFST45=imfilter(grayPic,a45,'replicate');%功能：对任意类型数组或多维图像进行滤波。
+SFST45=SFST45&gt;=Threshold;
+subplot(222);
+imshow(SFST45),title('45度角图像边缘检测') ;
+
+b45=[0 -1 -2;1 0 -1;2 1 0];
+SFST45=imfilter(grayPic,b45,'replicate');%功能：对任意类型数组或多维图像进行滤波。
+SFST45=SFST45&gt;=Threshold;
+SFST45
+subplot(223);
+imshow(SFST45),title('135度角图像边缘检测') ;
+
+
+   %File Discription:
+%水平、垂直边缘检测；
+%Author:Zhang Ruiqing
+%CreateTime:2011.8.8
+
+SourcePic=imread('D:\毕业设计\Images\pic_loc\1870399350205061354.jpg');
+subplot(221);
+imshow(SourcePic),title('原图');
+
+grayPic=rgb2gray(SourcePic);
+grayPic=im2double(grayPic);
+[Vertical Threshold]=edge(grayPic,'sobel','vertical');%edge detect
+subplot(222);
+imshow(Vertical),title('垂直方向边缘检测');
+
+[Horizontal Threshold]=edge(grayPic,'sobel','horizontal');%edge detect
+subplot(223);
+imshow(Horizontal),title('水平方向边缘检测');
+
+H_V=edge(grayPic,'sobel',Threshold);
+subplot(224);
+imshow(H_V),title('水平和垂直边缘检测');

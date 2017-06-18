@@ -1,0 +1,29 @@
+搭建Python HTTP服务我们常需要搭建HTTP服务，但是又不想搞那些复杂的Apache、IIS服务器等，这时我们就可以用python帮我们搭建服务器。 例如之前讲过的用python建XMLRPC开服务进行server/client通信，但这里还有个问题，如果我需要显示本地文件（比如图片），但是rpc不可以直接访问本地文件怎么办？
+
+   这种情况下，只需要再开一个简单服务，显示指定文件夹下文件，再用那个rpc服务调这个服务的文件地址 即可。
+
+   
+
+
+   下面是一个搭建HTTP服务显示本地文件的例子：
+
+   
+
+   import sys
+import BaseHTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+HandlerClass = SimpleHTTPRequestHandler
+ServerClass  = BaseHTTPServer.HTTPServer
+Protocol     = &quot;HTTP/1.0&quot;
+
+port = 8024
+import socket
+hostname = socket.gethostbyname(socket.gethostname())
+server_address = (hostname, port)
+
+HandlerClass.protocol_version = Protocol
+httpd = ServerClass(server_address, HandlerClass)
+
+sa = httpd.socket.getsockname()
+print &quot;Serving HTTP on&quot;, sa[0], &quot;port&quot;, sa[1], &quot;...&quot;
+httpd.serve_forever()访问该程序打印出来的地址即可访问本地文件了：

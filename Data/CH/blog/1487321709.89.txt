@@ -1,0 +1,103 @@
+什么是流水线友好的代码？流水线的工作原理和相关介绍参考【1】。
+
+
+    通常情况下，流水线停滞主要由三方面原因导致：（1）cache不命中，（2）数据依赖，（3）分支指令。
+
+
+   （1）cache不命中一方面因为芯片cache的容量有限，一方面也由程序局部性不强导致，本文不进行展开。 
+
+
+   
+
+
+    （2）数据依赖通常由编译器通过乱序来实现。将无数据依赖的指令提前补充到流水线中，相当于提前计算，有数据依赖的指令推迟执行。
+
+
+    （3）分支指令，去掉分支指令有很多种方法，这种去掉分支指令的代码也叫做branch-free code。
+
+
+    分支结果数组化
+
+
+    例如：下面的代码
+
+
+    for(;;) { if(mode=0) sum+=12; else if(mode=1) sum+=2; else{} }
+
+
+   
+
+
+    可以改成如下数组
+
+
+    static const struct PATTERN patterns[PATTERN_NUM] ={12,2}; for(;;) { sum+=patterns[mode].cnt }
+
+
+   
+
+
+    类似的例子，The binary look-up table
+
+
+    if (b) a = c; else a = d; 这段代码可以改写为
+
+
+    static const type lookup_table[] = { d, c }; a = lookup_table[b];//b或者是0，或者是1。 如果更复杂一点
+
+
+    if (b1) a = c; else if (b2) a = d; else if (b3) a = e; else a = f;
+
+
+    static const type lookup_table[] = { f, e, d, d, c, c, c, c }; a = lookup_table[b1 * 4 + b2 * 2 + b3];
+
+
+    另一种有趣的方案，其中x，x1..均为无符号整数。
+
+
+   if ( x &lt; x1 ) { a = a0; } else if ( x &lt; x2 ) { a = a1; } else if ( x &lt; x3 ) { a = a2; } else if ( x &lt; x4 ) { a = a3; } else { a = a4; }
+
+
+    uint32_t x_lt_x1 = (uint32_t)((int32_t)(x - x1) &gt;&gt; 31); uint32_t x_lt_x2 = (uint32_t)((int32_t)(x - x2) &gt;&gt; 31); uint32_t x_lt_x3 = (uint32_t)((int32_t)(x - x3) &gt;&gt; 31); uint32_t x_lt_x4 = (uint32_t)((int32_t)(x - x4) &gt;&gt; 31); uint32_t result_0 = (x_lt_x4 &amp; a3 ) | (~x_lt_x4 &amp; a4); uint32_t result_1 = (x_lt_x3 &amp; a2 ) | (~x_lt_x3 &amp; result_0); uint32_t result_2 = (x_lt_x2 &amp; a1 ) | (~x_lt_x2 &amp; result_1); uint32_t result = (x_lt_x1 &amp; a0 ) | (~x_lt_x1 &amp; result_2); 以上例子来源于：http://cellperformance.beyond3d.com/articles/2006/04/benefits-to-branch-elimination.html循环展开，最小值优化
+
+
+   int length = array.size; int min; for(int i = 0 ;i&lt;length;i++) { if(array[i]&gt;min) min = array[i]; }
+
+
+    可以改写成
+
+
+    int length = array.size; array.add_dummy_element(length%4);//增加dummy元素补齐到4的倍数 int min; for(int i = 0 ;i&lt;length;i+=4) { min = ((array[i]+min)-abs(array[i]-min))/2; //min(a,b)=((a+b)-|a-b|)/2 min = ((array[i+1]+min)-abs(array[i+1]-min))/2; min = ((array[i+2]+min)-abs(array[i+2]-min))/2; min = ((array[i+3]+min)-abs(array[i+3]-min))/2; }
+
+
+   
+
+
+    绝对值函数编译器会给与特别优化，内部不存在分支判断，这样一来不仅降低了i&lt;length的数量，而且去掉了一次循环内的比较操作。
+
+
+    告诉编译器那个分支的可能性更大
+
+
+   详细参见： http://blog.csdn.net/pennyliang/archive/2009/06/20/4284396.aspx
+
+
+    简言之，流水线通畅的代码一定是哪些顺序执行的代码，较少或者没有跳转的代码，数据依赖较少的代码。并且，数据都能在寄存器或者芯片缓存中获取的，否则都会导致流水线的迟滞，影响效率。
+
+
+   
+
+
+   
+
+
+   推荐阅读：
+
+
+   【1】http://www-cs-faculty.stanford.edu/~eroberts/courses/soco/projects/2000-01/risc/pipelining/index.html
+
+
+   【2】http://en.wikipedia.org/wiki/Compiler_optimization
+
+
+   【3】http://en.wikibooks.org/wiki/Optimizing_C%2B%2B/Code_optimization/Pipeline

@@ -1,0 +1,113 @@
+github不小心同步覆盖了本地文件昨天不小心github的commit还没push就同步了，导致本地文件被覆盖，一度以为没救了。 后来得微博 @空非无和 @柳烟堆雪 指点，用git reflog 恢复了文件。
+
+
+
+   事情是这样的。。。 
+
+我在两个电脑上修改一个项目，A修改文件a，B修改文件b。然后我干了下面这些事，按时间顺序。。。 
+
+1. A上 git commit 
+
+2. A上 git push 
+
+3. B上 git commit 
+
+4. B上 git pull 
+
+然后。。。B上修改的b就被覆盖了。。。
+
+
+
+   而且git log已经找不到第3步的commit了。
+
+
+
+
+
+   解决方案： 
+
+执行git reflog
+
+
+
+
+
+   502dd0f HEAD@{0}: pull --progress --rebase --prune origin master  
+147b3b5 HEAD@{1}: commit: commit-mark
+502dd0f HEAD@{2}: rebase finished: returning to refs/heads/master  
+
+
+   然后
+
+
+
+
+
+   git reset --hard 502dd0f
+git cherry-pick 147b3b5
+
+
+   就可恢复原来B上的本地文件， 然后push到服务器端：
+
+
+
+
+
+   git push origin master
+
+
+   但出现：
+
+
+
+
+
+    ! [rejected] master -&gt; master (non-fast-forward)
+error: failed to push some refs to 'https://github.com/GitUsername/GitProgramName.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+
+   可见，线下线上文件出现了冲突。 
+
+解决方法：
+
+
+
+git pull
+如果有冲突，解决冲突
+git push
+
+
+
+   但是git pull出现问题：
+
+
+
+   You are not currently on a branch. Please specify which
+branch you want to merge with. See git-pull(1) for details.
+
+    git pull &lt;remote&gt; &lt;branch&gt;
+
+
+   解决方法：切换到master，再执行git push
+
+
+
+   git checkout -b temp
+git checkout master
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

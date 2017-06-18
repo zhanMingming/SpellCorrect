@@ -1,0 +1,37 @@
+【Machine Learning】最近做的若干实验的总结如果我们有如下训练数据,和如下假设：
+
+
+   训练数据 结论
+
+
+   X11,X12,X13,…X1n Y1
+
+
+   X21,X22,X23,…x2n Y2
+
+
+   …
+
+
+   Xm1,Xm2,Xm3,…Xmn Ym
+
+
+   假设H(Yi) =θ0&#43;θ1*xi1&#43;θ2*xi2&#43;…θn*xin
+
+
+   需要通过训练数据得到一组（θ0, θ1,…θn）的系数数组。
+
+
+   当有新的数据需要预测时，只需要将新的数据和系数数组求内积即可。&lt;(1,N1,N2,…Nn),（θ0, θ1,…θn）&gt;，结果即为预测&#20540;。
+
+
+   采用LMS algorithm(least meansquares)
+
+
+   实验参见：http://blog.csdn.net/pennyliang/article/details/6998517
+
+
+   参考文献:Andrew NG的machine learning &lt;Supervised LearningPart ILinear Regression&gt;
+
+
+   未完待续

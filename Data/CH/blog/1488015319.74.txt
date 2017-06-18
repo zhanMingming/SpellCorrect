@@ -1,0 +1,124 @@
+使用spring websocket stomp遇到的3个问题总结：路径匹配/自动注入/activemq连接超时之前的这篇博客，详细地描述了如何搭建一个spring websocket工程，经过后面的实践发现了3个问题，这里总结下。
+
+
+   1.我们spring mvc的servlet拦截的是/*，这个范围太大，能不能只拦截特定更具体的url？
+
+
+   2.我们使用SimpMessagingTemplate发送消息，这个bean到底是谁帮我们注入的？我们并没有显示地配置这个bean，也没有扫描某个目录，但显然这个bean是确确实实存在的。
+
+
+   3.我们的页面挂一阶段，发现浏览器控制台和activemq后台报错了，这个时候不能再发送和接收消息。
+
+
+   
+
+
+
+
+   显然是可以配置更具体的路径，比如我们让spring mvc只拦截/websocket/开始的路径：
+
+
+   &lt;servlet&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+		&lt;init-param&gt;
+			&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+			&lt;param-value&gt;/WEB-INF/spring/spring-dispatcher.xml&lt;/param-value&gt;
+		&lt;/init-param&gt;
+		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+	&lt;/servlet&gt;
+	&lt;servlet-mapping&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;url-pattern&gt;/websocket/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+
+   
+
+
+   
+
+
+
+我们的websocket配置如下：
+   &lt;websocket:message-broker
+	application-destination-prefix=&quot;/app&quot;&gt;
+	&lt;websocket:stomp-endpoint path=&quot;/stomp&quot;&gt;
+		&lt;websocket:sockjs /&gt;
+	&lt;/websocket:stomp-endpoint&gt;
+
+	&lt;websocket:stomp-broker-relay prefix=&quot;/topic,/queue&quot;
+		relay-host=&quot;127.0.0.1&quot; relay-port=&quot;61613&quot; /&gt;
+	
+&lt;/websocket:message-broker&gt;
+
+
+   
+
+
+   
+
+
+
+那么客户端，可以通过下面的代码来建立websocket连接：
+   var socket = new SockJS(&#39;/SpringMvcDemo/websocket/stomp&#39;);  
+
+   
+
+
+   其中SpringMvcDemo是我们的war包名称，websocket是spring mvc拦截的路径，最后面的stomp是websocket路径。
+
+
+   
+
+
+
+
+   关于SimpMessagingTemplate这个bean的注入问题，其实很简单是spring框架自动帮我们注入的。
+
+
+   
+
+
+
+
+   这个是spring4.2.4的源码，可以很明显地看到：当我们在xml中配置websocket的时候，框架会自动帮我们注入这个bean。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   websocket连接建立成功后，能够发送和接收信息，但是过了一段时间会出现下面的错误：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   这个是因为：activemq消息通道没有消息发送，activemq会断掉stomp连接，网上有帖子说设置maxInactivityDuration=0即可，但是经过我的尝试，stomp协议这样设置，仍然会超时。正确的配置如下：
+
+
+   &lt;transportConnector name=&quot;stomp&quot; uri=&quot;stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireformat.maxFrameSize=104857600&amp;transport.useInactivityMonitor=false&amp;wireFormat.maxInactivityDuration=0&quot;/&gt;
+
+   
+
+
+
+我自己挂了一个夜晚，并没有看到错误和超时，发送和接收消息也是可以的。

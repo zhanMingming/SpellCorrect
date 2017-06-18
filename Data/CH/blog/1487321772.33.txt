@@ -1,0 +1,43 @@
+JamLegend 已突破百万注册用户今天的techcrunch新闻，体验了一下感觉超好，可惜我弹琴水平太差，第一关就挂掉了，打回去重新tutorial。
+
+
+    
+
+
+    如果国内的音乐搜索可以把这个功能引入，边听歌边弹琴，对歌曲的理解必然上台阶啊，而且左右两边挂banner广告，好像现在视频广告那样，效益比简单音乐搜索提高太多了啊。
+
+
+   
+
+
+    以下全文转自techcrunch.com(http://www.techcrunch.com/2010/02/01/jamlegend-1-million-users/)
+
+
+   
+
+
+   
+
+
+   
+
+
+   JamLegend Shreds Past 1 Million Members
+
+
+   
+
+
+   JamLegend, the LaunchBox-backed &lsquo;Guitar Hero For The Web&rsquo;, has just reached a fairly major milestone: it&rsquo;s now signed up over 1 million users. Co-founder Andrew Lee says that the site is up to around 60 million total song plays, of which 45 million have come from registered members. He says the site has seen especially good growth since it integrated Facebook Connect.
+
+
+   For those that haven&rsquo;t used it before, JamLegend takes the music-as-a-game formula popularized by games like Guitar Hero and Rock Band, and brings it to your web browser. Gameplay is pretty simple: a series of colorful dots scroll down the screen, each representing a note or chord in a song, and you rhythmically tap the proper keys on your keyboard to &ldquo;play&rdquo; each note.
+
+
+   To play a song on JamLegend, it needs to have a note chart. The site offers 630 professionally crafted note charts (and their corresponding songs), and last summer it added support for an automated system that can generate a note chart for any song. In practice the system isn&rsquo;t perfect, but it&rsquo;s probably good enough for casual gamers. JamLegend monetizes these songs by restricting how many you can upload at a time &mdash;if you&rsquo;d like to store more than a handful at once, you have to sign up for a premium subscription. Lee says that users have uploaded over 600,000 songs to their virtual lockers.
+
+
+   Lee says that JamLegend&rsquo;s community is playing a strong role in helping it get traction. He says that indie musicians often come to the site and upload their own songs, and then members of JamLegend&rsquo;s community task themselves with converting those songs into quality note charts. In effect, it&rsquo;s giving these bands another outlet to get new fans, and Lee says that some of the bands have managed to get more fans on JamLegend than they have on MySpace.
+
+
+   One other thing worth noting: while Compete shows JamLegend&rsquo;s traffic taking a dive over the winter, Lee says that their data is off. Instead, he says that traffic has largely been flat recently, but that it hasn&rsquo;t dipped. Still, the company is going to have to come up with some innovative features to get to critical mass, especially as options like the Rock Band Network become increasingly enticing to indie bands.

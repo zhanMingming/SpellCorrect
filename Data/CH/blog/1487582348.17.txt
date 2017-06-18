@@ -1,0 +1,39 @@
+opencv中用Sobel算子进行边缘检测参数：
+
+
+   workImg：当前工作图像（全局）；
+
+
+   img3：Sobel_edge结果；
+
+
+   m_imagetype:图像类型（全局）；
+
+
+   
+
+
+
+
+   
+   OnEdgedetSobel()
+{	
+	IplImage *img = cvCreateImage( cvGetSize(workImg), IPL_DEPTH_16S, 1);
+	if(workImg-&gt;nChannels==3)
+		OnColorToGray();
+	//img=workImg;
+	imageClone(workImg,&amp;img);
+	cvFlip(img);
+
+	IplImage *img2 = cvCreateImage( cvGetSize(img), IPL_DEPTH_16S, 1);//当输入图像是 8 位的，要求输出图像是 16 位的
+	IplImage *img3 = cvCreateImage( cvGetSize(img), IPL_DEPTH_8U, 1);
+
+	cvSobel( img, img2, 1, 0);
+	cvConvertScaleAbs(img2,img3,1,0);
+	cvReleaseImage(&amp;img);
+	cvReleaseImage(&amp;img2);
+
+	cvFlip(img3); 
+	m_dibFlag=imageReplace(img3,&amp;workImg);
+	m_ImageType=1;
+	Invalidate();

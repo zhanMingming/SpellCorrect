@@ -1,0 +1,47 @@
+从AMDAHL定律看优化Amdahl’s law的定义是：Amdahl's law states that the performance improvement to be gained from using some faster mode of execution is limited by the fraction of the time the faster mode can be used.
+
+
+
+    
+
+
+    简言之，性能改进和改进这部分代码的比例f和改进的程度s。speed up = 1/((1-f)&#43;f/s)
+
+
+   举个例子，拿吃饭来说，吃饭包括了吃米饭，吃菜，喝汤3个部分，比例分别是40%，40%，20% 。为了便于计算，我们假定一个人吃一次饭要100分钟，现在我们认为这个人吃饭太慢了，要求提升他的性能，我们让他学习快速喝汤法，通过刻苦学习，喝汤速度提高了100%，即原来需要20分钟喝汤，现在只需要10分钟。这样整体吃饭时间变为90分钟，提升了多少呢？
+
+
+   解这个方程：（1/100)* (1&#43;X%) = 1/90
+
+
+    X=(100/90-1) = 11.11%
+
+
+    如果用Amdal公式求解： 1/(80%*1&#43;20%*1/(1&#43;100%)) = 111.11%。这样一个100%提升的部件（喝汤过程的改进），整体上只获得了11.11%的提升。
+
+
+   
+
+
+    在并发处理中，每增加一个CPU core（从N增加到N&#43;1），对于并行的部分的耗时可以从1/N降低到1/(N&#43;1)，但如果可并行的比例太低，则这种CPU的增加是没有价&#20540;的，因此要获得并发处理的特性，一定要扩大可并行的比例，减少同步，减少上下文切换。
+
+
+    speed up = 1((1-f)&#43;f/N),其中1-f为不可并行部分的比例，f为可并行部分的比例，N为CPU的core数。因此在并发程序上，scalability是非常重要的特性，可并行比例越大，scalability的表现就越好。
+
+
+    
+
+
+   
+
+
+   
+
+
+   参考：
+
+
+   http://www.cs.iastate.edu/~prabhu/Tutorial/CACHE/amdahl.html
+
+
+   http://manio.org/progress-and-thoughts-of-amdahls-law-286.html

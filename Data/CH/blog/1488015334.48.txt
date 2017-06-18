@@ -1,0 +1,74 @@
+软件设计度量工具structure101学习(一)：structure101试用版licence的获取以及众多的structure101系列工具在java的世界里，静态代码检查工具有很多，比如CheckStyle、PMD、FindBugs、Eclipse Metrics、Eclipse Simian等都是非常实用的工具。静态检查工具主要侧重于代码层面的质量，structure101和inFusion等则是设计层面的度量工具，更加侧重软件架构、设计、依赖等。最近打算重新温习下structure101这个很好用的工具，记录在博客里，我发现网上关于structure101的中文资料很少。
+
+
+   
+
+
+
+
+   structure101是收费软件，为了使用它，我们可以在官网上申请一个30天试用期的licence。可以在&quot;Trial Download&quot;页签下，填写好姓名、email地址、公司等信息。
+
+
+   
+
+
+
+
+   下面我们选择自己要下载产品、平台和语言，然后点击下载图标就可以了。我下载的是studio工具。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   点击下载后，会弹出如下提示对话框，licence已经发到我们的邮箱了。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   进入邮箱，找到structure101发送的邮件，下载licence即可。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   这里有一点需要说明下：structure101有很多工具，如structure101、restructure101、studio、build、plugins等多种形式的版本。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   虽然上面我们是通过下载studio获取到的licence，但是这个licence是通用的，同样能够适用于structure101、restructure101等工具。这些版本的差别，后面再慢慢介绍。我们先学习下structure101，后面再慢慢学习其他工具。

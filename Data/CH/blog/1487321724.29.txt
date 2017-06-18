@@ -1,0 +1,34 @@
+将一个已经运行的进程attach到固定CPU内核上的方法（linux,windows)在此前工作中对mysql的调优中曾经使用过该命令，将mysql的实例在制定的若干CPU内核上执行。
+
+
+   
+
+Retrieve the CPU affinity of an existing task
+
+   The general syntax is as follows:taskset -p [pid]To retrieve the CPU affinity of an existing task (PID 12345), enter:# taskset -p 12345
+
+Use taskset command to CPU affinity
+
+   The general syntax is as follows:taskset -c [0,1,2,3..N] [pid]Where,
+
+
+-c 0,1,2,..N : The masks are typically given in hexadecimal. For example, 0x00000001 is processor #0, 0x00000003 is processors #0 and #1 etc. However -c option allows you to specifiy a numerical list of processors instead of a bitmask. The list may contain multiple items, separated by comma, and ranges. For example, 0,5,7,9-11.: Process / program ID 
+pid
+
+
+   For example set PID 12345 on 2-3 CPU, enter:# taskset -c 2,3 12345
+
+
+   
+
+
+   参见：http://www.cyberciti.biz/faq/taskset-cpu-affinity-command/
+
+
+   
+
+
+   windows多核环境可以在任务管理器中图形化设置比较方便，如下图：
+
+
+   如果mysql是允许在windows环境，可以通过这种方法来调优。

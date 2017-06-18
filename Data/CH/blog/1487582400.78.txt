@@ -1,0 +1,150 @@
+Saving PrincessSaving Princess
+
+Time Limit: 1 Second  Memory Limit: 32768 KB  Special Judge 
+
+
+
+   Saving princesses is always a hard work. Ivan D'Ourack is planning to save the princess locked in the tower. However, n dangerous monsters are guarding the road from the city where Ivan lives to the tower where the princess is locked. 
+
+
+   Fortunately Ivan is a warrior and a magician. Thus he can defeat monsters in a fight, and enchant them to pass unnoticed. 
+
+
+   Initially Ivan has h health points, strength s, spell power p and m mana points. To defeat i-th monster in a fight, he must have strength at least si, and he loses max(2si - s, 0) health points in a fight. If the number of health points becomes 0 or less, Ivan dies. After defeating a monster Ivan's strength increases by 1. 
+
+
+   To enchant i-th monster Ivan must have spell power at least pi and he spends mi mana points to do it. If Ivan does not have mi mana points, he cannot enchant the monster. After enchanting the monster Ivan's spell power increases by 1. 
+
+
+   Find out, whether Ivan can save princess, and if he can how to do it. 
+
+Input
+
+   The first line of the input file contains n, h, s, p and m (1 &le; n &le; 50, 1 &le; h &le; 50, 0 &le; s, p, m &le; 50). The following n lines contain three integer numbers each --- si, pi, and mi (1 &le; si, pi, mi &le; 50). 
+
+
+   There are multiple cases. Process to the end of file. 
+
+Output
+
+   If Ivan cannot save princess, output "UNLUCKY". In the other case output n characters, the i-th character must be 'D' if Ivan must defeat the i-the monster, or 'E' if he must enchant it. 
+
+Sample Input
+
+   3 12 5 5 6
+5 5 2
+6 5 2
+6 7 3
+3 11 5 5 6
+5 5 2
+6 5 2
+6 7 3
+
+Sample Output
+
+   DED
+UNLUCKY
+
+
+   #include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+using namespace std;
+#define M 55
+
+int n,hx,sx,px,mx;
+int h[M],s[M],p[M],m[M];
+
+struct States
+{
+	int h;
+	int s;
+	int p;
+	int m;
+	int method[M];
+	int step;//the i-th monistor
+}now,temp;
+
+int flag[M*2][M*2][M*2];
+
+queue&lt;States&gt;Q;
+
+bool bfs()
+{
+	while(!Q.empty())
+	{
+		now=Q.front();
+		Q.pop();
+		//now.step++;
+		if(now.step==n+1&amp;&amp;now.h&gt;0)
+		{
+			for(int i=1;i&lt;=now.method[0];i++)
+				printf("%c",now.method[i]+'D');
+			cout&lt;&lt;endl;
+			return true;
+		}
+		if(flag[now.s][now.p][now.m]&gt;now.h)
+			continue;
+		if(now.s&gt;=s[now.step])//beat
+		{
+			temp=now;
+			temp.h-=(2*s[now.step]-now.s)&gt;0?(2*s[now.step]-now.s):0;
+			temp.s++;
+			temp.step++;
+			if(temp.h&gt;flag[temp.s][temp.p][temp.m])
+			{
+				flag[temp.s][temp.p][temp.m]=temp.h;
+				temp.method[++temp.method[0]]=0;
+				Q.push(temp);
+			}			
+		}
+		if(now.p&gt;=p[now.step]&amp;&amp;now.m&gt;=m[now.step])
+		{
+			temp=now;
+			temp.m-=m[now.step];
+			temp.p++;
+			temp.step++;
+			if(temp.h&gt;flag[temp.s][temp.p][temp.m])
+			{
+				flag[temp.s][temp.p][temp.m]=temp.h;
+				temp.method[++temp.method[0]]=1;
+				Q.push(temp);
+			}			
+		}
+	}
+	return false;
+}
+
+
+void init()
+{
+	memset(flag,0,sizeof(flag));
+	while(!Q.empty())
+	{
+		Q.pop();
+	}
+	now.method[0]=0;
+	now.h=hx;
+	now.s=sx;
+	now.p=px;
+	now.m=mx;
+	now.step=1;
+
+	Q.push(now);
+
+	for(int i=1;i&lt;=n;i++)
+		cin&gt;&gt;s[i]&gt;&gt;p[i]&gt;&gt;m[i];	
+
+}
+
+int main()
+{
+	while(scanf("%d%d%d%d%d",&amp;n,&amp;hx,&amp;sx,&amp;px,&amp;mx)!=EOF)
+	{
+		init();
+		if(!bfs())
+			cout&lt;&lt;"UNLUCKY"&lt;&lt;endl;
+	}
+}

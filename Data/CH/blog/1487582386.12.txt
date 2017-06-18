@@ -1,0 +1,53 @@
+hdu 1788讲的是中国剩余定理，事实上题目不需要的
+
+
+   
+
+
+   求N%Mi==m-a;
+
+
+   即(n+a)%Mi==0
+
+
+   即求这组Mi的最小公倍数
+
+
+   注意要用__int64
+
+
+   
+
+
+   #include &lt;iostream&gt;    
+using namespace std;  
+  
+__int64 gcd( __int64 a, __int64 b )  
+{  
+	if(b==0)
+		return a;
+	return gcd(b,a%b);
+}  
+  
+__int64 lcm( __int64 a, __int64 b )  
+{  
+    return a*b/gcd(a,b);
+}  
+  
+int main()  
+{  
+    int n,a,mi;  
+    int tmp;  
+    __int64 ans;  
+	while(scanf("%d%d",&amp;n,&amp;a)!=EOF&amp;&amp;(n||a))
+	{
+		ans=1;
+		for(int i=0;i&lt;n;i++)
+		{
+			scanf("%d",&amp;mi);
+			ans=lcm(ans,mi);
+		}
+		printf("%I64d/n",ans-a);
+	}
+    return 0;  
+}

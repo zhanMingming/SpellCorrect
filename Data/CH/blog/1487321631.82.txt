@@ -1,0 +1,108 @@
+今天各种坑 库连不上，apache装起来外面访问不了，fsockopen 权限不够今天各种坑
+
+
+   安装ACE运行不了，库link不上
+
+
+   原来要 /sbin/ldconfig –v 一下
+
+
+   参考
+
+
+   http://www.cnblogs.com/amboyna/archive/2008/02/06/1065322.html
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   apache装起来外面访问不了
+
+
+
+
+   原来是防火墙问题
+
+
+   vi /etc/sysconfig/iptables
+
+
+
+
+   加入一条
+
+
+   -A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+
+
+
+
+   特别注意要加在“-A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited” 之上，否则放在下面，等于无效，在这个地方吃了个苦。
+
+
+   然后
+
+
+   /etc/init.d/iptables stop  【有些机器可以使用service iptables restart 】达到重启效果
+
+
+
+
+   再
+
+
+   /etc/init.d/iptables start
+
+
+
+
+   
+
+
+
+
+   写了一段PHP代码 fsockopen,发现权限不够，找了一圈，总算找到答案
+
+$fp = fsockopen(&quot;192.168.56.10&quot;, 8081, $errno, $errstr, 30);
+
+if (!$fp) {  echo &quot;$errstr ($errno)&lt;br /&gt;\n&quot;;  }
+
+
+
+
+   
+
+
+
+
+   fsockopen() unable to connect to 127.0.0.1:80 (Permission denied)&quot; error
+
+
+
+
+   
+
+
+
+
+   用以下命令，不需重启
+
+
+   setsebool -P httpd_can_network_connect 1
+
+
+
+
+   参考：
+
+
+   http://archives.ryandaigle.com/articles/2005/9/27/mythweb-howto-fix-fsockopen-function-fsockopen-unable-to-connect-to-127-0-0-1-6543-permission-denied-error

@@ -1,0 +1,129 @@
+linux编程的108种奇淫巧计-11(乱序)【续】接上文：linux编程的108种奇淫巧计-11(乱序)
+
+
+   
+
+
+   用了支持SSE4的CPU，intel core i3，因为支持了palignr指令，所以把上文的代码改用了palignr指令重写了一下如下：
+
+
+   可能由于在虚拟机上运行的原因，性能提升并不显著。
+
+
+   
+
+
+   #include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include &lt;stddef.h&gt;
+#include &lt;stdint.h&gt;
+ asm("   .text   ");
+ asm("   .type  shl_7, @function");
+ asm("shl_7:   push   %rbp    ");
+ asm("   mov    %rsp,%rbp      ");
+ asm("loop: sub     $0x80, %rdx ");
+ asm("   movaps  -0x07(%rsi), %xmm1 ");
+ asm("   movaps  0x09(%rsi), %xmm2  ");
+ asm("   movaps  0x19(%rsi), %xmm3  ");
+ asm("   movaps  0x29(%rsi), %xmm4  ");
+ asm("   movaps  0x39(%rsi), %xmm5  ");
+ asm("   movaps  0x49(%rsi), %xmm6  ");
+ asm("   movaps  0x59(%rsi), %xmm7  ");
+ asm("   movaps  0x69(%rsi), %xmm8  ");
+ asm("   movaps  0x79(%rsi), %xmm9  ");
+ asm("   lea     0x80(%rsi), %rsi   ");
+ asm("   palignr $7, %xmm8, %xmm9   ");
+ asm("   palignr $7, %xmm7, %xmm8   ");
+ asm("   palignr $7, %xmm6, %xmm7   ");
+ asm("   palignr $7, %xmm5, %xmm6   ");
+ asm("   palignr $7, %xmm4, %xmm5   ");
+ asm("   palignr $7, %xmm3, %xmm4   ");
+ asm("   palignr $7, %xmm2, %xmm3   ");
+ asm("   palignr $7, %xmm1, %xmm2   ");
+ asm("   movaps  %xmm9, 0x70(%rdi)  ");
+ asm("   movaps  %xmm8, 0x60(%rdi)  ");
+ asm("   movaps  %xmm7, 0x50(%rdi)  ");
+ asm("   movaps  %xmm6, 0x40(%rdi)  ");
+ asm("   movaps  %xmm5, 0x30(%rdi)  ");
+ asm("   movaps  %xmm4, 0x20(%rdi)  ");
+ asm("   movaps  %xmm3, 0x10(%rdi)  ");
+ asm("   movaps  %xmm2, (%rdi)      ");
+
+ asm("   leaveq");
+ asm("   retq  ");
+
+
+ asm("   .text   ");
+ asm("   .type  shl_7_f, @function    ");
+ asm("shl_7_f:   push   %rbp   ");
+ asm("   mov    %rsp,%rbp      ");
+ asm("loop_f: sub     $0x80, %rdx     ");
+
+ asm("   movaps  -0x07(%rsi), %xmm1 ");
+ asm("   movaps  0x09(%rsi), %xmm2  ");
+ asm("   movaps  0x19(%rsi), %xmm3  ");
+ asm("   movaps  0x29(%rsi), %xmm4  ");
+ asm("   movaps  0x39(%rsi), %xmm5  ");
+ asm("   movaps  0x49(%rsi), %xmm6  ");
+ asm("   movaps  0x59(%rsi), %xmm7  ");
+ asm("   movaps  0x69(%rsi), %xmm8  ");
+ asm("   movaps  0x79(%rsi), %xmm9  ");
+ asm("   lea     0x80(%rsi), %rsi   ");
+ asm("   palignr $7, %xmm8, %xmm9   ");
+ asm("   movaps  %xmm9, 0x70(%rdi)  ");
+ asm("   palignr $7, %xmm7, %xmm8   ");
+ asm("   movaps  %xmm8, 0x60(%rdi)  ");
+ asm("   palignr $7, %xmm6, %xmm7   ");
+ asm("   movaps  %xmm7, 0x50(%rdi)  ");
+ asm("   palignr $7, %xmm5, %xmm6   ");
+ asm("   movaps  %xmm6, 0x40(%rdi)  ");
+ asm("   palignr $7, %xmm4, %xmm5   ");
+ asm("   movaps  %xmm5, 0x30(%rdi)  ");
+ asm("   palignr $7, %xmm3, %xmm4   ");
+ asm("   movaps  %xmm4, 0x20(%rdi)  ");
+ asm("   palignr $7, %xmm2, %xmm3   ");
+ asm("   movaps  %xmm3, 0x10(%rdi)  ");
+ asm("   palignr $7, %xmm1, %xmm2   ");
+ asm("   movaps  %xmm2, (%rdi)      ");
+
+ asm("   leaveq");
+ asm("   retq  ");
+
+ int main(void)
+ {
+ uint8_t * src = (uint8_t*)malloc(sizeof(uint8_t)*(128+7));
+ uint8_t * des = (uint8_t*)malloc(sizeof(uint8_t)*128);
+ int i = 0;
+ for(;i&lt;128;++i)
+ {
+  src[i] = 0xFF;
+ }
+ src[0] = 0x0;
+ src[1]=0x1;
+ src[2]=0x2;
+ src[7]=0x7;
+ src[8]=0x8;
+ src[9]=0x9;
+ src[10]=0xA;
+ src[126]=0xB;
+ src[127]=0xA;
+ src+=7;
+ shl_7(des,src);
+ i = 0;
+ for(;i&lt;128;++i)
+ {
+  //printf("%d,%d/n",i,des[i]);
+ }
+ i = 0;
+ for(;i&lt;100000000;++i)
+ {
+  #ifdef _SLOW
+      shl_7(des,src);
+  #endif
+  #ifdef _FAST
+      shl_7_f(des,src);
+  #endif
+ }
+
+ return 0;
+}

@@ -1,0 +1,51 @@
+怎样在除了Ondraw或者OnPaint函数中画图？for example:
+
+
+   
+
+
+   定义CClientDC dc(this);
+
+
+   
+
+
+   void CMyView::paint(int id)
+{
+
+	CClientDC dc(this);
+	int i,x[4],y[4],dx,dy;
+	if(id ==0)
+	{
+		dx = 60;
+		dy = 200;
+	}
+	else if(id ==1)
+	{
+		dx = 730;
+		dy  = 200;
+
+	}
+	for(i=0;i&lt;4;i++)
+	{
+		x[i]=game[id].totalModel[next[id]][i][0];
+		y[i]=game[id].totalModel[next[id]][i][1];
+	}
+	MemDC.SelectObject(bmp[1]);
+	for(i=0;i&lt;4;i++)
+	{		 
+		dc.BitBlt(dx+(x[i]-1)*b_width,dy+(y[i]-1)*b_height,b_width,b_height,&amp;MemDC,0,0,SRCCOPY);
+	}
+} 
+
+
+   
+
+
+   那如果是对话框的呢？
+
+
+   
+
+
+   那就添加OnPaint消息响应函数~

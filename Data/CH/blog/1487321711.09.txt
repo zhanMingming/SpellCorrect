@@ -1,0 +1,82 @@
+马来西亚吉隆坡召开的2010OpenWebAsia大会在TechCrunch上看到一篇新闻【2】，其中关于世界对中国的认识，有兴趣的可以看一看【1】，数据大多来自CNNIC的统计，看来国外同行认可了这份统计。
+
+
+    另外就会议的一些重要内容，进行一些分析。
+
+
+    
+
+
+    亚洲的互联网状况：
+
+
+    大量的模仿者（copycats），相对少的原创团队(startups)，较少的VC公司和天使投资人，工程师的低薪，原创公司一般不热衷高技术人才，很少有世界级眼光的创业者。
+
+
+    历史，文化，经济上的不同的市场（这里指的是中日韩，彼此不open，较少跨多国的IT公司，参见【1】的讨论）
+
+
+   网民的在线消费意愿不强
+
+
+    弱退出环境（weak exit environment ），这里指创业后上市拿到钱退出，或者被收购退出的环境。
+
+
+    政治和法律问题
+
+
+    人才流失（brain drain），这里主要指市场竞争环境，工资待遇涨幅较低，导致人员流动。
+
+
+    互联网的普及率低（主要指印度尼西亚等国）
+
+
+    移动市场的分立
+
+
+    互联网和移动网络基础建设投入不够
+
+
+   
+
+
+    中国创新环境不够的原因在以上几点很好的揭示了出来，机会并不是没有，如果看清形势，大胆投入，走创新之路，是大有可为的。前一段时间和一个创业者讨论人才使用的问题，我问他：&ldquo;如果同样的钱可以买1匹上马或者买2匹中马，也可以买3匹下马，你会怎样选择？&rdquo;，这位创业者选择了2匹下马，我想这种思维在国内的创业者中是主流，创业还主要停留在模仿阶段，还停留在土法炼钢阶段，最后结果可想而知。当然中国的市场环境之差，法律法规不健全，制度障碍的确也是不可回避的，中国的互联网创新还需要多多给予呵护，中国的政治经济环境还需要继续发展完善。
+
+
+   
+
+
+   以下是部分原文： 
+
+Current Challenges In South East Asia&rsquo;s Tech Scene
+
+   It&rsquo;s still very early in the game, it&rsquo;s already a huge market, and there&rsquo;s room for massive future growth in South East Asia&rsquo;s web and mobile industry. But there are still some significant hurdles to overcome, especially if you regard South East Asia as one region.
+
+
+   Some hurdles I personally see in South East Asia&rsquo;s web and mobile market (and on the way to a possible integration) are the:
+
+
+still relatively undeveloped tech ecosystem and its &ldquo;chicken and egg&rdquo; problem(depending on the country: big number of copycats, relatively low number of startups, few to almost no VCs firms/angel investors, low salaries for engineers, low propensity of skilled employees to work for startups, fewer people with an entrepreneurial mindset etc.) 
+historically, culturally, and economically diverse markets 
+much lower online spend than in North America or Europe 
+weak exit environment (IPOs, trade sales) 
+political and legal problems in some South East Asian countries(IP protection, bureaucracy for startups, general political instability) 
+massive &ldquo;brain drain&rdquo; 
+still low Internet penetration (examples: Indonesia has 12.5% Internet penetration, Vietnam has 25.7%, the Philippines just 24.5%) 
+fragmented mobile landscape 
+underdeveloped online and mobile payment infrastructure (if any) 
+
+
+   Many of these problems, for example the low Internet penetration, will probably solve themselves in the future. And in fact, local startups, partly financed by local venture capital firms (which do exist), are starting to crop up all over the place.
+
+
+   
+
+
+   推荐阅读
+
+
+   【1】http://www.slideshare.net/ganglu/opening-asian-web-what-is-happening-in-china-4866825
+
+
+   【2】http://techcrunch.com/2010/07/31/from-openwebasia-in-kuala-lumpur-south-east-asias-web-under-the-spotlight/

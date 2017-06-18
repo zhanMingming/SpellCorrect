@@ -1,0 +1,364 @@
+Deep learning From Image to Sequence本文笔记旨在概括地讲deep learning的经典应用。内容太大，分三块。
+
+   ---------------------------------------------------------------------------------------------
+
+                            Content
+
+   
+
+   1. 回顾 deep learning在图像上的经典应用
+
+     1.1 Autoencoder
+
+     1.2 MLP
+
+     1.3 CNN&lt;详细的见上一篇CNN&gt;
+
+   2.deep learning处理语音等时序信号
+
+     2.1 对什么时序信号解决什么问题
+
+     2.2 准备知识
+
+      2.2.1 Hidden Markov Model(HMM)
+
+      2.2.2 GMM-HMM for Speech Recognition
+
+      2.2.3Restricted Boltzmann Machine（RBM）
+
+   3. DBN 和 RNN 在语音上的应用
+
+     3.1 DBN
+
+      3.1.1 DBN架构
+
+      3.1.2 DBN-DNN for Speech Recognition
+
+     3.2 RNN
+
+      3.2.1 RNN种类
+
+      3.2.2 RNN-RBM for Sequential signal Prediction
+
+   
+
+   ---------------------------------------------------------------------------------------------
+
+   
+
+   1. 回顾 deep learning处理图像等非时序信号 &lt;详细的见上一篇CNN&gt;
+
+   ----------------------------------------------
+
+   1.1 AutoEncoder（unsupervised）
+
+   
+
+   扩展：Stack AutoEncoder（可以变成supervised），见Andrew Ng的UFLDL教程，我就不贴图了
+
+   
+
+   
+
+   ----------------------------------------------
+
+   1.2 MLP
+
+   MLP（ANN）是最naive的神网分类器。一个hidden层，连两端nonlinear function，output输出为f(x)，softmax做分类。
+
+   
+
+   
+
+   ----------------------------------------------
+
+   1.3 Convolutional Neural Network
+
+   特点：1. 非全连接，2、共享权重
+
+   做法：1. 卷积 2. 降采样（pooling）
+
+   具体见上一篇CNN
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   ---------------------------------------------------------------------------------------------
+
+   2. deep learning处理语音等时序信号
+
+   2.1 对什么时序信号解决什么问题：
+
+   handwriting recognitionspeech recognitionmusic compositionprotein analysisstock market prediction...
+
+   
+
+   
+
+   2.2 准备知识：
+
+   ----------------------------------------------
+
+      2.2.1 Hidden Markov Model(HMM) - 带unobserved（这就是所谓hidden）states的随机过程，表示输入语音信号和hidden state（因素）的模型：
+
+   
+
+   
+
+   &lt;figure from wiki&gt;
+
+   训练HMM模型：给定一个时序y1...yT, 用MLE（typically EM implemented，具体见这篇第三部分training） 估计参数；
+
+   
+
+   
+
+   ----------------------------------------------
+
+        2.2.2GMM-HMM for Speech Recognition(较大，单独放在一篇blog里了)
+
+   
+
+   ----------------------------------------------
+
+        2.2.3Restricted Boltzmann Machine
+
+   
+
+        讲RBM之前要先讲一下生成模型……&lt;How to build a single layer of feature detector&gt;
+
+        大体分为两类——directed model &amp; undirected model:
+
+   
+
+         1.directed model （e.g. GMM 从离散分布求latent状态）
+
+          根据先验分布选择latent variable的状态
+
+          给定latent states，根据条件分布求observable variables的状态
+
+         2.undirected model
+
+          只用参数W，通过能量函数定义v(visible)和h(hidden latent variables)的联合概率
+
+
+   
+
+   
+
+      根据”explaining away”，如果latent和visible变量有着非线性关系，directed model很难推断出latent variable的状态；但在undirected model中，只要latent变量间没有变项链就可以轻松推断。
+
+   
+
+   PS: explaining away是什么？
+
+   state的先验相互独立，后验也相互独立，
+
+   
+
+   
+
+   下面再讲RBM。
+
+   
+
+       RBM 是马尔科夫随机场（MRF）的一种。不同之处：
+
+       1. RBM是一个双向连接图（bipartite connectivity graph）
+
+       2. RBM在不同unit之间不共享权重
+
+       3. 有一部分变量是unobserved
+
+   
+
+   RBM对能量函数E(v,h)的定义：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   RBM的参数构成：W(weight), bias_h, bias_v
+
+   已知联合分布P(v,h) ， 可通过Gibbs采样边缘分布分别得到h,v，根据Gradient of NLL进行梯度下降学习到参数。
+
+   RBM的训练目标是：最大化p(v=visible)。（visible=真实的visible数据）
+
+   RBM实际训练过程中，对每个training_batch：
+
+      contrastive divergence 采样k次（gibbs CD-k）
+
+      根据cost function进行update :, 即cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end))
+
+   
+
+   
+
+   
+
+   上面讲的RBM都是v,h = 0/1的，那怎么处理real-value的呢？
+
+   ANS：用Gaussian-Bernoulli RBM (GRBM)。对上面经典RBM改动不大，只需要改energy function &amp; conditional prob:
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   3. DBN 和 RNN 在语音上的应用
+
+   
+
+   3.1 DBN
+
+      3.1.1 DBN架构
+
+   
+
+   
+
+   流程：
+
+   1. pre-train
+
+   从左到右来看，由于输入为real-value，所以第一层为GRBM，训练W1
+
+   GRBM训练出来的hidden给下一个RBM做input，训练W2
+
+   这个RBM训练出来的hidden再传给下一个RBM做input，训练W3
+
+   ……（重复）
+
+   
+
+   2. 可以直接把这几层pre-train好的W叠起来，双向weight箭头全改成top-down的，成了一个DBN生成模型
+
+   
+
+   3. 加分类器
+
+   可以最后在这个pre-trained网络头部加一个softmax分类器，其中每个节点表示HMM中一个状态，去做有监督的fine-tuning.。
+
+   
+
+   
+
+   
+
+   
+
+      3.1.2 DBN-DNN for Speech Recognition
+
+   如果你仔细看过上一篇GMM-HMM for Speech Recognition就会发现，这个模型和GMM-HMM只差在GMM
+
+   即，DNN-HMM用DNN（undirected model）代替了GMM（directed model）,这样的好处是可以解决h，v之间非线性关系映射。
+
+   
+
+   
+
+   Fig1. GMM-HMM
+
+   
+
+   
+
+   Fig2. DNN-HMM
+
+   
+
+   
+
+     3.2 RNN
+
+      3.2.1 RNN种类
+
+   常见的：
+
+   
+
+   1.Fully Recurrent Network
+
+   2.Hopfield Network
+
+   3.Elman Network (Simple Recurrent networks)
+
+   4.Long short term memory network
+
+   
+
+   fig. LSTM
+
+   
+
+      3.2.2 RNN-RBM for Sequential signal Prediction
+
+   见一个RNN例子，RNNRBM（RNN-RBM for music composition 网络架构及程序解读）
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   Reference:
+
+   为了大家看的方便，我推荐从简了。。。抄了太多图，不贴出处了大牛们见谅。。不然一堆推荐无从下手滴样纸
+
+   Deep Learning 在语音上的应用DNN经典文章:
+
+   1. Hinton, Li Deng, Dong Yu大作：Deep Neural Networks for Acoustic Modeling in Speech Recognition
+
+   2. Andrew Ng, NIPS 09,	Unsupervised feature learning for audio classiﬁcationusing convolutional deep belief networks
+
+   
+
+   Deep Learning 在语音上的应用RNN经典文章:
+
+   1.Bengio ICML 2012. RNN+RBM paper有实现 （下一篇细讲）
+
+   2.Schmidhuber JMLR 2002 paper讲LSTM经典
+
+   3.The Use of Recurrent Neural Networks in Continuous Speech Recognition, 老文章讲RNN比较基础,但是确实经典

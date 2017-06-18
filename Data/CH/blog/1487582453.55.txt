@@ -1,0 +1,101 @@
+main函数执行前后的代码一、main结束 不代表整个进程结束
+
+ （1）全局对象的构造函数会在main 函数之前执行，
+
+ 全局对象的析构函数会在main函数之后执行；
+
+   用atexit注册的函数也会在main之后执行。
+
+ （2）一些全局变量、对象和静态变量、对象的空间分配和赋初&#20540;就是在执行main函数之前,而main函数执行完后，还要去执行一些诸如释放空间、释放资源使用权等操作
+
+ （3）进程启动后，要执行一些初始化代码（如设置环境变量等），然后跳转到main执行。全局对象的构造也在main之前。
+
+二、main()之后执行的代码，用atexit注册的函数也会在main之后执行
+
+
+
+[cpp]view
+ plaincopyprint?
+
+
+
+
+
+
+
+
+
+#include&lt;iostream&gt;
+voidfn1(void)
+{
+printf(&quot;next.\n&quot;);
+}
+
+voidfn2(void)
+{
+printf(&quot;executed&quot;);
+}
+
+voidfn3(void)
+{
+printf(&quot;is&quot;);
+}
+
+voidfn4(void)
+{
+printf(&quot;This&quot;);
+}
+
+intmain(void)
+{
+//
+//注册需要在main函数结束后执行的函数.
+//请注意它们的注册顺序和执行顺序
+//在main函数结束后被调用，调用顺序与注册顺序相反。先注册后执行。
+//
+
+atexit(fn1);
+atexit(fn2);
+atexit(fn3);
+atexit(fn4);
+
+//这条输出语句具有参照性，它可不是最后一句输出.
+puts(&quot;Thisisexecutedfirst.&quot;);
+
+//EXIT_SUCCESS代表0，它定义在stdlib.h中.
+//我只是顺便提一下，也许你知道，但我担心你不知道，呵呵.
+//
+returnEXIT_SUCCESS;
+}
+
+
+关于atexit函数我的稍微补充一下，原型如下：
+
+
+
+
+
+[cpp]view
+ plaincopyprint?
+
+
+
+
+
+
+
+
+
+intatexit(void(*func)(void));
+
+
+ atexit 函数是标准 C 新增的。它“注册”一个函数，使这个函数将在 exit 函数被调用时或者当 mian 函数返回时被调用。当程序异常终止时（例如调用 abort 或 raise），通过它注册的函数并不会被调用。编译器必须至少允许程序员注册32个函数。如果注册成功，atexit
+ 返回0，否则返回非零&#20540;。没有办法取消一个函数的注册。在 exit 所执行的任何标准清理操作之前，被注册的函数按照与注册顺序相反的顺序被依次调用。每个被调用的函数不接受任何参数，并且返回类型是 void。被注册的函数不应该试图引用任何存储类别为 auto 或 register 的对象（例如通过指针），除非是它自己所定义的。多次注册同一个函数将导致这个函数被多次调用。有些传统 C 编译器用 onexit 这个名称实现了像是的功能。
+ atexit是注册后进先出的函数，和函数入栈出栈是一样的。
+ 在这里注册了四个函数，理解为入栈的顺序为fn1() -&gt; fn2() -&gt; fn3() -&gt; fn4();出栈的顺序正好相反，而什么时候出栈呢？就是在调用函数结束时，准确的说应该是函数调用的最后的操作就是出栈过程。main()同样也是一个函数，在结束时，按出栈的顺序调用四个函数，即为fn4()
+ -&gt; fn3() -&gt; fn2() -&gt; fn1();
+
+    注册这个函数的目的就是为了在函数退出时调用的，即使是main()函数也是这样的。可以在这些函数中加入一些清理工作，比如内存释放等等。
+
+
+   出处：http://blog.csdn.net/huang_xw/article/details/8542105

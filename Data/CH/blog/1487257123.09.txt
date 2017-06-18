@@ -1,0 +1,96 @@
+硬盘空间不够用了，怎么办，还有更绝的今天，发现硬盘空间不够了，怎么办。
+
+
+   1）首先这个分区是LVM的，因此看看是否前人还给留了空间
+
+
+      输入lvm，进入lvm的提示符
+
+
+   
+
+
+
+
+   2）输入pvscan，天啦，前人还给留了1.78TB啊，是不是真的？
+
+
+    lvm&gt; pvscan
+
+ PV /dev/sdg1  VG VolGroup  lvm2 [1.82 TiB / 1.78 TiB free]
+
+
+   
+
+
+   3）lvscan看看，我需要给/dev/VolGroup/LogVol02 “升仓”，因为这个是mount在根目录下面的，我需要这个空间enlarge一点。
+
+
+   lvm&gt; lvscan 
+
+ ACTIVE      '/dev/VolGroup/LogVol00' [5.00 GiB] inherit
+
+ ACTIVE      '/dev/VolGroup/LogVol01' [5.00 GiB] inherit
+
+ ACTIVE      '/dev/VolGroup/LogVol02' [10.00 GiB] inherit
+
+ ACTIVE      '/dev/VolGroup/LogVol03' [5.00 GiB] inherit
+
+ ACTIVE      '/dev/VolGroup/LogVol04' [10.00 GiB] inherit
+
+
+   4）lvextend 1TB进来，我是不是太贪心了？
+
+
+   lvm&gt;lvextend -L &#43;1000G /dev/VolGroup/LogVol02
+
+
+   
+
+
+
+
+   5）退出lvm，运行resize2fs 认一下盘
+
+
+   运行resize2fs /dev/VolGroup/LogVol02
+
+
+   结果如下：
+
+
+   Filesystem at /dev/VolGroup/LogVol02 is mounted on /; on-line resizing required
+
+old desc_blocks = 1, new_desc_blocks = 64
+
+Performing an on-line resize of /dev/VolGroup/LogVol02 to 265764864 (4k) blocks.
+
+The filesystem on /dev/VolGroup/LogVol02 is now 265764864 blocks long.
+
+
+
+
+   6）df -ah看看
+
+
+   件系统       容量 已用 可用 已用%% 挂载点
+
+/dev/mapper/VolGroup-LogVol02
+
+           998G 1.7G 946G  1% /
+
+
+
+
+   哈哈，磁盘空间升仓啦。
+
+
+   
+
+
+
+
+   这个故事告诉我们一个道理，因为机器不是咱们装的，里面的别别窍，咱也不知道，也不好追述这机器是谁装的了，所以只能自己去发现了。
+
+
+   嗨嗨，当然了，你必须得有root权限，否则一切白搭。

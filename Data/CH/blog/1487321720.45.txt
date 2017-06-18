@@ -1,0 +1,49 @@
+TCP协议调优-强制快速重传技术（Spurious retransmissions）RTT Distribution一般如下图：
+
+
+   
+
+
+   以上数据来自google.com。注意大于1秒的RTT有大约2.5%。而超时重传的概率有0.8% - 2.4%。
+
+
+   
+
+
+   RTO（Retransmission Timeout）操作系统默认如下：
+
+
+   
+
+
+   
+
+
+   
+
+
+   Linux的超时重传默认是3秒，这就意味这，一旦发生丢包，用户的体验将会很不好，因此可以采用强制快速重传技术来进行提速（Spurious SYN/SYN-ACK retransmissions），将超时重传时间强制设定为1秒。但这可能会导致duplicate packets，可以通过修改TS（tcp_sack参数，链路质量良好的情况下一般设0）或DSACK（允许发多个ACK，这里也用设0的方式）等方式来进行改进。
+
+
+   sysctl -w net.ipv4.tcp_sack=0sysctl -w net.ipv4.tcp_dsack=0
+
+
+   sysctl -p
+
+
+   
+
+
+   据了解，google的前台服务器TCP重传率为0.8% - 2.4%。SYN-ACK重传率0.6% - 3.8%（未优化的情况）。
+
+
+   
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+   TCP/IP协议 慢启动，快速重传的一些资料：http://www.faqs.org/rfcs/rfc2001.html
+
+
+   RFC2988 计算TCP的重发定时器：http://www.itqun.net/content-detail/402763.html

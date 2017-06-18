@@ -1,0 +1,189 @@
+Interviewe  hdu 3486Interviewe
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 1528Accepted Submission(s): 314
+
+Problem Description
+
+YaoYao has a company and he wants to employ m people recently. Since his company is so famous, there are n people coming for the interview. However, YaoYao is so busy that he has no time to interview them by himself. So he decides to select exact m interviewers for this task.YaoYao decides to make the interview as follows. First he queues the interviewees according to their coming order. Then he cuts the queue into m segments. The length of each segment is[n/m] , which means he ignores the rest interviewees (poor guys because they comes late). Then, each segment is assigned to an interviewer and the interviewer chooses the best one from them as the employee.YaoYao&rsquo;s idea seems to be wonderful, but he meets another problem. He values the ability of the ith arrived interviewee as a number from 0 to 1000. Of course, the better one is, the higher ability value one has. He wants his employees good enough, so the sum of the ability values of his employees must exceed his target k (exceed means strictly large than). On the other hand, he wants to employ as less people as possible because of the high salary nowadays. Could you help him to find the smallest m?
+
+
+
+
+   
+
+Input
+
+The input consists of multiple cases.In the first line of each case, there are two numbers n and k, indicating the number of the original people and the sum of the ability values of employees YaoYao wants to hire (n&le;200000, k&le;1000000000). In the second line, there are n numbers v1, v2, &hellip;, vn (each number is between 0 and 1000), indicating the ability value of each arrived interviewee respectively.The input ends up with two negative numbers, which should not be processed as a case.
+
+
+
+
+   
+
+Output
+
+For each test case, print only one number indicating the smallest m you can find. If you can&rsquo;t find any, output -1 instead.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   11 300
+7 100 7 101 100 100 9 100 100 110 110
+-1 -1
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   3
+Hint
+We need 3 interviewers to help YaoYao. The first one interviews people from 1 to 3, the second interviews people from 4 to 6, 
+and the third interviews people from 7 to 9. And the people left will be ignored. And the total value you can get is 100+101+100=301&gt;300.
+ 
+
+
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（5）&mdash;&mdash;Host by BJTU 
+
+
+
+
+   
+
+Recommend
+
+zhengfeng
+
+#include&lt;algorithm&gt;
+#include&lt;iostream&gt;
+using namespace std;
+#define M 200002
+int a[M];//数组数据
+int Q[M];//队列
+int I[M];//I[i]表示队列中的Q[i]在数组中的下标
+int OutMax[M];//最大值
+int n;
+
+void GetMax(int k)
+{
+    for(int i=1;i&lt;=n/k;i++)
+    {
+ int maxn=-1;
+ for(int j=(i-1)*k+1;j&lt;i*k+1;j++)
+ {
+     if(a[j]&gt;maxn)
+  maxn=a[j];
+ }
+ OutMax[(i-1)*k]=maxn;
+    }
+}
+/*
+void GetMax(int k)//求每段长度为k中的max
+{
+    int i;
+    int head=1;
+    int tail=0;
+    for(i=1;i&lt;k;++i)
+    {
+ while(head &lt;=tail &amp;&amp; Q[tail]&lt;a[i])
+     tail--;
+ tail++;
+ Q[tail]=a[i];
+ I[tail]=i;
+    }
+    for(i=k;i&lt;=n;++i)
+    {
+ while(head &lt;=tail &amp;&amp; Q[tail]&lt;a[i])
+     tail--;
+ tail++;
+ Q[tail]=a[i];
+ I[tail]=i;
+ while(I[head]&lt;=i-k)
+     head++;
+ OutMax[i-k]=Q[head];
+    }
+}*/
+int main()
+{
+    int i,req;//require
+    while(scanf("%d%d",&amp;n,&amp;req)!=EOF&amp;&amp;!(n&lt;0&amp;&amp;req&lt;0))
+    {
+ int temp=0;
+ int minr=-10000000;
+ for(i=1;i&lt;=n;++i)
+ {
+     scanf("%d",&amp;a[i]);
+     temp+=a[i];
+     minr=minr&lt;a[i]?a[i]:minr;
+ }
+ if(minr&gt;req)
+ {
+     cout&lt;&lt;"1"&lt;&lt;endl;
+     continue;
+ }
+ if(temp&lt;=req)
+ {
+     cout&lt;&lt;"-1"&lt;&lt;endl;
+     continue;
+ }
+ int low=1;
+ int high=n;
+ int res=1;
+		int countn=0;
+		int finalans=0;
+ while(low&lt;=high)
+ {
+     int mid=(high+low)/2;
+     int sum=0;
+     GetMax(mid);
+			countn=0;
+     for(i=0;i+mid&lt;=n;i+=mid)
+     {
+  sum+=OutMax[i];
+				countn++;
+				if(sum&gt;req)
+					break;
+     }
+     if(sum&lt;=req)
+     {
+  high=mid-1;
+     }
+     else
+     {
+  res=mid;
+  low=mid+1;
+				finalans=countn;
+     }
+ }
+ printf("%d/n",finalans);
+    }
+    return 0;
+} 
+
+数据很弱，A掉了，但是叔叔的测试数据还没过：
+
+9 9
+
+1 1 1 1 1 1 1 1 8
+
+求真相！

@@ -1,0 +1,129 @@
+在GridView中使用FindControl最近项目中用到FindControl和GridView，整理了一下几种使用方法，留作资料。
+
+1、在选择（SelectedIndexChanged）事件中使用
+
+
+     //获得被选择行的TextBox1
+    protected void gv1_SelectedIndexChanged(object sender, EventArgs e)
+    {
+ //Control c = this.gv1.Rows[this.gv1.SelectedIndex].FindControl("TextBox1");
+ //TextBox tb = (TextBox)c;
+ //tb.Text = "TextBox";
+
+ TextBox tb = (TextBox)this.gv1.Rows[this.gv1.SelectedIndex].FindControl("TextBox1");
+ tb.Text = "hello";
+    }
+
+2、在编辑行（RowEditing）事件中使用
+
+   
+    //编辑行时，找到TextBox1
+    protected void gv1_RowEditing(object sender, GridViewEditEventArgs e)
+    {
+ //设置要编辑行的索引
+ gv1.EditIndex = e.NewEditIndex;
+ GridViewBind();
+
+ TextBox tb = (TextBox)this.gv1.Rows[e.NewEditIndex].FindControl("TextBox1");
+ Response.Write(tb.Text);
+    }
+
+
+3、在取消编辑行（RowCancelingEdit）事件中使用
+
+    //取消编辑时，找到TextBox1
+    protected void gv1_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+    {
+ TextBox tb = (TextBox)this.gv1.Rows[e.RowIndex].FindControl("TextBox1");
+ Response.Write(tb.Text);
+
+ gv1.EditIndex = -1;
+ GridViewBind();
+    }
+
+4、在行绑定（RowDataBound）事件中使用
+
+    
+
+    //获得行数据绑定中的TextBox1
+    protected void gv1_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+ // 对于在RowDataBound中Find,可以用if (e.Row.RowType == DataControlRowType.DataRow)来限制Find的范围,因为Find默认是在HeaderTemplate中找,如果不限定范围,在HeaderTemplate中找不到,自然就返回null,然后就出错了,DataControlRowType枚举中的DataRow确定是数据行.
+ //if (e.Row.RowType == DataControlRowType.DataRow)
+ //{
+ //    TextBox tb = (TextBox)e.Row.FindControl("TextBox1");
+ //    tb.Text = "databind";
+ //}
+
+
+ //如果在DataGrid的页眉和页脚：
+
+ //if (e.Row.RowType == DataControlRowType.Header)
+ //{
+ //    TextBox tbheader = (TextBox)e.Row.FindControl("txtHeader");
+ //    tbheader.Text = "Head";
+ //}
+ ((TextBox)this.gv1.Controls[0].Controls[0].FindControl("txtHeader")).Text = "Head";
+
+ if (e.Row.RowType == DataControlRowType.Footer)
+ {
+     TextBox tbfooter = (TextBox)e.Row.FindControl("txtFooter");
+     tbfooter.Text = "Footer";
+ }
+    }
+
+5、在行命令（RowCommand）事件中使用
+
+     
+
+    //行命令时间中找到TextBox1
+    //如果使用GridView默认的模式,e.CommandArgument自动棒定为该行的Index,这时候只要指定gridview1.Rows[Convert.ToInt32(e.CommandArgument)].FindControl("xxx")就可以了,但是如果转化为Template,e.CommandArgument并不会自动绑定任何值,需要手动绑定,可以在&lt;ItemTemplate&gt;&lt;/ItemTemplate&gt;手动写CommandArgument="&lt;%# ((GridViewRow) Container).RowIndex %&gt;",把这个行的 Index绑定绑定到该e.CommandArgument就可以了.
+    protected void gv1_RowCommand(object sender, GridViewCommandEventArgs e)
+    {
+ if (e.CommandName.ToLower() == "change")
+ {
+     TextBox tb = (TextBox)this.gv1.Rows[Convert.ToInt32(e.CommandArgument)].FindControl("TextBox1");
+     
+     Response.Write(tb.Text);
+ }
+    }
+
+其他事件中的使用，和上面列举的类似
+
+附上，前台代码:UseTest3.aspx
+
+&lt;%@ Page Language="C#" AutoEventWireup="true" CodeFile="UseTest3.aspx.cs" Inherits="UseTest3" %&gt;
+
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml" &gt;
+&lt;head runat="server"&gt;
+    &lt;title&gt;无标题页&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;form id="form1" runat="server"&gt;
+    &lt;div&gt;
+ &lt;asp:GridView ID="gv1" runat="server" AutoGenerateColumns="False" OnSelectedIndexChanged="gv1_SelectedIndexChanged" OnRowEditing="gv1_RowEditing" OnRowDataBound="gv1_RowDataBound" ShowFooter="True" OnRowCommand="gv1_RowCommand" DataKeyNames="employeeid" OnRowCancelingEdit="gv1_RowCancelingEdit"&gt;
+ &lt;Columns&gt;
+ &lt;asp:TemplateField&gt;
+     &lt;HeaderTemplate&gt;
+  &lt;asp:TextBox ID="txtHeader" runat="Server"&gt;&lt;/asp:TextBox&gt;
+     &lt;/HeaderTemplate&gt;
+     &lt;ItemTemplate&gt;
+  &lt;asp:TextBox ID="TextBox1" Text='&lt;%# Bind("employeeid")%&gt;' runat="server"&gt;&lt;/asp:TextBox&gt;      
+     &lt;/ItemTemplate&gt;
+     &lt;FooterTemplate&gt;
+  &lt;asp:TextBox ID="txtFooter" runat="server"&gt;&lt;/asp:TextBox&gt;
+     &lt;/FooterTemplate&gt;
+ &lt;/asp:TemplateField&gt;
+ &lt;asp:BoundField DataField="lastname" HeaderText="LastName" /&gt;
+ &lt;asp:BoundField DataField="firstname" HeaderText="FirstName" /&gt;
+ &lt;asp:ButtonField CommandName="select" Text="选择" /&gt;     
+ &lt;asp:ButtonField CommandName="change" Text="change" /&gt;
+     &lt;asp:CommandField ShowEditButton="True" /&gt;
+ &lt;/Columns&gt;
+ &lt;/asp:GridView&gt;
+ &lt;/div&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;

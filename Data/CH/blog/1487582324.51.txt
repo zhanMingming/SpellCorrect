@@ -1,0 +1,76 @@
+求直线交点 叉积一般方程法：
+   直线的一般方程为F(x) = ax + by + c = 0。既然我们已经知道直线的两个点，假设为(x0,y0), (x1, y1)，那么可以得到a = y0 – y1, b = x1 – x0, c = x0y1 – x1y0。
+
+   因此我们可以将两条直线分别表示为
+
+   F0(x) = a0*x + b0*y + c0 = 0, F1(x) = a1*x + b1*y + c1 = 0
+
+   那么两条直线的交点应该满足
+
+   a0*x + b0*y +c0 = a1*x + b1*y + c1
+
+   由此可推出
+
+   x = (b0*c1 – b1*c0)/D 
+
+   y = (a1*c0 – a0*c1)/D
+
+   D = a0*b1 – a1*b0， (D为0时，表示两直线平行)
+
+   二者实际上就是连立方程组F0(x) = a0*x + b0*y + c0 = 0, F1(x) = a1*x + b1*y + c1 = 0的叉积应用
+
+   i j k
+
+   a0 b0 c0
+
+   a1 b1 c1
+
+   
+
+   #include&quot;iostream&quot;
+#include&quot;stdio.h&quot;
+#include&quot;math.h&quot;
+using namespace std;
+
+struct Point
+{
+	double x;
+	double y;
+};
+
+struct Line
+{
+	Point p1,p2;
+	double a,b,c;
+};
+
+void GetLinePara(Line *l)
+{
+	l-&gt;a=l-&gt;p1.y-l-&gt;p2.y;
+	l-&gt;b=l-&gt;p2.x-l-&gt;p1.x;
+	l-&gt;c=l-&gt;p1.x*l-&gt;p2.y-l-&gt;p2.x*l-&gt;p1.y;
+}
+
+Point GetCrossPoint(Line *l1,Line *l2)
+{
+	GetLinePara(l1);
+	GetLinePara(l2);
+	double D=l1-&gt;a*l2-&gt;b-l2-&gt;a*l1-&gt;b;
+	Point p;
+	p.x=(l1-&gt;b*l2-&gt;c-l2-&gt;b*l1-&gt;c)/D;
+	p.y=(l1-&gt;c*l2-&gt;a-l2-&gt;c*l1-&gt;a)/D;
+	return p;
+}
+
+int main()
+{
+	Line l1,l2;
+	while(true)
+	{
+		scanf(&quot;%lf%lf%lf%lf&quot;,&amp;l1.p1.x,&amp;l1.p1.y,&amp;l1.p2.x,&amp;l1.p2.y);
+		scanf(&quot;%lf%lf%lf%lf&quot;,&amp;l2.p1.x,&amp;l2.p1.y,&amp;l2.p2.x,&amp;l2.p2.y);
+		Point Pc=GetCrossPoint(&amp;l1,&amp;l2);
+		printf(&quot;Cross point:%lf %lf\n&quot;,Pc.x,Pc.y);
+	}
+	return 0;
+}

@@ -1,0 +1,220 @@
+由auto_ptr的实现说起。源代码为你揭示一切。
+
+
+   c++世界很无奈的一点是，很多东西你必须得看源代码才知晓其中的秘诀。因为技巧太多了。
+
+
+   
+
+
+   
+
+
+   template&lt;class _Ty&gt;
+ class auto_ptr;
+
+template&lt;class _Ty&gt;
+struct auto_ptr_ref
+
+
+   { 
+
+
+    // proxy reference for auto_ptr copying
+
+
+    explicit auto_ptr_ref(_Ty *_Right)
+  : _Ref(_Right)
+  { 
+
+
+          // construct from generic pointer to auto_ptr ptr
+  }
+
+ _Ty *_Ref; // generic pointer to auto_ptr ptr
+};
+
+
+   
+
+
+   
+
+
+   template&lt;class _Ty&gt;
+class auto_ptr
+{
+
+
+    // wrap an object pointer to ensure destruction
+public:
+ typedef auto_ptr&lt;_Ty&gt; _Myt;
+ typedef _Ty element_type;
+
+ explicit auto_ptr(_Ty *_Ptr = 0) _THROW0() // 显式构造函数
+  : _Myptr(_Ptr)
+  {
+
+
+     // construct from object pointer
+  }
+
+ auto_ptr(_Myt&amp; _Right) _THROW0() // 拷贝构造函数，会导致所有权的转移
+  : _Myptr(_Right.release())
+  {
+
+
+         // construct by assuming pointer from _Right auto_ptr
+  }
+
+ auto_ptr(auto_ptr_ref&lt;_Ty&gt; _Right) _THROW0() // 代理构造函数， 代理对象会被释放。
+  { // construct by assuming pointer from _Right auto_ptr_ref
+  _Ty *_Ptr = _Right._Ref;
+  _Right._Ref = 0; // release old
+  _Myptr = _Ptr; // reset this
+  }
+
+ template&lt;class _Other&gt;
+ operator auto_ptr&lt;_Other&gt;() _THROW0() // 模板构造函数，从别的类型的auto_ptr构造，比如说从auto_ptr&lt;int&gt;和 
+
+
+    // auto_ptr&lt;const int&gt;之间的转换
+  {
+
+
+         // convert to compatible auto_ptr
+   return (auto_ptr&lt;_Other&gt;(*this));
+  }
+
+ template&lt;class _Other&gt;
+  operator auto_ptr_ref&lt;_Other&gt;() _THROW0()
+  {
+
+
+     // convert to compatible auto_ptr_ref
+   _Other *_Cvtptr = _Myptr; // test implicit conversion
+   auto_ptr_ref&lt;_Other&gt; _Ans(_Cvtptr);
+   _Myptr = 0; // pass ownership to auto_ptr_ref,此时转移了所有权
+   return (_Ans);
+  }
+
+ template&lt;class _Other&gt;
+  _Myt&amp; operator=(auto_ptr&lt;_Other&gt;&amp; _Right) _THROW0() //赋值。会转换所有权
+  { 
+
+
+        // assign compatible _Right (assume pointer)
+   reset(_Right.release());
+   return (*this);
+  }
+
+ template&lt;class _Other&gt;
+  auto_ptr(auto_ptr&lt;_Other&gt;&amp; _Right) _THROW0() //拷贝转换，很危险的函数。底层其实就是裸指针的c语言风格的转换
+  : _Myptr(_Right.release())
+  { 
+
+
+        // construct by assuming pointer from _Right
+  }
+
+ _Myt&amp; operator=(_Myt&amp; _Right) _THROW0() // 赋值。会导致所有权的转移
+  { // assign compatible _Right (assume pointer)
+  reset(_Right.release());
+  return (*this);
+  }
+
+ _Myt&amp; operator=(auto_ptr_ref&lt;_Ty&gt; _Right) _THROW0() //赋值。注意参数只是一个简单的代理类
+  { // assign compatible _Right._Ref (assume pointer)
+  _Ty *_Ptr = _Right._Ref;
+  _Right._Ref = 0; // release old
+  reset(_Ptr); // set new
+  return (*this);
+  }
+
+ ~auto_ptr()
+  { // destroy the object
+  delete _Myptr;
+  }
+
+ _Ty&amp; operator*() const _THROW0() ///解引用
+  { // return designated value
+#if _ITERATOR_DEBUG_LEVEL == 2
+  if (_Myptr == 0)
+   _DEBUG_ERROR(&quot;auto_ptr not dereferencable&quot;);
+#endif /* _ITERATOR_DEBUG_LEVEL == 2 */
+
+  return (*get());
+  }
+
+ _Ty *operator-&gt;() const _THROW0() /// -&gt;转换
+  { // return pointer to class object
+#if _ITERATOR_DEBUG_LEVEL == 2
+  if (_Myptr == 0)
+   _DEBUG_ERROR(&quot;auto_ptr not dereferencable&quot;);
+#endif /* _ITERATOR_DEBUG_LEVEL == 2 */
+
+  return (get());
+  }
+
+ _Ty *get() const _THROW0() ///// get函数
+  { // return wrapped pointer
+  return (_Myptr);
+  }
+
+ _Ty *release() _THROW0()
+  { // return wrapped pointer and give up ownership
+  _Ty *_Tmp = _Myptr;
+  _Myptr = 0;
+  return (_Tmp);
+  }
+
+
+    void reset(_Ty *_Ptr = 0) ////所谓 reset, 其本质还是set的语义。不过呢，原来持有的对象被删除了。个人认为返回原来的
+
+
+           //对象也挺 好的
+  { // destroy designated object and store new pointer
+  if (_Ptr != _Myptr)
+   delete _Myptr;
+  _Myptr = _Ptr;
+  }
+
+private:
+ _Ty *_Myptr; // the wrapped object pointer，裸指针
+ };
+
+
+   
+
+
+   以上就是VS2010的auto_ptr的实现了。个人认为，如果你自认为理解不了auto_ptr的实现，还是不要轻易使用的吧，免得惹出一堆bug，你又没法理解。
+
+
+   
+
+
+   c++的模板语法是很头大，但没办法，模板已成为c++越来越重要的特性了。
+
+
+   
+
+
+   vs2010已经支持shared_ptr和weak_ptr了，有了他们，你完全可以抛弃auto_ptr了。实际上在日常的应用里，我都是些更加轻量级的类来管理资源，对于局部变量来说，用一个类似于scope holder的类来管理指针的析构。对于类而言，同样的，根据设计需要，加入scope holder或者是引用计数，尽量不用auto_ptr.对于保存指针的容器，编码时尽量注意异常安全，以及内存的释放，这样可以尽最大努力来避免资源泄漏。
+
+
+   
+
+
+   当然，如果有shared_ptr或者是weak_ptr的话，你就可以放心的使用它们了。
+
+
+   
+
+
+   如果 你还是很讨厌手动来管理内存， 那你转而去学习java和c#。这两门语言都有GC，会自动回收内存。
+
+
+   
+
+
+   如果有一天，c++也有了GC，会有这么一天吗？

@@ -1,0 +1,247 @@
+SudokuSudoku 
+
+Time Limit : 2000/1000ms (Java/Other)Memory Limit : 32768/32768K (Java/Other)
+Total Submission(s) : 3Accepted Submission(s) : 3
+Font: <span onclick="function onclick()
+{
+ProFont('Times New Roman')
+}">Times New Roman | <span onclick="function onclick()
+{
+ProFont('Verdana')
+}">Verdana | <span onclick="function onclick()
+{
+ProFont('Georgia')
+}">Georgia 
+Font Size: <span onclick="function onclick()
+{
+ProFontAdd(-1)
+}">&larr; <span onclick="function onclick()
+{
+ProFontAdd(1)
+}">&rarr;
+<h3 onclick="function onclick()
+{
+ObjFolder('procon')
+}">Problem Description
+A Sudoku puzzle, once solved, is a 9x9 grid of digits organized as a 3x3 grid of smaller 3x3 units. Each of the nine rows must contain every positive digits exactly once, as do each column and also each 3x3 unit. The puzzle is to start from a partially filled 9x9 grid and to fill in the remaining cells using only logic. The puzzle maker usually makes sure that the solution will be unique and that it can be reached using deduction only, without guessing.This number placing game is gaining popularity in the west, and every second newspaper publishes weekly instances of the puzzle. Somewhere at the head of one such newspaper, someone decided that buying individual instances from a puzzle maker would be too expansive, and instead decided to steal puzzles from other newspapers and also to print randomly generated Sudoku-like grids.One week later, his assistant gets stuck with the job of printing the solution to the Sudoku puzzles his boss previously published. Unfortunately, his boss doesn&rsquo;t have those solutions, the randomly generated problems don&rsquo;t have any solution, and he doesn&rsquo;t even remember which is which. In despair, the assistant calls for your help. 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('proinput')
+}">Input
+The first line of the input will contain the number of test cases. Each test case will consist of a 9 by 9 grid of characters, where each character will either be &lsquo;?&rsquo; or a digit between 1 and 9 inclusively. 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prooutput')
+}">Output
+For each test case, you must print back the grid to the standard input, replacing each question mark with an appropriate digit to solve the Sudoku. If a test case does not allow any solution, output &rdquo;impossible&rdquo; instead of a completed grid. If a test case do allow a solution, you can assume that the solution will be unique, and that theoretically it could be reached without guessing.Test cases are separated by &ldquo;---&rdquo; both in the input and in the output. 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosamplein')
+}">Sample Input
+
+
+   3
+??4??9??8
+?3??5??1?
+7??4??2??
+3??8??1??
+?5?????9?
+??6??1??2
+??8??3??1
+?2??4??5?
+6??1??7??
+---
+??4??9??8
+?3??5??1?
+7??4??2??
+3??8??1??
+?5?????9?
+??6??1??2
+??8??3??1
+62??4??5?
+6??1??7??
+---
+3?1????76
+7??9?????
+2?5?3????
+?????64?1
+???2?1???
+1?25?????
+????8?9?3
+?????9??4
+51????7?8
+
+
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosampleout')
+}">Sample Output
+
+
+   264319578
+839257416
+715486239
+372894165
+451632897
+986571342
+548763921
+127948653
+693125784
+---
+impossible
+---
+391452876
+764918532
+285637149
+953876421
+678241395
+142593687
+426785913
+837169254
+519324768
+
+
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosource')
+}">Source
+IPCP 2005 Northern Preliminary for Northeast North-America 
+
+
+#include&lt;iostream&gt;
+using   namespace  std;
+bool  x[ 9 ][ 10 ];
+bool  y[9][10];
+bool  z[ 9 ][ 10 ];
+int   result[ 9 ][ 10 ];
+int   num =   0 ;
+int  GetID(  int  x,  int  y )
+{
+	if  ( x &lt;   3   &amp;&amp;  y &lt;   3  )
+		return   0 ;
+	else   if  ( x &lt;   3   &amp;&amp;  y &gt;=   3   &amp;&amp;  y &lt;   6  )
+		return   1 ;
+	else   if  ( x &lt;   3   &amp;&amp;  y &gt;=   6   &amp;&amp;  y &lt;   9  )
+		return   2 ;
+	else   if  ( x &gt;=   3   &amp;&amp;  x &lt;   6   &amp;&amp;  y &lt;   3  )
+		return   3 ;
+	else   if  ( x &gt;=   3   &amp;&amp;  x &lt;   6   &amp;&amp;  y &gt;=   3   &amp;&amp;  y &lt;   6  )
+		return   4 ;
+	else   if  ( x &gt;=   3   &amp;&amp;  x &lt;   6   &amp;&amp;  y &gt;=   6   &amp;&amp;  y &lt;   9  )
+		return   5 ;
+	else   if  ( x &gt;=   6   &amp;&amp;  x &lt;   9   &amp;&amp;  y &lt;   3  )
+		return   6 ;
+	else   if  ( x &gt;=   6   &amp;&amp;  x &lt;   9   &amp;&amp;  y &gt;=   3   &amp;&amp;  y &lt;   6  )
+		return   7 ;
+	else   if  ( x &gt;=   6   &amp;&amp;  x &lt;   9   &amp;&amp;  y &gt;=   6   &amp;&amp;  y &lt;   9  )
+		return   8 ;
+} 
+
+
+void  Print()
+{
+	for  (  int  i =   0 ; i &lt;   9 ;  ++ i )
+	{
+		for  ( int  j =   0 ; j &lt;   9 ;  ++ j )
+			printf( "%d",result[i][j] );
+		if(i!=8)
+			cout&lt;&lt;endl;
+	} 
+} 
+
+bool GetXY(int &amp;xx,int &amp;yy)
+{
+	int i, j;
+	for(i=0;i&lt;9;i++)
+	{
+		for(j=0;j&lt;9;j++)
+		{
+			if(result[i][j]==0)
+			{
+				xx=i;
+				yy=j;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void  Dfs(  int  xx,  int  yy )
+{
+	for  (  int  i = 1 ; i &lt;=9;  ++ i )
+	{
+		if  (  ! x[xx][i]  &amp;&amp;   ! y[yy][i]  &amp;&amp;   ! z[ GetID(xx,yy) ][i] )
+		{
+			int  a, b;
+			result[xx][yy] =  i;
+			x[xx][i] =   true ;
+			y[yy][i] =   true ;
+			z[GetID(xx,yy) ][i] =true ;
+
+			if  (! GetXY( a, b ))
+			{
+				Print();
+				num =   1 ;
+				return ;
+			} 
+			Dfs( a, b ); 
+			result[xx][yy] =0 ;
+			x[xx][i] =   false ;
+			y[yy][i] =   false ;
+			z[ GetID(xx,yy) ][i] =   false ;
+		} 
+	} 
+} 
+
+
+
+int  main()
+{
+	int  n;
+	scanf( "%d" , &amp; n);
+	char  aaa[ 10 ];
+	for  (  int  mm =   0 ; mm &lt;  n; mm ++  )
+	{
+		char  graph[ 9 ][ 10 ];
+		num =   0 ;
+		memset( x,  false ,  sizeof (x) );//x[i][t]i行中t是否用过
+		memset( y,  false ,  sizeof (y) );//y[j][t]j列中t是否用过
+		memset( z,  false ,  sizeof (z) );//z[getID(x,y)][t]该块中t是否用过
+		memset( result,  0 ,  sizeof ( result ) );
+
+		for  (  int  i =   0 ; i &lt;   9 ;  ++ i )
+			scanf( "%s" , graph[i] );
+
+		for  (  int  i =   0 ; i &lt;   9 ;  ++ i )
+		{
+			for  (  int  j =   0 ; j &lt;   9 ;  ++ j )
+				if  ( graph[i][j] != '?' )
+				{
+					int  t =  graph[i][j] -'0';
+					result[i][j] =  t;
+					x[i][t] =   true ;
+					y[j][t] =   true ;
+					z[ GetID( i, j ) ][t] =   true ;
+				} 
+//				else graph[i][j]='0';
+		} 
+		int  xa, ya;
+		GetXY( xa, ya );//find first '?'
+		Dfs( xa, ya );
+		if  ( mm &lt;  n -   1  )
+		{
+			printf( "/n---/n");
+		scanf( "%s" ,aaa);
+		}     
+		else cout&lt;&lt;endl;
+		if  ( num ==   0  )
+			printf( "impossible/n" );
+	} 
+	return   0 ;
+}

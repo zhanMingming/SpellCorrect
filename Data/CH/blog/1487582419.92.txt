@@ -1,0 +1,60 @@
+最短路径 记忆路径现在只写了Floyd方法，改天有空再打Dijkstra的~
+
+
+   先贴一下代码，还有事要做...
+
+
+   
+
+
+   #include &lt;iostream&gt; 
+#include &lt;string.h&gt; 
+using namespace std;
+
+
+#define N 200
+
+int path[N][N];   //记录路径 
+int s[N][N];  //记录两点间的最短距离 
+int n,table[N][N];
+
+void Floyd() 
+{ 
+ int i,j,k; 
+ for(i=0;i&lt;n;i++) 
+  for(j=0;j&lt;n;j++) 
+ { 
+  s[i][j] = table[i][j]; 
+  path[i][j] = j; 
+ } 
+ for(k=0;k&lt;n;k++) 
+  for(i=0;i&lt;n;i++) 
+   for(j=0;j&lt;n;j++) 
+    if(s[i][j] &gt; s[i][k] + s[k][j]) 
+ { 
+  s[i][j] = s[i][k] + s[k][j]; 
+  path[i][j] = path[i][k]; 
+ } 
+} 
+void output(int st , int end) 
+{ 
+ int next; 
+ printf("%d",st); 
+ next = path[st][end]; 
+ do{ 
+  printf("-&gt;%d",next); 
+  next = path[next][end]; 
+ }while(next != end); 
+} 
+
+int main()
+{
+	while(scanf("%d",&amp;n))
+	{
+		for(int i=0;i&lt;n;i++)
+			for(int j=0;j&lt;n;j++)
+				cin&gt;&gt;table[i][j];
+		Floyd();
+		output(n-1,0);
+	}
+}

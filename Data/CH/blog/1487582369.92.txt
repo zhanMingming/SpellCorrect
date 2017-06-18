@@ -1,0 +1,72 @@
+Matlab实现——霍夫变换直线检测霍夫变换实现直线检测——MATLAB
+
+   网上好多不能用，就重新写了一个：
+
+   
+
+   
+
+   % 入口图像为 BW，出口图像为f
+clc,close
+BW=imread('D:\picture\9dafa605d53eea243812bb29.jpg');
+BW=rgb2gray(BW);
+thresh=[0.01,0.17];
+sigma=2;%定义高斯参数
+f = edge(double(BW),'canny',thresh,sigma);
+figure(1),imshow(f,[]);title('canny 边缘检测');
+[H, theta, rho]= hough(f, 0.5);
+%imshow(theta,rho,H,[],'notruesize'),
+axis on,
+axis normal
+%xlabel('\theta'),ylabel('rho');
+[r,c]=houghpeaks(H,5);
+hold on
+lines=houghlines(f,theta,rho,r,c);
+figure,imshow(f,[]),title('Hough Transform Detect Result'),
+hold on
+for k=1:length(lines) 
+    xy=[lines(k).point1;lines(k).point2];
+plot(xy(:,1),xy(:,2),'LineWidth',4,'Color',[.6 .6 .6]);
+end
+   
+
+   
+
+   
+
+   
+
+   Matlab2012版本的内核函数有所改变，houghpeaks, houghlines等函数有所改变，感谢cuicd2011的提醒，R2012a版本的直线检测稍有变化：
+
+   
+
+   clc,close  
+BW=imread('D:\picture\9dafa605d53eea243812bb29.jpg');
+  
+BW=rgb2gray(BW);  
+thresh=[0.01,0.17];  
+sigma=2;%定义高斯参数  
+f = edge(double(BW),'canny',thresh,sigma);  
+figure(1),imshow(f,[]);  
+title('canny 边缘检测');  
+  
+[H, theta, rho]= hough(f,'RhoResolution', 0.5);  
+%imshow(theta,rho,H,[],'notruesize'),axis on,axis normal  
+%xlabel('\theta'),ylabel('rho');  
+  
+peak=houghpeaks(H,5);  
+hold on  
+  
+lines=houghlines(f,theta,rho,peak);  
+figure,imshow(f,[]),title('Hough Transform Detect Result'),hold on  
+for k=1:length(lines)  
+    xy=[lines(k).point1;lines(k).point2];  
+    plot(xy(:,1),xy(:,2),'LineWidth',4,'Color',[.6 .6 .6]);  
+end  
+   
+
+   
+
+   
+
+   实验结果：

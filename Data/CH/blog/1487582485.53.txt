@@ -1,0 +1,13 @@
+c++编译时提示&quot;psapi.h&quot;找不到的解决办法出现此类问题是，一般是因为系统没有安装platform sdk所致，下载并安装platform sdk可以解决这个问题。
+
+
+   
+
+
+   还有一个更简单一点的方法，从晚上下载psapi.h 和psapi.lib,然后分别放到Visual studio相关的头文件目录和lib文件目录。
+
+
+   
+
+
+   遇见这个问题两次了。杯具。

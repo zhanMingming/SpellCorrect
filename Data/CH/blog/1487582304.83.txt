@@ -1,0 +1,333 @@
+聚类算法K-Means, K-Medoids, GMM, Spectral clustering，Ncut聚类算法是ML中一个重要分支，一般采用unsupervised learning进行学习，本文根据常见聚类算法分类讲解K-Means, K-Medoids, GMM, Spectral clustering，Ncut五个算法在聚类中的应用。
+
+   
+
+   
+
+   
+
+   Clustering Algorithms分类
+
+   1. Partitioning approach:
+
+       建立数据的不同分割，然后用相同标准评价聚类结果。（比如最小化平方误差和）
+
+       典型算法：K-Means, K-Medoids
+
+   2.Model-based:
+
+      对于每个类假定一个分布模型，试图找到每个类最好的模型
+
+      典型算法：GMM（混合高斯）
+
+   3. Dimensionality Reduction Approach:
+
+      先降维，再聚类
+
+      典型算法：Spectral clustering，Ncut
+
+   
+下面分别解析~
+   
+
+   
+
+   
+
+   1. Partitioning approach
+
+   1.目标：
+
+      找出一个分割，使得距离平方和最小
+
+   
+
+   2.方法：
+
+      Global optimal : 枚举所有partition
+
+      Heuristic method：K-Means, K-Medoids
+
+   
+
+   3.K-Means算法：
+
+      1. 将数据分为k个非空子集
+
+      2. 计算每个类中心点（k-means&lt;centroid&gt;中心点是所有点的average），记为seed point
+
+      3. 将每个object聚类到最近seed point
+
+      4. 返回2，当聚类结果不再变化的时候stop
+
+   
+
+   
+
+   复杂度：
+
+      O（kndt）
+
+      -计算两点间距离：d
+
+      -指定类：O(kn)  ,k是类数
+
+      -迭代次数上限：t
+
+   
+
+   4.K-Medoids算法:
+
+   
+
+      1. 随机选择k个点作为初始medoid
+
+      2.将每个object聚类到最近的medoid
+
+      3. 更新每个类的medoid，计算objective function
+
+      4. 选择最佳参数
+
+      4. 返回2，当各类medoid不再变化的时候stop
+
+   
+
+   复杂度：
+
+      O（(n^2)d）
+
+      -计算各点间两两距离O（(n^2)d）
+
+      -指定类：O(kn)  ,k是类数
+
+   5.特点：
+
+      -聚类结果与初始点有关（因为是做steepest descent from a random initial starting oint）
+
+      -是局部最优解
+
+      -在实际做的时候，随机选择多组初始点，最后选择拥有最低TSD（Totoal Squared Distance）的那组
+
+   
+
+   6. KMeans和KMedoid的实现
+
+   
+
+   
+
+   
+
+   
+
+   2.Model-based——GMM（Gaussian Mixture Model）
+
+   1.GMM概念：
+
+        -将k个高斯模型混合在一起，每个点出现的概率是几个高斯混合的结果。
+
+   
+
+   
+
+        -假设有K个高斯分布，每个高斯对data points的影响因子为πk，数据点为x，高斯参数为theta，则
+
+   
+
+        -要估计的模型参数为每个类的影响因子πk，每个类的均值（μk）及协方差矩阵（Σk）
+
+   
+
+   
+
+   
+
+   2. GMM的似然函数：
+
+        log-likelihood function:
+
+        假设N个点的分布符合i.i.d，则有似然函数
+
+   
+
+        问题是，对于这样的一个似然函数，用gradient descent的方法很难进行参数估计（可证明）
+
+        所以用前面我们讲过的EM（expectation maximization）算法进行估计：
+
+   
+
+        引入中间latent项z(i)，其分布为Q,用EM算法，就有上面的恒等，那么为什么是恒等呢？来看看讲EM的这篇文章，第三张的开头写的，=constant，也就是说与z(i)无关了，而等于p(x(i)；theta)，这也就是说可以用混合高斯模型的概率表示了。
+
+   
+
+   
+
+   
+
+   
+
+   3. EM具体应用到GMM参数求解问题：
+
+   E-step: 根据已有observed data和现有模型估计missing data：Qi(zk)
+
+   M-step: 已经得到了Q，在M-step中进行最大似然函数估计（可以直接用log-likelihood似然函数对参数求偏导）
+
+   
+
+   
+
+   
+
+   4. GMM的实现
+
+   
+
+   
+
+   5. K-Means与GMM的比较：
+
+       
+
+        -KMeans：
+
+   
+
+1. Objective function：§Minimize the TSD
+
+2. Can be optimized by an EM algorithm.
+
+    §E-step: assign points to clusters.
+
+    §M-step: optimize clusters.
+
+    §Performs hard assignment during E-step.
+
+3. Assumes spherical clusters with equal probability of a cluster.
+
+
+
+   
+
+   
+
+        -GMM：
+
+   
+
+1. Objective function：§Maximize the log-likelihood.
+
+2. EM algorithm：
+
+    §E-step: Compute posterior probability of membership.
+
+    §M-step: Optimize parameters.
+
+    §Perform soft assignment during E-step.
+
+3. Can be used for non-sphericalclusters. Can generate clusterswith different probabilities.
+
+
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   3. Dimensionality Reduction Approach: Spectral Clustering
+
+   
+
+   1. Spectral clustering要解决的问题：
+
+   上面的KMeans不能能解决一些问题，如图所示：
+
+   
+
+   而这种问题可以通过谱聚类（spectral clustering）解决。将数据展开到两个特征向量空间，即得：
+
+   
+
+   下面我们介绍谱分解的算法~
+
+   
+
+   
+
+   
+
+   
+
+   2.clustering objectives:
+
+   
+
+        将边权赋值为两点之间的similarity，做聚类的目标就是最小化类间connection的weight。
+
+   
+
+   
+
+   比如对于下面这幅图，分割如下
+
+   
+
+        但是这样有可能会有问题，比如：
+
+   
+
+   由于Graph cut criteria 只考虑了类间差小，而没考虑internal cluster density.所以会有上面分割的问题。这里引入Normalised-cut(Shi &amp; Malik, 97')。
+
+   
+
+   
+
+   3. 改进版：Ncut
+
+        -consider the connection between groups relative to the density of each group:
+
+   
+
+        其中，vol 是每个group的volume，也就是normalize by group volume.
+
+   
+
+        最后的目标是最小化Ncut(A,B).
+
+   
+
+   
+
+   4. Ncut 的求解：
+
+        -Matrix Representation:
+
+   
+
+        -Objective Function of Ncut:
+
+   
+
+   
+
+   
+
+   详见wiki上的求解过程，这里不再赘述。
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料与相关讨论将继续更新，敬请关注本博客和新浪微博RachelZhang。

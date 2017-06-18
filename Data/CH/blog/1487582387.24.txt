@@ -1,0 +1,408 @@
+模板[有向图的强连通分量] -hdu 3072三重算法：
+
+
+   
+
+
+   一、 Kosaraju算法
+
+
+   二、 Trajan算法
+
+
+   
+
+
+   三、 Gabow算法
+
+
+   
+
+
+   前两种马马虎虎刚学会把模板套上去
+
+
+   
+
+
+
+   对应题目：HDU 3072
+
+
+   给你n个点，m条边，每条边有一个权值（传送message代价），已知强连通分支内部不需花费，求minimal cost
+
+
+   
+
+
+   步骤：
+
+
+   1.缩点n-&gt;scc个点
+
+
+   2.将到这scc个点的最小代价计算出来
+
+
+   3.相加
+
+
+   
+
+
+   Trajan模板：
+
+
+   #include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+#define min(x,y) x&gt;y?y:x
+#define maxn 50005
+#define max(x,y) x&gt;y?x:y
+#define INF 10000000 
+int low[maxn],dfn[maxn],stack[maxn],Belong[maxn];
+bool instack[maxn];
+int n,stop,scc,step,cost[maxn];
+struct Node
+{
+	int to;
+	int val;
+	struct Node* next;
+}Edge[maxn],g_Temp[maxn*2];
+int g_Pos = 0;
+void Tarjan(int v)
+{
+	dfn[v]=low[v] = ++step;
+	instack[v] = true;
+	stack[++stop] = v;
+	Node *temp = Edge[v].next;
+	int t;
+	while(temp!=NULL)
+	{
+		t = temp-&gt;to;
+		if(!dfn[t])
+		{
+			Tarjan(t);
+			low[v] = min(low[v],low[t]);
+		}
+		else if(instack[t] &amp;&amp; low[v] &gt; dfn[t])
+			low[v] = dfn[t];
+		temp = temp-&gt;next;
+	}
+	if(dfn[v] == low[v])
+	{
+		scc++;
+		do{
+			t = stack[stop--];
+			instack[t] = false;
+			Belong[t] = scc;
+		}while(t!=v);
+	}
+}
+void solve(int n)
+{
+	int i;
+	memset(dfn,0,sizeof(dfn));
+	memset(instack,false,sizeof(instack));
+	stop = scc = step = 0;
+	for( i = 1; i &lt;= n; i ++)
+	{
+		if(!dfn[i])
+		{
+			Tarjan(i);
+		}
+	}
+}
+void Init()
+{
+	g_Pos = 0;
+	for(int i = 0 ; i &lt;= n; i ++)
+	{
+		Edge[i].next = NULL;
+	}
+}
+void add_edge(int u,int v,int val)
+{
+	Node *temp = &amp;g_Temp[g_Pos++];
+	temp-&gt;to = v;
+	temp-&gt;val = val;
+	temp-&gt;next = Edge[u].next;
+	Edge[u].next = temp;
+}
+//注意点从1开始标记
+int main()
+{
+	int i,j,m;
+	while(scanf("%d%d",&amp;n,&amp;m)!=EOF)
+	{
+		Init();
+		int a,b,c;
+		for(i=1;i&lt;=m;i++)
+		{
+			scanf("%d%d%d",&amp;a,&amp;b,&amp;c);
+			add_edge(a+1,b+1,c);
+		}
+		solve(n);
+		for(i=1;i&lt;=scc;i++)
+			cost[i]=INF;//cost[i] record the minimal cost of sending message (from any point) to i
+		for(i=1;i&lt;=n;i++)
+		{
+			Node *temp=Edge[i].next;
+			while(temp!=NULL)
+			{
+				int v=temp-&gt;to;
+				int w=temp-&gt;val;
+				if(Belong[i]!=Belong[v])//don't belong to one set
+					cost[Belong[v]]=min(cost[Belong[v]],w);
+				temp=temp-&gt;next;
+			}
+		}
+		int ans=0;
+		for(i=1;i&lt;=scc;i++)
+		{
+			if(cost[i]==INF)//the vertex whose in-degree=0 -&gt; the root vertex(the only one who know message)
+				continue;
+			ans+=cost[i];
+		}
+		printf("%d/n",ans);
+	}
+	return 0;
+} 
+
+
+   
+
+
+   Kosaraju模板：
+
+
+   （摘自某大牛 的博客）
+
+
+   #include&lt;stdio.h&gt;
+#include&lt;string.h&gt;
+#include&lt;vector&gt;
+using namespace std;
+const int N=50010;
+const int inf=1000000000;
+int n, m;
+struct Edge
+{
+    int v;//next
+	int w;//value
+}e;
+vector&lt;Edge&gt; beg[N];
+vector&lt;Edge&gt; rebeg[N];
+void init()
+{
+    for(int i=0;i&lt;n;i++)
+    {
+ beg[i].clear();
+ rebeg[i].clear();
+    }
+}
+void add(int a, int b, int w)
+{
+    e.v=b;
+    e.w=w;
+    beg[a].push_back(e);
+    e.v = a;
+    rebeg[b].push_back(e);
+}
+int order[N];
+int id[N],dis[N];
+int cnt, scc;
+void dfs(int u)//先用对原图G进行深搜形成森林(树)
+{
+    for(int i=0;i&lt;beg[u].size();i++)
+    {
+ int v = beg[u][i].v;
+ if (!id[v])
+ {
+     id[v]=1;
+     dfs(v);
+ }
+    }
+    order[++cnt]=u;
+}
+void redfs(int u)
+{
+    for(int i=0;i&lt;rebeg[u].size();i++)
+    {
+ int v=rebeg[u][i].v;
+ if(!id[v])
+ {
+     id[v]=scc;
+     redfs(v);
+ }
+    }
+}
+void kosaraju(int n)
+{
+    cnt=0;
+    memset(order,0,sizeof (order));
+	//first dfs
+    memset(id,0,sizeof (id));
+    for(int i=0;i&lt;n;i++)
+    {
+ if(!id[i])
+ {
+     id[i]=1;
+     dfs(i);
+ }
+    }
+	//second dfs
+    memset(id,0,sizeof (id));
+    scc=0;
+    for(int i=cnt;i&gt;0;i--)
+    {
+ int u=order[i];
+ if(!id[u])
+ {
+     id[u]=++scc;
+     redfs(u);
+ }
+    }
+}
+int main()
+{
+    while(scanf("%d%d",&amp;n,&amp;m)!=EOF)
+    {
+ init();
+ for(int i=1;i&lt;=m;i++)
+ {
+     int a,b,w;
+     scanf("%d%d%d",&amp;a,&amp;b,&amp;w);//a-&gt;b,权值为w
+     add(a,b,w);
+ }
+ kosaraju(n);
+ for (int i=1;i&lt;=scc;i++)
+			dis[i]=inf;
+ for(int u=0;u&lt;n;u++)
+ {
+     for(int j=0;j&lt;beg[u].size();j++)
+     {
+  int v=beg[u][j].v;
+  int w=beg[u][j].w;
+  if(id[u]!=id[v]) 
+					dis[id[v]]=min(dis[id[v]],w);
+     }
+ }
+ int ans=0;
+ for(int i=1;i&lt;=scc;i++)
+ {
+     if(dis[i]==inf) dis[i]=0;
+     ans+=dis[i];
+ }
+ printf("%d/n",ans);
+    }
+    return 0;
+}
+
+
+
+   
+
+
+   
+
+
+
+   
+
+
+   
+Intelligence System
+Time 
+Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K 
+(Java/Others)Total Submission(s): 241Accepted Submission(s): 
+109
+Problem Description
+
+After a day, ALPCs finally complete their ultimate 
+intelligence system, the purpose of it is of course for ACM ... ... Now, 
+kzc_tc, the head of the Intelligence Department (his code is once 48, but now 
+0), is sudden obtaining important information from one Intelligence personnel. 
+That relates to the strategic direction and future development of the situation 
+of ALPC. So it need for emergency notification to all Intelligence personnel, he 
+decides to use the intelligence system (kzc_tc inform one, and the one inform 
+other one or more, and so on. Finally the information is known to all).We 
+know this is a dangerous work. Each transmission of the information can only be 
+made through a fixed approach, from a fixed person to another fixed, and cannot 
+be exchanged, but between two persons may have more than one way for 
+transferring. Each act of the transmission cost Ci (1 &lt;= Ci &lt;= 100000), 
+the total cost of the transmission if inform some ones in our ALPC intelligence 
+agency is their costs sum. Something good, if two people can inform each 
+other, directly or indirectly through someone else, then they belong to the same 
+branch (kzc_tc is in one branch, too!). This case, it&rsquo;s very easy to inform each 
+other, so that the cost between persons in the same branch will be ignored. The 
+number of branch in intelligence agency is no more than one hundred.As a 
+result of the current tensions of ALPC&rsquo;s funds, kzc_tc now has all relationships 
+in his Intelligence system, and he want to write a program to achieve the 
+minimum cost to ensure that everyone knows this intelligence.It's really 
+annoying!
+
+
+
+
+Input
+
+There are several test cases. In each case, the 
+first line is an Integer N (0&lt; N &lt;= 50000), the number of the intelligence 
+personnel including kzc_tc. Their code is numbered from 0 to N-1. And then M 
+(0&lt;= M &lt;= 100000), the number of the transmission approach.The next M 
+lines, each line contains three integers, X, Y and C means person X transfer 
+information to person Y cost C. 
+
+
+
+
+Output
+
+The minimum total cost for inform everyone.Believe 
+kzc_tc&rsquo;s working! There always is a way for him to communicate with all other 
+intelligence personnel.
+
+
+
+
+Sample Input
+
+
+
+   
+3 3
+0 1 100
+1 2 50
+0 2 100
+3 3
+0 1 100
+1 2 50
+2 1 100
+2 2
+0 1 50
+0 1 100
+
+
+
+
+
+
+Sample Output
+
+
+
+   
+150
+100
+50
+
+
+
+
+
+
+Source
+
+2009 
+Multi-University Training Contest 17 - Host by NUDT

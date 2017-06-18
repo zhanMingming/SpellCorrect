@@ -1,0 +1,39 @@
+matlab 扩大虚拟内存今天服务器挂了。。用了自己电脑结果爆内存，分享一个扩大虚拟内存的方法，经测试有效。。
+
+   
+
+   
+
+   使用Matlab生成很大的图片时，碰到了&quot;out of memory&quot;的错误，导致图片无法生成，于是不得不扩展虚拟内存。具体过程记录如下：
+
+   1）查看当前的虚拟内存
+
+    在Matlab的命令行中，键入命令：feature ('memstats')，得到如下结果：
+[plain]view plaincopy
+
+
+PhysicalMemory(RAM):InUse:1499MB(5dba0000)Free:1571MB(6237e000)Total:3071MB(bff1e000)PageFile(Swapspace):InUse:1694MB(69e67000)Free:4446MB(115e1e000)Total:6140MB(17fc85000)VirtualMemory(AddressSpace):InUse:633MB(279fe000)Free:1413MB(585e2000)Total:2047MB(7ffe0000)LargestContiguousFreeBlocks:1.[at22cb0000]1239MB(4d750000)2.[at7da16000]28MB(1cda000)3.[at70856000]17MB(112a000)4.[at77281000]16MB(107f000)5.[at7f7f0000]6MB(68f000)6.[at7ae71000]6MB(60f000)7.[at7cd15000]5MB(5eb000)8.[at7409e000]5MB(5d2000)9.[at72b63000]5MB(53d000)10.[at71ab3000]4MB(4fd000)=================1336MB(53868000)class=&quot;linenumber29index28alt2&quot;&gt;&lt;/div&gt;
+
+    结果中显示的虚拟内存为Virtual Memory=2047MB；
+
+   2）增加虚拟内存
+
+    下面方法可使win7 32位OS下用于matlab的虚拟内存增加到3G。
+
+    设置： 开始---所有程序---附件，右击命令提示符，选择“以管理员身份运行”， 输入：bcdedit /set IncreaseUserVa 3072 回车，重启电脑。 取消： 开始---所有程序---附件，右击命令提示符，选择“以管理员身份运行”， 输入：bcdedit /deletevalue IncreaseUserVa 回车，重启电脑。
+
+   （注：bcdedit是NT60系列操作系统（Windows 7/Vista/2008）中的一个命令行工具，用于建立和重新配置bootloader。上面命令作用允许用户的程序使用最大3G内存，而win7 32能识别的就是3G，所以，试图将3072改成更大值在32位系统中是徒劳的！）
+
+   3）查看结果
+[plain]view plaincopy
+
+
+PhysicalMemory(RAM):InUse:1355MB(54be5000)Free:1661MB(67df7000)Total:3017MB(bc9dc000)PageFile(Swapspace):InUse:2931MB(b73af000)Free:3126MB(c3650000)Total:6057MB(17a9ff000)VirtualMemory(AddressSpace):InUse:755MB(2f36c000)Free:2316MB(90c74000)Total:3071MB(bffe0000)LargestContiguousFreeBlocks:1.[at7fff0000]1023MB(3ff8a000)2.[at2bcb0000]579MB(24340000)3.[at50000000]428MB(1ac00000)4.[at6ac16000]83MB(53ea000)5.[at284f0000]47MB(2fc0000)6.[at77ce1000]22MB(167f000)7.[at7c43b000]14MB(ea5000)8.[at7f7f0000]7MB(7f0000)9.[at711bb000]6MB(665000)10.[at7be74000]5MB(51c000)=================2219MB(8ab09000)ns=1.0733e+09
+
+    从结果可以看出，虚拟内存提高到了3071MB，重新运行程序，成功！
+
+   
+
+   
+
+   参考文章：http://www.cnblogs.com/bovine/archive/2011/10/11/2206876.html

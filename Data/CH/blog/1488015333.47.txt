@@ -1,0 +1,168 @@
+软件设计度量工具structure101学习(三.1)：解决slices视图遗留问题上一篇博客介绍了slices视图的基本使用，但是遗留了3个问题。经过几天的探索，终于弄懂了这3个遗留问题。
+
+
+   
+
+
+
+
+   问题1：C的计算公式是啥？
+
+
+   其实和T的计算公式一模一样。下图中design level 1的 C = sqrt(25*25&#43;10*10&#43;2*2) / 37，近&#20284;等于73%。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   下图中Outer class的C = sqrt(48*48&#43;1*1)/49，近&#20284;等于98%。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   问题2：design level 1 ~ n到底是啥？
+
+
+   我们知道Outer class是scope下的所有类，leaf package是scope下的所有leaf packages (i.e. packages that contain classes)。当scope下的子包还有子包的时候，才会有design level。我们看下面几个例子：
+
+
+   
+
+
+
+
+   例子1：scope设置成aty.empty，在slices视图下是没有design level的，只有class和leaf package这2个指标。
+
+
+          
+
+
+
+
+   
+
+
+
+
+   例子2：scope设置成aty.empty，在slices视图下只有design level 1。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   例子3：scope设置成aty.empty，那么在slices视图下有design level 1 和design level 2。
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   现在我们知道design level的意义了不，当scope下子包还有子包，就是说scope下包的嵌套层次很多。design level越多，就意味着scope下包的嵌套层次越深，scope也就越复杂。怎么计算design level n的&#20540;呢？很简单了，找到scope下嵌套层次最深的包。
+
+
+   上面的例子1中，层次最深的包是：aty.empty.a(这个和aty.empty.b、aty.empty.c层次一样深，随便选一个就好)。我们设置的scope是aty.empty，那么design level中n=0。
+
+
+   上面的例子2中，层次最深的包是：aty.empty.a.a1。我们设置的scope是aty.empty，那么design level中n=1。
+
+
+
+
+   上面的例子3中，层次最深的包是：aty.empty.b.b1.b11。我们设置的scope是aty.empty，那么design level中n=2。
+
+
+
+
+   
+
+
+
+
+   我们再以例子3看下每一个design level数量的计算。
+
+
+   “design level 2” 有3个包：a、b、c
+
+
+   “design level 1” 有4个包：a、b、c、b1
+
+
+
+
+   “Leaf package” 有6个包：a、b、c、a1、b1、b11
+
+
+
+
+   “Outer class”有7个类：A、B、C、A1、B1、B2、Inner
+
+
+   
+
+
+
+
+   至此能够理解slices视图的design level了，当scope下包嵌套层次很深的时候，design level能够让我们观察不同层次包的情况。
+
+
+   
+
+
+
+
+   问题3：Groups和Tangles的#Parents是怎么计算的，有什么意义？
+
+
+   首先我们看下官方的说明：
+
+
+   The #Parents column indicates the number of parent items (packages, folders, ...) spanned by the tangle or
+
+group. The negative effects of tangles are more pronounced if they span more parent packages. For
+
+example, a tangle that is localized within a single parent is probably less disruptive than a tangle of
+
+the same size that spans multiple parents。
+
+
+
+
+   有一点需要注意：#parent这个&#20540;应该尽可能的小。仍然看上面的例子3，再结合它的slices视图。
+
+
+   
+
+
+
+
+   可以看到：Out class指标groups下所有的#parents之和(2&#43;4)，就是Leaf package的量。Leaf package指标groups下所有#parent之和，刚好是Design level 1的数量。这个很容易理解：拿Outer class来说，它的parent显然是leaf package之和，因为class都是包含在leaf package下的。也就是说#parent其实就是level table中的#。

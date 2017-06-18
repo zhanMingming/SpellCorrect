@@ -1,0 +1,134 @@
+软件设计度量工具structure101学习(二)：Call Graph、Class Hierarchy、Collaboration、Composition视图安装完成后打开structure101，并指定好我们下载的试用版licence，就可以顺利使用了。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   可以看到很多操作按钮都是灰色的，因为我们还没有指定字节码让structure101分析。structure101自己维护了一个仓库repository，里面放置了struts2、spring、maven等常见开源框架的字节码。我们可以用structure101看下这些常用框架的度量结果，我们以struts2为例，打开菜单“File”--&gt;“Open”。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   现在我们知道structure101中repository的意义了吧。structure101官方维护了一个remote repository，我们可以将自己的项目发布到remote repository，这样别人也能够看我们自己项目的度量指标了。当然也允许我们创建local repository，我们将项目放到local repository中之后，可以利用structure官方的工具发布。这样别的用户，就可以通过浏览器来查看度量结果了，而不用安装structure101工具。比如，我们可以直接在浏览器上访问下面的地址，查看开源项目的度量结果：http://structure101.com:8080/java/tracker/home.html。
+
+
+   
+
+
+
+
+   1、Call Graph：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   很简便吧，选中一个方法后，会显示该方法的调用层次图。这里有一点需要提一下：Call depth。如果我们想看到深层次的方法调用，可以增大这个数&#20540;。比如，我们将Call depth设置成5，再看下org.apache.struts2.dispatcher.ActionContextCleanUp.doFilter()的调用层次。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   还有一个很好用的功能：选中一个方法，可以查看该方法调用其他方法的情况，和其他方法调用该方法的情况。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   2、Class Hierarchy ：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   3、Collaboration：
+
+
+   
+
+
+
+
+   Collaboration视图能够显示包、类和方法直接的依赖关系。
+
+
+   
+
+
+
+
+   4、Composition：
+
+
+   按照项目包的层次结构，显示某个包下面类之间的依赖关系，以及子包间的依赖关系。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   可以看到Composition视图在分析包之间的依赖关系、类之间的依赖关系很有用。虽然Collaboration视图也提供了类&#20284;的功能，不过Composition视图是图形化的展示方式，看起来更直观。

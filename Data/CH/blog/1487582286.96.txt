@@ -1,0 +1,77 @@
+Android 启动问题——黑屏 死机 解决方法今天用了下Android Studio，出现了一些问题，现在将启动过程中遇到的问题和解决方案列出来，方便大家参考。
+
+   安装过程不多说，网上一搜一大把。
+
+   
+
+   那直接说问题吧：
+
+   1. 无法启动，报错：Failed to allocate memory: 8This application has requested the Runtime to terminate it in an unusual way.Please contact the application's support team for more information.原因: AVD中创建的设备的申请内存超限解决方案：改小内存，改到512MB比较稳妥
+
+   
+
+   
+
+2. AVD启动起来了但是一直黑屏
+   候选原因1： 选用了用GPU显示
+
+   解决方案：在AVD manager中创建设备的时候，取消勾选Use Host GPU
+
+   
+
+   
+
+
+   
+
+   候选原因2： 环境变量设错了， 如果把ANDROID_AVD_HOME改成$ANDROID_AVD_HOME就好了~
+
+   
+
+   
+3. AVD一直挂在了ANDROID启动页面，如图：
+   
+
+   
+
+   
+
+   候选原因1：SDK位置不对。
+
+      检查：
+
+         环境变量：检查环境变量ANDROID_SDK_HOME的值是否和SDK Manager中的相符.如果不符，将环境变量改过来
+
+   候选原因2：内存不够，载不起来。
+
+   我的环境是：
+
+         Windows7 Intel I3 CPU 3.3GHz
+
+         4GB RAM 32bit
+
+   	  运行的时候看了下内存占用率62%，于是重启机器后，去命令行运行emulator @你创建的AVD名就可以出现android模拟器的home了
+
+	这时打开android studio，在AVD中启动emulator也是可以的。
+   
+
+   
+
+   候选原因3：Android sdk安装位置不对。这个问题我没遇到，但是帖子上看到两个。Android Studio 默认是将SDK装在C:\Users\D390\AppData\Local\Android\sdk的。StackOverflow帖子说如果装在C:\Program Files会有问题，建议直接装在C盘下或者目录位置	候选原因4：SDK版本不一致。建议run之前先用SDK Manager更新Package
+
+   
+
+   
+
+   4. 模拟器运行起来之后， app无法运行，提示错误：Failure [INSTALL_FAILED_OLDER_SDK]
+
+   SDK版本不一致， 解决方法：
+
+   打开/app_name/app/build.gradle，注释掉
+   
+   minSdkVersion 17
+targetSdkVersion 19两行即可。
+
+   	
+
+   上述问题修改后成功运行~

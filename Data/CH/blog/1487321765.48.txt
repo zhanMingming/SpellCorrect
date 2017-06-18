@@ -1,0 +1,58 @@
+最小生成树算法的两个重要属性Cycle Property和Partition PropertyCycle Property：
+
+
+   
+
+
+   T是一个带权图的一个最小生成树，如果存在一条边e后，在T中形成了一个环C。
+
+
+   则e必须比这个环中任何一条边都大。
+
+
+   
+
+
+   证明：
+
+
+   反证法：如果存在一条边比e大，则去掉这条边，加入e后，得到的新的最小生成树的权重
+
+
+   比T还要小，矛盾。
+
+
+   
+
+
+   Partition Property（严蔚敏的书称作MST性质，也称作cut property）
+
+
+   将图G的顶点集合X，分为U和V，|U| + |V| = |X|。在最后生成的最小生成树中，必然存在
+
+
+   一条贯通这两条边的边e，且这条边是所有这样的边中权值最小的。
+
+
+   
+
+
+   证明：
+
+
+   依然用反证法，假设T是G的一个最小生成树，如果T不包含e，T必然包含另外一条大于e的边e'【weight(e')&gt;weight(e)】，用以沟通U和V。
+
+
+   如果将e加入到T中，则构成一个环，注意这个环一定也包含e'，根据最小生成树的Cycle Property性质，则e'必然小于环中的任何一条边，
+
+
+   即weight(e')&lt;=weight(e)，这样与此前假设矛盾。
+
+
+   
+
+
+   
+
+
+   推荐阅读资料：http://ww3.algorithmdesign.net/handouts/MST.pdf

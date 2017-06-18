@@ -1,0 +1,104 @@
+最小生成树Prim模板Prim适用于稠密图，对于给定坐标求最小生成树的题目再合适不过。
+
+
+   e.g.
+
+
+   畅通工程再续
+http://acm.hdu.edu.cn/showproblem.php?pid=1875
+
+
+   Freckles
+http://poj.org/problem?id=2560
+
+
+   这里贴出Hdu 1875 的代码
+
+
+   
+
+
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;map&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 105
+#define INF 1&lt;&lt;30
+
+struct NODE
+{
+	double x,y;
+};
+
+NODE island[N];
+bool visited[N];
+double dis[N][N];
+int S_set[N];
+
+double DIS(NODE a,NODE b)
+{
+    double x= sqrt((b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y));
+    if(x&lt;10||x&gt;1000)
+ return INF;
+    return x;
+}
+
+int main()
+{
+    int cas,i,j,n,k;
+    scanf(&quot;%d&quot;,&amp;cas);
+    while(cas--)
+    {
+ scanf(&quot;%d&quot;,&amp;n);
+ for(i=1;i&lt;=n;i++)
+     scanf(&quot;%lf%lf&quot;,&amp;island[i].x,&amp;island[i].y);
+ memset(dis,-1,sizeof(dis));
+ for(i=1;i&lt;=n;i++)
+     for(j=1;j&lt;i;j++)
+  dis[i][j]=dis[j][i]=DIS(island[i],island[j]);
+ memset(visited,false,sizeof(visited));
+ visited[1]=true;
+ S_set[1]=1;
+ double ans=0;
+ bool flag=true;
+ for(i=2;i&lt;=n;i++) //n-1 roads
+ {
+     double minn=INF;
+     int point;
+     //find the shortest path
+     for(j=1;j&lt;i;j++)//have i points in S_set currently
+     {
+  int cur_p=S_set[j];
+  for(k=1;k&lt;=n;k++)
+  {
+      if(cur_p!=k&amp;&amp;minn&gt;dis[cur_p][k]&amp;&amp;dis[cur_p][k]&gt;0&amp;&amp;!visited[k])
+      {
+   minn=dis[cur_p][k];
+   point=k;
+      }
+  }
+     }
+     if(minn==INF)
+     {
+  flag=false;
+  break;
+     }
+     ans+=minn;
+     S_set[i]=point;
+     visited[S_set[i]]=true;
+ }
+ if(!flag){
+     cout&lt;&lt;&quot;oh!&quot;&lt;&lt;endl;
+     continue;}
+ printf(&quot;%.1lf\n&quot;,ans*100);
+    }
+}

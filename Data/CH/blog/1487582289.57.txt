@@ -1,0 +1,126 @@
+给定字典做分词最近需要用到分词，无聊写个算法。。。
+
+   算法：给定一个字典和一句话，做分词；
+
+   Target：输入词典，输出所有可能的分词结果
+
+   思路：dfs
+
+   加速：首先判断是不是这句话里所有的词在字典中都有（validate）
+
+   
+
+   
+   //
+//  Wordsplit.cpp
+//  
+//  Target: Find all possible splitting of a sentence given a dictionary dict
+//  Howto:  refer to main
+//
+//  Created by Rachel on 14-8-16.
+//  Copyright (c) 2014年 ZJU. All rights reserved.
+//
+
+#include &lt;iostream&gt;
+#include &lt;stdio.h&gt;
+#include &quot;vector&quot;
+#include &lt;set&gt;
+#include&lt;unordered_set&gt;
+using namespace std;
+
+class Wordsplit {
+private:
+    vector&lt;string&gt; list;
+    bool match(string s, string cur_ele){
+ int l = cur_ele.length();
+ if (s.substr(0,l)==cur_ele) {
+     return true;
+ }
+ return false;
+    }
+    
+    bool validate(string s, unordered_set&lt;string&gt; &amp;dict){
+ //1. calculate all alphabets in the query
+ set&lt;char&gt; alpha;
+ for (int i=0; i&lt;s.length(); i++) {
+     alpha.insert(s[i]);
+     }
+ //2. calculate all alphabets in the dictionary
+ set&lt;char&gt; beta;
+ unordered_set&lt;string&gt;::iterator dict_it;
+ for (dict_it = dict.begin(); dict_it!=dict.end(); dict_it++) {
+     for (int i=0; i&lt;(*dict_it).length(); i++) {
+  beta.insert((*dict_it)[i]);
+     }
+ }
+ set&lt;char&gt;::iterator it;
+ for (it = alpha.begin(); it!=alpha.end(); it++) {
+     if (beta.find(*it)==beta.end()) {
+  return false;
+     }
+ }
+ return true;
+    }
+    
+public:
+    string split(string s, unordered_set&lt;string&gt; &amp;dict, string cur_str){
+ if (s.length()==0) {
+     list.push_back(cur_str.substr(0,cur_str.length()-1));
+     return s;
+ }
+ //cout&lt;&lt;s&lt;&lt;endl;
+ unordered_set&lt;string&gt;::iterator it;
+ for (it=dict.begin(); it!=dict.end(); it++) {
+     if (match(s, (*it))) {
+  string tmp_str = cur_str;
+  string latter = s.substr(it-&gt;length(), s.length()-it-&gt;length());
+  cur_str += (*it) + &quot; &quot;; // add current word to cur_str
+  cur_str += split(latter, dict, cur_str); // split remaining words
+  cur_str = tmp_str; //back to last status
+     }
+ }
+ return &quot;no result&quot;;
+    }
+    
+    
+    vector&lt;string&gt; main(string s, unordered_set&lt;string&gt; &amp;dict) {
+ if (!validate(s, dict)) {
+     return list;
+ }
+ split(s, dict, &quot;&quot;);
+ return list;
+    }
+};
+
+int main()
+{
+    Wordsplit s;
+    unordered_set&lt;string&gt; L={&quot;程序员&quot;,&quot;公务员&quot;,&quot;员&quot;,&quot;我&quot;,&quot;喜&quot;,&quot;做&quot;,&quot;程序&quot;,&quot;一&quot;,&quot;欢&quot;,&quot;喜欢&quot;,&quot;做一个&quot;,&quot;一个&quot;};
+    vector&lt;string&gt; V = s.main(&quot;我喜欢做一个程序员&quot;, L);
+    vector&lt;string&gt;::iterator it;
+    for (it=V.begin(); it!=V.end(); it++) {
+ cout&lt;&lt;(*it)&lt;&lt;endl;
+    }
+}
+
+   
+
+   输出：
+
+   
+
+   我 喜欢 做一个 程序 员
+
+   我 喜欢 做一个 程序员
+
+   我 喜欢 做 一个 程序 员
+
+   我 喜欢 做 一个 程序员
+
+   我 喜 欢 做一个 程序 员
+
+   我 喜 欢 做一个 程序员
+
+   我 喜 欢 做 一个 程序 员
+
+   我 喜 欢 做 一个 程序员

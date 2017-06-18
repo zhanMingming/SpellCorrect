@@ -1,0 +1,165 @@
+Machine Learning cs299 problem 3 Regulation C++ code看了两天Regulation，MAP，结合实验，总算搞懂了，代码如下，学到这里的同学，可以参考。简单来说，就是通过将theta看做是一个随机变量，但这个变量不应该很大，否则容易过拟合，需要在一定程度上减弱，所以通过这种方式来选择参数(feature selection)。暂且写这么多，lamda设置为0.1时，和书中答案接近，可以看出lamda越小，过拟合越严重，lamda越大，越粗放，过拟合越不严重。代码采用的是coordinate descent algorithm。
+
+
+   
+
+
+
+
+   #include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+double norm(double theta[100],double oldtheta[100])
+{
+ double sum = 0.0;
+ for(int i=0;i&lt;100;++i)
+ {
+  sum += fabs(theta[i]-oldtheta[i]);
+ }
+ return sum;
+}
+int main(void)
+{
+
+
+ //      read y.dat into y[20]
+ double y[20];
+ {
+  FILE * fp;
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  fp = fopen(&quot;y.dat&quot;, &quot;r&quot;);
+  if (fp == NULL)
+   exit(EXIT_FAILURE);
+  int i=0;
+  while ((read = getline(&amp;line, &amp;len, fp)) != -1) {
+   y[i++] = atof(line);
+  }
+  if (line)
+   free(line);
+ }
+
+ //      read x.dat into x[20][100] 20 sample, 100 item in every sample
+ double x[20][100];
+
+ {
+  FILE * fp;
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  fp = fopen(&quot;x.dat&quot;, &quot;r&quot;);
+  if (fp == NULL)
+   exit(EXIT_FAILURE);
+  int k=0;
+  while ((read = getline(&amp;line, &amp;len, fp)) != -1) {
+   for(int i=0;i&lt;100;++i)
+   {
+    char* item = line+16*i;
+    line[16*(i+1)]='\0';
+    x[k][i] = atof(item);
+    line[16*(i+1)]=' ';
+   }
+   k++;
+  }
+  if (line)
+   free(line);
+ }
+
+ double theta[100];
+ double oldtheta[100];
+ for(int i=0;i&lt;100;++i)
+ {
+  theta[i]=0;
+ }
+ for(int i=0;i&lt;100;++i)
+ {
+  oldtheta[i]=1;
+ }
+ while ( norm(theta,oldtheta) &gt; 0.00001)
+ {
+  for(int i=0;i&lt;100;++i) oldtheta[i] = theta[i];
+
+  for(int ti=0;ti&lt;100;++ti)
+  {
+   theta[ti]=0;
+   double theta_i1 = 0.0;
+   double theta_i2 = 0.0;
+   double r[20];
+   for(int i=0;i&lt;20;++i)
+   {
+    double sum=0.0;
+    for(int j=0;j&lt;100;++j)
+    {
+     sum+=x[i][j]*theta[j];
+    }
+    r[i] = sum-y[i];
+   }
+   double sum = 0.0;
+   for(int i=0;i&lt;20;++i)
+   {
+    sum += x[i][ti]*r[i];
+   }
+   double xx = 0.0;
+   for(int i=0;i&lt;20;++i)
+   {
+    xx += x[i][ti]*x[i][ti];
+   }
+
+   double lamda = 1;
+   theta_i1 = (sum*(-1)-lamda)/xx;
+   if(theta_i1&lt;0) theta_i1 = 0;
+
+   theta_i2 = (sum*(-1)+lamda)/xx;
+   if(theta_i2&gt;0) theta_i2 = 0;
+   // try theta_i1
+   theta[ti] = theta_i1;
+   double obj_theta_1 = 0.0;
+   for(int i=0;i&lt;20;++i)
+   {
+    double sum=0.0;
+    for(int j=0;j&lt;100;++j)
+    {
+     sum+=x[i][j]*theta[j];
+    }
+    obj_theta_1 += fabs(sum-y[i]);
+   }
+   obj_theta_1 = obj_theta_1*obj_theta_1*(0.5);
+   for(int i=0;i&lt;100;++i)
+   obj_theta_1 += lamda*fabs(theta[i]);
+
+   // try theta_i2 
+   theta[ti] = theta_i2;
+   double obj_theta_2 = 0.0;
+   for(int i=0;i&lt;20;++i)
+   {
+    double sum=0.0;
+    for(int j=0;j&lt;100;++j)
+    {
+     sum+=x[i][j]*theta[j];
+    }
+    obj_theta_2 += fabs(sum-y[i]);
+   }
+   obj_theta_2 = obj_theta_2*obj_theta_2*(0.5);
+   for(int i=0;i&lt;100;++i)
+   obj_theta_2 += lamda*fabs(theta[i]);
+
+   // chose theta from obj_theta
+   if(obj_theta_1&lt;obj_theta_2)
+   {
+    theta[ti] = theta_i1;
+   }
+   else
+   {
+    theta[ti] = theta_i2;
+   }
+   for(int i=0;i&lt;100;++i)
+   {
+    printf(&quot;%f\t&quot;,theta[i]);
+   }
+   printf(&quot;\n&quot;);
+  }
+ }
+ return EXIT_SUCCESS;
+}

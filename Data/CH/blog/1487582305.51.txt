@@ -1,0 +1,237 @@
+统计学习方法——CART, Bagging, Random Forest, Boosting本文从统计学角度讲解了CART（Classification And Regression Tree）, Bagging(bootstrap aggregation), Random Forest Boosting四种分类器的特点与分类方法，参考材料为密歇根大学Ji Zhu的pdf与组会上王博的讲解。
+
+   
+
+   
+CART（Classification And Regression Tree）
+    Breiman, Friedman, Olshen &amp; Stone (1984), Quinlan(1993)
+
+    思想：递归地将输入空间分割成矩形
+
+    优点：可以进行变量选择，可以克服missing data，可以处理混合预测
+
+    缺点：不稳定
+
+
+
+  example:
+
+对于下面的数据，希望分割成红色和绿色两个类，原本数据生成是这样的：
+
+Red class: x1^2+x2^2&gt;=4.6
+
+Green class: otherwise
+
+
+
+
+
+
+
+
+
+
+
+经过不断分割可以得到最后的分类树：
+
+
+
+那么怎么分割才是最好的呢？即怎样将输入空间分割成矩形是最佳策略呢？这里一般采用三中评价标准策略：
+分裂时，找到使不纯度下降最快的分裂变量和分裂点。
+
+从结果可以看出CART可以通过变量选择迭代地建立一棵分类树，使得每次分类平面能最好地将剩余数据分为两类。classification tree非常简单，但是经常会有noisy classifiers. 于是引入ensemble classifiers: bagging, random forest, 和boosting。
+一般的， Boosting &gt; Bagging &gt; Classification tree(single tree)
+
+
+
+
+
+
+Bagging(Breiman1996): 也称bootstrap aggregation
+   Bagging的策略：
+
+       - 从样本集中用Bootstrap采样选出n个样本
+
+       - 在所有属性上，对这n个样本建立分类器（CART or SVM or ...）
+
+       - 重复以上两步m次，i.e.build m个分类器（CART or SVM or ...）
+
+       - 将数据放在这m个分类器上跑，最后vote看到底分到哪一类
+
+   
+
+   Fit many large trees tobootstrap resampled versions of the training data,and classify by majority vote.
+
+下图是Bagging的选择策略，每次从N个数据中采样n次得到n个数据的一个bag，总共选择B次得到B个bags，也就是B个bootstrap samples.
+
+
+
+
+
+
+
+
+
+
+
+
+Random forest(Breiman1999):
+随机森林在bagging基础上做了修改。
+
+
+
+       - 从样本集中用Bootstrap采样选出n个样本，预建立CART
+
+       - 在树的每个节点上，从所有属性中随机选择k个属性，选择出一个最佳分割属性作为节点
+
+       - 重复以上两步m次，i.e.build m棵CART
+
+       - 这m个CART形成Random Forest
+
+
+
+随机森林可以既可以处理属性为离散值的量，比如ID3算法，也可以处理属性为连续值的量，比如C4.5算法。
+
+这里的random就是指
+
+    1. Bootstrap中的随机选择子样本 
+
+    2. Random subspace的算法从属性集中随机选择k个属性，每个树节点分裂时，从这随机的k个属性，选择最优的
+
+
+
+结果证明有时候Random Forest比Bagging还要好。今天微软的Kinect里面就采用了Random Forest，相关论文Real-time Human Pose Recognition in Parts from Single Depth Images是CVPR2011的best paper。
+
+
+
+
+
+
+
+
+
+
+
+
+Boosting(Freund &amp; Schapire 1996):
+   Fit many largeor small trees to reweighted versions of the trainingdata. Classify by weighted majority vote.
+
+   首先给个大致的概念，boosting在选择hyperspace的时候给样本加了一个权值，使得loss function尽量考虑那些分错类的样本（i.e.分错类的样本weight大）。
+
+   怎么做的呢？
+
+       - boosting重采样的不是样本，而是样本的分布，对于分类正确的样本权值低，分类错误的样本权值高（通常是边界附近的样本），最后的分类器是很多弱分类器的线性叠加（加权组合），分类器相当简单。
+
+   
+
+   
+
+   
+
+   AdaBoost和RealBoost是Boosting的两种实现方法。general的说，Adaboost较好用，RealBoost较准确。
+
+   下面是AdaBoost进行权值设置与更新的过程：
+
+   
+
+   
+
+   
+
+   以下是几个算法的性能比较：
+
+   
+
+   
+
+   
+
+   对于多类分类（Multi-class），generalization~是类似的过程：
+
+   比如对数据进行K类分类，而不通过每次二类分类总共分K-1次的方法，我们只需要每个弱分类器比random guessing好（i.e. 准确率&gt;1/K）
+
+   
+
+   多类分类算法流程:
+
+   
+
+   
+
+   多类分类器loss function的设计：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   ===============补充===============
+
+   数据挖掘的十大算法，以后可以慢慢研究：
+
+   
+
+   C4.5
+
+   K-Means
+
+   SVM
+
+   Apriori
+
+   EM
+
+   PageRank
+
+   AdaBoost
+
+   kNN
+
+   NaiveBayes
+
+   CART
+
+   
+
+   
+
+   ===============总结===============
+
+   Boosting可以进行变量选择，所以最开始的component可以是简单变量。
+
+   Boosting可能会overfit，因此在比较早的时候就停下来是正则化boosting的一个方法。
+
+   期待更多朋友一起补充……
+
+   
+
+   
+
+   
+
+   
+
+   Reference：
+
+   1.http://cos.name/2011/12/stories-about-statistical-learning/
+
+   2. WIKI_Boosting
+
+   3. WIKI_Bagging(Bootstrap_aggregating)
+
+   4. WIKI_CART
+
+   
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

@@ -1,0 +1,38 @@
+recompile with -fPIC /usr/local/lib/libboost_python.a: could not read symbols: Bad value在用boost库的时候遇到了一些挫折，本文记录下来方便大家参考：
+
+   1.libboost_python.so: file not recognized: File truncated
+
+   我们来看一下libboost_python.so文件，确实是存在的：
+
+   
+
+   
+
+   那么file truncated大多是因为文件损坏所致，所以我们重装下boost（安装命令可以用这个稍微改改），即可解决该问题。
+
+   
+
+   
+
+   2. /usr/bin/ld: /usr/local/lib/libboost_python.a(list.o): relocation R_X86_64_32 against `.rodata.str1.1' can not be used when making a shared object; recompile with -fPIC/usr/local/lib/libboost_python.a: could not read symbols: Bad value
+
+   这又是闹哪样？
+
+   google到结果说在编译命令中加入参数-fPIC就可以了，可是我makefile中明明有-fPIC啊，这个问题其实出在libboost_python.a的编译上。原因在于boost的编译工具bjam在编译boost静态库时，没有使用-fPIC选项，使得编译出来的静态库没有重定位能力。这样在64位机器上boost编译出来的静态库几乎全部不能用。并且bjam工具不提供定制编译参数的功能。
+
+   
+
+   解决方案：
+
+   下载用boost和python编译出来的静态库，替换boost_python.a（在安装目录下，如/usr/local/lib）
+
+   
+
+   
+
+   
+
+   参考：
+
+   
+boost中静态库编译没有-fPIC选项的问题解决方案

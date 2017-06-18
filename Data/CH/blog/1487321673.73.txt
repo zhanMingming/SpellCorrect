@@ -1,0 +1,91 @@
+linux编程的108种奇淫巧计-15(减少复制)[续]接上文：linux编程的108种奇淫巧计-15(减少复制)
+
+
+   
+
+
+    上回提到了用movntdq指令写xmm寄存器的方式，可以获得性能上的收益，并且指出在默认的情况下，在发生写入的时候，需要先从低层次存储层次refill到高层次存储层次（可以简单认为从内存refill进cache)，然后再cache中更新，再write back，特别强调的是，这是默认的方式。
+
+
+    实际上，高一级存储层次，向低一级存储层次写入有两种方式，一种是默认的write back，一种是write through。而我们使用的movntdq指令就是write through方式，必须通过汇编的方式来实现，高级语言通常没有这个效果。怎么理解write back和write through的区别呢？
+
+
+    对于write back,因为我们知道机器存储层次分为多层，为了保证一致性，必须每一层相同的数据都是一致的，不可能分秒都是一致的，但是在不影响计算逻辑的前提下，需要有一致性的保证，那么write back方式在写的时候有两种情况：A）当写入的地址恰好在cache的某条cache line中，那么直接在cache中写入数据，并且标记该cache line为dirty，此后不发生对内存实际地址的写回，直到发生cache被替换策略时，才将dirty的这条cache line写入到内存中。B）当写入的地址恰好不在cache中（任何一条cache line都不match），首先需要执行一次refill操作，将内存中的数据读入到cache line中，然后将数据写入该cache line，此后不发生对内存地址的写回，直到发生cache被替换策略时，才将dirty的这条cache lien写入内存。
+
+
+    举个例子：
+
+
+    某个程序需要执行这样几条命令，按顺序如下：
+
+
+    （1）在地址0x00FFFF00处写入64个字节的数据[PENNYLIANG...]
+
+
+    （2）其他命令（64个字节保持在cache中，没有被替换掉)
+
+
+   （3）读取0x00FFFF00处的64个字节的数据
+
+
+    (4)某条命令（该命令将[PENNYLIANG...]这段数据换出了cache(L1 cache只有32k，必然会有被换出的可能)
+
+
+   （5）读取0x00FFFF00处的64个字节的数据
+
+
+    (6)某条命令（该命令将[PENNYLIANG...]这段数据又一次换出了cache
+
+
+    (7) 在地址0x00FFFF00处写入64个字节的数据[奇淫巧计...]
+
+
+    (8) 某条命令（该命令将[奇淫巧计...]这段数据又一次换出了cache
+
+
+   
+
+
+    从此前介绍的内容，我们不难得到这样几个结论：
+
+
+    1）在命令(4)之前，写入的数据总是保持在cache中，命令3从cache中读取的[PENNYLIANG...]
+
+
+    2) 命令(4)导致了cache中数据和内存的一次同步
+
+
+    3) 命令(5)发生了一次cache read miss，需要从内存中refill[PENNYLIANG...]到cache中。
+
+
+    4）命令(7)发生了一次cache write miss,需要两次内存访问实现写入，第一次refill，另一次在指令(8)时write back。
+
+
+    
+
+
+    不难得到，write back在程序局部性好的情况下，是非常有利的，只要cache 命中了，就可以只在cache中转，而不发生写回，比如指令(3)就直接在cache中得到，如果对这个数据多次写，那么直接在cache中发生，根本不会每次写都体现在内存上。
+
+
+   
+
+
+    在理解了write back后，就很容易理解write through了，write through直接从cache写穿到内存，只有单向的过程，没有内存到cache的refill，相当于减少了低层存储层次数据向高层存储层次的复制过程，在大规模数据写入的时候才能体现威力。
+
+
+    
+
+
+    我们这里举得例子是cache，或者说L1 cache和内存的关系，广义上看是高层次存储结构和低层次存储结构的关系，内存和磁盘也可以构成这样一个write back和write through的情况，可以看到在小数据量的情况下write back总是最好的，而当发生大量数据写入时write through的方式会更有优势，以后我们会给出这个例子。
+
+
+   
+
+
+    参考阅读：
+
+
+    http://www-903.ibm.com/kr/techinfo/xseries/download/write_back_vs_write_through.pdf
+
+
+    http://en.wikipedia.org/wiki/CPU_cache

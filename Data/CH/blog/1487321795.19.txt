@@ -1,0 +1,46 @@
+百度搜索的一个特性（在连续搜索时，URL中记录上一个搜索词）首先搜索【图书馆】http://www.baidu.com/s?wd=%CD%BC%CA%E9%B9%DD 接着搜索【pennyliang】http://www.baidu.com/s?bs=%CD%BC%CA%E9%B9%DD&amp;f=8&amp;wd=pennyliang 注意结果串中增加了bs=XXX,这个恰好是上一个搜索词&ldquo;图书馆&rdquo;
+
+
+    而无论是否有这个bs=XXX,搜索结果是一样的，因此这样做的好处是日志处理起来的很方便。很容易记录下这种前后相继的历史联系，方便地做一些关联搜索的工作。
+
+
+    
+
+
+    另外还有一点，百度的搜索串是很经济的，一般都很短。 http://www.baidu.com/s?wd=test
+
+
+    而比如谷歌的搜索串 http://www.google.cn/search?hl=zh-CN&amp;source=hp&amp;q=test&amp;aq=f&amp;oq= 明显长出很多。
+
+
+    搞过大规模日志的人都知道，这样太辛苦了，本来n个小时能出结果，这样一来就得2n个小时了。
+
+
+   
+
+
+    发信人: pennyliang (pennyliang), 信区: SearchEngineTech 标 题: Re: 百度搜索一个有趣的特性 发信站: 水木社区 (Fri Oct 9 21:49:01 2009), 站内
+
+
+    但百度是在URL上挂上前一个搜索，对于搜索结果目标网站，通过refer域，也能够分析搜索的前一个关键词。
+
+
+   其他搜索引擎，就没有这个条件了。
+
+
+   这样至少对广告系统来说是有利的，相当于多一层上下文。
+
+
+   比如用户搜索的序列是 (1)商业词 (2)非商业词 （3）点击到非商业词的搜索结果页恰好这个搜索结果页是某个百度联盟，上面有百度的广告，这样广告的策略就可以除了考虑这个非商业词，还可以考虑上一个商业词。
+
+
+   
+
+
+   【 在 xiaxia (心态好才是真的好) 的大作中提到: 】: 那个搜索引擎都有吧 session
+
+
+   全部讨论可以参见（需要水木账号）
+
+
+   http://www.newsmth.net/bbscon.php?bid=715&amp;id=18630

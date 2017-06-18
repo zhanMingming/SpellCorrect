@@ -1,0 +1,4 @@
+Reddit月浏览量超10亿Digg的劲敌、美国社交新闻网站www.Reddit.com今天宣布，根据Google Analytics统计，Reddit一月份页面浏览量突破10亿次大关，独立用户访问量接近1400万。Reddit在官方博客中自豪地称：&ldquo;目前全球只有约100家网站的单月页面浏览量超过10亿次&hellip;&hellip;连纽约时报网站和weather.com都未达到这一级别&rdquo;
+
+
+    Google Analytics的统计应该是真实有效的，这样一个新闻社交网站值得关注。我决定体验一个月，写一个体验报告。

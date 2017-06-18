@@ -1,0 +1,236 @@
+开源日志系统 - log4cplus (五)开源日志系统 - log4cplus (五)收藏
+### 优先级控制 ###
+
+   在研究LogLevelManager之前，首先介绍一下log4cplus中logger的存储机制，在log4cplus中，所有logger都通过一个层次化的结构（其实内部是hash表）来组织的，有一个Root级别的logger,可以通过以下方法获取：
+
+    Logger root = Logger::getRoot(); 用户定义的logger都有一个名字与之对应，比如：
+
+    Logger test = Logger::getInstance("test"); 可以定义该logger的子logger:
+
+    Logger subTest = Logger::getInstance("test.subtest"); 注意Root级别的logger只有通过getRoot方法获取，Logger::getInstance("root")获得的是它的子对象而已。有了这些具有父子关系的logger之后可分别设置其LogLevel,比如：
+
+   root.setLogLevel( ... );Test.setLogLevel( ... );subTest.setLogLevel( ... );
+
+   				logger的这种父子关联性会体现在优先级控制方面，log4cplus将输出的log信息按照LogLevel（从低到高）分为：
+
+   NOT_SET_LOG_LEVEL ( -1) ：接受缺省的LogLevel，如果有父logger则继承它的LogLevelALL_LOG_LEVEL ( 0) ：开放所有log信息输出TRACE_LOG_LEVEL ( 0) ：开放trace信息输出(即ALL_LOG_LEVEL)DEBUG_LOG_LEVEL (10000) ：开放debug信息输出INFO_LOG_LEVEL (20000) ：开放info信息输出WARN_LOG_LEVEL (30000) ：开放warning信息输出ERROR_LOG_LEVEL (40000) ：开放error信息输出FATAL_LOG_LEVEL (50000) ：开放fatal信息输出OFF_LOG_LEVEL (60000) ：关闭所有log信息输出
+
+   LogLevelManager负责设置logger的优先级，各个logger可以通过setLogLevel设置自己的优先级，当某个logger的LogLevel设置成NOT_SET_LOG_LEVEL时，该logger会继承父logger的优先级，另外，如果定义了重名的多个logger, 对其中任何一个的修改都会同时改变其它logger,我们举例说明：
+
+   〖例6〗
+
+   #include "log4cplus/logger.h"#include "log4cplus/consoleappender.h"#include "log4cplus/loglevel.h"#include &lt;iostream&gt;
+
+   using namespace std;using namespace log4cplus;
+
+   int main(){
+
+    SharedAppenderPtr _append(new ConsoleAppender());
+
+    _append-&gt;setName("test");
+
+    Logger::getRoot().addAppender(_append);
+
+    Logger root = Logger::getRoot();
+
+    Logger test = Logger::getInstance("test");
+
+    Logger subTest = Logger::getInstance("test.subtest");
+
+    LogLevelManager&amp; llm = getLogLevelManager();
+
+    cout &lt;&lt; endl &lt;&lt; "Before Setting, Default LogLevel" &lt;&lt; endl;
+
+    LOG4CPLUS_FATAL(root, "root: " &lt;&lt; llm.toString(root.getChainedLogLevel()))
+
+    LOG4CPLUS_FATAL(root, "test: " &lt;&lt; llm.toString(test.getChainedLogLevel()))
+
+    LOG4CPLUS_FATAL(root, "test.subtest: " &lt;&lt; llm.toString(subTest.getChainedLogLevel()))
+
+    cout &lt;&lt; endl &lt;&lt; "Setting test.subtest to WARN" &lt;&lt; endl; subTest.setLogLevel(WARN_LOG_LEVEL); LOG4CPLUS_FATAL(root, "root: " &lt;&lt; llm.toString(root.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test: " &lt;&lt; llm.toString(test.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test.subtest: " &lt;&lt; llm.toString(subTest.getChainedLogLevel()))
+
+    cout &lt;&lt; endl &lt;&lt; "Setting test.subtest to TRACE" &lt;&lt; endl; test.setLogLevel(TRACE_LOG_LEVEL); LOG4CPLUS_FATAL(root, "root: " &lt;&lt; llm.toString(root.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test: " &lt;&lt; llm.toString(test.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test.subtest: " &lt;&lt; llm.toString(subTest.getChainedLogLevel()))
+
+    cout &lt;&lt; endl &lt;&lt; "Setting test.subtest to NO_LEVEL" &lt;&lt; endl; subTest.setLogLevel(NOT_SET_LOG_LEVEL); LOG4CPLUS_FATAL(root, "root: " &lt;&lt; llm.toString(root.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test: " &lt;&lt; llm.toString(test.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test.subtest: " &lt;&lt; llm.toString(subTest.getChainedLogLevel()) &lt;&lt; '/n')
+
+    cout &lt;&lt; "create a logger test_bak, named /"test_/", too. " &lt;&lt; endl; Logger test_bak = Logger::getInstance("test"); cout &lt;&lt; "Setting test to INFO, so test_bak also be set to INFO" &lt;&lt; endl; test.setLogLevel(INFO_LOG_LEVEL); LOG4CPLUS_FATAL(root, "test: " &lt;&lt; llm.toString(test.getChainedLogLevel())) LOG4CPLUS_FATAL(root, "test_bak: " &lt;&lt; llm.toString(test_bak.getChainedLogLevel()))
+
+    return 0;}
+
+   输出结果：
+
+   Before Setting, Default LogLevelFATAL - root: DEBUGFATAL - test: DEBUGFATAL - test.subtest: DEBUG
+
+   Setting test.subtest to WARNFATAL - root: DEBUGFATAL - test: DEBUGFATAL - test.subtest: WARN
+
+   Setting test.subtest to TRACEFATAL - root: DEBUGFATAL - test: TRACEFATAL - test.subtest: WARN
+
+   Setting test.subtest to NO_LEVELFATAL - root: DEBUGFATAL - test: TRACEFATAL - test.subtest: TRACE
+
+   create a logger test_bak, named "test_", too.Setting test to INFO, so test_bak also be set to INFOFATAL - test: INFOFATAL - test_bak: INFO
+
+   				下面的例子演示了如何通过设置LogLevel来控制用户的log信息输出：
+
+   〖例7〗
+
+   #include "log4cplus/logger.h"#include "log4cplus/consoleappender.h"#include "log4cplus/loglevel.h"#include &lt;iostream&gt;
+
+   using namespace std;using namespace log4cplus;
+
+   void ShowMsg(void){ LOG4CPLUS_TRACE(Logger::getRoot(),"info") LOG4CPLUS_DEBUG(Logger::getRoot(),"info") LOG4CPLUS_INFO(Logger::getRoot(),"info") LOG4CPLUS_WARN(Logger::getRoot(),"info") LOG4CPLUS_ERROR(Logger::getRoot(),"info") LOG4CPLUS_FATAL(Logger::getRoot(),"info")}
+
+   int main(){ SharedAppenderPtr _append(new ConsoleAppender()); _append-&gt;setName("test"); _append-&gt;setLayout(std::auto_ptr(new TTCCLayout())); Logger root = Logger::getRoot(); root.addAppender(_append);
+
+    cout &lt;&lt; endl &lt;&lt; "all-log allowed" &lt;&lt; endl; root.setLogLevel(ALL_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "trace-log and above allowed" &lt;&lt; endl; root.setLogLevel(TRACE_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "debug-log and above allowed" &lt;&lt; endl; root.setLogLevel(DEBUG_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "info-log and above allowed" &lt;&lt; endl; root.setLogLevel(INFO_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "warn-log and above allowed" &lt;&lt; endl; root.setLogLevel(WARN_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "error-log and above allowed" &lt;&lt; endl; root.setLogLevel(ERROR_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "fatal-log and above allowed" &lt;&lt; endl; root.setLogLevel(FATAL_LOG_LEVEL); ShowMsg();
+
+    cout &lt;&lt; endl &lt;&lt; "log disabled" &lt;&lt; endl; root.setLogLevel(OFF_LOG_LEVEL); ShowMsg();
+
+    return 0;}
+
+   输出结果：
+
+   all-log allowed10-17-04 10:11:40,587 [1075298944] TRACE root &lt;&gt; - info10-17-04 10:11:40,590 [1075298944] DEBUG root &lt;&gt; - info10-17-04 10:11:40,591 [1075298944] INFO root &lt;&gt; - info10-17-04 10:11:40,591 [1075298944] WARN root &lt;&gt; - info10-17-04 10:11:40,592 [1075298944] ERROR root &lt;&gt; - info10-17-04 10:11:40,592 [1075298944] FATAL root &lt;&gt; - info
+
+   trace-log and above allowed10-17-04 10:11:40,593 [1075298944] TRACE root &lt;&gt; - info10-17-04 10:11:40,593 [1075298944] DEBUG root &lt;&gt; - info10-17-04 10:11:40,594 [1075298944] INFO root &lt;&gt; - info10-17-04 10:11:40,594 [1075298944] WARN root &lt;&gt; - info10-17-04 10:11:40,594 [1075298944] ERROR root &lt;&gt; - info10-17-04 10:11:40,594 [1075298944] FATAL root &lt;&gt; - info
+
+   debug-log and above allowed10-17-04 10:11:40,595 [1075298944] DEBUG root &lt;&gt; - info10-17-04 10:11:40,595 [1075298944] INFO root &lt;&gt; - info10-17-04 10:11:40,596 [1075298944] WARN root &lt;&gt; - info10-17-04 10:11:40,596 [1075298944] ERROR root &lt;&gt; - info10-17-04 10:11:40,596 [1075298944] FATAL root &lt;&gt; - info
+
+   info-log and above allowed10-17-04 10:11:40,597 [1075298944] INFO root &lt;&gt; - info10-17-04 10:11:40,597 [1075298944] WARN root &lt;&gt; - info10-17-04 10:11:40,597 [1075298944] ERROR root &lt;&gt; - info10-17-04 10:11:40,598 [1075298944] FATAL root &lt;&gt; - info
+
+   warn-log and above allowed10-17-04 10:11:40,598 [1075298944] WARN root &lt;&gt; - info10-17-04 10:11:40,598 [1075298944] ERROR root &lt;&gt; - info10-17-04 10:11:40,599 [1075298944] FATAL root &lt;&gt; - info
+
+   error-log and above allowed10-17-04 10:11:40,599 [1075298944] ERROR root &lt;&gt; - info10-17-04 10:11:40,600 [1075298944] FATAL root &lt;&gt; - info
+
+   fatal-log and above allowed10-17-04 10:11:40,600 [1075298944] FATAL root &lt;&gt; - info
+
+   log disabled
+
+   用户也可以自行定义LogLevel，操作比较简单，首先要定义LEVEL值，比如HELLO_LOG_LEVEL定义如下：
+
+   /* DEBUG_LOG_LEVEL &lt; HELLO_LOG_LEVEL &lt; INFO_LOG_LEVEL */const LogLevel HELLO_LOG_LEVEL = 15000;
+
+   然后定义以下宏即可：
+
+   /* define MACRO LOG4CPLUS_HELLO */#define LOG4CPLUS_HELLO(logger, logEvent) / if(logger.isEnabledFor(HELLO_LOG_LEVEL)) { / log4cplus::tostringstream _log4cplus_buf; / _log4cplus_buf &lt;&lt; logEvent; /logger.forcedLog(HELLO_LOG_LEVEL, _log4cplus_buf.str(), __FILE__, __LINE__); / }
+
+   不过log4cplus没有提供给用户一个接口来实现LEVEL值与字符串的转换，所以当带格式输出LogLevel字符串时候会显示"UNKNOWN"， 不够理想。比如用TTCCLayout控制输出的结果可能会如下所示：
+
+   10-17-04 11:17:51,124 [1075298944] UNKNOWN root &lt;&gt; - info
+
+   而不是期望的以下结果：10-17-04 11:17:51,124 [1075298944] HELLO root &lt;&gt; - info
+
+   要想实现第二种结果，按照log4cplus现有的接口机制，只能改其源代码后重新编译，方法是在loglevel.cxx中加入：
+
+   #define _HELLO_STRING LOG4CPLUS_TEXT("HELLO")
+
+   然后修改log4cplus::tstring defaultLogLevelToStringMethod(LogLevel ll)函数，增加一个判断：
+
+   case HELLO_LOG_LEVEL: return _HELLO_STRING;
+
+   重新编译log4cplus源代码后生成库文件，再使用时即可实现满意效果。
+
+   				### 调试模式 ###
+
+   即通过loglog来控制输出调试、警告或错误信息，见例4，这里不再赘述。
+
+   ### 基于脚本配置来过滤log信息 ###
+
+   除了通过程序实现对log环境的配置之外，log4cplus通过PropertyConfigurator类实现了基于脚本配置的功能。通过脚本可以完成对logger、appender和layout的配置，因此可以解决怎样输出，输出到哪里的问题，我将在全文的最后一部分中提到多线程环境中如何利用脚本配置来配合实现性能测试，本节将重点介绍基脚本实现过滤log信息的功能。
+
+   首先简单介绍一下脚本的语法规则：
+
+   包括Appender的配置语法和logger的配置语法，其中：
+
+   1.Appender的配置语法:
+
+   （1）设置名称：
+
+   /*设置方法*/log4cplus.appender.appenderName=fully.qualified.name.of.appender.class
+
+   例如（列举了所有可能的Appender，其中SocketAppender后面会讲到）：log4cplus.appender.append_1=log4cplus::ConsoleAppenderlog4cplus.appender.append_2=log4cplus::FileAppenderlog4cplus.appender.append_3=log4cplus::RollingFileAppenderlog4cplus.appender.append_4=log4cplus::DailyRollingFileAppenderlog4cplus.appender.append_4=log4cplus::SocketAppender
+
+   （2）设置Filter：
+
+   包括选择过滤器和设置过滤条件，可选择的过滤器包括：LogLevelMatchFilter、LogLevelRangeFilter、和StringMatchFilter：
+
+   对LogLevelMatchFilter来说，过滤条件包括LogLevelToMatch和AcceptOnMatch（true|false）， 只有当log信息的LogLevel值与LogLevelToMatch相同，且AcceptOnMatch为true时才会匹配。
+
+   LogLevelRangeFilter来说，过滤条件包括LogLevelMin、LogLevelMax和AcceptOnMatch，只有当log信息的LogLevel在LogLevelMin、LogLevelMax之间同时AcceptOnMatch为true时才会匹配。
+
+   对StringMatchFilter来说，过滤条件包括StringToMatch和AcceptOnMatch，只有当log信息的LogLevel值与StringToMatch对应的LogLevel值与相同， 且AcceptOnMatch为true时会匹配。
+
+   				过滤条件处理机制类似于IPTABLE的Responsibility chain，（即先deny、再allow）不过执行顺序刚好相反，后写的条件会被先执行，比如：
+
+   log4cplus.appender.append_1.filters.1=log4cplus::spi::LogLevelMatchFilterlog4cplus.appender.append_1.filters.1.LogLevelToMatch=TRACElog4cplus.appender.append_1.filters.1.AcceptOnMatch=true#log4cplus.appender.append_1.filters.2=log4cplus::spi::DenyAllFilter
+
+   会首先执行filters.2的过滤条件，关闭所有过滤器，然后执行filters.1，仅匹配TRACE信息。
+
+   （3）设置Layout
+
+   可以选择不设置、TTCCLayout、或PatternLayout
+
+   如果不设置，会输出简单格式的log信息。
+
+   设置TTCCLayout如下所示：log4cplus.appender.ALL_MSGS.layout=log4cplus::TTCCLayout
+
+   设置PatternLayout如下所示：log4cplus.appender.append_1.layout=log4cplus::PatternLayoutlog4cplus.appender.append_1.layout.ConversionPattern=%d{%m/%d/%y %H:%M:%S,%Q} [%t] %-5p - %m%n
+
+   				2.logger的配置语法
+
+   包括rootLogger和non-root logger。
+
+   对于rootLogger来说：log4cplus.rootLogger=[LogLevel], appenderName, appenderName, ...
+
+   对于non-root logger来说：log4cplus.logger.logger_name=[LogLevel|INHERITED], appenderName, appenderName, ...
+
+   				脚本方式使用起来非常简单，只要首先加载配置即可（urconfig.properties是自行定义的配置文件）：
+
+   PropertyConfigurator::doConfigure("urconfig.properties");
+
+   				下面我们通过例子体会一下log4cplus强大的基于脚本过滤log信息的功能。
+
+   				〖例8〗
+
+   /** urconfig.properties*/log4cplus.rootLogger=TRACE, ALL_MSGS, TRACE_MSGS, DEBUG_INFO_MSGS, FATAL_MSGS
+
+   log4cplus.appender.ALL_MSGS=log4cplus::RollingFileAppenderlog4cplus.appender.ALL_MSGS.File=all_msgs.loglog4cplus.appender.ALL_MSGS.layout=log4cplus::TTCCLayout
+
+   log4cplus.appender.TRACE_MSGS=log4cplus::RollingFileAppenderlog4cplus.appender.TRACE_MSGS.File=trace_msgs.loglog4cplus.appender.TRACE_MSGS.layout=log4cplus::TTCCLayoutlog4cplus.appender.TRACE_MSGS.filters.1=log4cplus::spi::LogLevelMatchFilterlog4cplus.appender.TRACE_MSGS.filters.1.LogLevelToMatch=TRACElog4cplus.appender.TRACE_MSGS.filters.1.AcceptOnMatch=truelog4cplus.appender.TRACE_MSGS.filters.2=log4cplus::spi::DenyAllFilter
+
+   log4cplus.appender.DEBUG_INFO_MSGS=log4cplus::RollingFileAppenderlog4cplus.appender.DEBUG_INFO_MSGS.File=debug_info_msgs.loglog4cplus.appender.DEBUG_INFO_MSGS.layout=log4cplus::TTCCLayoutlog4cplus.appender.DEBUG_INFO_MSGS.filters.1=log4cplus::spi::LogLevelRangeFilterlog4cplus.appender.DEBUG_INFO_MSGS.filters.1.LogLevelMin=DEBUGlog4cplus.appender.DEBUG_INFO_MSGS.filters.1.LogLevelMax=INFOlog4cplus.appender.DEBUG_INFO_MSGS.filters.1.AcceptOnMatch=truelog4cplus.appender.DEBUG_INFO_MSGS.filters.2=log4cplus::spi::DenyAllFilter
+
+   log4cplus.appender.FATAL_MSGS=log4cplus::RollingFileAppenderlog4cplus.appender.FATAL_MSGS.File=fatal_msgs.loglog4cplus.appender.FATAL_MSGS.layout=log4cplus::TTCCLayoutlog4cplus.appender.FATAL_MSGS.filters.1=log4cplus::spi::StringMatchFilterlog4cplus.appender.FATAL_MSGS.filters.1.StringToMatch=FATALlog4cplus.appender.FATAL_MSGS.filters.1.AcceptOnMatch=truelog4cplus.appender.FATAL_MSGS.filters.2=log4cplus::spi::DenyAllFilter
+
+   				/** main.cpp*/#include &lt;log4cplus/logger.h&gt;#include &lt;log4cplus/configurator.h&gt;#include &lt;log4cplus/helpers/stringhelper.h&gt;
+
+   using namespace log4cplus;
+
+   static Logger logger = Logger::getInstance("log");
+
+   void printDebug(){ LOG4CPLUS_TRACE_METHOD(logger, "::printDebug()"); LOG4CPLUS_DEBUG(logger, "This is a DEBUG message"); LOG4CPLUS_INFO(logger, "This is a INFO message"); LOG4CPLUS_WARN(logger, "This is a WARN message"); LOG4CPLUS_ERROR(logger, "This is a ERROR message"); LOG4CPLUS_FATAL(logger, "This is a FATAL message");}int main(){ Logger root = Logger::getRoot(); PropertyConfigurator::doConfigure("urconfig.properties"); printDebug();
+
+    return 0;}
+
+   运行结果：
+
+   1. all_msgs.log10-17-04 14:55:25,858 [1075298944] TRACE log &lt;&gt; - ENTER: ::printDebug()10-17-04 14:55:25,871 [1075298944] DEBUG log &lt;&gt; - This is a DEBUG message10-17-04 14:55:25,873 [1075298944] INFO log &lt;&gt; - This is a INFO message10-17-04 14:55:25,873 [1075298944] WARN log &lt;&gt; - This is a WARN message10-17-04 14:55:25,874 [1075298944] ERROR log &lt;&gt; - This is a ERROR message10-17-04 14:55:25,874 [1075298944] FATAL log &lt;&gt; - This is a FATAL message10-17-04 14:55:25,875 [1075298944] TRACE log &lt;&gt; - EXIT: ::printDebug()
+
+   2. trace_msgs.log10-17-04 14:55:25,858 [1075298944] TRACE log &lt;&gt; - ENTER: ::printDebug()10-17-04 14:55:25,875 [1075298944] TRACE log &lt;&gt; - EXIT: ::printDebug()
+
+   3. debug_info_msgs.log10-17-04 14:55:25,871 [1075298944] DEBUG log &lt;&gt; - This is a DEBUG message10-17-04 14:55:25,873 [1075298944] INFO log &lt;&gt; - This is a INFO message
+
+   4. fatal_msgs.log10-17-04 14:55:25,874 [1075298944] FATAL log &lt;&gt; - This is a FATAL message
+
+   本部分详细介绍了如何有选择地控制log信息的输出，最后一部分我们将介绍一下多线程、和C/S模式下该如何操作，顺便提一下NDC的概念。

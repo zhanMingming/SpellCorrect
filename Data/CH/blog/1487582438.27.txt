@@ -1,0 +1,56 @@
+About 值传递 与 地址传递using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Hello
+{
+    class Class1
+    {
+ public int value = 0;
+    }
+    struct Struct1
+    {
+ public int value;
+    }
+    class Test
+    {
+ static void Main()
+ {
+     int val1 = 0;
+     int val2 = val1;
+     val2 = 2;
+     Console.WriteLine("Values:{0},{1}", val1, val2);
+     Class1 c1 = new Class1();
+     Class1 c2 = new Class1();
+     c1.value = 4;
+     c2 = c1;
+     c1.value = 5;
+     Console.WriteLine("{0},{1}", c1.value, c2.value);
+     Struct1 s1;
+     s1.value = 0;
+     Struct1 s2 = s1;
+     s2.value = 1;
+     Console.WriteLine("{0},{1}", s1.value, s2.value);
+ }
+    }
+}
+ 
+
+
+   
+
+
+   val1、val2两个局部变量都是值类型（int），并且值类型的每个局部变量都有自己的存储，所以赋值不会互相改变；
+
+
+   相反，赋值c1.value=5;则会影响c1和c2都引用的对象；
+
+
+   结构类型也是值类型，所以s2的修改不会影响s1;
+
+
+   
+
+
+   值类型都无需new空间，声明变量时系统自动分配空间

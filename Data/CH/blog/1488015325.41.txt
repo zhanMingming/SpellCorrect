@@ -1,0 +1,171 @@
+了解hibernate的特性：filterfilter顾名思义，就是只从数据库查询出满足条件的数据，其实就是select语句中的where条件。student的实体和映射文件如下：
+
+
+   public class Student {
+	private int id;
+
+	private String name;
+
+	private int age;
+
+	// 省略了setter/getter
+	....
+}
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+
+	&lt;class name=&quot;Student&quot;&gt;
+
+		&lt;id name=&quot;id&quot; unsaved-value=&quot;0&quot;&gt;
+			&lt;generator class=&quot;native&quot;&gt;&lt;/generator&gt;
+		&lt;/id&gt;
+		
+		&lt;property name=&quot;name&quot;&gt;&lt;/property&gt;
+		&lt;property name=&quot;age&quot; /&gt;
+
+		&lt;filter name=&quot;minAgeFilter&quot;&gt;
+		    &lt;![CDATA[
+		    	age &gt; :paramAge
+		    ]]&gt;
+		&lt;/filter&gt;
+		
+		&lt;filter name=&quot;maxAgeFilter&quot;&gt;
+		    &lt;![CDATA[
+		    	age &lt; :paramAge
+		    ]]&gt;
+		&lt;/filter&gt;
+
+	&lt;/class&gt;
+	
+
+	&lt;filter-def name=&quot;minAgeFilter&quot;&gt;
+		&lt;filter-param name=&quot;paramAge&quot; type=&quot;int&quot; /&gt;
+	&lt;/filter-def&gt;
+	
+	&lt;filter-def name=&quot;maxAgeFilter&quot;&gt;
+		&lt;filter-param name=&quot;paramAge&quot; type=&quot;int&quot; /&gt;
+	&lt;/filter-def&gt;
+	
+
+&lt;/hibernate-mapping&gt;
+
+
+   
+
+
+   我们使用&lt;filter-def&gt;来声明一个filter，使用&lt;filter&gt;来引用一个filter。&lt;filter-def&gt;定义了参数的名称和类型，&lt;filter&gt;定义condition条件。&lt;filter-def&gt;和&lt;filter&gt;通过名称进行关联，这和web.xml中配置servlet是类&#20284;的。
+
+
+   
+
+
+
+
+   在实体映射文件中，声明和引用filter后，我们需要在java代码中显示地打开filter并设置参数。
+
+
+   @Test
+public void testQuery() {
+	Session session = sessionFactory.openSession();
+
+	// 开启filter并设置filter的参数
+	session.enableFilter(&quot;minAgeFilter&quot;).setParameter(&quot;paramAge&quot;, 10);
+	session.enableFilter(&quot;maxAgeFilter&quot;).setParameter(&quot;paramAge&quot;, 20);
+
+	Query query = session.createQuery(&quot;from Student&quot;);
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	List&lt;Student&gt; results = (List&lt;Student&gt;) query.list();
+
+	for (Student each : results) {
+		Assert.assertTrue(each.getAge() &gt; 10 &amp;&amp; each.getAge() &lt; 20);
+	}
+
+	session.close();
+}
+
+   
+
+
+   
+
+
+
+执行这段代码，是可以通过单元测试的，hibernate发出的SQL如下：
+   select
+	student0_.id as id0_,
+	student0_._version as column2_0_,
+	student0_.name as name0_,
+	student0_.age as age0_ 
+from
+	Student student0_ 
+where
+	student0_.age &gt; ? 
+	and student0_.age &lt; ?
+
+
+
+
+   
+
+
+   可以看到filter起作用了，上面这段代码其实没有什么实际的意义，只是用来演示。使用HQL、SQL或者Criteria查询等，是可以很方便地设置查询条件的，所以filter实际上也并没有什么用处。使用SQL或者HQL等方案，必需将查询条件写死在java代码里，而使用filter是将查询条件写在实体映射文件中的。也就是说filter将一些逻辑从代码中转移到配置文件。
+
+
+   
+
+
+
+
+   最后一点需要注意下：使用session.load()或者session.get()按照主键查询是不会使用过滤器的。
+
+
+   
+   // cannot use filter
+@Test
+public void testById() {
+	Session session = sessionFactory.openSession();
+
+	session.enableFilter(&quot;minAgeFilter&quot;).setParameter(&quot;paramAge&quot;, 10);
+	session.enableFilter(&quot;maxAgeFilter&quot;).setParameter(&quot;paramAge&quot;, 20);
+
+	Student student = (Student) session.get(Student.class, 1);
+
+	System.out.println(student);
+
+	session.close();
+}
+
+
+
+
+
+
+   
+
+
+
+
+   
+   @Test
+public void testQuery() {
+	Session session = sessionFactory.openSession();
+
+	session.enableFilter(&quot;minAgeFilter&quot;).setParameter(&quot;paramAge&quot;, 10);
+	session.enableFilter(&quot;maxAgeFilter&quot;).setParameter(&quot;paramAge&quot;, 20);
+
+	Query query = session.createQuery(&quot;from Student where id=1&quot;);
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	List&lt;Student&gt; results = (List&lt;Student&gt;) query.list();
+
+	for (Student each : results) {
+		Assert.assertTrue(each.getAge() &gt; 10 &amp;&amp; each.getAge() &lt; 20);
+	}
+
+	session.close();
+}

@@ -1,0 +1,185 @@
+ionic组件popover的scope继承问题之前的博客已经介绍过popover组件的基本使用，这篇文章来看一下scope的继承问题。使用popover组件一般都会书写如下类&#20284;的代码：打开popover的时候会设置一个scope参数。
+
+
+   $ionicPopover.fromTemplateUrl(&#39;my-popover.html&#39;, {
+	scope: $scope
+}).then(function(popover) {
+	popover.show($(&quot;#target&quot;));
+});
+
+   
+
+
+
+
+   查阅ionic官方文档可以知道：ionic框架创建popover的时候会生成一个新的scope，作为制定scope的子作用域。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+	&lt;script&gt;
+	var testModule = angular.module(&#39;testApp&#39;, [&#39;ionic&#39;]);
+	testModule.controller(&#39;MyController&#39;, function($scope, $ionicPopover) {
+
+		$scope.eventPopover = function($event) {
+			$ionicPopover.fromTemplateUrl(&#39;my-popover.html&#39;, {
+					scope: $scope
+			}).then(function(popover) {
+				// 获取popover生成的scope
+				var newScope = popover.scope;
+				
+				// 显示popover
+				popover.show($event);
+
+				// true
+				alert(newScope.$parent == $scope);
+			});
+		};
+	});
+
+	$(function(){
+		angular.bootstrap($(&quot;#body&quot;), [&quot;testApp&quot;]);
+	})
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+	&lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+	&lt;/ion-header-bar&gt;
+
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+		&lt;button ng-click=&quot;eventPopover($event)&quot;&gt;button1&lt;/button&gt;
+		&lt;button ng-click=&quot;eventPopover($event)&quot;&gt;button2&lt;/button&gt;
+	&lt;/ion-content&gt;
+	
+	&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/ion-footer-bar&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+&lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+	&lt;ion-popover-view&gt;
+		&lt;ion-header-bar&gt;
+			&lt;h1 class=&quot;title&quot;&gt;{{title}}&lt;/h1&gt;
+		&lt;/ion-header-bar&gt;
+		&lt;ion-content&gt;
+			&lt;input ng-model=&quot;myValue&quot;&gt;
+			&lt;br /&gt;
+			hi, {{myValue}}
+		&lt;/ion-content&gt;
+	&lt;/ion-popover-view&gt;
+&lt;/script&gt;	
+我们可以通过popover.scope拿到新生成的scope，可以很明显地看到scope的父子关系。
+
+
+
+
+   
+
+
+   之前所以有这篇文章，是源于项目中遇到的一个问题，大致是这个样子的：popover页面使用了自定义指令：
+
+
+   &lt;!--popover内容,iron-calendar是我们自定义的指令--&gt;
+&lt;ion-content class=&quot;content has-header&quot;&gt;
+	&lt;div class=&quot;padding&quot;&gt;
+		&lt;iron-calendar ng-model=&quot;dateValue&quot;&gt;&lt;/iron-calendar&gt;
+	&lt;/div&gt;
+&lt;/ion-content&gt;
+
+我们在另外一个页面，会打开多个popover：
+   &lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+	&lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+	&lt;/ion-header-bar&gt;
+
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+		&lt;button ng-click=&quot;eventPopover($event, &#39;button1&#39;)&quot;&gt;button1&lt;/button&gt;
+		&lt;button ng-click=&quot;eventPopover($event, &#39;button2&#39;)&quot;&gt;button2&lt;/button&gt;
+	&lt;/ion-content&gt;
+	
+	&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/ion-footer-bar&gt;
+&lt;/body&gt;
+
+很显然我们希望这几个popover之间不要相互干扰，这个很容易，因为每次调用fromTemplateUrl打开新的popover时候都会新建一个scope，彼此之间自然是隔离的。由于这几个popover很类&#20284;，自然也有一些公共操作。所以我们可以：将公共的属性和方法放在parent scope中，需要彼此隔离的数据放在child scope中。
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+	&lt;script&gt;
+	var testModule = angular.module(&#39;testApp&#39;, [&#39;ionic&#39;]);
+	testModule.controller(&#39;MyController&#39;, function($scope, $ionicPopover) {
+	
+		$scope.root = 1;
+		$scope.popovers = {};
+
+		$scope.eventPopover = function($event, id) {
+			if($scope.popovers[id])
+			{
+				$scope.popovers[id].show($event);
+			}
+			else
+			{
+				$ionicPopover.fromTemplateUrl(&#39;my-popover.html&#39;, {
+					scope: $scope
+				}).then(function(popover) {
+					$scope.popovers[id] = popover;
+					popover.show($event);
+					
+					popover.scope.title = id;
+					
+					popover.scope.myValue = &#39;&#39;;
+				});
+			}
+		};
+			
+	});
+
+	$(function(){
+		angular.bootstrap($(&quot;#body&quot;), [&quot;testApp&quot;]);
+	})
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+	&lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+	&lt;/ion-header-bar&gt;
+
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+		&lt;button ng-click=&quot;eventPopover($event, &#39;button1&#39;)&quot;&gt;button1&lt;/button&gt;
+		&lt;button ng-click=&quot;eventPopover($event, &#39;button2&#39;)&quot;&gt;button2&lt;/button&gt;
+	&lt;/ion-content&gt;
+	
+	&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/ion-footer-bar&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+&lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+	&lt;ion-popover-view&gt;
+		&lt;ion-header-bar&gt;
+			&lt;h1 class=&quot;title&quot;&gt;{{title}}&lt;/h1&gt;
+		&lt;/ion-header-bar&gt;
+		&lt;ion-content&gt;
+			&lt;input ng-model=&quot;myValue&quot;&gt;
+			&lt;br /&gt;
+			hi, {{myValue}}
+		&lt;/ion-content&gt;
+	&lt;/ion-popover-view&gt;
+&lt;/script&gt;	
+
+
+   
+
+
+
+可以看到：2个popover之间的ng-model是彼此独立的。

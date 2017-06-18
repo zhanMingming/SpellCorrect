@@ -1,0 +1,205 @@
+Matlab并行编程方法本文讲一下matlab中的并行方法与技巧，这里我们不涉及GPU加速，主要考虑for循环并行和数据并行。分为以下几个板块：
+
+   1. 怎么并行？
+
+   2. parfor vs. SPMD
+
+   3. 注意事项及经验总结
+
+   
+
+   
+
+   -----------------------------------------------------------
+
+   1. 如何并行？
+
+   1. Request a number of workers;2. Issue the normal command to run the program. The client program will call on theworkers as needed;3. Release the workers;
+
+   具体到代码：
+
+   
+
+   matlabpool local 2;
+    %parallel program
+matlabpool close其中2是core数目，注意2是core数。你的电脑如果是双核四线程的，那么只能申两个（而非4个）matlab local pool。
+   具体实现parallel program呢，主要是通过parfor（parallel for）和SPMD（single program, multiple data）完成的。
+
+   
+
+   
+
+   
+
+   -----------------------------------------------------------
+
+   2. parfor vs. SPMD
+
+   2.1 什么时候用parfor
+
+   parfor只用于matlab并行循环。当你需要简单计算的多次循环迭代时，例如蒙特卡洛(Monte Carlo)模拟，parfor循环就很有用。parfor将循环迭代分组，那么每个worker执行迭代的一部分。当迭代耗时很长的时候parfor循环也是有用的，因为workers可以同时执行迭代。
+
+   注意当循环中有迭代依赖其他迭代的结果时不应该使用parfor循环。每个迭代都必须不依赖其他迭代。由于parfor循环内有通信消耗，当只有小数量的简单计算时使用parfor可能得不到什么好处。
+
+   
+
+   c = 1:10;
+a = ones(10,1);
+tic
+parfor i = 1:length(c)
+    a(i)= a(i)+ c(i);
+end
+toc
+fprintf('%d\n',a);
+   
+
+   2.2 什么时候用SPMD（Single Program/Multiple Data）单程序多任务进行任务并行
+
+   Spmd中的“Single program”方面指的是同一段代码运行在不同的多个lab上。你在一个Matlab客户端上运行一个程序，被标志为spmd模块的其他部分运行在其他lab上。当这些块运行完毕后，你的程序继续在客户端运行。“Multiple data”方面指的是虽然spmd语句在所有的lab上运行相同的代码，但每一个lab可以有不同的，独有的数据。所以多数据集可以在多个lab上同时被容纳。一下是我总结的SPMD使用的两个场景：
+
+   
+
+   The &quot;single program&quot; aspect of spmd means that the identical code runs on multiple labs. 就是说同一段程序应用于不同的样本（数据），所以一般针对随机抽样的并行，如
+
+   %% SPMD
+%example 1
+spmd 
+A = rand(3,2); %generate a matrix A for each lab(worker)
+end
+for i = 1:length(A)
+    figure; imagesc(A{i}); 
+end
+
+%example 2
+a = 3;
+b = 4;
+spmd
+    c = labindex();
+    d = c+a;
+end
+c{2} = 5;
+spmd
+    f = c*b;
+end
+for i = 1:length(f)
+    fprintf('%d\t',f{i});%access the value of each lab
+end
+   另外，SPMD也可以用于可替代parfor的块并行，在不同lab（worker）上对相同或不同的数据执行不同的并行操作，说起来有些拗口，具体看一下例子就明白了，下面我写的example3,4分别针对在不同lab上对相同数据和不同数据执行不同操作。它们都可以用parfor代替，对吧，这里我就不写了，相信大家的能力。。
+
+   
+
+   %example3 - deal with same Data by different parameters
+%add different values to same array Data
+Data = 1:100;
+spmd
+    switch labindex
+ case 1
+     Data = Data+1;
+ case 2
+     Data = Data+2;
+    end
+end
+% print Data{1} &amp; Data{2} for checking
+     
+%example4 
+%add different values for different parts of array Data
+% [1:50]+1
+% [51:100]+2
+spmd
+    if labindex == 1
+ Data(1:50) = Data(1:50)+1;
+    else
+ Data(51:100) = Data(51:100)+2;
+    end
+end以上是我对spmd和parfor的理解，欢迎补充指正，其他关于spmd vs. parfor的可以参考这个帖子。
+   
+
+   
+
+   2.3 Composite类型
+
+   
+
+   spmd中每个lab返回值以composite存储，如上面[code]example 1中的f就是以composite的形式展现。f{i}为第i个lab的返回值。最开始我们也可以创建Composite对象并进行初始化赋值。
+
+   &gt;&gt;f = Composite(2);
+
+   
+
+   
+
+   
+
+   -----------------------------------------------------------
+
+   4. 注意事项及经验总结
+
+   注意事项：
+
+   1. parfor中慎用（最好勿用）eval幅值。
+
+   一个程序并行时要共享内存，而eval语句可能使程序进入错误的workspace，因此不要用eval，改用不同index赋值。
+
+   
+
+   matlabpool local 2;
+c = 1:5;
+parfor i = 1:length(c)
+    a(i) = c(i);
+end
+   
+
+   
+
+   2. parfor循环不能很好利用所有处理器怎么办？
+
+   是这样，
+
+   
+
+   parfor i = 1:4
+........
+end就只能用4个处理器，而如果不加这个parfor可能matlab自身的负载均衡能够更好地利用CPU。这里我是开起来3个matlab，比如服务器上有12个核。我就给每个matlab分配4个core（&gt;&gt;matlabpool local 4），每个程序里有一个parfor i = 1:4. 这样就可以用起来12个核。我知道这样好暴力……囧，有人知道正解的话指条明路吧。。
+   
+
+   
+
+   3. parfor，spmd不可以相互或者自身嵌套。
+
+   
+
+   4. parfor使用有很多约束，比如for循环内的表达式需要显式表达(透明性)，不依赖前项。如
+
+   parfor i = 3:10
+
+      f(i) = f(i-1)+f(i-2);
+
+   end
+
+   是不行滴。。
+
+   
+
+   欢迎留言其他并行技巧和方法，谢谢！
+
+   
+
+   
+
+   Reference：
+
+   1. MATLAB官网——Parallel Computing Toolbox
+
+   2. 详细讲解并行用法（貌似阿拉伯人写的……o(╯□╰)o）
+
+   3. 详细并行代码
+
+   4. 多核计算平台中MATLAB并行计算
+
+   5. Parallel Computing Toolbox User's Guide
+
+   
+
+   
+
+   欢迎关注本博客和新浪微博Rachel____Zhang

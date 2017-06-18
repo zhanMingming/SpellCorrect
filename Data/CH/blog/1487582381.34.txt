@@ -1,0 +1,122 @@
+hdu 2844 DP 背包Coins
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 1070Accepted Submission(s): 421
+
+Problem Description
+
+Whuacmers use coins.They have coins of value A1,A2,A3...An Silverland dollar. One day Hibix opened purse and found there were some coins. He decided to buy a very nice watch in a nearby shop. He wanted to pay the exact price(without change) and he known the price would not more than m.But he didn't know the exact price of the watch.You are to write a program which reads n,m,A1,A2,A3...An and C1,C2,C3...Cn corresponding to the number of Tony's coins of value A1,A2,A3...An then calculate how many prices(form 1 to m) Tony can pay use these coins. 
+
+
+
+
+   
+
+Input
+
+The input contains several test cases. The first line of each test case contains two integers n(1 &le; n &le; 100),m(m &le; 100000).The second line contains 2n integers, denoting A1,A2,A3...An,C1,C2,C3...Cn (1 &le; Ai &le; 100000,1 &le; Ci &le; 1000). The last test case is followed by two zeros. 
+
+
+
+
+   
+
+Output
+
+For each test case output the answer on a single line. 
+
+
+
+
+   
+
+Sample Input
+
+
+
+   3 10
+1 2 4 2 1 1
+2 5
+1 4 2 1
+0 0
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   8
+4
+
+
+
+
+
+
+   
+
+Source
+
+2009 Multi-University Training Contest 3 - Host by WHU 
+
+
+
+
+   
+
+Recommend
+
+gaojie
+
+多重背包，但是会卡时间
+
+降低复杂度：using 物品个数*=2 instead of物品个数++
+
+#include&lt;iostream&gt;
+int a[120],c[120];
+bool f[100050];
+int main()
+{
+	int n,m,i,j,k,t,left,count;
+	while(scanf("%d%d",&amp;n,&amp;m),n||m)
+	{
+		for(i=0;i&lt;n;i++)
+			scanf("%d",&amp;a[i]);//value
+		for(i=0;i&lt;n;i++)
+			scanf("%d",&amp;c[i]);//num
+		for(i=1;i&lt;=m;i++)
+			f[i]=false;
+		f[0]=true;
+
+		//Method 1:时间复杂度：O(N*V)
+		for(i=0;i&lt;n;i++)
+		{
+			for(j=0;j&lt;a[i];j++)
+			{
+				left=c[i];
+				for(k=j+a[i];k&lt;=m;k+=a[i])
+				{
+					if(f[k])
+						left=c[i];
+					else if(left&gt;0&amp;&amp;f[k-a[i]])
+					{
+						f[k]=true;
+						left--;
+					}
+				}
+			}
+		}
+
+		count=0;
+		for(i=1;i&lt;=m;i++)
+			if(f[i])
+				count++;
+		printf("%d/n",count);
+	}
+	return 0;
+}

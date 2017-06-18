@@ -1,0 +1,61 @@
+SimpleDateFormat不是线程安全的类见过很多类&#20284;下面的代码：
+
+
+   import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class DateUtil {
+    private static final SimpleDateFormat sdf = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);
+
+    public static String format(Date date) throws ParseException {
+ return sdf.format(date);
+    }
+
+    public static Date parse(String strDate) throws ParseException {
+ return sdf.parse(strDate);
+    }
+}
+
+   
+
+
+   
+
+
+
+高并发情况下使用上面的类，&#26684;式化日期的时候会报各种异常。
+   import java.text.ParseException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class DateUtilTest {
+    public static void main(String[] args) {
+ ExecutorService executor = Executors.newFixedThreadPool(50);
+ for (int i = 0; i &lt; 50; i++) {
+     executor.execute(new Runnable() {
+  @Override
+  public void run() {
+      for (int i = 0; i &lt; 10 * 10000; i++) {
+   try {
+DateUtil.parse(&quot;2016-12-12 00:00:00&quot;);
+   } catch (ParseException e) {
+e.printStackTrace();
+   }
+      }
+  }
+     });
+
+ }
+    }
+}
+
+
+
+
+
+
+   
+
+
+   原因就是SimpleDateFormat不是线程安全的，在变写共享对象的时候一定要注意是否线程安全。

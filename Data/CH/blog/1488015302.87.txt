@@ -1,0 +1,104 @@
+消息摘要及其算法扫盲贴消息摘要算法的主要特点有：
+
+
+   1、无论输入的消息有多长，计算出来的消息摘要的长度总是固定的。例如应用MD5算法摘要的消息有128个比特位，用SHA-1算法摘要的消息最终有160比特位的输出，SHA-1的变体可以产生192比特位和256比特位的消息摘要。一般认为，摘要的最终输出越长，该摘要算法就越安全。变长输入，定长输出。
+
+
+   
+
+
+
+
+   2、只要输入的消息不同，对其进行摘要以后产生的摘要消息也必不相同；但相同的输入必会产生相同的输出。这正是好的消息摘要算法所具有的性质：输入改变了，输出也就改变了；两条相&#20284;的消息的摘要确不相近，甚至会大相径庭。从理论上来说，不管使用什么样的摘要算法，必然存在2个不同的消息，对应同样的摘要。因为输入是一个无穷集合，而输出是一个有限集合，所以从数学上来说，必然存在多对一的关系。但是实际上，很难或者说根本不可能人为的造出具有同样摘要的2个不同消息。所以我们选择摘要算法的时候，要注意其安全性。比如现在MD5就是不安全的，已经被国内王小云破解。
+
+
+   
+
+
+
+
+   3、消息摘要是单向、不可逆的。只能进行正向的信息摘要，而无法从摘要中恢复出任何的原始消息，甚至根本就找不到任何与原信息相关的信息。当然，可以采用强力攻击的方法，即尝试每一个可能的信息，计算其摘要，看看是否与已有的摘要相同，如果这样做，最终肯定会恢复出摘要的消息。但实际上，要得到的信息可能是无穷个消息之一，所以这种强力攻击几乎是无效的。
+
+
+   
+
+
+
+
+   4、好的摘要算法，没有人能从中找到“碰撞”，虽然“碰撞”是肯定存在的。即无法找到两条不同消息，但是它们的摘要相同。
+
+
+   
+
+
+
+
+   JDK自带了很多常见的消息摘要算法，使用方式如下：
+
+
+   import java.security.MessageDigest;
+import java.security.Security;
+import java.util.Set;
+
+import javax.xml.bind.DatatypeConverter;
+
+public class Test {
+	public static void main(String[] args) throws Exception {
+		String originalContent = &quot;123456&quot;;
+		Set&lt;String&gt; availableAlgorithms = Security.getAlgorithms(&quot;MessageDigest&quot;);
+		for (String each : availableAlgorithms) {
+			digest(each, originalContent.getBytes());
+		}
+
+	}
+
+	private static void digest(String algorithm, byte[] content) throws Exception {
+		MessageDigest instance = MessageDigest.getInstance(algorithm);
+		instance.update(content);
+		//当所有数据已被更新,调用digest()方法完成哈希计算,返回字节数组
+		byte[] digest = instance.digest();
+		System.out.println(&quot;算法=&quot; + algorithm + &quot;,摘要=&quot; + DatatypeConverter.printHexBinary(digest));
+	}
+}
+
+
+
+
+   
+
+
+   我们可以随便找一个文件，用好压可以计算其MD5&#20540;，然后我们通过代码自己计算，看看是否相同。好压计算MD5使用方式和输出结果如下：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   通过下面的java程序计算MD5:
+
+
+   
+
+
+
+
+   可以看到2种方式得到的文件MD5&#20540;是一样的，因为大家用的都是公开的MD5加密算法。
+
+
+   
+
+
+
+
+   消息摘要有什么用呢？消息摘要保证了消息的完整性。如果发送者发送的消息，在传输过程中被恶意篡改，那么接收者收到消息后，用同样的摘要算法计算其摘要，如果新摘要与发送者原始摘要不同，那么接收者就知道消息被篡改了。这里有一个前提条件就是：接收者一定要事先知道消息的原始摘要。消息摘要不需要秘钥，不存在秘钥的保管和分发问题。

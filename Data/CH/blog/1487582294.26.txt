@@ -1,0 +1,2454 @@
+PAT 解题报告PAT 1070
+
+   基础贪心
+
+   
+Mooncake (25)时间限制
+100 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   Mooncake is a Chinese bakery product traditionally eaten during the Mid-Autumn Festival. Many types of fillings and crusts can be found in traditional mooncakes according to the region's culture. Now given the inventory amounts and the prices of all kinds of the mooncakes, together with the maximum total demand of the market, you are supposed to tell the maximum profit that can be made.
+
+   Note: partial inventory storage can be taken. The sample shows the following situation: given three kinds of mooncakes with inventory amounts being 180, 150, and 100 thousand tons, and the prices being 7.5, 7.2, and 4.5 billion yuans. If the market demand can be at most 200 thousand tons, the best we can do is to sell 150 thousand tons of the second kind of mooncake, and 50 thousand tons of the third kind. Hence the total profit is 7.2 + 4.5/2 = 9.45 (billion yuans).
+
+   Input Specification:
+
+   Each input file contains one test case. For each case, the first line contains 2 positive integers N (&lt;=1000), the number of different kinds of mooncakes, and D (&lt;=500 thousand tons), the maximum total demand of the market. Then the second line gives the positive inventory amounts (in thousand tons), and the third line gives the positive prices (in billion yuans) of N kinds of mooncakes. All the numbers in a line are separated by a space.
+
+   Output Specification:
+
+   For each test case, print the maximum profit (in billion yuans) in one line, accurate up to 2 decimal places.
+Sample Input:
+   3 200
+180 150 100
+7.5 7.2 4.5
+Sample Output:
+   9.45
+
+   
+
+   
+
+   #include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;stdio.h&gt;
+#include &quot;stdlib.h&quot;
+#include &lt;string.h&gt;
+#include &lt;functional&gt;
+#include &lt;memory.h&gt;
+using namespace std;
+#define N 1010
+#define min(a,b) a&gt;b?b:a
+
+struct P
+{
+	double cap;
+	double price;
+	double perprice;
+	bool operator &lt; (const P &amp; A) const
+	{
+		return perprice&gt;A.perprice;
+	}
+}Moon[N];
+
+int main()
+{
+	int n,cap,i;
+	while(cin&gt;&gt;n&gt;&gt;cap)
+	{
+		for(i=0;i&lt;n;i++)
+			cin&gt;&gt;Moon[i].cap;
+		for(i=0;i&lt;n;i++)
+			cin&gt;&gt;Moon[i].price;
+		for(i=0;i&lt;n;i++)
+			Moon[i].perprice = Moon[i].price/Moon[i].cap;
+		sort(Moon, Moon+n);
+		double sum = 0;
+		int i = 0;
+		while(cap&gt;0&amp;&amp;i&lt;=n)
+		{
+			int v = min(cap,Moon[i].cap);
+			sum += v*Moon[i].perprice;
+			cap -= v;
+			i++;
+		}
+		printf(&quot;%.2f\n&quot;,sum);
+	}
+	return 0;
+}
+   
+
+   PAT 1071
+
+   字符串处理+map
+
+   
+Speech Patterns (25)时间限制
+300 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+HOU, Qiming
+
+
+   People often have a preference among synonyms of the same word. For example, some may prefer &quot;the police&quot;, while others may prefer &quot;the cops&quot;. Analyzing such patterns can help to narrow down a speaker's identity, which is useful when validating, for example, whether it's still the same person behind an online avatar.
+
+   Now given a paragraph of text sampled from someone's speech, can you find the person's most commonly used word?
+
+   Input Specification:
+
+   Each input file contains one test case. For each case, there is one line of text no more than 1048576 characters in length, terminated by a carriage return '\n'. The input contains at least one alphanumerical character, i.e., one character from the set [0-9 A-Z a-z].
+
+   Output Specification:
+
+   For each test case, print in one line the most commonly occurring word in the input text, followed by a space and the number of times it has occurred in the input. If there are more than one such words, print the lexicographically smallest one. The word should be printed in all lower case. Here a &quot;word&quot; is defined as a continuous sequence of alphanumerical characters separated by non-alphanumerical characters or the line beginning/end.
+
+   Note that words are caseinsensitive.
+Sample Input:
+   Can1: &quot;Can a can can a can?  It can!&quot;
+Sample Output:
+   can 5
+
+
+
+
+   
+
+   
+
+   #include&quot;iostream&quot;
+#include &quot;string&quot;
+#include&quot;map&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define N 1000
+
+bool isalp(char a)
+{
+	if(a&gt;='a'&amp;&amp;a&lt;='z'||a&gt;='A'&amp;&amp;a&lt;='Z'||a&gt;='0'&amp;&amp;a&lt;='9')
+		return true;
+	return false;
+}
+
+int main()
+{
+	string str,word;
+	map&lt;string,int&gt; Count;//notice it's better not substitute 'string' to 'char*', for char* stores the address while string stores object
+	map&lt;string,int&gt;::iterator it,tmp;
+	while(getline(cin,str))
+	{
+		transform(str.begin(),str.end(),str.begin(),::tolower);
+		//cout&lt;&lt;str&lt;&lt;endl;
+		int i=0,j;
+		while(i&lt;str.length())
+		{
+			j = i;
+			while(!isalp(str[j])&amp;&amp;j&lt;str.length())j++;//skip non-alphanumerical character
+			i = j;
+			while(isalp(str[j])&amp;&amp;i&lt;str.length())j++; //i is the start and j is the end point
+			if(i!=j)
+			{
+				string word=str.substr(i,j-i);//notice the usage of substr: substr(start,length)
+				if(Count.find(word)==Count.end())
+					Count[word] = 1;
+				else
+					Count[word]++;
+				i=j;
+			}
+		}
+		int minn = -1;
+		
+		for(it = Count.begin();it!=Count.end();it++)
+			if(it-&gt;second&gt;minn)
+			{
+				minn = it-&gt;second;
+				tmp = it;
+			}
+			cout&lt;&lt;tmp-&gt;first&lt;&lt;&quot; &quot;&lt;&lt;tmp-&gt;second&lt;&lt;endl;
+	}
+	return 0;
+}
+   
+
+   
+
+   
+
+   PAT 1072
+
+   最短路径+sort (用到一些STL函数)
+
+   
+Gas Station (30)时间限制
+200 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   A gas station has to be built at such a location that the minimum distance between the station and any of the residential housing is as far away as possible. However it must guarantee that all the houses are in its service range.
+
+   Now given the map of the city and several candidate locations for the gas station, you are supposed to give the best recommendation. If there are more than one solution, output the one with the smallest average distance to all the houses. If such a solution is still not unique, output the one with the smallest index number.
+
+   Input Specification:
+
+   Each input file contains one test case. For each case, the first line contains 4 positive integers: N (&lt;= 103), the total number of houses; M (&lt;= 10), the total number of the candidate locations for the gas stations; K (&lt;= 104), the number of roads connecting the houses and the gas stations; and DS, the maximum service range of the gas station. It is hence assumed that all the houses are numbered from 1 to N, and all the candidate locations are numbered from G1 to GM.
+
+   Then K lines follow, each describes a road in the formatP1 P2 Distwhere P1 and P2 are the two ends of a road which can be either house numbers or gas station numbers, and Dist is the integer length of the road.
+
+   Output Specification:
+
+   For each test case, print in the first line the index number of the best location. In the next line, print the minimum and the average distances between the solution and all the houses. The numbers in a line must be separated by a space and be accurate up to 1 decimal place. If the solution does not exist, simply output “No Solution”.
+Sample Input 1:
+   4 3 11 5
+1 2 2
+1 4 2
+1 G1 4
+1 G2 3
+2 3 2
+2 G2 1
+3 4 2
+3 G3 2
+4 G1 3
+G2 G1 1
+G3 G2 2
+Sample Output 1:
+   G1
+2.0 3.3
+Sample Input 2:
+   2 1 2 10
+1 G1 9
+2 G1 20
+Sample Output 2:
+   No Solution
+
+   
+
+   
+
+   
+
+   #include&quot;iostream&quot;
+#include &quot;string&quot;
+#include&quot;algorithm&quot;
+#include&quot;memory.h&quot;
+#include&quot;numeric&quot;
+#include &quot;stdlib.h&quot;
+using namespace std;
+#define N 1001
+#define M 12
+#define INF 10000000
+double map[N+M][N+M];
+double dist[N+M];
+bool visited[N+M];
+
+struct Gas
+{
+	int idx;
+	double mindis;
+	double averagedis;
+	bool operator &lt; (const Gas &amp; A) const
+	{
+		if(A.mindis!=mindis)
+			return mindis&gt;A.mindis;
+		if(A.averagedis!=averagedis)
+			return averagedis&lt;A.averagedis;
+		return idx&lt;A.idx;
+	}
+}G[M];
+
+int str2int(char s[],int n)
+{
+	int i=0;
+	if(s[0]=='G')
+		i=1;
+	int sum=i==0?0:n;
+	sum+=atoi(s+i);
+	return sum;
+}
+
+void dijkstra(int source,int n)
+{
+	memset(visited,false,sizeof(visited));
+	visited[source] = true;
+
+	int i,j;
+	for(j=1;j&lt;=n;j++)
+			dist[j] = map[j][source];
+	dist[source] = 0;
+
+	for(j=0;j&lt;n-1;j++)
+	{
+		int minn = INF,point;
+		for(i=1;i&lt;=n;i++)
+			if(!visited[i] &amp;&amp; dist[i]&lt;minn)
+			{
+				minn = dist[i];
+				point = i;
+			}
+		visited[point] = true;
+		for(i=1;i&lt;=n;i++)
+			if(!visited[i]&amp;&amp;dist[i]&gt;dist[point]+map[point][i])
+				dist[i] = dist[point]+map[point][i];
+	}
+}
+
+int main()
+{
+	int n,m,k,r;
+	cin&gt;&gt;n&gt;&gt;m&gt;&gt;k&gt;&gt;r;
+	char str1[5],str2[5];
+	double dis;
+	int i,j;
+	for(i=1;i&lt;=n+m;i++)
+		for(j=1;j&lt;=n+m;j++)
+			map[i][j] = map[j][i] =  INF;
+	while(k--)
+	{
+		scanf(&quot;%s%s%lf&quot;,str1,str2,&amp;dis);
+		int a = str2int(str1,n);
+		int b = str2int(str2,n);
+		map[a][b] = map[b][a] = dis;
+	}
+
+	int n_avaliable = 0;
+	for(i=1;i&lt;=m;i++)
+	{
+		int source = n+i;
+		dijkstra(source,n+m);
+		for(j=1;j&lt;=n;j++)
+			if(dist[j]&gt;r)
+				break;
+		if(j==n+1)
+		{
+			G[n_avaliable].idx = i;
+			G[n_avaliable].mindis = *min_element(dist+1,dist+n+1);
+			G[n_avaliable].averagedis = accumulate(dist+1,dist+n+1,0);
+			n_avaliable++;
+		}
+	}
+
+	if(n_avaliable == 0)
+		cout&lt;&lt;&quot;No Solution&quot;&lt;&lt;endl;
+	else
+	{
+		sort(G,G+n_avaliable); //actually we needn't to sort. However, it won't cost much for little m&lt;=10 in this case.
+		cout&lt;&lt;&quot;G&quot;&lt;&lt;G[0].idx&lt;&lt;endl;
+		printf(&quot;%.1f %.1f\n&quot;,G[0].mindis,G[0].averagedis/n);
+	}
+	
+	return 0;
+
+}
+   
+
+   PAT 1061
+
+   字符串处理（注意边界）
+
+   
+1061. Dating (20)时间限制
+50 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   Sherlock Holmes received a note with some strange strings: &quot;Let's date! 3485djDkxh4hhGE 2984akDfkkkkggEdsb s&amp;hgsfdk d&amp;Hyscvnm&quot;. It took him only a minute to figure out that those strange strings are actually referring to the coded time &quot;Thursday 14:04&quot; -- since the first common capital English letter (case sensitive) shared by the first two strings is the 4th capital letter 'D', representing the 4th day in a week; the second common character is the 5th capital letter 'E', representing the 14th hour (hence the hours from 0 to 23 in a day are represented by the numbers from 0 to 9 and the capital letters from A to N, respectively); and the English letter shared by the last two strings is 's' at the 4th position, representing the 4th minute. Now given two pairs of strings, you are supposed to help Sherlock decode the dating time.
+
+   Input Specification:
+
+   Each input file contains one test case. Each case gives 4 non-empty strings of no more than 60 characters without white space in 4 lines.
+
+   Output Specification:
+
+   For each test case, print the decoded time in one line, in the format &quot;DAY HH:MM&quot;, where &quot;DAY&quot; is a 3-character abbreviation for the days in a week -- that is, &quot;MON&quot; for Monday, &quot;TUE&quot; for Tuesday, &quot;WED&quot; for Wednesday, &quot;THU&quot; for Thursday, &quot;FRI&quot; for Friday, &quot;SAT&quot; for Saturday, and &quot;SUN&quot; for Sunday. It is guaranteed that the result is unique for each case.
+Sample Input:
+   3485djDkxh4hhGE 
+2984akDfkkkkggEdsb 
+s&amp;hgsfdk 
+d&amp;Hyscvnm
+Sample Output:
+   THU 14:04
+
+
+
+
+   
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+#define min(a,b) a&lt;b?a:b
+
+int main()
+{
+	string str[5];
+	string day[8] = {&quot;MON&quot;,&quot;TUE&quot;,&quot;WED&quot;,&quot;THU&quot;,&quot;FRI&quot;,&quot;SAT&quot;,&quot;SUN&quot;};
+
+	int i,j;
+	for(i=0;i&lt;4;i++)
+	{
+		cin&gt;&gt;str[i];
+	}
+	for(i=0;i&lt;min(str[0].length(),str[1].length());i++)
+	{
+		if(str[0][i]==str[1][i]&amp;&amp;str[0][i]&gt;='A'&amp;&amp;str[0][i]&lt;='G')//notice it is 'G' not 'Z'
+			break;
+	}
+	int d=str[0][i]-'A';
+	
+	i++;
+	for(;i&lt;min(str[0].length(),str[1].length());i++)
+	{
+		if(str[0][i]==str[1][i]&amp;&amp;(str[0][i]&gt;='A'&amp;&amp;str[0][i]&lt;='N'||str[0][i]&gt;='0'&amp;&amp;str[0][i]&lt;='9'))
+			break;
+	}
+	int h = str[0][i]&gt;'9'?str[0][i]-'A'+10:str[0][i]-'0';
+
+	for(i=0;i&lt;min(str[2].length(),str[3].length());i++)
+	{
+		if(str[2][i]==str[3][i]&amp;&amp;(str[2][i]&gt;='a'&amp;&amp;str[2][i]&lt;='z'||str[2][i]&gt;='A'&amp;&amp;str[2][i]&lt;='Z'))
+			break;
+	}
+	cout&lt;&lt;day[d]&lt;&lt;&quot; &quot;;
+	printf(&quot;%02d:%02d\n&quot;,h,i);
+}
+   
+
+   
+
+   
+
+   PAT 1062
+
+   排序
+
+   
+1062. Talent and Virtue (25)时间限制
+200 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Li
+
+
+   About 900 years ago, a Chinese philosopher Sima Guang wrote a history book in which he talked about people's talent and virtue. According to his theory, a man being outstanding in both talent and virtue must be a &quot;sage（圣人）&quot;; being less excellent but with one's virtue outweighs talent can be called a &quot;nobleman（君子）&quot;; being good in neither is a &quot;fool man（愚人）&quot;; yet a fool man is better than a &quot;small man（小人）&quot; who prefers talent than virtue.
+
+   Now given the grades of talent and virtue of a group of people, you are supposed to rank them according to Sima Guang's theory.
+
+   Input Specification:
+
+   Each input file contains one test case. Each case first gives 3 positive integers in a line: N (&lt;=105), the total number of people to be ranked; L (&gt;=60), the lower bound of the qualified grades -- that is, only the ones whose grades of talent and virtue are both not below this line will be ranked; and H (&lt;100), the higher line of qualification -- that is, those with both grades not below this line are considered as the &quot;sages&quot;, and will be ranked in non-increasing order according to their total grades. Those with talent grades below H but virtue grades not are cosidered as the &quot;noblemen&quot;, and are also ranked in non-increasing order according to their total grades, but they are listed after the &quot;sages&quot;. Those with both grades below H, but with virtue not lower than talent are considered as the &quot;fool men&quot;. They are ranked in the same way but after the &quot;noblemen&quot;. The rest of people whose grades both pass the L line are ranked after the &quot;fool men&quot;.
+
+   Then N lines follow, each gives the information of a person in the format:
+
+   ID_Number Virtue_Grade Talent_Grade
+where ID_Number is an 8-digit number, and both grades are integers in [0, 100]. All the numbers are separated by a space.
+   
+
+   Output Specification:
+
+   The first line of output must give M (&lt;=N), the total number of people that are actually ranked. Then M lines follow, each gives the information of a person in the same format as the input, according to the ranking rules. If there is a tie of the total grade, they must be ranked with respect to their virtue grades in non-increasing order. If there is still a tie, then output in increasing order of their ID's.
+Sample Input:
+   14 60 80
+10000001 64 90
+10000002 90 60
+10000011 85 80
+10000003 85 80
+10000004 80 85
+10000005 82 77
+10000006 83 76
+10000007 90 78
+10000008 75 79
+10000009 59 90
+10000010 88 45
+10000012 80 100
+10000013 90 99
+10000014 66 60
+Sample Output:
+   12
+10000013 90 99
+10000012 80 100
+10000003 85 80
+10000011 85 80
+10000004 80 85
+10000007 90 78
+10000006 83 76
+10000005 82 77
+10000002 90 60
+10000014 66 60
+10000008 75 79
+10000001 64 90
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&quot;functional&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b) a&lt;b?a:b
+#define N 100001
+
+struct Peo
+{
+	int h;
+	int v;
+	int total;
+	int level;
+	string id;
+	bool operator &lt;(Peo const &amp; A)const
+	{
+		if(level!=A.level)
+			return level&gt;A.level;
+		if(total!=A.total)
+			return total&gt;A.total;
+		if(v!=A.v)
+			return v&gt;A.v;
+		return id.compare(A.id)&lt;0;
+	}
+}P[N];
+
+int main()
+{
+	int n,l,h;
+	string id;
+	int a,b,level,idx = 0;
+	cin&gt;&gt;n&gt;&gt;l&gt;&gt;h;
+	while(n--)
+	{
+		cin&gt;&gt;id;
+		scanf(&quot;%d%d&quot;,&amp;a,&amp;b);
+		if(a&gt;=l&amp;&amp;b&gt;=l)
+		{
+			if(a&gt;=h&amp;&amp;b&gt;=h)
+				level = 4;
+			else if(a&gt;=h&amp;&amp;b&lt;h)
+				level = 3;
+			else if(a&lt;h &amp;&amp; b&lt;h &amp;&amp; a&gt;=b)
+				level = 2;
+			else
+				level = 1;
+			P[idx].v = a;
+			P[idx].h = b;
+			P[idx].total = a+b;
+			P[idx].id=id;
+			P[idx++].level = level;
+		}
+	}
+	cout&lt;&lt;idx&lt;&lt;endl;
+	sort(P,P+idx);
+	for(int i = 0;i&lt;idx;i++)
+	{
+		cout&lt;&lt;P[i].id;
+		printf(&quot; %d %d\n&quot;,P[i].v,P[i].h);
+	}
+	return 0;
+}
+   
+
+   PAT 1063
+
+   大数据优化处理（容易超时）
+
+   注意点：
+
+   1. 50个数组，2000次询问：存结果（见代码中percent数组）
+
+   2. 排序，从O(n^2)降到O(nlogn)
+
+   
+
+   
+1063. Set Similarity (25)时间限制
+300 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   Given two sets of integers, the similarity of the sets is defined to be Nc/Nt*100%, where Ncis the number of distinct common numbers shared by the two sets, and Ntis the total number of distinct numbers in the two sets. Your job is to calculate the similarity of any given pair of sets.
+
+   Input Specification:
+
+   Each input file contains one test case. Each case first gives a positive integer N (&lt;=50) which is the total number of sets. Then N lines follow, each gives a set with a positive M (&lt;=104) and followed by M integers in the range [0, 109]. After the input of sets, a positive integer K (&lt;=2000) is given, followed by K lines of queries. Each query gives a pair of set numbers (the sets are numbered from 1 to N). All the numbers in a line are separated by a space.
+
+   Output Specification:
+
+   For each query, print in one line the similarity of the sets, in the percentage form accurate up to 1 decimal place.
+Sample Input:
+   3
+3 99 87 101
+4 87 101 5 87
+7 99 101 18 5 135 18 99
+2
+1 2
+1 3
+Sample Output:
+   50.0%
+33.3%
+
+   
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b) a&lt;b?a:b
+#define N 10001
+#define M 51
+double percent[M][M];//save the asking result (for faster)
+
+int main()
+{
+	int n,tmp,ax,bx,nx;
+	vector&lt;int&gt; a[51],vec;
+	int i,j;
+	scanf(&quot;%d&quot;,&amp;n);
+	for(j=0;j&lt;n;j++)
+	{
+		vec.clear();
+		scanf(&quot;%d&quot;,&amp;nx);
+		for(i = 0;i&lt;nx;i++)
+		{
+			scanf(&quot;%d&quot;,&amp;tmp);
+			if(find(vec.begin(),vec.end(),tmp)==vec.end())
+				vec.push_back(tmp);
+		}
+		sort(vec.begin(),vec.end());
+		a[j]=vec;
+	}
+	for(i=0;i&lt;n;i++)
+		for(j=0;j&lt;n;j++)
+			percent[i][j]=-1;
+
+	cin&gt;&gt;n;
+	while(n--)
+	{
+		scanf(&quot;%d%d&quot;,&amp;ax,&amp;bx);
+		ax--;bx--;
+		if(percent[ax][bx]!=-1)
+		{
+			printf(&quot;%.1f%%\n&quot;,percent[ax][bx]);
+			continue;
+		}
+
+		int same=0,distinct=a[ax].size();		
+		int ia=0,ib=0;
+		int la=a[ax].size(), lb = a[bx].size();
+		while(ia&lt;la &amp;&amp; ib&lt;lb)
+		{
+			while(a[ax][ia]&lt;a[bx][ib]&amp;&amp;ia&lt;la)
+				ia++;
+			while(a[bx][ib]&lt;a[ax][ia]&amp;&amp;ib&lt;lb)
+			{
+				ib++;
+				distinct++;
+			}
+			if(a[ax][ia]==a[bx][ib])
+			{
+				ia++,ib++;
+				same++;
+			}
+		}
+		while(ib&lt;lb)
+		{
+			ib++;
+			distinct++;
+		}
+
+		double perc = 1.0*same/distinct*100.0;
+		percent[ax][bx]=percent[bx][ax]=perc;
+		printf(&quot;%.1f%%\n&quot;,perc);
+	}
+	
+	return 0;
+}
+   
+
+   PAT 1064
+
+   完全二叉树+层次遍历（典型递归）
+
+   输入数组从小到大的顺序为“左根右”遍历顺序，因此按前序遍历依次赋值即可。
+
+   
+
+   
+1064. Complete Binary Search Tree (30)时间限制
+100 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   A Binary Search Tree (BST) is recursively defined as a binary tree which has the following properties:
+The left subtree of a node contains only nodes with keys less than the node's key.The right subtree of a node contains only nodes with keys greater than or equal to the node's key.Both the left and right subtrees must also be binary search trees.
+   A Complete Binary Tree (CBT) is a tree that is completely filled, with the possible exception of the bottom level, which is filled from left to right.
+
+   Now given a sequence of distinct non-negative integer keys, a unique BST can be constructed if it is required that the tree must also be a CBT. You are supposed to output the level order traversal sequence of this BST.
+
+   Input Specification:
+
+   Each input file contains one test case. For each case, the first line contains a positive integer N (&lt;=1000). Then N distinct non-negative integer keys are given in the next line. All the numbers in a line are separated by a space and are no greater than 2000.
+
+   Output Specification:
+
+   For each test case, print in one line the level order traversal sequence of the corresponding complete binary search tree. All the numbers in a line must be separated by a space, and there must be no extra space at the end of the line.
+Sample Input:
+   10
+1 2 3 4 5 6 7 8 9 0
+Sample Output:
+   6 3 8 1 5 7 9 0 2 4
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define N 1001
+int a[N],tree[N];
+int idx;
+
+void LRR(int i,int n)//left-&gt;root-&gt;right sequence
+{
+	int l=2*i,r=2*i+1;
+	if(i&gt;n)
+		return;
+	LRR(l,n);
+	//cout&lt;&lt;i&lt;&lt;endl;
+	tree[i]=a[idx++];
+	if(r&lt;=n)
+		LRR(r,n);
+}
+
+int main()
+{
+	int n,tmp,i,j;
+	scanf(&quot;%d&quot;,&amp;n);
+	for(j=0;j&lt;n;j++)
+		scanf(&quot;%d&quot;,&amp;a[j]);
+	sort(a,a+n);
+	idx=0;
+	LRR(1,n);
+	for(i=1;i&lt;n;i++)
+		printf(&quot;%d &quot;,tree[i]);
+	printf(&quot;%d\n&quot;,tree[i]);
+	return 0;
+}
+   
+
+   
+
+   PAT 1046
+
+   小朋友们注意保存中间结果以防超时哦
+
+   
+1046. Shortest Distance (20)时间限制
+100 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   The task is really simple: given N exits on a highway which forms a simple cycle, you are supposed to tell the shortest distance between any pair of exits.
+
+   Input Specification:
+
+   Each input file contains one test case. For each case, the first line contains an integer N (in [3, 105]), followed by N integer distances D1D2... DN, where Diis the distance between the i-th and the (i+1)-st exits, and DNis between the N-th and the 1st exits. All the numbers in a line are separated by a space. The second line gives a positive integer M (&lt;=104), with M lines follow, each contains a pair of exit numbers, provided that the exits are numbered from 1 to N. It is guaranteed that the total round trip distance is no more than 107.
+
+   Output Specification:
+
+   For each test case, print your results in M lines, each contains the shortest distance between the corresponding given pair of exits.
+Sample Input:
+   5 1 2 4 14 9
+3
+1 3
+2 5
+4 1
+Sample Output:
+   3
+10
+7
+
+
+
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&quot;numeric&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b)a&gt;b?b:a
+#define N 100009
+int a[N];//part sum
+int idx;
+
+int main()
+{
+	int n,m,i,s,e,r,sum=0,ans,t;
+	scanf(&quot;%d&quot;,&amp;n);
+	a[1] = 0;
+	for(i=1;i&lt;=n;i++)
+	{
+		scanf(&quot;%d&quot;,&amp;t);
+		a[i+1]=a[i]+t;
+	}
+	sum = a[n+1];
+
+	//sum = accumulate(a,a+n,0);
+	scanf(&quot;%d&quot;,&amp;m);
+	while(m--)
+	{
+		scanf(&quot;%d%d&quot;,&amp;s,&amp;e);
+		if(s&gt;e)
+		{
+			i=s;
+			s=e;
+			e=i;
+		}
+		r=a[e]-a[s];
+		ans = min(r,sum-r);
+		printf(&quot;%d\n&quot;,ans);
+	}
+	return 0;
+}
+   
+
+   
+
+   
+
+   PAT 1047
+
+   
+
+   
+
+   
+
+   
+
+   PAT 1048
+
+   水题
+
+   
+1048. Find Coins (25)时间限制
+50 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   Eva loves to collect coins from all over the universe, including some other planets like Mars. One day she visited a universal shopping mall which could accept all kinds of coins as payments. However, there was a special requirement of the payment: for each bill, she could only use exactly two coins to pay the exact amount. Since she has as many as 105coins with her, she definitely needs your help. You are supposed to tell her, for any given amount of money, whether or not she can find two coins to pay for it.
+
+   Input Specification:
+
+   Each input file contains one test case. For each case, the first line contains 2 positive numbers: N (&lt;=105, the total number of coins) and M(&lt;=103, the amount of money Eva has to pay). The second line contains N face values of the coins, which are all positive numbers no more than 500. All the numbers in a line are separated by a space.
+
+   Output Specification:
+
+   For each test case, print in one line the two face values V1and V2(separated by a space) such that V1+ V2= M and V1&lt;= V2. If such a solution is not unique, output the one with the smallest V1. If there is no solution, output &quot;No Solution&quot; instead.
+Sample Input 1:
+   8 15
+1 2 8 7 2 4 11 15
+Sample Output 1:
+   4 11
+Sample Input 2:
+   7 14
+1 8 7 2 4 11 15
+Sample Output 2:
+   No Solution
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&lt;memory.h&gt;
+#include&quot;numeric&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b)a&gt;b?b:a
+#define N 1001
+bool a[N];//part sum
+int idx;
+
+int main()
+{
+	int n,m,i,tmp,l;
+	scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+	memset(a,false,sizeof(a));
+	int count_mid = 0;
+	
+	if(m%2==1)
+	{
+		while(n--)
+		{
+			scanf(&quot;%d&quot;,&amp;tmp);
+			a[tmp] = true;
+		}
+	}
+	else
+	{
+		while(n--)
+		{
+			scanf(&quot;%d&quot;,&amp;tmp);
+			a[tmp] = true;
+			if(tmp==m/2)
+				count_mid++;
+		}
+	}
+	l=min(N/2,m/2);
+	for(i=1;i&lt;=l;i++)
+	{
+		if(a[i]&amp;&amp;a[m-i] &amp;&amp; (i*2!=m||count_mid&gt;=2))
+		{
+			printf(&quot;%d %d\n&quot;,i,m-i);
+			break;
+		}
+	}
+	if(i==l+1)
+		printf(&quot;No Solution\n&quot;);
+	
+	return 0;
+}
+   
+
+   
+
+   PAT 1049
+
+   考虑每一位为1的个数
+
+   
+1049. Counting Ones (30)时间限制
+10 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+16000 B
+
+判题程序
+Standard
+
+作者
+CHEN, Yue
+
+
+   The task is simple: given any positive integer N, you are supposed to count the total number of 1's in the decimal form of the integers from 1 to N. For example, given N being 12, there are five 1's in 1, 10, 11, and 12.
+
+   Input Specification:
+
+   Each input file contains one test case which gives the positive N (&lt;=230).
+
+   Output Specification:
+
+   For each test case, print the number of 1's in one line.
+Sample Input:
+   12
+Sample Output:
+   5
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&lt;memory.h&gt;
+#include&lt;vector&gt;
+#include&quot;numeric&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b)a&gt;b?b:a
+
+int main()
+{
+	unsigned int x,left,right,b,d,sum=0;
+	int midbit;
+	scanf(&quot;%u&quot;,&amp;x);
+	b = 1;//base
+	left = 1;
+	while(left!=0)
+	{
+		left = x/(b*10);
+		right = x % b;
+		midbit = (x/b)%10;
+		switch(midbit)
+		{
+		case 0:
+			sum+=left*b; break;
+		case 1:
+			sum+=left*b+right+1; break;
+		default:
+			sum += (left+1)*b;
+		}
+		b *= 10;
+	}
+	printf(&quot;%u\n&quot;,sum);
+	return 0;
+}
+   
+
+   
+
+   PAT 1007
+
+   经典——最大连续和
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&lt;memory.h&gt;
+#include&lt;vector&gt;
+#include&quot;numeric&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b)a&gt;b?b:a
+#define N 10010
+#define INF 2&lt;&lt;30-1
+int a[N];
+
+int main()
+{
+	int n,i,maxx=-INF,sum=0,s,e,start,end;
+	s=e=start=end=0;
+	cin&gt;&gt;n;
+	for(i=0;i&lt;n;i++)
+	{
+		scanf(&quot;%d&quot;,&amp;a[i]);
+		sum+=a[i];
+		if(sum&lt;0)
+		{
+			sum=0;
+			s=e=e+1;
+		}
+		else 
+		{
+			if(maxx&lt;sum)
+			{
+				maxx = sum;
+				start = s;
+				end = e;
+			}
+			e++;
+		}
+	}
+	if(maxx==-INF)
+		printf(&quot;0 %d %d\n&quot;,a[0],a[n-1]);
+	else
+		printf(&quot;%d %d %d\n&quot;,maxx,a[start],a[end]);
+	return 0;
+}
+   
+
+   
+
+   
+
+   海盗分赃问题
+
+   ——博弈
+
+   
+2-10. 海盗分赃时间限制
+400 ms
+
+内存限制
+32000 kB
+
+代码长度限制
+8000 B
+
+判题程序
+Standard
+
+
+
+   P个海盗偷了D颗钻石后来到公海分赃，一致同意如下分赃策略：
+
+   首先，P个海盗通过抽签决定1-P的序号。然后由第1号海盗提出一个分配方案（方案应给出每个海盗分得的具体数量），如果能够得到包括1号在内的绝对多数（即大于半数）同意，则按照该分配方案执行，否则1号将被投入大海喂鲨鱼；而后依次类似地由第2号、第3号等等海盗提出方案，直到能够获得绝对多数同意的方案出现为止，或者只剩下最后一位海盗，其独占所有钻石。请编写一个程序，给出第1号海盗的钻石分配方案中自己分得的钻石数量。
+
+   附带的三个假定：
+
+   1)	 “聪明”与“贪婪”假定：每个海盗总能够以本人利益最大化作为行为准则；2)	 “人性化”假定：在能够取得尽量多钻石的情况下，海盗不会故意致同伙于死地；3)	 “无偏见”假定：海盗之间没有个人恩怨，分给其他海盗钻石的次序以小序号优先为原则。
+
+   输入格式说明：
+
+   输入2个正整数D和P（3&lt;=P&lt;=D&lt;=100）。
+
+   输出格式说明：
+
+   输出第1号海盗的钻石分配方案中自己分得的钻石数量。
+
+   样例输入与输出：
+序号输入输出1
+   10 7
+
+   6
+2
+   3 3
+
+   2
+3
+   100 3
+
+   99
+4
+   100 100
+
+   49
+
+
+
+从后往前推
+   
+
+   p个人分d个钻石的分配情况(第一个人的策略)
+
+   x 0 1 2 0 1 0 1 0 1......（后面就是0,1循环了）
+
+   三个人的情况：
+
+   x 0 1
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&lt;memory.h&gt;
+#include&lt;vector&gt;
+#include&quot;numeric&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b)a&gt;b?b:a
+#define N 10010
+#define INF 2&lt;&lt;30-1
+bool f[N];//flag
+
+int main()
+{
+	int ans,p,d;
+	while(cin&gt;&gt;d&gt;&gt;p)
+	{
+		if(p&gt;=5)
+			ans = d-3-(p-4)/2;
+		else if(p==3)
+			ans = d-1;
+		printf(&quot;%d\n&quot;,ans);
+	}
+	return 0;
+}
+   
+
+   PAT 1014
+
+   
+1014. Waiting in Line (30)
+   
+
+   纯模拟。。给几个测试数据：
+
+   2 1 10 102 10 1 514 7 1 536 511 2 11 2 3 4 5 6 7 8 9 1008:0208:1008:0316:3708:1708:1817:1425:08SorrySorry2 1 3 31 541 1241 2 308:0117:0110:052 2 7 51 2 6 4 3 534 23 4 5 6 708:0708:0608:1017:00Sorry10 2 3 31 541 31 2 308:0117:0108:03
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;memory.h&gt;
+#include &lt;queue&gt;
+using namespace std;
+#define N 22
+#define M 12
+#define P 1010
+#define MAXX (17-8)*60
+#define min(a,b) a&lt;b?a:b
+int a[P];
+int t[P];
+
+struct Window
+{
+    queue&lt;int&gt; customs;
+    int service_time;//remain service time
+}w[N];
+
+int main()
+{
+    int n,m,k,q,i,j,tmp;
+	scanf(&quot;%d%d%d%d&quot;,&amp;n,&amp;m,&amp;k,&amp;q);
+	for (i=0; i&lt;k; i++)
+		scanf(&quot;%d&quot;,&amp;a[i]);
+	memset(t, -1, sizeof(t));
+	
+	int wid;
+	//first m*n people
+	int fir = min(n*m,k);
+	for (i=0; i&lt;fir; i++) {
+		wid = i%n;
+		w[wid].customs.push(i);
+	}
+	
+	for(i=0;i&lt;n;i++)
+	{
+		if(w[i].customs.empty())
+			w[i].service_time = 0;
+		else
+			w[i].service_time = a[w[i].customs.front()];
+	}
+	
+	i=fir; //person id
+	int curtime = 0;
+	bool flag = true;
+	//push_back at tail
+	while (true) {			
+		flag = false;
+		int minn = 10000000;
+		for (j=0;j&lt;n;j++) {
+			if( !w[j].customs.empty() &amp;&amp; minn&gt;w[j].service_time)
+			{
+				minn = w[j].service_time;
+				wid = j;
+			}
+			if(!w[j].customs.empty())
+				flag = true;
+		}
+		if(!flag)
+			break;
+		int wid_front = w[wid].customs.front();
+		curtime += w[wid].service_time;
+		
+		t[wid_front] = curtime;
+		for(j=0;j&lt;n;j++)
+			if(j!=wid &amp;&amp;!w[j].customs.empty())
+				w[j].service_time-=w[wid].service_time;
+			
+     w[wid].customs.pop();
+     if(i&lt;k){
+  w[wid].customs.push(i);
+  i++;
+     }
+			if(!w[wid].customs.empty())
+				w[wid].service_time = a[w[wid].customs.front()];
+	}
+	
+	for(i=0;i&lt;q;i++)
+	{
+		scanf(&quot;%d&quot;,&amp;tmp);
+		tmp--;
+		if(t[tmp]-a[tmp]&gt;=MAXX)
+			printf(&quot;Sorry\n&quot;);
+		else
+		{
+			int h = t[tmp]/60 + 8;
+			int m = t[tmp]%60;
+			printf(&quot;%02d:%02d\n&quot;,h,m);
+		}
+	}
+    return 0;
+}
+   
+
+   
+1022. Digital Library (30)
+开始没建立结构体，先按vector分别插入各个属性的map再排序，结果TLE。因为这样是O(M*NlogN),M是询问次数，N是book数。
+
+所以改成先排序，为O(NlogN+NM).
+
+   
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include &lt;functional&gt;
+#include &quot;algorithm&quot;
+#include &lt;string.h&gt;
+#include &lt;vector&gt;
+using namespace std;
+#define N 10010
+#define K 1010
+#define L 85
+
+struct BOOK
+{
+	string id,name,publisher,author,year;
+	vector&lt;string&gt;keys;
+	bool operator &lt; (BOOK const &amp; A) const
+	{
+		return id&lt;A.id;
+	}
+}b[N];
+
+int main()
+{
+	int n,m,i,year,id;
+	string tmp;
+	char tmpc[L];
+	scanf(&quot;%d&quot;,&amp;n);
+	char* split = &quot; &quot;;
+	getchar();
+	for(i=0;i&lt;n;i++)
+	{ 
+		gets(tmpc); b[i].id = tmpc;
+		gets(tmpc); b[i].name = tmpc;
+		gets(tmpc); b[i].author = tmpc;
+		gets(tmpc);
+		char *key = strtok(tmpc,split);
+		while (key!=NULL)
+		{
+			string keystr = key;
+			b[i].keys.push_back(keystr);
+			key = strtok(NULL,split);
+		}
+		gets(tmpc); b[i].publisher = tmpc;
+		gets(tmpc); b[i].year = tmpc;
+	}
+	sort(b,b+n);
+	scanf(&quot;%d&quot;,&amp;m); getchar();
+	while (m--)
+	{
+		gets(tmpc);
+		char c = tmpc[0];
+		printf(&quot;%s\n&quot;,tmpc);
+		string str = (string)tmpc;
+		str =  str.substr(3,str.length()-3+1);
+		const char* sc = str.c_str();
+		int i; 
+		bool flag=false;
+
+		switch(tmpc[0])
+		{
+		case '1':
+			for(i=0;i&lt;n;i++)
+				if(!b[i].name.compare(sc))
+					cout&lt;&lt;b[i].id&lt;&lt;endl,flag = true;
+			break;
+		case '2':
+			for(i=0;i&lt;n;i++)
+				if(!b[i].author.compare(sc))
+					cout&lt;&lt;b[i].id&lt;&lt;endl,flag = true;
+			break;
+		case '3':
+			for(i=0;i&lt;n;i++)
+				for (int j=0;j&lt;b[i].keys.size();j++)
+				{
+					if(b[i].keys[j]==sc)
+					{
+						cout&lt;&lt;b[i].id&lt;&lt;endl,flag = true;
+						flag= true;
+					}
+				}				
+				break;
+		case '4':
+			for(i=0;i&lt;n;i++)
+				if(!b[i].publisher.compare(sc))
+					cout&lt;&lt;b[i].id&lt;&lt;endl,flag = true;
+			break;
+		case '5': //input is year
+			for(i=0;i&lt;n;i++)
+				if(!b[i].year.compare(sc))
+					cout&lt;&lt;b[i].id&lt;&lt;endl,flag = true;
+			break;
+		}
+		if(!flag)
+			printf(&quot;Not Found\n&quot;);
+	}
+	return 0;
+}
+   
+
+   
+1026. Table Tennis (30)恶心的大模拟。。。
+   
+
+   桌子没有空：
+
+    如果新空出一个，可以给vip用（有vip在等）---&gt;把最先空出的table给vip
+
+    如果新空出一个，没有vip在等---&gt;找出最小id的table给平民
+
+   桌子有空：
+
+    vip在等，且有vip table---&gt;找到最小id的vip table给vip
+
+    平民在等，或者vip在等但是没有vip table---&gt;找到最小id的table给在等的人
+
+   
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;algorithm&quot;
+#include &quot;functional&quot;
+#include &quot;memory.h&quot;
+using namespace std;
+#define  N 10010
+#define T 101
+#define INF 3600*50
+#define max(a,b) a&lt;b?b:a
+bool played[N];
+int table[T],nserve[T];
+int v[N];//vip ids
+bool usedt[T],isvipt[T];
+int totaltable,n;
+
+struct Players
+{
+	int playtime;
+	int come;
+	bool vip;
+}p[N];
+
+bool cmp1(Players A,Players B)
+{
+	return A.come&lt;B.come;
+}
+
+inline void print(int t)
+{
+	int h = t/3600;
+	int  m = (t/60)%60;
+	t = t%60;
+	printf(&quot;%02d:%02d:%02d &quot;,h,m,t);
+}
+
+inline void Allocate(int t_id,int p_id)
+{
+	if(table[t_id]&gt;=21*3600)
+		return;
+	played[p_id] = true;
+	print(p[p_id].come);
+	print(table[t_id]);
+	int wait = max(0,table[t_id]-p[p_id].come);
+	printf(&quot;%d\n&quot;,(wait+30)/60);
+	table[t_id] += p[p_id].playtime;
+	nserve[t_id]++;
+}
+
+int main()
+{
+	int i,j,n_vip=0,tt,n_viptable,tmp; 
+	char st[15];
+	scanf(&quot;%d&quot;,&amp;n);
+	for (i=0;i&lt;n;i++)
+	{
+		scanf(&quot;%s%d%d&quot;,&amp;st,&amp;p[i].playtime,&amp;p[i].vip);
+		if(p[i].playtime&gt;2*60)
+			p[i].playtime=  120;
+		p[i].playtime*=60;
+		int h = atoi(strtok(st,&quot;:&quot;));
+		int m = atoi(strtok(NULL,&quot;:&quot;));
+		int s = atoi(strtok(NULL,&quot;:&quot;));
+		tt=s+60*(m+60*h);
+		p[i].come = tt;
+	}
+	scanf(&quot;%d%d&quot;,&amp;totaltable,&amp;n_viptable);
+	memset(isvipt,false,sizeof(isvipt));
+	memset(nserve,0,sizeof(nserve));
+	for (i=0;i&lt;n_viptable;i++)
+	{
+		scanf(&quot;%d&quot;,&amp;tmp);tmp--;
+		isvipt[tmp] = true;
+	}
+	for(i=0;i&lt;totaltable;i++)
+		table[i] = 8*3600;
+	memset(usedt,false,sizeof(usedt));
+
+	sort(p,p+n,cmp1);
+	for(i=0;i&lt;n;i++)
+	{
+		if(p[i].vip)
+		{
+			v[n_vip++] = i;
+		}
+	}
+	memset(played,false,sizeof(played));
+	int c_vip =0;
+	for(i=0;i&lt;n;)
+	{
+		if(played[i]){
+			i++;continue;}
+		int time = p[i].come;
+		int fast = INF,table_idx,hasvipt = -1, minidx_vac = -1;
+		bool full = true;
+		for(j=0;j&lt;totaltable;j++)
+		{
+			if(table[j]&lt;=time) // not full
+			{
+				full = false;
+				if(minidx_vac==-1) //first vacate table
+					minidx_vac = j;
+				if(isvipt[j])
+				{
+					hasvipt = j; //first vip table
+					break;
+				}
+			}
+			if(full &amp;&amp; table[j]&lt;fast) // if full
+			{
+				fast = table[j];
+				table_idx = j; //first table to be idle
+			}
+		}
+		if(full)
+		{
+			if(c_vip&lt;n_vip&amp;&amp; isvipt[table_idx] &amp;&amp; p[v[c_vip]].come&lt;fast) //has vip and  vip table
+			{
+				Allocate(table_idx,v[c_vip++]);
+				continue;
+			}
+			else // no vip or &lt;vip has no vip table&gt;
+			{
+				Allocate(table_idx,i);
+				if(p[i++].vip)
+					c_vip++;
+			}
+		}
+		else // not full
+		{
+			if(p[i].vip) // has vip
+			{
+				c_vip++;
+				if(hasvipt!=-1) // has vip table
+				{
+					table[hasvipt] = p[i].come;
+					Allocate(hasvipt,i++);
+					continue;
+				}
+			}
+			// no vip or &lt;vip has no vip table&gt;
+			table[minidx_vac] = p[i].come;
+			Allocate(minidx_vac,i++);
+		}
+	}
+	for(i=0;i&lt;totaltable-1;i++)
+		printf(&quot;%d &quot;,nserve[i]);
+	printf(&quot;%d\n&quot;,nserve[i]);
+	//system(&quot;pause&quot;);
+	return 0;
+}
+   
+
+   
+1047. Student List for Course (25)方法：
+   
+
+   1. 按人名排好序，搜索：O(NlogN+K*N*K)
+
+   2. 按人名排好序，加入课程的vector：O(NlogN+NK) -&gt;better。
+
+   代码如下：
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;string.h&quot;
+#include&lt;stdio.h&gt;
+#include &lt;algorithm&gt;
+#include&lt;functional&gt;
+#include&lt;vector&gt;
+using namespace std;
+#define N 40010
+#define C 2510
+int Nc[C];
+vector&lt;int&gt; Courses[C];
+struct Student
+{
+	char name[5];
+	vector&lt;int&gt; cour;
+	bool operator &lt; (const Student &amp; A)const
+	{
+		return strcmp(name,A.name)&lt;0;
+	}
+}s[N];
+
+int main()
+{
+	int n,c,i,j,tmp;
+	while (scanf(&quot;%d%d&quot;,&amp;n,&amp;c)!=EOF)
+	{
+		for (i=0;i&lt;c;i++)
+			Courses[i].clear();
+		for (i=0;i&lt;n;i++)
+		{
+			scanf(&quot;%s%d&quot;,&amp;s[i].name,&amp;j);
+			while(j--)
+			{
+				scanf(&quot;%d&quot;,&amp;tmp);
+				Nc[tmp]++;
+				s[i].cour.push_back(tmp);
+			}
+		}
+		sort(s,s+n);
+		for (i=0;i&lt;n;i++)
+		{
+			for (j=0;j&lt;s[i].cour.size();j++)
+			{
+				Courses[s[i].cour[j]].push_back(i);
+			}
+		}
+		for (i=0;i&lt;c;i++)
+		{
+			int cid = i+1;
+			printf(&quot;%d %d\n&quot;,cid,Nc[cid]);
+			for (j=0;j&lt;Courses[cid].size();j++)
+				printf(&quot;%s\n&quot;,s[Courses[cid][j]].name);
+		}
+	}
+	return 0;
+}
+   
+
+   
+
+   
+1023. Have Fun with Numbers (20)水题，但是为什么下面写了这么长？
+   
+
+   主要想说明char* 函数的返回！
+
+   char*函数的返回形式：
+
+   1. char*f (char* s) √
+
+   {
+
+       return s;
+
+   }
+
+   2. char* f(...) ×
+
+   {
+
+      char s[20];
+
+      return s;
+
+   }
+
+   3. char* f(...) √
+
+   {
+
+      char *s = (char*) malloc(20);
+
+      ....
+
+      return s;
+
+   }
+
+   也就是说，只有堆内分配内存(malloc)时才可以以char*返回。
+
+   当然最保险的还是。。。不写函数形式。
+
+   
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;string.h&quot;
+#include&lt;stdio.h&gt;
+#include &lt;algorithm&gt;
+#include&lt;functional&gt;
+#include&lt;vector&gt;
+#include&quot;memory.h&quot;
+using namespace std;
+#define N 11
+int C[N];
+
+char* dd(char* s)
+{
+	int i,j;
+	char *res = (char*) malloc(22);
+	for (i=0;i&lt;22;i++)
+		res[i]='\0';
+	//memset(res,'\0',sizeof(res));
+	res[0]='a';
+	int l = strlen(s),inc = 0,t;
+	for (i=l;i&gt;0;i--)
+	{
+		t = (s[i-1]-'0')*2+inc;
+		inc = t/10;
+		res[i] = (t%10)+'0';
+	}
+	if(inc)
+		res[i] = inc+'0';
+	return res;
+}
+
+int main()
+{
+	char s[22];
+	int i,j;
+	int C2[22];
+	while(scanf(&quot;%s&quot;,s)!=EOF)
+	{
+		memset(C,0,sizeof(C));
+		for(i=0;i&lt;strlen(s);i++)
+			C[s[i]-'0']++;
+
+		char *res = dd(s);
+
+		memset(C2,0,sizeof(C2));
+		i=res[0]=='a'?1:0;
+		for (;i&lt;strlen(res);i++)
+			C2[res[i]-'0']++;
+		for (i=0;i&lt;10;i++)
+		{
+			if(C[i]!=C2[i])
+			{
+				printf(&quot;No\n&quot;);
+				break;
+			}
+		}
+		if (i==10)
+			printf(&quot;Yes\n&quot;);
+		if(res[0]=='a')
+		{
+			for (i=1;i&lt;strlen(res);i++)
+				printf(&quot;%c&quot;,res[i]);
+			printf(&quot;\n&quot;);
+		}
+		else
+			printf(&quot;%s\n&quot;,res);
+	}
+	return 0;
+}
+   
+
+   
+
+   
+1024. Palindromic Number (25)水题。
+   
+
+   注意string的插入方式。新申请一个string，不能直接引用str[i]...用str = &quot;&quot;; 然后str.insert(str.begin(),c) orstr.insert(str.end(),c)
+
+   
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;string.h&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+using namespace std;
+#define N 11
+int C[N];
+
+bool isp(string s)
+{
+	int l=0,r=s.length()-1;
+	while (l&lt;r)
+	{
+		if(s[l]!=s[r])
+			break;
+		l++;r--;
+	}
+	if(l!=r&amp;&amp;l!=r+1)
+		return false;
+	return true;
+}
+
+string add(string str)
+{
+	string res = &quot;&quot;;
+	int l = str.length(),x,inc=0,i;
+	for ( i=l-1;i&gt;=0;i--)
+	{
+		x = str[i]+str[l-1-i]-2*'0'+inc;
+		inc = x/10;
+		res.insert(res.begin(),x%10+'0');
+	}
+	if(inc)
+		res.insert(res.begin(),inc+'0');
+	return res;
+}
+
+int main()
+{
+	int n,k,i,j;
+	string str;
+	while(cin&gt;&gt;str&gt;&gt;k)
+	{
+		bool flag = false;
+		for (i=0;i&lt;k;i++)
+		{
+			if(isp(str))
+					break;
+			str = add(str);
+		}
+		cout&lt;&lt;str&lt;&lt;endl&lt;&lt;i&lt;&lt;endl;
+	}
+}
+   
+
+   
+1010. Radix (25)不得不说。。。这题真是太贱了！
+   
+
+   注意点：
+
+   1. 输入radix有界，但是找另一个radix的时候上界不是36，而是第一个数的value+1（很大所以要二分）
+
+   2. 找radix的时候需要考虑不要超过value1，超过就break不要一直加上去了，因为radix上界很大，会越界
+
+   3. 二分时候一般是m = (left+right)/2开始（非单增or单减），但是1位数在不同进制下value可能是一样的，所以最开始要从m=l开始。
+
+   4. 原先用的unsigned int（4bytes），应该改用long long（8bytes）
+
+   下面给出两个版本：
+
+   1. 15min敲完得19分版本：
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;string.h&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+using namespace std;
+#define N 11
+int C[N];
+
+unsigned int trans(string s, int r)
+{
+	unsigned int x=0;
+	int i;
+	for (i=0;i&lt;s.length()-1;i++)
+	{
+		if(isdigit(s[i]))
+			x+=s[i]-'0';
+		else
+			x+=s[i]-'a'+10;
+		x*=r;
+	}
+	if(isdigit(s[i]))
+		x+=s[i]-'0';
+	else
+		x+=s[i]-'a'+10;
+	return x;
+}
+
+bool impossible(string s, int r)
+{
+	int c;
+	for (int i=0;i&lt;s.length();i++)
+	{
+		if(isdigit(s[i]))
+			c = s[i]-'0';
+		else if(isalpha(s[i]))
+			c = s[i]-'a'+10;
+		else return true;
+		if(c&gt;=r)
+			return true;
+	}
+	return false;
+}
+
+bool lookfor(string s,unsigned int x)
+{
+	int i,j,r,maxx='0'-1;
+	unsigned int t;
+	for(i=0;i&lt;s.length();i++)
+	{
+		if(maxx&lt;s[i])
+			maxx = s[i];
+	}
+	if(isdigit(maxx))
+		r = maxx-'0';
+	else if(isalpha(maxx))
+		r = maxx - 'a'+10;
+	for(r = r+1;r&lt;=36;r++)
+	{
+		t = trans(s,r);
+		if(x==t)
+		{
+			cout&lt;&lt;r&lt;&lt;endl;
+			return true;
+		}
+	}
+	return false;
+}
+
+int main()
+{
+	string a,b;
+	int i,j,r1,r2,flag,possible = 1;
+	unsigned int  x,y;
+	while (cin&gt;&gt;a&gt;&gt;b&gt;&gt;flag&gt;&gt;r1)
+	{
+		if(flag==1)
+		{
+			if(impossible(a,r1))
+			{
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+				continue;
+			}
+			x = trans(a,r1);
+			if(!lookfor(b,x))
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+		}
+		else
+		{
+			r2 = r1;
+			if(impossible(b,r2))
+			{
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+				continue;
+			}
+			x = trans(b,r2);
+			if(!lookfor(a,x))
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+		}
+	}
+}
+   
+
+   2. 90min改完完全AC版：
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;string.h&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+using namespace std;
+#define N 11
+int C[N];
+
+int getc(char c)
+{
+	if(isdigit(c))
+		return c-'0';
+	else
+		return c-'a'+10;
+}
+
+long long trans(string s, long long r,int mode, long long comp)
+{
+	long long x=0;
+	int i;
+	int tail = getc(s[s.length()-1]);
+	for (i=0;i&lt;s.length()-1;i++)
+	{
+		x+=getc(s[i]);
+		if(mode &amp;&amp; x+tail&gt;comp)
+			return x+tail;
+		x*=r;
+	}
+	x+=tail;
+	return x;
+}
+
+bool impossible(string s, long long r)
+{
+	int c;
+	for (int i=0;i&lt;s.length();i++)
+	{
+		c=getc(s[i]);
+		if(c&gt;=r)
+			return true;
+	}
+	return false;
+}
+
+
+
+bool lookfor(string s,long long x,long long r)
+{
+	int i,j,maxx='0'-1;
+	long long l,m,t;
+	for(i=0;i&lt;s.length();i++)
+	{
+		if(maxx&lt;s[i])
+			maxx = s[i];
+	}
+	l = getc(maxx)+1;
+
+	r = max(x+1,l);
+	m = l;
+	while(l&lt;=r)
+	{
+		t = trans(s,m,1,x);
+		if(x==t)
+		{
+			cout&lt;&lt;m&lt;&lt;endl;
+			return true;
+		}
+		if(x&gt;t)
+			l = m+1;
+		else
+			r = m-1;
+		m=(l+r)&gt;&gt;1;
+	}
+	return false;
+}
+
+int main()
+{
+	string a,b;
+	int i,j,flag,possible = 1;
+	long long  r1,r2,x,y;
+	while (cin&gt;&gt;a&gt;&gt;b&gt;&gt;flag&gt;&gt;r1)
+	{
+		if(flag==1)
+		{
+			if(impossible(a,r1))
+			{
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+				continue;
+			}
+			x = trans(a,r1,0,0);
+			if(!lookfor(b,x,r1))
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+		}
+		else
+		{
+			r2 = r1;
+			if(impossible(b,r2))
+			{
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+				continue;
+			}
+			x = trans(b,r2,0,0);
+			if(!lookfor(a,x,r2))
+				cout&lt;&lt;&quot;Impossible&quot;&lt;&lt;endl;
+		}
+	}
+}
+   
+
+   
+
+   
+
+   
+1029. Median (25)
+   
+
+   求两个升序的中数，水题。
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;string.h&quot;
+#include&quot;algorithm&quot;
+#include &quot;functional&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+using namespace std;
+#define N 1000001
+long int a1[N],a2[N], a[N*2];
+
+int main()
+{
+	int n2,n1,i,j;
+	while (scanf(&quot;%d&quot;,&amp;n1)!=EOF)
+	{
+		for(i=0;i&lt;n1;i++)
+			scanf(&quot;%ld&quot;,&amp;a1[i]);
+		scanf(&quot;%d&quot;,&amp;n2);
+		for(i=0;i&lt;n2;i++)
+			scanf(&quot;%ld&quot;,&amp;a2[i]);
+		i=j=0;
+		int k=0,K = (n1+n2-1)&gt;&gt;1;
+		while (i&lt;n1 &amp;&amp; j&lt;n2 &amp;&amp; k&lt;=K)
+		{
+			if(a1[i]&lt;a2[j])
+				a[k++] = a1[i++];
+			else
+				a[k++] = a2[j++];
+		}
+		while(i&lt;n1 &amp;&amp; k&lt;=K)
+			a[k++] = a1[i++];
+		while(j&lt;n2 &amp;&amp; k&lt;=K)
+			a[k++] = a2[j++];
+		printf(&quot;%ld\n&quot;,a[K]);
+	}
+}
+   
+
+   
+
+   
+
+   
+1030. Travel Plan (30)
+   
+
+   类似1018，单源有代价最短路
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;vector&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+#include&quot;memory.h&quot;
+using namespace std;
+#define N 505
+#define INF 1000000
+bool visited[N];
+int map[N][N],cost[N][N];
+int dist[N],mc[N];
+int path[N];
+
+void dijkstra(int s,int e,int n){
+	memset(visited,false,sizeof(visited));
+	visited[s] = true;
+	int i,j,minnd,minnc,point;
+
+	for (j=0;j&lt;n-1;j++)
+	{
+		minnd = minnc = INF;
+		for(i=0;i&lt;n;i++)
+		{
+			if(!visited[i] &amp;&amp; (dist[i]&lt;minnd ||dist[i]==minnd &amp;&amp; mc[i]&lt;minnc))
+			{
+				minnd = dist[i];
+				minnc = mc[i];
+				point = i;
+			}
+		}
+		visited[point] = true;
+		if(point==e)
+			break;
+		for(i=0;i&lt;n;i++)
+		{
+			if(!visited[i]&amp;&amp;	
+				(dist[i]&gt;dist[point]+map[point][i]||
+				dist[i]==dist[point]+map[point][i] &amp;&amp; mc[i]&gt;mc[point]+cost[point][i]))
+			{
+				dist[i] = dist[point]+map[point][i];
+				mc[i]=mc[point]+cost[point][i];
+				path[i] = point;
+			}
+		}
+	}
+}
+
+int main()
+{
+	int i,j,s,e,n,m,a,b,t,c;
+	while(scanf(&quot;%d%d%d%d&quot;,&amp;n,&amp;m,&amp;s,&amp;e)!=EOF)
+	{
+		for(i=0;i&lt;n;i++)
+		{
+			dist[i] = INF;
+			mc[i] = INF;
+			for(j=0;j&lt;n;j++)
+			{
+				map[i][j] = INF;
+				cost[i][j] = INF;
+			}
+		}
+		while(m--)
+		{
+			scanf(&quot;%d%d%d%d&quot;,&amp;a,&amp;b,&amp;t,&amp;c);
+			if(map[a][b]&gt;t || map[a][b]==t &amp;&amp; cost[a][b]&gt;c)
+			{
+				map[a][b] = map[b][a] = t;
+				cost[a][b] = cost[b][a] = c;
+				if(a==s)
+				{
+					dist[b] = t;
+					mc[b] = c;
+					path[b] = s;
+				}
+				else if(b==s)
+				{
+					dist[a] = t;
+					mc[a] = c;
+					path[a] = s;
+				}
+			}
+		}
+		dijkstra(s,e,n);
+		int point = e;
+		vector&lt;int&gt; v;
+		while(point!=s)
+		{
+			v.push_back(point);
+			point = path[point];
+		}
+		printf(&quot;%d &quot;,s);
+		while(!v.empty())
+		{
+			printf(&quot;%d &quot;,v.back());
+			v.pop_back();
+		}
+		printf(&quot;%d %d\n&quot;,dist[e],mc[e]);
+	}
+}
+
+   
+
+   
+
+   
+1004. Counting Leaves (30)
+   给出所有父节点-子节点关系，求树中各层所有的叶节点个数
+
+   分别用dfs建树和搜索。注意：
+
+   树节点要用指针数组 Tree* child[100]，对child赋地址时要新建变量(new Tree)，否则地址都一样了。
+
+   搜索时不用传指针，对象就可以。
+
+   
+
+   
+
+   #include &quot;iostream&quot;
+#include &quot;vector&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+#include&quot;memory.h&quot;
+using namespace std;
+#define N 105
+int num[N];
+vector&lt;int&gt; child[N];
+int maxlevel;
+
+struct Tree
+{
+	Tree* child[100];
+	int nc;//number of children
+	int id;
+	int level;
+}t;
+
+void search(Tree* tree)
+{
+	int i,j;
+	int r = tree-&gt;id;
+	tree-&gt;nc = child[r].size();
+	maxlevel = max(maxlevel,tree-&gt;level);
+	for (i=0;i&lt;tree-&gt;nc;i++)
+	{
+		Tree* tmp = new Tree;
+		tmp-&gt;id = child[r][i];
+		tmp-&gt;level = tree-&gt;level+1;
+		tmp-&gt;nc = child[tmp-&gt;id].size();
+		tree-&gt;child[i] = tmp;
+		search(tmp);
+	}
+}
+
+void dfs(Tree x)
+{
+	if(!x.nc)
+		num[x.level]++;
+	for (int i=0;i&lt;x.nc;i++)
+	{
+		dfs(*(x.child[i]));
+	}
+}
+
+int main()
+{
+	int n,m,i,j,r,k,tmp;
+	scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+	memset(num,0,sizeof(num));
+	while(m--)
+	{
+		scanf(&quot;%d%d&quot;,&amp;r,&amp;k);
+		while (k--)
+		{
+			scanf(&quot;%d&quot;,&amp;tmp);
+			child[r].push_back(tmp);
+		}
+	}
+	t.id = 1;//&quot;01&quot;
+	t.level = 0;
+	maxlevel = -1;
+	search(&amp;t);
+
+	dfs(t);
+	for (i=0;i&lt;maxlevel;i++)
+		printf(&quot;%d &quot;,num[i]);
+	printf(&quot;%d\n&quot;,num[i]);
+	system(&quot;pause&quot;);
+}
+   或者可以不建树，直接用树节点id搜：
+
+   
+   #include &quot;iostream&quot;
+#include &quot;vector&quot;
+#include&quot;string&quot;
+#include&lt;stdio.h&gt;
+#include&quot;memory.h&quot;
+using namespace std;
+#define N 105
+int num[N];
+vector&lt;int&gt; child[N];
+int level[N];
+int maxlevel;
+
+void build(int cid)
+{
+	int i,j;
+	maxlevel = max(maxlevel,level[cid]);
+	for(i=0;i&lt;child[cid].size();i++)
+	{
+		level[child[cid][i]] = level[cid]+1;
+		build(child[cid][i]);
+	}
+}
+
+void dfs(int x)
+{
+	int i;
+	if(child[x].size()==0)
+		num[level[x]]++;
+	for(i=0;i&lt;child[x].size();i++)
+		dfs(child[x][i]);
+}
+
+int main()
+{
+	int n,m,i,j,r,k,tmp;
+	scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+	memset(num,0,sizeof(num));
+	while(m--)
+	{
+		scanf(&quot;%d%d&quot;,&amp;r,&amp;k);
+		while (k--)
+		{
+			scanf(&quot;%d&quot;,&amp;tmp);
+			child[r].push_back(tmp);
+		}
+	}
+	level[1] = 0;
+	build(1);
+	dfs(1);
+	for (i=0;i&lt;maxlevel;i++)
+		printf(&quot;%d &quot;,num[i]);
+	printf(&quot;%d\n&quot;,num[i]);
+	system(&quot;pause&quot;);
+}

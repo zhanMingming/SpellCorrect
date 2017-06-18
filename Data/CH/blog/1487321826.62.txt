@@ -1,0 +1,27 @@
+算法导论习题14.1-7Exercises 14.1-7
+
+
+    
+ 
+
+     
+ 
+    
+
+
+   Show how to use an order-statistic tree to count the number of inversions (see Problem 2-4) in an array of size n in time O(n lg n).
+
+
+   1)建立order-statistic tree 需要O(nlgn)
+
+
+   2)求每个元素的rank需要O(nlgn)
+
+
+   3)元素i的逆序数等于 |i - rank(i)|需要O(1)
+
+
+   4)将所有元素逆序数求和,需要O(n)
+
+
+   综上,需要O(nlgn)的时间复杂度.

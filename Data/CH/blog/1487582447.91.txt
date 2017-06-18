@@ -1,0 +1,150 @@
+Labeling BallsProblem D:Labeling Balls
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:12 Accepted:5 
+
+
+   Description 
+
+
+   Windy has N balls of distinct weights from 1 unit to N units. Now he tries to label them with 1 to N in such a way that: 1、No two balls share the same label. 2、The labeling satisfies several constrains like "The ball labeled with a is lighter than the one labeled with b". Can you help windy to find a solution? 
+
+
+   Input 
+
+
+   The first line of input is the number of test case. The first line of each test case contains two integers, N (1 &le; N &le; 200) and M (0 &le; M &le; 40,000). The next M line each contain two integers a and b indicating the ball labeled with a must be lighter than the one labeled with b. (1 &le; a, b &le; N) There is a blank line before each test case.
+
+
+   Output 
+
+
+   For each test case output on a single line the balls' weights from label 1 to label N. If several solutions exist, you should output the one with the smallest weight for label 1, then with the smallest weight for label 2, then with the smallest weight for label 3 and so on... If no solution exists, output -1 instead.
+
+
+   Sample Input 
+
+
+   
+
+   5
+
+4 0
+
+4 1
+1 1
+
+4 2
+1 2
+2 1
+
+4 1
+2 1
+
+4 1
+3 2
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   1 2 3 4
+-1
+-1
+2 1 3 4
+1 3 2 4
+
+
+   出题的很有水平：迷惑一：输出的是重量，而不是&hellip;&hellip;
+
+      迷惑二：就是我的悲剧了！没有考虑重边！！！也就是
+
+   if(deg[a][b]==0){deg[a][b]=1;chudu[a]++;}
+
+   中的if没加，唉！！！
+
+   #include&lt;iostream&gt;
+using namespace std;
+int chudu[209];
+int deg[209][209];
+int wei[209];
+int main()
+{
+	int cases;
+	scanf("%d",&amp;cases);
+	while(cases--)
+	{
+		int n,m;
+		scanf("%d%d",&amp;n,&amp;m);
+		int i,j;
+		int a,b;
+		memset(deg,0,sizeof(deg));
+		memset(chudu,0,sizeof(chudu));
+		for(i=1;i&lt;=m;i++)
+		{
+			scanf("%d%d",&amp;a,&amp;b);
+			if(deg[a][b]==0)
+			{
+				deg[a][b]=1;
+				chudu[a]++;
+			}
+		}
+		memset(wei,0,sizeof(wei));
+		int t=n;
+		while(true)
+		{
+			for(i=n;i&gt;=1;i--)
+				if(wei[i]==0&amp;&amp;chudu[i]==0)
+					break;
+			if(i==0)
+				break;
+			wei[i]=t--;
+			for(j=1;j&lt;=n;j++)
+				if(deg[j][i]==1)
+					chudu[j]--;
+		}
+		if(t==0)
+		{
+			for(i=1;i&lt;=n;i++)
+			{
+				if(i&gt;1)
+					printf(" ");
+				printf("%d",wei[i]);
+			}
+			printf("/n");
+		}
+		else
+			printf("-1/n");
+	}
+	return 0;
+}
+ 
+
+   本题目为拓扑排序，我按出度排的
+
+   如果形成环
+
+   也就是-1
+
+   那么必然没有出度为0的
+
+   如果有出度为0的
+
+   那把最大的重量给它
+
+   把和它关联的边去掉
+
+   然后那些节点度数--
+
+   每次选序号最大的 而且
+
+   出度为0的
+
+   给它赋值重量

@@ -1,0 +1,74 @@
+Matrix Factorization, Algorithms, Applications, and Avaliable packages来源：http://www.cvchina.info/2011/09/05/matrix-factorization-jungle/
+
+美帝的有心人士收集了市面上的矩阵分解的几乎所有算法和应用，由于源地址在某神秘物质之外，特转载过来，源地址
+
+
+   Matrix Decompositionshas a long history and generally centers around a set of known factorizations such as LU, QR, SVD and eigendecompositions. Morerecent factorizations have seen the light of the day with work started with the advent of NMF, k-means and related algorithm[1]. However, with the advent of new methods based on random projections and convex optimization that started in part in thecompressive sensing literature, we are seeing another surge of very diverse algorithms dedicated to many different kinds of matrix factorizations with new constraints based on rank and/or positivity and/or sparsity,… As a result of this large increase in interest, I have decided to keep a list of them here following the success of thebig picture in compressive sensing.
+
+   The sources for this list includethe following most excellent sites:Stephen Becker’s page,Raghunandan H. Keshavan‘ spage,Nuclear Norm and Matrix Recoverythrough SDP byChristoph Helmberg,Arvind Ganesh’sLow-Rank Matrix Recovery and Completion via Convex Optimizationwho provide more in-depth additional information.Additional codes were featured also onNuit Blanche. The following people provided additional inputs:Olivier Grisel,Matthieu Puigt.
+
+   Most of the algorithms listed below generally rely on using the nuclear norm as a proxy to the rank functional.It may not be optimal. Currently,CVX(Michael GrantandStephen Boyd) consistently allows one to explore other proxies for the rank functional such as thelog-detas found byMaryam Fazell,Haitham Hindi,Stephen Boyd.** is used to show that the algorithm uses another heuristic than the nuclear norm.
+
+   In terms of notations, A refers to a matrix, L refers to a low rank matrix, S a sparse one and N to a noisy one. This page lists the different codes that implement the following matrix factorizations:Matrix Completion,Robust PCA, NoisyRobust PCA,Sparse PCA,NMF,Dictionary Learning,MMV,Randomized Algorithms and other factorizations. Some of these toolboxes can sometimes implement several of these decompositions and are listed accordingly. Before I list algorithm here, I generally feature them on Nuit Blanche under the MF tag:http://nuit-blanche.blogspot.com/search/label/MFor.you can also subscribe to the Nuit Blanche feed,
+
+   Matrix Completion, A = H.*L with H a known mask,L unknownsolve forL lowest rank possible
+
+   The idea of this approach is to complete the unknown coefficients of a matrix based on the fact that the matrix is low rank:
+OptSpace:Matrix Completion from a Few EntriesbyRaghunandan H. Keshavan,Andrea Montanari, andSewoong OhLMaFit: Low-Rank Matrix Fitting**Penalty Decomposition Methods for Rank MinimizationbyZhaosong LuandYong Zhang.The attendantMATLAB code is here.Jellyfish:Parallel Stochastic Gradient Algorithms for Large-Scale Matrix Completion, B. Recht, C. Re, Apr 2011GROUSE: Online Identification and Tracking of Subspaces from Highly Incomplete Information, L. Balzano, R. Nowak, B. Recht, 2010SVP:Guaranteed Rank Minimization via Singular Value Projection, R. Meka, P. Jain, I.S.Dhillon, 2009SET: SET: an algorithm for consistent matrix completion, W. Dai, O. Milenkovic, 2009NNLS: An accelerated proximal gradient algorithm for nuclear norm regularized least squares problems, K. Toh, S. Yun, 2009FPCA: Fixed point and Bregman iterative methods for matrix rank minimization, S. Ma, D. Goldfard, L. Chen, 2009SVT: A singular value thresholding algorithm for matrix completion, J-F Cai, E.J. Candes, Z. Shen, 2008
+   NoisyRobust PCA,A = L + S + N withL, S, N unknown, solve forL low rank, S sparse, N noise
+GoDec: Randomized Low-rank and Sparse Matrix Decomposition in Noisy CaseReProCS: TheRecursive Projected Compressive Sensing code(example)
+   Robust PCA : A = L + SwithL, S, N unknown, solve forL low rank, S sparse
+Robust PCA: Two Codes that go with the paper“Two Proposals for Robust PCA Using Semidefinite Programming.”byMichaleI MccoyandJoelTroppSPAMS (SPArse Modeling Software)ADMM:Alternating Direction Method of Multipliers‘‘Fast Automatic Background Extraction via Robust PCA’byIvan Papusha.Theposter is here. Thematlab implementation is here.PCP:Generalized Principal Component PursuitAugmented Lagrange Multiplier (ALM) Method [exact ALM - MATLABzip] [inexact ALM - MATLABzip], Reference -The Augmented Lagrange Multiplier Method for Exact Recovery of Corrupted Low-Rank Matrices, Z. Lin, M. Chen, L. Wu, and Y. Ma (UIUC Technical Report UILU-ENG-09-2215, November 2009)Accelerated Proximal Gradient , Reference -Fast Convex Optimization Algorithms for Exact Recovery of a Corrupted Low-Rank Matrix, Z. Lin, A. Ganesh, J. Wright, L. Wu, M. Chen, and Y. Ma (UIUC Technical Report UILU-ENG-09-2214, August 2009)[full SVD version - MATLABzip] [partial SVD version - MATLABzip]Dual Method [MATLABzip], Reference -Fast Convex Optimization Algorithms for Exact Recovery of a Corrupted Low-Rank Matrix, Z. Lin, A. Ganesh, J. Wright, L. Wu, M. Chen, and Y. Ma (UIUC Technical Report UILU-ENG-09-2214, August 2009).Singular Value Thresholding [MATLABzip]. Reference -A Singular Value Thresholding Algorithm for Matrix Completion, J. -F. Cai, E. J. Candès, and Z. Shen (2008).Alternating Direction Method [MATLABzip] , Reference -Sparse and Low-Rank Matrix Decomposition via Alternating Direction Methods, X. Yuan, and J. Yang (2009).LMaFit: Low-Rank Matrix FittingBayesian robust PCACompressive-Projection PCA(CPPCA)
+   Sparse PCA:A = DX withunknown D and X, solve forsparse D
+
+   Sparse PCAon wikipedia
+R. Jenatton, G. Obozinski, F. Bach. Structured Sparse Principal Component Analysis. International Conference on Artificial Intelligence and Statistics (AISTATS). [pdf] [code]SPAMsDSPCA:Sparse PCA using SDP. Code ishere.PathPCA: A fast greedy algorithm for Sparse PCA. The code ishere.
+   Dictionary Learning: A = DX withunknown D and X, solve forsparse X
+
+   Some implementation of dictionary learning implement the NMF
+Online Learning for Matrix Factorization and Sparse CodingbyJulien Mairal,Francis Bach,Jean Ponce,Guillermo Sapiro[The code is released asSPArse Modeling SoftwareorSPAMS]Dictionary Learning Algorithms for Sparse Representation(Matlab implementation ofFOCUSS/FOCUSS-CNDL is here)Multiscale sparse image representation with learned dictionaries[Matlab implementation of theK-SVD algorithm is here, a newer implementation by Ron Rubinstein ishere]Efficient sparse coding algorithms[ Matlabcode is here]Shift Invariant Sparse Coding of Image and Music Data. Matlab implemention ishereShift-invariant dictionary learning for sparse representations: extending K-SVD.Thresholded Smoothed-L0 (SL0) Dictionary Learning for Sparse Representationsby Hadi Zayyani,Massoud Babaie-ZadehandRemi Gribonval.Non-negative Sparse Modeling of Textures (NMF)[Matlab implementation ofNMF (Non-negative Matrix Factorization) and NTF (Non-negative Tensor), a faster implementation of NMF can be foundhere, here is a more recentNon-Negative Tensor Factorizations package]
+   NMF: A = DX withunknown D and X, solve for elements ofD,X &gt; 0
+
+   Non-negative Matrix Factorization (NMF) on wikipedia
+HALS:Accelerated Multiplicative Updates and Hierarchical ALS Algorithms for Nonnegative Matrix FactorizationbyNicolas Gillis,François Glineur.SPAMS (SPArse Modeling Software)byJulien Mairal,Francis Bach,Jean Ponce,Guillermo SapiroNMF:C.-J. Lin.Projected gradient methods for non-negative matrix factorization.Neural Computation, 19(2007), 2756-2779.Non-Negative Matrix Factorization:This pagecontains an optimized C implementation of the Non-Negative Matrix Factorization (NMF) algorithm, described in[Lee &amp; Seung 2001]. We implement the update rules that minimize a weighted SSD error metric. A detailed description of weighted NMF can be found in[Peers et al. 2006].NTFLAB for Signal Processing, Toolboxes for NMF (Non-negative Matrix Factorization) and NTF (Non-negative Tensor Factorization) for BSS (Blind Source Separation)Non-negative Sparse Modeling of Textures (NMF)[Matlab implementation ofNMF (Non-negative Matrix Factorization) and NTF (Non-negative Tensor), a faster implementation of NMF can be foundhere, here is a more recentNon-Negative Tensor Factorizations package]
+   Multiple Measurement Vector (MMV) Y = A X withunknown Xandrows of X are sparse.
+T-MSBL/T-SBLbyZhilin ZhangCompressive MUSIC with optimized partial support for joint sparse recoverybyJong Min Kim,Ok Kyun Lee,Jong Chul Ye[no code]The REMBO Algorithm Accelerated Recovery of Jointly Sparse VectorsbyMoshe Mishali and Yonina C. Eldar [ no code]
+   Blind Source Separation (BSS) Y = A X withunknown A and Xand statistical independence betweencolumns of X or subspaces of columns of X
+
+   Include Independent Component Analysis (ICA), Independent Subspace Analysis (ISA), and Sparse Component Analysis (SCA).There are many available codes for ICA and some for SCA. Here is a non-exhaustive list of some famous ones (which are not limited to linear instantaneous mixtures). TBC
+
+   ICA:
+ICALab:http://www.bsp.brain.riken.jp/ICALAB/BLISS softwares:http://www.lis.inpg.fr/pages_perso/bliss/deliverables/d20.htmlMISEP:http://www.lx.it.pt/~lbalmeida/ica/mitoolbox.htmlParra and Spence’s frequency-domain convolutive ICA:http://people.kyb.tuebingen.mpg.de/harmeling/code/convbss-0.1.tarC-FICA:http://www.ast.obs-mip.fr/c-fica
+   SCA:
+DUET:http://sparse.ucd.ie/publications/rickard07duet.pdf(the matlab code is given at the end of this pdf document)LI-TIFROM:http://www.ast.obs-mip.fr/li-tifrom
+   Randomized Algorithms
+
+   These algorithms uses generally random projections to shrink very large problems into smaller ones that can be amenable to traditional matrix factorization methods.
+
+   ResourceRandomized algorithms for matrices and databy Michael W. MahoneyRandomized Algorithms for Low-Rank Matrix Decomposition
+Randomized PCARandomized Least Squares:Blendenpik(http://pdos.csail.mit.edu/~petar/papers/blendenpik-v1.pdf)
+   Other factorization
+
+   D(T(.)) = L + Ewithunknown L, E and unknown transformation Tandsolve for transformation T, Low Rank L and Noise E
+RASL: Robust Batch Alignment of Images by Sparse and Low-Rank DecompositionTILT: Transform Invariant Low-rank Textures
+   Frameworks featuring advanced Matrix factorizations
+
+   For the time being, few have integrated the most recent factorizations.
+Scikit Learn(Python)Matlab Toolbox for Dimensionality Reduction(Probabilistic PCA,Factor Analysis (FA)…)Orange(Python)pcaMethods—abioconductorpackage providing PCA methods for incomplete data. R Language
+   GraphLab / Hadoop
+Danny Bicksonkeeps ablog on GraphLab.
+   Books
+Matrix Factorizations on Amazon.
+   Example of use
+CS: Low Rank Compressive Spectral Imaging and a multishot CASSICS: Heuristics for Rank Proxy and how it changes everything….Tennis Players are Sparse !
+   Sources
+
+   Arvind Ganesh’sLow-Rank Matrix Recovery and Completion via Convex Optimization
+Raghunandan H. Keshavan‘ slistStephen Becker’s listNuclear Norm and Matrix Recoverythrough SDP byChristoph HelmbergNuit Blanche
+   Relevant links
+Welcome to the Matrix Factorization JungleFinding Structure With Randomness
+   Reference:
+
+   A Uniﬁed View of Matrix Factorization Models by Ajit P. Singh and Geoffrey J. Gordon
+
+本文引用地址：http://blog.sciencenet.cn/blog-242887-483128.html

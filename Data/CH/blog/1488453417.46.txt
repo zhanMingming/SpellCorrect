@@ -1,0 +1,1596 @@
+python开发总结五不知觉python总结都有四十页了，虽然可能很多都是基础性的，仍然有成就感。和之前一样，仍然全部贴出来，而不是把新的贴出来，请谅解。这次新增的部分包括c扩展，排序，ftp，源码安全，性能，代码检查等。后面在python上努力的几个方向：1、继续在开发中多使用，积累开发经验。2、针对我们公司完善基础库，在我们公司推广。3、抽时间，系统学习一下python。4、学习一下高手在怎么使用python。毕竟我是自学。5、参与开源。如果你想下载这个文档，请点击这里：http://download.csdn.net/detail/chgaowei/4324981
+
+   两本不错的书：
+
+   《Python参考手册》：对Python各个标准模块，特性介绍的比较详细。
+
+   《Python核心编程》：介绍的比较深入，关键是，对Python很多高级特性都有介绍。
+
+   一个开源代码：openstack，关于云计算的，用Python写的，可以重点学习一下。
+套接字编程：
+   1、函数的功能基本和c类似，唯一不同的地方在于当发生错误时，它不是通过返回值来告知的，而是通过触发异常，所以udp中的bind,recvfrom,sendto必须要进行捕捉异常。
+
+   2、套接字在垃圾收集的时候也会关闭。
+
+   3、获取网卡的IP：
+
+   s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+
+   returnsocket.inet_ntoa(fcntl.ioctl(s.fileno(),0X8915,struct.pack('256s',ethname[:15]))[20:24])
+
+   
+
+   
+
+   
+字符串的使用：
+   1、Python的字符串是不可以改变的。但是你可以操作字符串以形成新的字符串。
+
+   2、字符串中删除一个字串。没有直接提供这个方法，但是replace可以实现：
+
+   &quot;abcdef&quot;.replace(&quot;&quot;,&quot;&quot;)
+
+   同样的功能还有一个方法：translate。它的原有作用是将字符串中的某个字符替换为另外一个字符，注意，不是字符串。它的第一个参数是一个转换表。第二个参数是要删除的字符串。我们可以利用第二个参数del，实现这个功能。同时，第一个参数设置为None。
+
+   translate可能更高效一点。另外，它的第二个参数可以使一个字符串，含有多个字符，这样就会删除多个。
+
+   注意：translate方法不会对这个字符串操作，而是返回一个新的字符串。
+
+   3、strip方法：去除字符串两侧的空格，返回新的字符串。这个功能非常有用。
+
+   4、str中有一个函数，format，非常强大，有时间一定要看一下。
+
+   5、endswitch：检查字符串是否已某字符串结尾。startswith：检查是否已某字符串开头。
+
+   6、partition：它将字符串按指定的字符串分为三个部分，返回一个元组。第一个是指定字符串前面内容，第二个是指定字符串，第三个是指定字符串后面的内容。用于字符串解析非常好用。
+
+   7、split：将字符串按照某指定字符串分割成多个子字符串，返回一个分割后的列表。
+
+   8、join：将一个字符串列表中的各个字符串连接起来，中间插入指定的字符串。
+
+   9、find的返回值不是false和true，所以不可以直接用于if判断。需要判断ifs.find(‘’)&gt;=0:
+
+   10、基于字典的格式化：
+
+   a)sh='''
+
+   b)python-mcompileall-fl../src;
+
+   c)python-mcompileall-fl../src/micbase;
+
+   d)mkdir%(packname)s;
+
+   e)mdkir%(packname)s;
+
+   f)'''%{'packname':sys.argv[1],}
+
+   g)print(sh)
+
+   h)
+
+   内建函数：
+
+
+   string.capitalize()
+
+   把字符串的第一个字符大写
+
+
+   string.center(width)
+
+   返回一个原字符串居中,并使用空格填充至长度width的新串
+
+
+   string.count(str,beg=0,end=len(string))
+
+   返回str在string里面出现的次数，如果beg或者end指返回指定范围内str出现的次数
+
+
+   string.decode(encoding='UTF-8',errors='strict')
+
+   以encoding指定的编码格式解码string，如果出错默认报ValueError的异常，除非errors指定的是'ignore'或'replace'
+
+
+   string.encode(encoding='UTF-8',errors='strict')
+
+   以encoding指定的编码格式编码string，如果出错默认报ValueError的异常，除非errors指定的是'ignore'或者'repl
+
+
+   string.endswith(obj,beg=0,end=len(string))
+
+   检查字符串是否以obj结束，如果beg或者end指定则检定的范围内是否以obj结束，如果是，返回True,否则返回Fa
+
+
+   string.expandtabs(tabsize=8)
+
+   把字符串string中的tab符号转为空格，默认格数tabsize是8.
+
+
+   string.find(str,beg=0,end=len(string))
+
+   检测str是否包含在string中，如果beg和end指定范则检查是否包含在指定范围内，如果是返回开始的索引值，返回-1
+
+
+   string.index(str,beg=0,end=len(string))
+
+   跟find()方法一样，只不过如果str不在string中会报一个异
+
+
+   string.isalnum()
+
+   a,b,cR如果string至少有一个字符并且所有字符都是字母或数字回True,否则返回False
+
+
+   string.isalpha()
+
+   a,b,c如果string至少有一个字符并且所有字符都是字母则返回T否则返回False
+
+
+   string.isdecimal()
+
+   b,c,d如果string只包含十进制数字则返回True否则返回False.
+
+
+   string.isdigit()
+
+   b,c如果string只包含数字则返回True否则返回False.
+
+
+   string.islower()
+
+   b,c如果string中包含至少一个区分大小写的字符，并且所有这些(大小写的)字符都是小写，则返回True，否则返回False
+
+
+   string.isnumeric()
+
+   b,c,d如果string中只包含数字字符，则返回True，否则返回False
+
+
+   string.isspace()
+
+   b,c如果string中只包含空格，则返回True，否则返回False.
+
+
+   string.istitle()
+
+   b,c如果string是标题化的(见title())则返回True，否则返回False
+
+
+   string.isupper()
+
+   b,c如果string中包含至少一个区分大小写的字符，并且所有这些(区分大小写的)字符都是大写，则返回True，否则返回False
+
+
+   string.join(seq)
+
+   Merges(concatenates)以string作为分隔符，将seq中所有的元素(的字符串表示)合并为一个新的字符串
+
+
+   string.ljust(width)
+
+   返回一个原字符串左对齐,并使用空格填充至长度width的新字符串
+
+
+   string.lower()
+
+   转换string中所有大写字符为小写.
+
+
+   string.lstrip()
+
+   截掉string左边的空格
+
+
+   string.partition(str)
+
+   e有点像find()和split()的结合体,从str出现的第一个位置起,把字符串string分成一个3元素的元组(string_pre_str,str,string_post_str),如果string中不包含str则string_pre_str==string.
+
+
+   string.replace(str1,str2,num=string.count(str1))
+
+   把string中的str1替换成str2,如果num指定，则替换不超过num次.
+
+
+   string.rfind(str,beg=0,end=len(string))
+
+   类似于find()函数，不过是从右边开始查找.
+
+
+   string.rindex(str,beg=0,end=len(string))
+
+   类似于index()，不过是从右边开始.
+
+
+   string.rjust(width)
+
+   返回一个原字符串右对齐,并使用空格填充至长度width的新字符串
+
+
+   string.rpartition(str)
+
+   e类似于partition()函数,不过是从右边开始查找.
+
+
+   string.rstrip()
+
+   删除string字符串末尾的空格.
+
+
+   string.split(str=&quot;&quot;,num=string.count(str))
+
+   以str为分隔符切片string，如果num有指定值，则仅分隔num个子字符串
+
+
+   string.splitlines(num=string.count('\n'))
+
+   b,c按照行分隔，返回一个包含各行作为元素的列表，如果num指定则仅切片num个行.
+
+
+   string.startswith(obj,beg=0,end=len(string))
+
+   b,e检查字符串是否是以obj开头，是则返回True，否则返回False。如果beg和end指定值，则在指定范围内检查.
+
+
+   string.strip([obj])
+
+   在string上执行lstrip()和rstrip()
+
+
+   string.swapcase()
+
+   翻转string中的大小写
+
+
+   string.title()
+
+   b,c返回&quot;标题化&quot;的string,就是说所有单词都是以大写开始，其余字母均为小写(见istitle())
+
+
+   string.translate(str,del=&quot;&quot;)
+
+   根据str给出的表(包含256个字符)转换string的字符,要过滤掉的字符放到del参数中
+
+
+   string.upper()
+
+   转换string中的小写字母为大写
+
+
+   string.zfill(width)
+
+   返回长度为width的字符串，原字符串string右对齐，前面填充0
+正则表达式
+   1、为什么要学习正则：主要是为了处理字符串更加方便，特别是为后面进行代码生成做储备。
+
+   2、match是匹配字符串的开头是否匹配，而search是查看字符串任意起始位置是否满足。
+
+   3、sub可以对字符串中模式匹配的部分进行替换
+
+   4、split：可以对字符串进行分割，这里是根据模式分割。
+函数的使用：
+   1、函数的作用域：函数中定义一个变量，如果和全局变量重名，则全局变量名称就会被覆盖，也就是，这里对这个变量的更改，不会更改全局变量。但是，如果直接使用的话，是会使用全局变量的。同时，如果想要修改全局变量，需要制定是全局变量：globala
+
+   2、xrange用法和range一样，不过更为高效，因为他不会在内存中创建列表。所以，它只能用于循环。
+
+   3、如果函数没有return语句，则他的返回值为None。
+
+   4、关于函数的入参判断：如果如此为空，可能会发生异常。当异常发生后，可能会出现一种情况，一个事情做到了一半，就没有在进行下去，可能会造成内存泄露。这个问题如何解决？按照C的方式，每个入参都做判断是可以解决的，但是这样太麻烦了。而且看很多开源代码页没有这样来做。是不是有更好的方法？换一种思路，在调用之前确保不为空。在看看开源的代码是怎么做的。特别是openstack。
+
+   5、可变入参：*args,**kwargs表示可变入参。
+
+   deffuntest(a,b,c):
+
+   print(a,b,c)
+
+   deffun2(*args,**kwargs):
+
+   funtest(*args,**kwargs)
+
+   fun2(1,2,3)
+
+   也可以这样定义：
+
+   fun2(a,*args,**kwargs)
+
+   如何从可变参数中解析出参数的值？
+
+   在fun2中添加打印：可以发现，其实args是一个元组，kwargs是一个字典。
+
+   分析：调用fun2(1,2,3)，会把a赋值给a，2赋值给元组args，{‘c’=3}赋值给kwargs.
+
+   args和kwargs的顺序不可颠倒。
+
+   args和kwargs可能同时都有值。这样，要获取指定的入参，首先根据看args中有没有，然后根据字符串看kwargs中是否存在。
+
+   如何建一个元组或者字典通过参数传递给一个函数？
+
+   deffuntest(a,b,c):
+
+   print(a,b,c)
+
+   d={'a':1,'b':2,'c':3}
+
+   l=(1,2,3)
+
+   funtest(*l)
+
+   funtest(**d)
+
+   *和**在Python中可以实现这个功能。这样会很灵活的。
+
+   *和**也可以单独出现。但是，如果同时出现，*必须在**之前。
+
+   6、默认参数或者可选参数，参数顺序：调用时，可以指定默认参数中填充那个。
+
+   deffuntest(a,b=1,c=2):
+
+   print(a,b,c)
+
+   funtest(1,c=5,b=6)
+
+   其实，即便定义为：deffuntest(a,b,c)，也可以通过funtest(1,c=5,b=6)的形式调用。
+
+   7、参数组：*args,**kwargs就是参数组，通过元组和字典将产生携带进来。这个特性有助于更为动态的代码生成。
+
+   8、可变长度参数：
+
+   9、函数的参数中如果有一个是元组，可以这样：
+
+   deffun(a,(b,c)):
+
+   print(a,b,c)
+
+   fun(1,(1,2))
+
+   10、关于回调，可以使用闭包，生成器，以及对象的__call__属性。都可以封装状态。
+闭包的使用：
+   1、将组成函数的语句和语句的执行环境打包在一起形成的对象，成为闭包。
+
+   2、2.7之前的闭包不支持关键字nonlocal。3.0之后才支持。所以2.7前的闭包不可以使用nonlocal。
+
+   3、这样他就不可以对执行环境中的变量进行更改。
+
+   
+字典的使用：
+   1、字典的删除：直接使用deldict[k]可能会引发异常；首先判断k是否存在则效率有些低；使用异常使程序结构看起来不好。一个好的方法是pop(k,defaultv)。这个删除一个k项，并且返回。如果不存在返回默认的v。如果不加默认值，则会引发异常。
+
+   2、直接使用字典下标获取字典的值可能会引发一场。使用get方法则不会，如果不存在会返回none。另外，还可以设置不存在的默认值。
+
+   3、通过字典格式化字符串：print“valueis%(key)s”%kvdict
+
+   4、items方法返回一个列表，列表中的元素是一个元组，第一个是key，第二个是value。比较好用的方法。
+
+   5、iteritems:返回的是一个迭代器。如果想要迭代这个字典，iteritems会比items更高效一点。
+
+   6、iterkeys则返回的是key的迭代器。keys返回的是key的list。
+
+   7、values返回值的列表，itervalues返回的是vlaue的迭代器
+
+   8、popitem会随机弹出（同时删除）一个项，则对于想要处理所有的元素，并且删除所有的元素是有帮助的。但是，如果没用元素的话，会抛出异常。
+
+   9、viewitems，viewkeys，viewvalues：这三个函数返回的是一个view对象。这个类似于视图。分别表示（key,value）pair的列表，key的列表，value的列表。一个优点是，如果字典发生变化，view会同步发生变化。在迭代过程中，字典不允许改变，否则会报异常。
+
+   10、字典的键值比较规则：如果是内置类型（int，str，tuple）,则是以他们的值作为键值；如果是自定义对象，则是以对象的地址作为键值。——这一点没有完全证实。——最新的发现：对象的比较，内置类型，是因为他们都重写了默认的object的__eq__等方法，所以可以比较内容。自定义对象，没有重写，所以，他们的比较可能会不一样。object默认的比较是什么？目前还不明确，后面再补充吧。可能就是地址（或者对象的唯一标识），而不是对象的内容。涉及到字典，它不是使用的单纯的比较，而是使用的__hash__，它返回的是一个hash值，字典就是根据这个hash只来散布对象的。
+
+   
+
+   
+列表的使用：
+   1、列表的删除：不可以在遍历的过程中删除链表，这样会得到不可预知的后果。可以使用列表的过滤，来获得新的列表。
+
+   2、列表的过滤：
+
+   deffilterFun(node):#这个函数做了两个事情哎。
+
+   node.cycleCount=node.cycleCount-1
+
+   returnnode.cycleCount&lt;0
+
+   timeoutList=filter(filterFun,timerList)
+
+   对timerList中的每个节点执行函数filterFun，根据filterFun返回的结果，为真的项组成一个新的列表。
+
+   
+
+   3、map:kvlist=map(lambdax:x.strip(),kvlist)。同时，map可以接受多个列表，这个时候，函数也会接受多个参数，分别表示列表的每一个元素:kvlist=map(lambdax,y:x+y,[1,2,3],[4,5,6])
+
+   如果函数为None，则相当于函数zip：
+
+   zip([1,2,3],[4,5,6])
+
+   [(1,4),(2,5),(3,6)]
+
+   4、生成器表达式：l=[nodefornodeinxrange(5)ifnode-3&lt;0]:这个的这个方法一定程度上可以替代过滤器和map。
+
+   生成器表达式定义：
+
+   [exprforiter_variniterableifcond_expr]
+
+   l=[2forxinxrange(5)]#结果是生成一个含有5个2的列表
+
+   5、print(reduce(lambdax,y:x*y,[2forxinxrange(38)]))
+
+   上面的这个语句是计算2的38次方的值。它用到的是二元函数reduce。它第一次调用是将第一个和第二个元素做入参，后面用他们的结果做x，新的元素做y，最后返回值。
+
+   另外，在获取一个38个2的列表也可以使用：[2]*38。这可能更可读一点。
+
+   6、enumerate:对列表处理，返回的是列表的索引以及节点。
+
+   forindex,nodeinenumerate(timerList):
+
+   iftimerId==node.timerIdandtimerEvent==node.timerEvent:
+
+   deltimerList[index]
+
+   7、列表的分片：[1,2,3,4]，l[1:-1]表示从索引从1到倒数第一个，不包含倒数第一个。如果要从某位置到最后，则应该：[1:]
+
+   8、l[i:j:k]:表示切片，从i到j，步长为k。
+
+   9、l[i:j]:表示从i到j，不包括索引j。
+
+   
+排序
+   1、list自己提供了排序的函数：sort。
+
+   2、sort的参数：
+
+   a)cmp是一个比较函数，输入两个元素，比较大小，返回值为-1，0，1.
+
+   b)key也是一个函数，入参为一个元素，返回这个元素的关键字。
+
+   c)reverse是一个标志位，表示升序还是降序。默认False是升序，True表示降序。
+
+   3、使用key和reverse的性能，优于cmp函数。时间是cmp函数的一半。
+迭代的使用：
+   1、迭代比直接使用列表遍历效率根据高。比如字典的keys函数返回的列表，以及iterkeys返回的迭代器。
+
+   2、reversed()内建函数将返回一个反序访问的迭代器.参数必须为序列。
+
+   3、enumerate：返回一个迭代器：有索引值。
+
+   4、foreachLineinmyFile替换foreachLineinmyFile.readlines():
+
+   5、注意：在迭代的过程中不可以更改序列，否则会引发问题，导致迭代出错。
+
+   6、可以自己定义一个类，可以迭代使用。不过需要定义方法：__iter__，next。
+
+   7、filter(function,iterable)：可以对迭代使用过滤器。
+
+   
+生成器的使用：
+   1、yield关键字可以阻塞住函数的执行，并且保存当前的执行环境，整个包被称为生成器。
+
+   2、生成器可以通过调用生成器函数来创建。生成器函数是指包含关键字yield的函数。
+
+   3、生成器可以通过.next()来执行。每调用一次，就执行代码，直到遇到yield关键字停止，并且返回yield关键字后面的表达式的值。
+
+   4、可以通过调用send()函数来发送消息到生成器中。a=yieldl：表示将send的入参赋值给a。
+
+   5、throw：允许客户端传入要抛出的任何异常。
+
+   6、和throw相同，只不过是要抛出一个特定的异常：GeneratorExit。
+
+   7、send只接受一个参数，但是可以通过传递元组的方式传递多个参数。
+
+   8、类的方法也可以返回生成器，因为他本质上就是一个函数。
+
+   9、在生成器使用的时候，如何获取它自身的send和nex函数？通过send二次传入是有些风险的，非常可能造成交叉引用，无法垃圾回收造成内存泄露。
+
+   10、第一次，必须调用next来启动生成器。
+
+   
+装饰器的使用：
+   1、装饰器本质上来说就是函数（或者是可调用对象），他们接受函数对象。装饰器仅仅用来装饰或者修饰函数的包装，返回一个修改后的函数对象，并将其赋值原来的标示符，并永久失去对原有函数的访问。
+
+   2、什么是带参数的装饰器？其实就是一个函数，这个函数可以返回一个装饰器，同时这个函数可以接受参数。
+
+   3、不带参数的装饰器要返回一个函数，这个函数就是用来替换原有的标示符的。
+
+   defdecofun(fun):
+
+   def_mydeco(*args,**kwargs):
+
+   print('beforefun!')
+
+   ret=fun(*args,**kwargs)
+
+   print('afterfun',ret)
+
+   returnret
+
+   return_mydeco#新的函数，用于替换原有标示符
+
+   @decofun
+
+   deffuntest():#funtest被替换为decofun
+
+   print('nowinfuntest!')
+
+   return1
+
+   funtest()
+
+   4、装饰器是可以重叠的，那么他们的顺序怎么样：
+
+   a)@decofun2
+
+   b)@decofun
+
+   c)deffuntest():
+
+   d)print('nowinfuntest!')
+
+   e)return1
+
+   f)原理是，funtest首先被decofun包装，然后再被decofun2包装。也就是，调用的时候，首先调用的是最上面的装饰器（也就是decofun2）的函数前面部分，然后再调用decofun的函数前面部分，之后再调用funtest。funtest返回后，首先调用的是decofun的函数后面部分，再调用decofun2后面部分。类似于一个栈的结构。
+
+   5、装饰器不要滥用。如果一个装饰器只用了一次，要考虑他存在的必要了。
+
+   6、携带参数的装饰器：
+
+   7、defdecoarg(arg):
+
+   a)defdecofun3(fun):
+
+   b)def_mydeco(*args,**kwargs):
+
+   c)print('decoargbeforefun!',arg)
+
+   d)ret=fun(*args,**kwargs)
+
+   e)print('decoargafterfun',ret)
+
+   f)returnret
+
+   g)return_mydeco
+
+   h)returndecofun3
+
+   8、装饰器用到的一个最重要的技术，就是闭包。装饰器函数返回的其实就是一个闭包。
+
+   9、装饰器也可以修饰类的__方法：
+
+   classtestc:
+
+   def__init__(self):
+
+   self.i=1
+
+   
+
+   @decoarg(1)
+
+   @decofun2
+
+   @decofun
+
+   def__call__(self):
+
+   print('iis%d'%self.i)
+
+   注意：装饰器修饰类方法是无法被子类继承的（或者说子类的方法是没有被修饰的）。因为他本质上就是一个函数。
+
+   10、装饰器也可以使对象，比如：
+
+   a)classobj:
+
+   b)def__init__(self,fun):
+
+   c)self.fun=fun
+
+   d)
+
+   e)def__call__(self,*args,**kwargs):
+
+   f)print('decofunbeforefun!',args,kwargs)
+
+   g)ret=self.fun(*args,**kwargs)
+
+   h)print('decofunafterfun',ret)
+
+   i)returnret
+
+   j)@objdeco
+
+   k)deffuntest(a,b=2):
+
+   l)print('funtest1a,b=',a,b)
+
+   a)这种方法看起来复杂了，但是可能会在有时候会比较有用。
+
+   
+
+   11、装饰器可以修饰类。这个时候装饰器接收的是一个类名，而返回的也是这个类名。它可以为这个类添加一些属性或者进行一些操作。
+
+   
+
+   
+
+   
+
+   
+协程的使用：
+   1、协程（coroutine）是一个可以挂起，回复，并且有多个进入点的函数。
+
+   2、
+
+   
+
+   
+XML的使用：
+   1、处理xml消息包比较好用的模块是xml.etree.ElementTree。
+
+   2、Element执行xml的根节点。
+
+   3、elem.find(path):查找根节点下面路径为path的子节点。
+
+   4、elem.findall(path):同样的子节点可能有多个，这里会返回一个列表。
+
+   5、elem.findtext(path):获取指定路径子节点的内容，这个我们会经常使用。
+
+   6、elem.get(key);获取属性的值。
+
+   7、上面如果没用，则返回none
+
+   8、elem.append:添加自节点。
+
+   9、elem.tag：返回tag值，也就是name。
+
+   10、elem.text:返回内容。
+
+   11、elem.attrib:返回属性的字典。
+
+   12、SubElement：生成一个节点，自动添加为父节点的子节点。
+
+   13、tostring：转化为xml文本字符串。但是不包括xml头。如果编码方式为UTF-8或者GB2312,gb2312都会产生xml头；如果是utf-8,则不会产生xml头
+
+   14、fromstring：从字符串转化为ElementTree对象。和XML同样的功能。
+
+   15、elem.set();设置属性值
+time的使用：
+   1、time.sleep()函数函数具有c下sleep函数功能，单位为秒，但是可以接受浮点数。这样可以表示毫秒。
+
+   2、ti=datetime.datetime.now()可以显示当前的时间，包括当前的微秒也可以显示出来。两个的差值可以表示时间的间隔：microsecondLong=timeLong.seconds*1000000+timeLong.microseconds。差值的成员是seconds和microseconds
+
+   3、
+
+   
+OO的使用：
+   1、如果不想让成员变量或者方法被外部使用（也就是private特性），可以以__双下划线开通。
+
+   2、属性不但可以定义在init中，也可以定义在任意的方法中通过self定义。不过最好在init中定义。
+
+   3、Python也可以实现抽象基类，也就是接口：
+
+
+   
+
+   注意：不可以对私有属性和方法执行@abstractmethod。否则会失败。因为，私有的无法被重写，所以，无法生成被实例化。
+
+   
+
+   4、__str__属性可以将对象转换为字符串，也就是调用print(object)是会打印的字符串。
+
+   5、__call__(魔法方法)可以将对象作为函数来调用。给它一个入参就可以。:
+
+   def__call__(self,protoVer):
+
+   returnapi.protoModules[protoVer].TimeTicks(
+
+   (time.time()-self.birthday)*100
+
+   )
+
+   它的作用：比较常用的是作为回调，因为他可以保存状态信息。它和闭包类似，可能比闭包的可读性要好一点。
+
+   6、对象实例是否可以删除？
+
+   7、Python参考手册要好好看一下。
+
+   8、python的static方法使用的是装饰器语法：@staticmethod.
+
+   9、对类的调用还有一个方法：CALSS.method(object)。
+
+   10、子类中，如果想调用父类的方法，可以通过：
+
+   parent.method(self).
+
+   不过还有更好的方法：
+
+   super(child,self).foo()//注意：这里是根据子类的类型获取父类的方法。它的好处是不用明显给出基类的类型。
+
+   11、cls：类方法的第一个参数。通常表示类的类型，可以通过cls()来生成实例。
+
+   a)@classmethod
+
+   b)defspawn(cls,*args,**kwargs):
+
+   c)&quot;&quot;&quot;Returnanew:class:`Greenlet`object,scheduledtostart.
+
+   d)
+
+   e)Theargumentsarepassedto:meth:`Greenlet.__init__`.
+
+   f)&quot;&quot;&quot;
+
+   g)g=cls(*args,**kwargs)
+
+   h)g.start()
+
+   i)returng
+
+   
+
+   12、继承，如果子类定义了__init__函数，子类的init函数不会默认调用父类的init函数，需要手动调用：parent.__init__。这一点是和c++有区别的。如果子类没有定义__init__，则子类会调用父类的__init__。这里可以发现，其实，子类如果定义了init函数，是对父类的init的一个覆盖。
+
+   13、super注意：！！！它只能用在新式的类定义中。什么是新式的？原来只是基类定义时继承object！！！。
+
+   14、继承如何继承方法：只要继承一个类，就会继承这个类所有的方法，包括__init__,__del__。但是如果子类重写某方法，就会覆盖父类的方法，不会再调用父类的方法了。如果想调用父类的方法，可以通过super的方式调用。
+
+   15、继承如何继承属性：只要不覆盖父类__init__方法，或者调用了父类的__init__方法，就会继承父类__init__属性的方法。继承后也可以更改这些属性。
+
+   16、父类如何防止被继承：方法或者属性以__开头，则可以防止被继承。
+
+   17、根据我的经验，其实可以以一种本质的方式理解Python的继承：Python的类就是一些方法的集合，继承一个类就是继承这个类的所有的方法。如果在子类中定义一个方法，其实是更改了这个类的符号。而属性，则可以在所有的方法中定义，只要调用了定义属性的方法，调用父类，则是继承父类的属性，调用子类定义属性的方法，则是定义子类的方法。
+
+   18、property：
+
+   a)classc(object):
+
+   b)def__init__(self):
+
+   c)self._num=1
+
+   d)@property
+
+   e)defnum(self):
+
+   f)returnself._num*10
+
+   g)@num.setter
+
+   h)defnum(self,v):
+
+   i)self._num=v
+
+   j)@num.deleter
+
+   k)defnum(self):
+
+   l)pass
+
+   m)o=c()
+
+   n)print(o.num)
+
+   o)o.num=20
+
+   p)print(o.num)
+
+   q)这样的好处是，可以在操作属性时，不用显示为方法调用，更加可读。同时又可以统一入口。：注意，它也必须继承object才可以。
+
+   19、OO中的垃圾回收：Python的垃圾回收使用的是符号引用计数。那么，如果在一个函数中申请一个对象，然后返回它的一个属性或者方法，这个时候对象的符号引用已经去掉，对象是否会释放？
+
+   a)classchild(parent):
+
+   b)def__init__(self):
+
+   c)self.i=8888
+
+   d)
+
+   e)deffoo(self):
+
+   f)print('-----------------------')
+
+   g)
+
+   h)def__del__(self):
+
+   i)print('nowindelchild')
+
+   j)super(child,self).__del__()
+
+   第一种情况，返回的是属性
+
+   k)defrefun():
+
+   l)o=child()
+
+   m)returno.i
+
+   n)I=refun()
+
+   o)这个时候，对象o会马上释放。因为o.i其实就是一个对象的引用，和o没有关系
+
+   第二种情况，返回的是方法
+
+   a)defrefun():
+
+   b)o=child()
+
+   c)returno.foo
+
+   d)foo=refun()
+
+   e)这个时候，对象o要等到foo释放的时候再释放，因为foo中包含了o的引用（foo的入参self）
+
+   20、对于对象的属性，如果属性是可读写的，则第一步没有必要用@property修饰。可以直接使用。后面如果有需要，在进行修饰。这样既减少了工作，修改时，也不会对原有代码进行改动。
+模块的使用：
+   1、如果不想将模块的某些函数和变量被别的模块使用，可以以单下划线开头。这样import*是没有的，但是使用importmode，然后mode._fun仍然可以调用。在class中是以双下划线开头的。
+
+   2、使用from。。。import导入的符号，应该是本地符号，更改的话，无法更改模块中的值。可以通过mode.name=来修改。
+
+   3、__init__.py的作用：可以这样理解：包也是一个对象，这个py就是这个包的构造函数。导入这个包，就会自动的执行__init__.py。如果在这个py中导入其他符号，import这个包并且加*也会导入这个符号。
+
+   4、import*无法导入模块中以_开头的符号。但是，不用*是可以的。
+
+   5、import的本质也是创建一个符号，指向一个对象的引用。这个符号和被import的模块的符号是没有关系的。和c的extern不一样。extern可以更改变量的值，但是，这在Python中是不可以的。
+
+   fromsrctestimportitest,outitest,setitest
+
+   importsrctest
+
+   #itest=9#这个地方其实改变的是本模块中符号的引用，无法更改srctest中对应符号。
+
+   #srctest.itest=9#这个可以更改srctest中的itest
+
+   setitest(9)#这个可以更改srctest中的itest，但是改变不了当前模块的itest，也就是，这种设置是无法同步的。
+
+   print(itest)#打印当前模块的itest
+
+   	printitest()#打印srctest中的itest
+
+   	Python的设计哲学：看似不方便的背后，其实有Python的设计哲学。便捷性很多时候都是模块性的大敌。在软件开发中，模块间的最短路径未必是最合理路径，而且往往是最不合理路径。它会破坏软件原有的交互原则。
+
+   	Python这样设计的理由应该是，尽量将数据和对数据的操作放在一起。如果数据会扩散，那么，就将数据设计为只读的。这样有助于提高程序模块的内聚性（全局变量是内聚性的大敌），降低耦合性。降低程序的复杂性（数据只读，调试根据方便）。
+
+   	
+
+   	srctest.itest是可以改变itest的值的，说明我们可以通过改变这个对象的属性来改变对象（模块也是对象）。
+
+   可能有一点小题大做。
+
+   6、两个模块不可以双向import。那万一两个模块都要互相调用对方怎么办？Python的设计哲学告诉你，这不是一个好的实践，所以这样不行。应该怎么弄？一个模块调用另外一个模块，如果被调用模块想调用调用模块的方法，通过回调的形式。这样可以保证，模块间的连接都是单向的。
+
+   
+日志的使用：
+   1、日志的标准模块logging基本可以满足我的工作。
+
+   2、设置log的初始化工作：
+
+   logging.basicConfig(
+
+   filename=&quot;test.log&quot;,
+
+   format=&quot;[%(asctime)s-%(levelname)s]%(message)s[%(filename)s,%(lineno)d]&quot;,
+
+   level=logging.INFO,
+
+   datefmt=&quot;%F%T&quot;)
+
+   3、除此之外，一个比较强大的功能就是过滤功能：可以针对级别，文件，行号等等很多的东西进行过滤。
+
+   4、
+
+   
+自省的使用：
+   1、type()可以查看对象的类型。这就是自省。也就是可以看看自己是什么类型。这个功能在动态语言中非常有用。
+
+   2、getattr函数：这是个非常有用的函数，它可以根据字符串，从模块，类，对象实例中获取属性和方法的应用并且调用。这个功能非常类似于c语言的函数指针，以及c++中的成员函数的指针。
+
+   1）从模块中获取函数和成员
+
+   importtestfun
+
+   tf=getattr(testfun,'test')
+
+   tstr=getattr(testfun,'str')
+
+   2）从类中获取属性和方法
+
+   classtest():
+
+   tst=2
+
+   def__init__(self):
+
+   self.abc=1
+
+   defmethod(self):
+
+   print('intest.method',self)
+
+   def__test(self):
+
+   print('intest')
+
+   tm=getattr(test,'method’)#获取类方法method函数指针。因为没有实例，所以调用必须用下面的方法：
+
+   t=test()
+
+   tm(t)#申请一个实例，并且作为第一个参数传进去。
+
+   tm=getattr(test,'__test’)#这里会报错，也就是无法获取私有方法。
+
+   tabc=getattr(test,'abc’)#这是错误的。无法获取。
+
+   ttst=getattr(test,'tst’)#这是可以的。。
+
+   
+
+   3）从对象实例中获取属性和方法
+
+   t=test()
+
+   tm=getattr(t,'method')
+
+   tm()#可以这样调用，而不用传入t实例。
+
+   tabc=getattr(test,'abc’)#可以获取实例的属性。
+
+   3、callable：函数表示某个对象是否可以调用。它和getattr结合起来，可以获取一个对象中的所有的method列表：
+
+   methods=[methodformethodindir[object]ifcallable(getattr(object,method))]
+
+   4、自省也叫放射。
+
+   5、exec(‘print“test”‘)：可以执行字符串代码。这个特性有助于动态执行代码，可以用于机器学习，自动生成代码。
+
+   exec的参数可以使一个打开的文件对象，string，codeobject。
+
+   codeobject可以通过函数
+
+   类似的方法：execfile(filename[,globals[,locals]])。
+
+   6、可以更改类的方法，将它指向一个新的方法。如下：
+
+   a)classctest():
+
+   b)deftest(self):
+
+   c)print('ctesttest')
+
+   d)deftestfun():
+
+   e)print('testfun!')
+
+   f)c=ctest()
+
+   g)c.test=testfun
+
+   h)c.test()
+
+   对象c的方法test被替换为新的方法：testfun。这个特性有助于根据动态的代码实现，但是往往会增加代码的透明性。
+
+   类似的，setattr也可以实现这样的功能。delattr可以删除属性。
+
+   setattr(c,'test',testfun)
+
+   delattr(c,'test')
+
+   c.test()#这里调用的其实就是ctest的test方法。也就是说，delattr会首先删除setattr设置的属性，如果在调用一次delattr，才会删除c的test方法。但是如果多调用几次setattr，也只要调用一次delattr即可删除。所以，要删除一个方法，最多调用两次delattr。
+
+   这个特性可以用于动态更改代码。也可用于补丁。
+
+   setattr无法对Python的c扩展模块进行操作。
+
+   7、如何判断一个变量是否存在：
+
+   ‘v’indir()
+
+   ‘v’inlocals.key()
+配置文件读取的使用：
+   1、使用模块ConfigParser。实例如下：
+
+   conf=ConfigParser()
+
+   conf.read(&quot;snmp_agent.ini&quot;)
+
+   
+
+   print(conf.get(&quot;main&quot;,&quot;log_level&quot;))
+
+   print(conf.getint(&quot;main&quot;,&quot;ne_agent_port&quot;))
+
+   print(conf.get(&quot;main&quot;,&quot;ne_agent_qip&quot;))
+
+   
+异常的使用：
+   1、尽量少用。它会使程序难以理解，而且还会发生不可预知的情况，比如异常的发生使程序的状态变为一个未知状态。
+
+   2、可以寻找替代方案。
+
+   3、程序非常重要，不可以停止，可以在主循环包装在异常处理中运行。
+
+   4、打印出异常的信息，供后面的定位：log.error(traceback.format_exc())
+
+   5、raise在引发异常的时候，可以传递引发一场的额外数据。形式如下：
+
+   raiseException,1
+
+   捕获方法：
+
+   exceptCallExit,e:
+
+   e就是那个额外数据1。（但是奇怪的是它的类型不是1）
+
+   6、如何捕获一个异常，进行处理，然后在把它抛出：
+
+   except:
+
+   forfletinfletList:
+
+   flet.throw()
+
+   info=sys.exc_info()
+
+   raiseinfo[0],info[1],info[2]
+
+   7、如何使用异常才是Pythonic的做法？这个要看一下。
+类型系统
+   1、类型也是对象。比如：inttype=int,然后，n=inttype(‘256’)，这样可以把字符串转化为int值。
+
+   2、另外，是否可以把字符串转化为关键字，或者对象？比如，一个变量，abc,是否可以通过’abc’来引用？
+OS的使用
+   os中有很多可以直接利用的东西，比如，判断文件是否存在，删除文件等。这样可以不用再执行shell命令。
+
+   os.rremove(path):删除文件
+
+   os.system(‘ls’);执行shell命令
+文件的使用
+   1、打开使用函数open，模式和linuxc类似。有一个不同的地方时，可以选择，直接操作磁盘还是操作内存。
+
+   2、readline可以读取一个文件的一行。
+
+   3、readlines：返回每一个列的列表。对应writelines。
+
+   4、文件迭代器：
+
+   f=open(‘fliename’)
+
+   forlineinf:
+
+   process(line)
+
+   	f.close()
+
+   	或者更简洁的：
+
+   	forlineinopen(filename):
+
+   		process(line)
+
+   5、文件迭代器的使用：
+
+   如果文件很大，readlines可能会占用过多的内存。所以，Python提出一种类似于惰性求值的惰性迭代。
+
+   有两种方案：fileinput和文件迭代器：
+
+   importfileinput
+
+   forlineinfileinput.input(filename)
+
+   		process(line)
+
+   文件迭代器：
+
+   f=open(filename)
+
+   forlineinf:
+
+   		process(line)
+
+   6、如何判断文件是否存在：
+
+   importos
+
+   os.path.isfile('/home/keepshell')
+
+   os.path.exists('/home/keepshell')
+
+   7、如何判断目录是否存在：
+
+   importos
+
+   os.path.isdir('/home')
+
+   os.path.exists('/home')
+
+   
+数据库的使用
+   1、数据库中的字段使用的utf8格式编码，但是读取出来却是问号。这个问题的解决可以通过在查询的时候指定编码方式来解决，只要执行sql语句：Query_Execsql(pdb,&quot;SETNAMES'utf8'&quot;);
+
+   注意，这个需要在连接后马上进行。并且，在其他的操作中，会一直使用这种编码。除非再次更改。
+
+   2、fetchone()：返回一条记录。fetchall()：返回所有的记录。
+
+   3、可以使用一个简单的方法获取所有的记录：
+
+   cur.execute(sql)
+
+   fortel,name,pwdincur:
+
+   printtel,name,pwd
+FTP的使用
+   Python的标准模块ftplib就可以支持FTP。
+
+   几个函数：
+
+   FTP(host='',user='',passwd='',acct='',timeout=_GLOBAL_DEFAULT_TIMEOUT)：如果参数中有user，则Connect();如果同时也有user，则login()。如果没用这些参数，后要自己调用connect和login。
+
+   connect(self,host='',port=0,timeout=-999):如果端口不是标准端口，则要手动调用connect。
+
+   login(user='',passwd='',acct=''):登陆。
+
+   pwd():获得当前的工作路径。
+
+   cwd(path):更改当前的工作路径。
+
+   dir(path,cb):显示目录中的内容。cb为文件的处理函数。会传递给retrlines。这个函数可以获取一个目录下的所有的内容。
+
+   retrlines(self,cmd,callback=None):下载文本文件。cmd的形式为“RETRFILENAME”，callback是一个函数，要处理文本文件的每一个行。这里一个问题，如果直接用file的write方法，则会丢失换行符。而又没有writeline函数。
+
+   retrbinary(self,cmd,callback,blocksize=8192,rest=None):下载二进制文件，cmd的形式为“RETRFILENAME”，callback是一个函数，要处理文本文件的每一个块。默认大小事8k，但是可以更改。
+
+   storlines(self,cmd,fp,callback=None):上传文本文件。cmd的形式为“STORFILENAME”。fp是一个文件对象，必须有readline方法。callback：每传送一行，就会调用这个函数。
+
+   storbinary(self,cmd,fp,blocksize=8192,callback=None,rest=None):上传二进制文件。cmd的形式为“STORFILENAME”。fp是一个文件对象，必须有read(num_bytes)方法。默认大小事8k，但是可以更改。
+
+   quit():退出。
+字节的使用
+   1、ord：可以见字符转化为int类型的值。
+
+   2、chr：ord的方向操作。可以见int类型值转换为字符。
+
+   
+
+   
+字符编码的使用
+   1、encode是将Unicode转化为str，decode是将字符串转化为Unicode。所以，一个字符串要转化为另一种格式可以：
+
+   s=‘中文’
+
+   s.decode(fromcodec).encode(tocodec)
+
+   也可以直接使用：s.encode(tocodec)。这个时候，相当于默认调用了decode，并且使用的是默认的编码方式。
+
+   
+
+   
+源码安全
+   1、Python代码如果直接发布，可能会暴露源码。
+
+   2、一个方法是利用c扩展Python，来代替核心模块。
+
+   3、另一个折中的方法就是对源码进行编译，生成pyc或者pyo文件。这些事字节码文件。可能会被反编译。所以，可能需要研究一下Python的pyo生成和加载方式，来生成更安全的Python字节码。网上说可以修改Python源码的opcode。没有研究过。
+
+   4、命令：python-mcompileall。
+
+   5、也可以在Python中使用：
+
+   a)importcompileall
+
+   b)
+
+   c)compileall._dir('Lib/',force=True)
+
+   d)
+
+   e)#Performsamecompilation,excludingfilesin.svndirectories.
+
+   f)importre
+
+   g)compileall._dir('Lib/',rx=re.compile('/[.]svn'),force=True)
+
+   h)
+
+   
+GC
+   1、OO中的垃圾回收：Python的垃圾回收使用的是符号引用计数。那么，如果在一个函数中申请一个对象，然后返回它的一个属性或者方法，这个时候对象的符号引用已经去掉，对象是否会释放？
+
+   a)classchild(parent):
+
+   b)def__init__(self):
+
+   c)self.i=8888
+
+   d)
+
+   e)deffoo(self):
+
+   f)print('-----------------------')
+
+   g)
+
+   h)def__del__(self):
+
+   i)print('nowindelchild')
+
+   j)super(child,self).__del__()
+
+   第一种情况，返回的是属性
+
+   k)defrefun():
+
+   l)o=child()
+
+   m)returno.i
+
+   n)I=refun()
+
+   o)这个时候，对象o会马上释放。因为o.i其实就是一个对象的引用，和o没有关系
+
+   第二种情况，返回的是方法
+
+   f)defrefun():
+
+   g)o=child()
+
+   h)returno.foo
+
+   i)foo=refun()
+
+   j)这个时候，对象o要等到foo释放的时候再释放，因为foo中包含了o的引用（foo的入参self）
+
+   k)
+
+   2、如果两个对象交叉引用，是否会自动回收？不会。同样，如果一个对象把生成的对象赋值给它自身的一个属性，那么它也不会自动回收。
+
+   3、
+
+   
+c扩展
+   1、可以使用swig来创建c的扩展程序，非常方便。目前没有时间研究内部机制，先暂时使用，后面在研究吧。
+
+   2、swig使用步骤：为库的头文件建立.i文件：
+
+   %{
+
+   /*Includestheheaderinthewrappercode*/
+
+   #include&quot;code.h&quot;
+
+   #include&quot;sip.h&quot;
+
+   %}
+
+   
+
+   /*Parsetheheaderfiletogeneratewrappers*/
+
+   %include&quot;code.h&quot;
+
+   %include&quot;sip.h&quot;
+
+   3、使用swig命令生成py脚本及对应的C文件：swig–pythonsip.i。
+
+   4、将生成的c源文件放到c扩展库中进行编译。
+
+   5、这里有一个要注意：生成的动态链接库，必须是_sip.so，否则无法调用。swig是写死的。_sip.so需要拷贝到：/usr/local/lib/python2.7/site-packages/路径下。
+
+   6、Makefile文件中，对于库引用的其他的库，必须显示的指出，否则Python无法找到对应的库。
+
+   7、如何在c的扩展库中调用Python的函数：
+
+   swig是不支持直接在c的扩展库中调用Python函数的。它只支持将C的接口作为回调函数设置给c的库。
+
+   实现这个功能需要利用Python的cAPI和ctypes来实现。
+
+   Pythonc的api包含一系列的函数：
+
+   PyCallable_Check：检查对象是否可调用；
+
+   PyArg_ParseTuple：解析参数列表，将Python参数解析为c；
+
+   PyEval_CallObject：调用对象；
+
+   Py_BuildValue：将c变量打包为Python的参数对象。
+
+   好了，有这些就足够了。
+
+   假设c库中有一个设置回调函数接口：
+
+   voidset_callback_fun(void(*fun)(int,int,int))
+
+   {
+
+   }
+
+   下面是c扩展库中要添加的代码：
+
+   //全局变量，保存Python中要回调的可调用对象。
+
+   staticPyObject*gCallbackFun=NULL;
+
+   
+
+   //调用上面函数设置的python脚本函数
+
+   //Python可调用对象的转换函数，转化为C的调用方式
+
+   staticvoidcallbacfun(inttype,intchn,intdataType)
+
+   {
+
+   PyObject*pArgs=NULL;
+
+   PyObject*pRetVal=NULL;
+
+   intnRetVal=0;
+
+   
+
+   pArgs=Py_BuildValue(&quot;(i,i,i)&quot;,type,chn,dataType);//将c的参数转化为Python的参数对象
+
+   pRetVal=PyEval_CallObject(gCallbackFun,pArgs);//调用Python的可调用对象。
+
+   Py_DECREF(pArgs);
+
+   Py_DECREF(pRetVal);
+
+   }
+
+   
+
+   ///set_callback_fun函数的包装函数
+
+   staticPyObject*wrap_set_callback_fun(PyObject*dummy,PyObject*args)
+
+   {
+
+   PyObject*temp=NULL;
+
+   
+
+   if(PyArg_ParseTuple(args,&quot;O:set_callback_fun&quot;,&amp;temp)){//获取Python对象
+
+   if(!PyCallable_Check(temp)){//检查对象是否可以调用
+
+   PyErr_SetString(PyExc_TypeError,&quot;parametermustbecallable&quot;);
+
+   }
+
+   Py_XINCREF(temp);/*Addareferencetonewcallback*/
+
+   Py_XDECREF(gCallbackFun);/*Disposeofpreviouscallback*/
+
+   gCallbackFun=temp;/*保存回调对象*/
+
+   }
+
+   
+
+   set_callback_fun(callbacfun);//注意，这里掉一下包，用一个C的函数注册到c库中。
+
+   
+
+   returnPy_BuildValue(&quot;i&quot;,(gCallbackFun==NULL)?0:1);
+
+   }
+
+   
+
+   注意：如果对象不可调用，会段错误。后面要解决一下。
+
+   
+
+   Python代码：
+
+   	CBFUNC=CFUNCTYPE(c_int,c_int,c_int,c_int)//创建一个c函数类型的对象工厂，该函数返回值为int，有三个入参，都为int。
+
+   callbakFunc=CBFUNC(pyFun)//根据Python可调用对象生成函数。
+
+   set_callback_fun(callbakFunc)//设置回调函数
+
+   注意：pyFun必须要有返回值。否则会报异常。
+
+   另外，我发现，不用CFUNCTYPE来生产c回调函数，直接用pyFun，也是可以的。至于区别，后面在研究一下吧，要写代码了。
+
+   	几个异常问题：1、一个可以使用CFUNCTYPE，但是一个一使用它就段错误。2、回调函数可以不返回值，也是可以的。但是一个不返回就不可以。
+
+   在Python中使用c扩展时向C传递数组：
+
+   
+
+   8、如果一个函数的参数是一个数组（指针），Python如何传递？下面的方法是可以直接传递列表。把这个加到.i文件中。
+
+   %{
+
+   staticintconvert_darray(PyObject*input,int*ptr,intsize){
+
+   inti;
+
+   if(!PySequence_Check(input)){
+
+   PyErr_SetString(PyExc_TypeError,&quot;Expectingasequence&quot;);
+
+   return0;
+
+   }
+
+   if(PyObject_Length(input)!=size){
+
+   PyErr_SetString(PyExc_ValueError,&quot;Sequencesizemismatch&quot;);
+
+   return0;
+
+   }
+
+   for(i=0;i&lt;size;i++){
+
+   PyObject*o=PySequence_GetItem(input,i);
+
+   if(!PyFloat_Check(o)){
+
+   Py_XDECREF(o);
+
+   PyErr_SetString(PyExc_ValueError,&quot;Expectingasequenceoffloats&quot;);
+
+   return0;
+
+   }
+
+   ptr[i]=PyFloat_AsDouble(o);
+
+   Py_DECREF(o);
+
+   }
+
+   return1;
+
+   }
+
+   %}
+
+   %typemap(in)int[ANY](inttemp[$1_dim0]){
+
+   if(!convert_darray($input,temp,$1_dim0)){
+
+   returnNULL;
+
+   }
+
+   $1=&amp;temp[0];
+
+   }
+
+   9、如果一个结构体中有一个int类型数组，应该如何赋值？
+
+   在.i中增加下面代码：
+
+   %include&quot;carrays.i&quot;
+
+   %array_class(int,intArray);
+
+   在Python中申请数组：
+
+   a=intArray(10)，将A复制给数组成员即可。
+
+   
+代码错误检查
+   1、今天遇到两个问题：
+
+   a)类中方法：class_registerEvent(notifyEvent):def_sendRegRsp(self,voiceres,reqId,result,reason,status):，调用时参数个数少一个：self._sendRegRsp(voiceres,reqId,'success','normal')。结果是没有任何提示，并且，不知道调用了什么函数。这个问题有点匪夷所思。后面好好查看一下。
+
+   b)抽取函数后，有时忘了返回值，当时却用到了返回值：
+
+   i.defcreateWirelessSdp(voiceRtpPort,voiceTbcpPort):
+
+   ii.voicesdp=SIP_SDP()
+
+   iii.voicesdp.a_use=1
+
+   iv.sdp=createWirelessSdp(1000,2000)
+
+   v.结果也是没有任何提示，sdp为None。
+
+   
+
+   2、总结：写Python代码，需要使用代码检查工具，比如，pylint等。后面引进一下。
+程序运行
+   1、如何获取命令行参数：
+
+   a)importsys
+
+   b)
+
+   c)print(sys.argv[1])
+
+   d)sys.argv[1]就是第一个参数。0是脚本的名称。
+
+   2、
+关于性能
+   1、timeit：可以统计程序的运行时间。目前没有时间，抽时间好好看看。
+
+   timeit(cut1,number=10000)：cut1是函数名，number是执行次数。
+
+   2、pypy可以将Python代码翻译为可执行程序，它的效率可以提高4倍左右。但是，内存的占用可能会很大。（没有试过。）
+
+   3、
+
+   
+其他：
+   1、脚本语言的进程名称显示为：python，如果一个服务器上有多个进程，那么将不易发现那个进程是哪个程序。可以使用第三方开源的库来解决这个问题：setproctitle.
+
+   fromsetproctitleimportsetproctitle,getproctitle
+
+   print('当前的进程名：%s'%getproctitle())
+
+   setproctitle('proctitle')
+
+   print('设置后的的进程名：%s'%getproctitle())
+
+   2、with语法：withopen(‘file’,‘r’)asf:
+
+   code
+
+   可以是try的另一种形式。
+
+   	可以执行with操作的类型：
+
+   file
+
+   decimal.Context
+
+   thread.LockType
+
+   threading.Lock
+
+   threading.RLock
+
+   threading.Condition
+
+   threading.Semaphore
+
+   threading.BoundedSemaphore
+
+   3、产生随机数：random.randint(100000,999999)
+
+   4、回调函数的使用：设置回调函数的时候，很多时候要使用闭包。避免闭包的一个方法是：
+
+   a)defsetCancelFun(cancelFun,*args,**kwargs):
+
+   b)'''如果为None表示删除取消函数,后面跟的是cancel函数的参数。这样可以避免上面创建闭包。'''
+
+   c)global_cancelFun,_cancelArgs,_cancelKwargs
+
+   d)_cancelFun=cancelFun
+
+   e)_cancelArgs=args
+
+   f)_cancelKwargs=kwargs
+
+   g)
+
+   h)def__execCancelFun():
+
+   i)'执行取消操作。因为在throw和kill的时候会执行此函数，所以，暂时没有看到会在外面调用此函数。屏蔽后，接口的简单性会提高'
+
+   j)global_cancelFun,_cancelArgs,_cancelKwargs
+
+   k)ifcallable(_cancelFun):
+
+   l)_cancelFun(*_cancelArgs,**_cancelKwargs)
+
+   m)_cancelFun=None#防止重复调用
+
+   n)
+
+   o)deftest(a,b,c):
+
+   p)print('--------test:',a,b,c)
+
+   q)
+
+   r)setCancelFun(test,1,2,3)
+
+   s)__execCancelFun()
+
+   也就是增加可变参数。
+
+   
+
+   
+
+   Python：一切皆符号？

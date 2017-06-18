@@ -1,0 +1,80 @@
+istream, outstream使用及常见错误使用方法：
+
+   使用filebuf打开文件，并拷贝给istream/ostream。
+
+   如下面的例子中，实现读取并处理deseq文件夹下所有文件，输出到ostream fw.
+
+   code:
+
+   
+
+   #include&lt;iostream&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string&gt;
+#include&lt;stdio.h&gt;
+#include&lt;fstream&gt;
+#include&lt;dirent.h&gt;
+using namespace std;
+
+void parsefile(istream&amp; fi, ostream&amp; fo){
+    string tmp;
+    while(fi&gt;&gt;tmp){
+ fo&lt;&lt;tmp&lt;&lt;endl;
+    }
+}
+
+void process(){
+    std::filebuf fbOut,fbIn;
+    fbOut.open(&quot;out.txt&quot;,std::ios::out);
+    std::ostream fw(&amp;fbOut);
+
+    // Basic function testing
+    fbIn.open(&quot;test.cpp&quot;,ios::in);
+    istream is(&amp;fbIn);
+    parsefile(is,fw);
+
+    // get all files in this directory and print it to &quot;out.txt&quot; iteratively
+    DIR* dir;
+    struct dirent* ent;
+    if((dir = opendir(&quot;deseq&quot;))!=NULL){
+ while((ent = readdir(dir))!=NULL){
+     char* filename = ent-&gt;d_name;
+     if (fbIn.open(filename,ios::in)){
+  istream is(&amp;fbIn);
+  parsefile(is,fw);//read from is and write in fw
+  fbIn.close();
+     }
+ }
+    }
+}
+
+int main(){
+    process();
+    return 0;
+}
+
+   
+
+   
+
+   其中，parsefile的声明为：void parsefile(istream&amp; fi, ostream&amp; fo)
+
+   注意这里函数声明必须要加引用，不然会报错：
+
+   
+
+   错误：
+
+   
+$ g++ -g test.cpp -o b.outIn file included from /usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/ios:39,        from /usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/ostream:40,        from /usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/iostream:40,        from test.cpp:1:/usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/bits/ios_base.h: In copy constructor 'std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::basic_ios(const std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;&amp;)':/usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/bits/ios_base.h:790: error: 'std::ios_base::ios_base(const std::ios_base&amp;)' is private/usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/iosfwd:47: error: within this context/usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/iosfwd: In copy constructor 'std::basic_istream&lt;char, std::char_traits&lt;char&gt; &gt;::basic_istream(const std::basic_istream&lt;char, std::char_traits&lt;char&gt; &gt;&amp;)':/usr/lib/gcc/x86_64-redhat-linux/4.4.6/../../../../include/c++/4.4.6/iosfwd:53: note: synthesized method 'std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;::basic_ios(const std::basic_ios&lt;char, std::char_traits&lt;char&gt; &gt;&amp;)' first required heretest.cpp: In function 'void process()':test.cpp:24: note: synthesized method 'std::basic_istream&lt;char, std::char_traits&lt;char&gt; &gt;::basic_istream(const std::basic_istream&lt;char, std::char_traits&lt;char&gt; &gt;&amp;)' first required here
+   test.cpp:24: error:  initializing argument 1 of 'void parsefile(std::istream, std::ostream)'
+
+   
+
+   
+
+   
+
+   原因是stream类型数据不支持拷贝，所以必须传址。
+
+   参考：http://stackoverflow.com/questions/6457591/problem-with-ostream-ofstream-inheritance

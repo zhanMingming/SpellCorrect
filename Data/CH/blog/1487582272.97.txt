@@ -1,0 +1,507 @@
+SIFT特征提取分析SIFT（Scale-invariant feature transform）是一种检测局部特征的算法，该算法通过求一幅图中的特征点（interest points,or corner points）及其有关scale 和 orientation 的描述子得到特征并进行图像特征点匹配，获得了良好效果，详细解析如下：
+
+   
+算法描述
+   
+
+   SIFT特征不只具有尺度不变性，即使改变旋转角度，图像亮度或拍摄视角，仍然能够得到好的检测效果。整个算法分为以下几个部分：
+
+   1.构建尺度空间
+
+   这是一个初始化操作，尺度空间理论目的是模拟图像数据的多尺度特征。
+
+   高斯卷积核是实现尺度变换的唯一线性核，于是一副二维图像的尺度空间定义为：
+
+   
+
+   其中 G(x,y,σ)是尺度可变高斯函数
+
+   （x，y）是空间坐标，是尺度坐标。σ大小决定图像的平滑程度，大尺度对应图像的概貌特征，小尺度对应图像的细节特征。大的σ值对应粗糙尺度(低分辨率)，反之，对应精细尺度(高分辨率)。为了有效的在尺度空间检测到稳定的关键点，提出了高斯差分尺度空间（DOG scale-space）。利用不同尺度的高斯差分核与图像卷积生成。
+
+   
+
+   下图所示不同σ下图像尺度空间：
+
+   
+
+   
+
+
+   
+
+   关于尺度空间的理解说明：2kσ中的2是必须的，尺度空间是连续的。在 Lowe的论文中 ，将第0层的初始尺度定为1.6（最模糊），图片的初始尺度定为0.5（最清晰）. 在检测极值点前对原始图像的高斯平滑以致图像丢失高频信息，所以 Lowe 建议在建立尺度空间前首先对原始图像长宽扩展一倍，以保留原始图像信息，增加特征点数量。尺度越大图像越模糊。
+
+   
+
+   图像金字塔的建立：对于一幅图像I,建立其在不同尺度(scale)的图像，也成为子八度（octave），这是为了scale-invariant，也就是在任何尺度都能够有对应的特征点，第一个子八度的scale为原图大小，后面每个octave为上一个octave降采样的结果，即原图的1/4（长宽分别减半），构成下一个子八度（高一层金字塔）。
+
+   
+
+   
+
+   尺度空间的所有取值，i为octave的塔数（第几个塔），s为每塔层数
+
+   由图片size决定建几个塔，每塔几层图像(S一般为3-5层)。0塔的第0层是原始图像(或你double后的图像)，往上每一层是对其下一层进行Laplacian变换（高斯卷积，其中σ值渐大，例如可以是σ, k*σ, k*k*σ…），直观上看来越往上图片越模糊。塔间的图片是降采样关系，例如1塔的第0层可以由0塔的第3层down sample得到，然后进行与0塔类似的高斯卷积操作。
+
+   
+
+   2.LoG近似DoG找到关键点&lt;检测DOG尺度空间极值点&gt;
+
+   为了寻找尺度空间的极值点，每一个采样点要和它所有的相邻点比较，看其是否比它的图像域和尺度域的相邻点大或者小。如图所示，中间的检测点和它同尺度的8个相邻点和上下相邻尺度对应的9×2个点共26个点比较，以确保在尺度空间和二维图像空间都检测到极值点。 一个点如果在DOG尺度空间本层以及上下两层的26个领域中是最大或最小值时，就认为该点是图像在该尺度下的一个特征点,如图所示。
+
+   
+
+   同一组中的相邻尺度（由于k的取值关系，肯定是上下层）之间进行寻找
+
+   
+
+   s=3的情况
+
+   
+在极值比较的过程中，每一组图像的首末两层是无法进行极值比较的，为了满足尺度变化的连续性（下面有详解）
+，我们在每一组图像的顶层继续用高斯模糊生成了3 幅图像，高斯金字塔有每组S+3层图像。DOG金字塔每组有S+2层图像.
+
+==========================================
+这里有的童鞋不理解什么叫“为了满足尺度变化的连续性”，现在做仔细阐述：
+
+假设s=3，也就是每个塔里有3层，则k=21/s=21/3，那么按照上图可得Gauss Space和DoG space 分别有3个（s个）和2个（s-1个）分量，在DoG space中，1st-octave两项分别是σ,kσ; 2nd-octave两项分别是2σ,2kσ;由于无法比较极值，我们必须在高斯空间继续添加高斯模糊项，使得形成σ,kσ,k2σ,k3σ,k4σ这样就可以选择DoG space中的中间三项kσ,k2σ,k3σ（只有左右都有才能有极值），那么下一octave中（由上一层降采样获得）所得三项即为2kσ,2k2σ,2k3σ，其首项2kσ=24/3。刚好与上一octave末项k3σ=23/3尺度变化连续起来，所以每次要在Gaussian space添加3项，每组（塔）共S+3层图像，相应的DoG金字塔有S+2层图像。
+==========================================
+
+
+   
+
+   使用Laplacian of Gaussian能够很好地找到找到图像中的兴趣点，但是需要大量的计算量，所以使用Difference of Gaussian图像的极大极小值近似寻找特征点.DOG算子计算简单，是尺度归一化的LoG算子的近似,有关DOG寻找特征点的介绍及方法详见http://blog.csdn.net/abcjennifer/article/details/7639488，极值点检测用的Non-Maximal Suppression。
+
+   
+
+   3.除去不好的特征点
+
+   这一步本质上要去掉DoG局部曲率非常不对称的像素。
+
+   
+
+   通过拟和三维二次函数以精确确定关键点的位置和尺度（达到亚像素精度），同时去除低对比度的关键点和不稳定的边缘响应点(因为DoG算子会产生较强的边缘响应)，以增强匹配稳定性、提高抗噪声能力，在这里使用近似Harris Corner检测器。
+
+   ①空间尺度函数泰勒展开式如下：，对上式求导,并令其为0,得到精确的位置, 得
+
+   ②在已经检测到的特征点中,要去掉低对比度的特征点和不稳定的边缘响应点。去除低对比度的点：把公式(2)代入公式(1)，即在DoG Space的极值点处D(x)取值，只取前两项可得：
+
+   
+
+   若 ，该特征点就保留下来，否则丢弃。
+
+   ③边缘响应的去除一个定义不好的高斯差分算子的极值在横跨边缘的地方有较大的主曲率，而在垂直边缘的方向有较小的主曲率。主曲率通过一个2×2 的Hessian矩阵H求出:
+
+
+   
+
+   导数由采样点相邻差估计得到。
+
+   D的主曲率和H的特征值成正比，令α为较大特征值，β为较小的特征值，则
+
+
+   令α=γβ，则
+
+   
+
+   (r + 1)2/r的值在两个特征值相等的时候最小，随着r的增大而增大，因此，为了检测主曲率是否在某域值r下，只需检测
+
+
+   
+
+   if(α+β)/αβ&gt; (r+1)2/r, throw it out. 在Lowe的文章中，取r＝10。
+
+   
+
+   
+
+   4.给特征点赋值一个128维方向参数
+
+   上一步中确定了每幅图中的特征点，为每个特征点计算一个方向，依照这个方向做进一步的计算，利用关键点邻域像素的梯度方向分布特性为每个关键点指定方向参数，使算子具备旋转不变性。
+
+   
+
+   
+
+   为(x,y)处梯度的模值和方向公式。其中L所用的尺度为每个关键点各自所在的尺度。至此，图像的关键点已经检测完毕，每个关键点有三个信息：位置，所处尺度、方向，由此可以确定一个SIFT特征区域。
+
+   
+
+   
+梯度直方图的范围是0～360度，其中每10度一个柱，总共36个柱。随着距
+ 中心点越远的领域其对直方图的贡献也响应减小.Lowe论文中还提到要使用高斯函数对直方图进行平滑，减少突变的影响。
+
+   
+
+   在实际计算时，我们在以关键点为中心的邻域窗口内采样，并用直方图统计邻域像素的梯度方向。梯度直方图的范围是0～360度，其中每45度一个柱，总共8个柱, 或者每10度一个柱，总共36个柱。Lowe论文中还提到要使用高斯函数对直方图进行平滑，减少突变的影响。直方图的峰值则代表了该关键点处邻域梯度的主方向，即作为该关键点的方向。
+
+   
+
+   直方图中的峰值就是主方向，其他的达到最大值80%的方向可作为辅助方向
+
+   
+
+   由梯度方向直方图确定主梯度方向
+
+   该步中将建立所有scale中特征点的描述子（128维）
+
+   
+
+   
+Identify peak and assign orientation and sum of magnitude to key point.
+ The user may choose a threshold to exclude key points based on theirassigned sum of magnitudes.
+
+   
+
+   
+
+   关键点描述子的生成步骤
+
+   
+
+   
+通过对关键点周围图像区域分块，计算块内梯度直方图，生成具有独特性的向量，这个向量是该区域图像信息的一种抽象，具有唯一性。
+
+   
+
+   
+
+   5. 关键点描述子的生成
+
+   首先将坐标轴旋转为关键点的方向，以确保旋转不变性。以关键点为中心取8×8的窗口。
+
+   
+
+   Figure.16*16的图中其中1/4的特征点梯度方向及scale，右图为其加权到8个主方向后的效果。
+
+   图左部分的中央为当前关键点的位置，每个小格代表关键点邻域所在尺度空间的一个像素，利用公式求得每个像素的梯度幅值与梯度方向，箭头方向代表该像素的梯度方向，箭头长度代表梯度模值，然后用高斯窗口对其进行加权运算。
+
+   
+
+   图中蓝色的圈代表高斯加权的范围（越靠近关键点的像素梯度方向信息贡献越大）。然后在每4×4的小块上计算8个方向的梯度方向直方图，绘制每个梯度方向的累加值，即可形成一个种子点，如图右部分示。此图中一个关键点由2×2共4个种子点组成，每个种子点有8个方向向量信息。这种邻域方向性信息联合的思想增强了算法抗噪声的能力，同时对于含有定位误差的特征匹配也提供了较好的容错性。
+
+   
+
+   
+
+计算keypoint周围的16*16的window中每一个像素的梯度，而且使用高斯下降函数降低远离中心的权重。
+
+
+   
+
+   在每个4*4的1/16象限中，通过加权梯度值加到直方图8个方向区间中的一个，计算出一个梯度方向直方图。
+
+   这样就可以对每个feature形成一个4*4*8=128维的描述子，每一维都可以表示4*4个格子中一个的scale/orientation.将这个向量归一化之后，就进一步去除了光照的影响。
+
+   
+
+   5. 根据SIFT进行Match
+
+   生成了A、B两幅图的描述子，（分别是k1*128维和k2*128维），就将两图中各个scale（所有scale）的描述子进行匹配，匹配上128维即可表示两个特征点match上了。
+
+   
+
+   实际计算过程中，为了增强匹配的稳健性，Lowe建议对每个关键点使用4×4共16个种子点来描述，这样对于一个关键点就可以产生128个数据，即最终形成128维的SIFT特征向量。此时SIFT特征向量已经去除了尺度变化、旋转等几何变形因素的影响，再继续将特征向量的长度归一化，则可以进一步去除光照变化的影响。当两幅图像的SIFT特征向量生成后，下一步我们采用关键点特征向量的欧式距离来作为两幅图像中关键点的相似性判定度量。取图像1中的某个关键点，并找出其与图像2中欧式距离最近的前两个关键点，在这两个关键点中，如果最近的距离除以次近的距离少于某个比例阈值，则接受这一对匹配点。降低这个比例阈值，SIFT匹配点数目会减少，但更加稳定。为了排除因为图像遮挡和背景混乱而产生的无匹配关系的关键点,Lowe提出了比较最近邻距离与次近邻距离的方法,距离比率ratio小于某个阈值的认为是正确匹配。因为对于错误匹配,由于特征空间的高维性,相似的距离可能有大量其他的错误匹配,从而它的ratio值比较高。Lowe推荐ratio的阈值为0.8。但作者对大量任意存在尺度、旋转和亮度变化的两幅图片进行匹配，结果表明ratio取值在0. 4~0. 6之间最佳，小于0. 4的很少有匹配点，大于0. 6的则存在大量错误匹配点。(如果这个地方你要改进，最好给出一个匹配率和ration之间的关系图，这样才有说服力)作者建议ratio的取值原则如下:
+
+   ratio=0. 4　对于准确度要求高的匹配；ratio=0. 6　对于匹配点数目要求比较多的匹配；ratio=0. 5　一般情况下。也可按如下原则:当最近邻距离&lt;200时ratio=0. 6，反之ratio=0. 4。ratio的取值策略能排分错误匹配点。
+
+   
+
+   
+
+   
+
+   当两幅图像的SIFT特征向量生成后，下一步我们采用关键点特征向量的欧式距离来作为两幅图像中关键点的相似性判定度量。取图像1中的某个关键点，并找出其与图像2中欧式距离最近的前两个关键点，在这两个关键点中，如果最近的距离除以次近的距离少于某个比例阈值，则接受这一对匹配点。降低这个比例阈值，SIFT匹配点数目会减少，但更加稳定。
+
+   
+
+   实验结果：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   Python+opencv实现：
+
+   
+
+   
+
+   
+
+   import cv2
+import numpy as np
+#import pdb
+#pdb.set_trace()#turn on the pdb prompt
+
+#read image
+img = cv2.imread('D:\privacy\picture\little girl.jpg',cv2.IMREAD_COLOR)
+gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+cv2.imshow('origin',img);
+
+#SIFT
+detector = cv2.SIFT()
+keypoints = detector.detect(gray,None)
+img = cv2.drawKeypoints(gray,keypoints)
+#img = cv2.drawKeypoints(gray,keypoints,flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+cv2.imshow('test',img);
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+   
+
+   
+
+   C实现：
+
+   
+
+   
+
+   // FeatureDetector.cpp : Defines the entry point for the console application.
+//  
+//  Created by Rachel on 14-1-12.  
+//  Copyright (c) 2013年 ZJU. All rights reserved.  
+//  
+
+#include &quot;stdafx.h&quot;
+#include &quot;highgui.h&quot;
+#include &quot;cv.h&quot;
+#include &quot;vector&quot;
+#include &quot;opencv\cxcore.hpp&quot;
+#include &quot;iostream&quot;
+#include &quot;opencv.hpp&quot;
+#include &quot;nonfree.hpp&quot;
+#include &quot;showhelper.h&quot;
+
+using namespace cv;
+using namespace std;
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	//Load Image 
+	Mat c_src1 =  imread( &quot;..\\Images\\3.jpg&quot;);
+	Mat c_src2 = imread(&quot;..\\Images\\4.jpg&quot;);
+	Mat src1 = imread( &quot;..\\Images\\3.jpg&quot;, CV_LOAD_IMAGE_GRAYSCALE);
+	Mat src2 = imread( &quot;..\\Images\\4.jpg&quot;, CV_LOAD_IMAGE_GRAYSCALE);
+	if( !src1.data || !src2.data )
+	{ std::cout&lt;&lt; &quot; --(!) Error reading images &quot; &lt;&lt; std::endl; return -1; }
+
+	//sift feature detect
+	SiftFeatureDetector detector;
+	std::vector&lt;KeyPoint&gt; kp1, kp2;
+
+	detector.detect( src1, kp1 );
+	detector.detect( src2, kp2 );
+	SiftDescriptorExtractor extractor;
+	Mat des1,des2;//descriptor
+	extractor.compute(src1,kp1,des1);
+	extractor.compute(src2,kp2,des2);	
+	Mat res1,res2; 
+	int drawmode = DrawMatchesFlags::DRAW_RICH_KEYPOINTS;
+	drawKeypoints(c_src1,kp1,res1,Scalar::all(-1),drawmode);//在内存中画出特征点
+	drawKeypoints(c_src2,kp2,res2,Scalar::all(-1),drawmode);
+	cout&lt;&lt;&quot;size of description of Img1: &quot;&lt;&lt;kp1.size()&lt;&lt;endl;
+	cout&lt;&lt;&quot;size of description of Img2: &quot;&lt;&lt;kp2.size()&lt;&lt;endl;
+
+	//write the size of features on picture
+	CvFont font;    
+	double hScale=1;   
+	double vScale=1;    
+	int lineWidth=2;// 相当于写字的线条    
+	cvInitFont(&amp;font,CV_FONT_HERSHEY_SIMPLEX|CV_FONT_ITALIC, hScale,vScale,0,lineWidth);//初始化字体，准备写到图片上的   
+	// cvPoint 为起笔的x，y坐标   
+	IplImage* transimg1 = cvCloneImage(&amp;(IplImage) res1);
+	IplImage* transimg2 = cvCloneImage(&amp;(IplImage) res2);
+		
+	char str1[20],str2[20];
+	sprintf(str1,&quot;%d&quot;,kp1.size());
+	sprintf(str2,&quot;%d&quot;,kp2.size());
+
+
+	const char* str = str1;
+	cvPutText(transimg1,str1,cvPoint(280,230),&amp;font,CV_RGB(255,0,0));//在图片中输出字符 
+
+	str = str2;
+	cvPutText(transimg2,str2,cvPoint(280,230),&amp;font,CV_RGB(255,0,0));//在图片中输出字符 
+
+	//imshow(&quot;Description 1&quot;,res1);
+	cvShowImage(&quot;descriptor1&quot;,transimg1);
+	cvShowImage(&quot;descriptor2&quot;,transimg2);
+
+	BFMatcher matcher(NORM_L2);
+	vector&lt;DMatch&gt; matches;
+	matcher.match(des1,des2,matches);
+	Mat img_match;
+	drawMatches(src1,kp1,src2,kp2,matches,img_match);//,Scalar::all(-1),Scalar::all(-1),vector&lt;char&gt;(),drawmode);
+	cout&lt;&lt;&quot;number of matched points: &quot;&lt;&lt;matches.size()&lt;&lt;endl;
+	imshow(&quot;matches&quot;,img_match);
+	cvWaitKey();
+	cvDestroyAllWindows();
+
+	return 0;
+}
+
+   
+
+   
+
+   
+
+   
+===============================
+基本概念及一些补充
+
+什么是局部特征？
+
+　　•局部特征从总体上说是图像或在视觉领域中一些有别于其周围的地方
+
+　　•局部特征通常是描述一块区域，使其能具有高可区分度
+
+
+
+　　•局部特征的好坏直接会决定着后面分类、识别是否会得到一个好的结果
+
+局部特征需具备的特性
+
+
+　　•重复性
+
+　　•可区分性
+
+　　•准确性
+
+　　•数量以及效率
+
+　　•不变性
+
+
+
+
+
+局部特征提取算法-sift
+
+
+　　•SIFT算法由D.G.Lowe 1999年提出，2004年完善总结。后来Y.Ke将其描述子部分用PCA代替直方图的方式，对其进行改进。
+
+　　•SIFT算法是一种提取局部特征的算法，在尺度空间寻找极值点，提取位置，尺度，旋转不变量
+
+　　•SIFT特征是图像的局部特征，其对旋转、尺度缩放、亮度变化保持不变性，对视角变化、仿射变换、噪声也保持一定程度的稳定性。
+
+　　•独特性好，信息量丰富，适用于在海量特征数据库中进行快速、准确的匹配。
+
+　　•多量性，即使少数的几个物体也可以产生大量SIFT特征向量。
+
+　　•可扩展性，可以很方便的与其他形式的特征向量进行联合。
+
+尺度空间理论
+
+
+
+　　•尺度空间理论目的是模拟图像数据的多尺度特征
+
+
+
+　　•其基本思想是在视觉信息图像信息处理模型中引入一个被视为尺度的参数, 通过连续变化尺度参数获得不同尺度下的视觉处理信息, 然后综合这些信息以深入地挖掘图像的本质特征。
+
+
+
+描述子生成的细节
+
+
+　　•以极值点为中心点，并且以此点所处于的高斯尺度sigma值作为半径因子。对于远离中心点的梯度值降低对其所处区域的直方图的贡献，防止一些突变的影响。
+
+
+
+　　•每个极值点对其进行三线性插值，这样可以把此极值点的贡献均衡的分到直方图中相邻的柱子上
+
+归一化处理
+
+　　•在求出4*4*8的128维特征向量后，此时SIFT特征向量已经去除了尺度变化、旋转等几何变形因素的影响。而图像的对比度变化相当于每个像素点乘上一个因子，光照变化是每个像素点加上一个值，但这些对图像归一化的梯度没有影响。因此将特征向量的长度归一化，则可以进一步去除光照变化的影响。
+
+　　•对于一些非线性的光照变化，SIFT并不具备不变性，但由于这类变化影响的主要是梯度的幅值变化，对梯度的方向影响较小，因此作者通过限制梯度幅值的值来减少这类变化造成的影响。
+
+
+
+PCA-SIFT算法
+
+
+　　•PCA-SIFT与标准SIFT有相同的亚像素位置，尺度和主方向。但在第4步计算描述子的设计，采用的主成分分析的技术。
+
+
+
+　　•下面介绍一下其特征描述子计算的部分：
+
+
+　　　　•用特征点周围的41×41的像斑计算它的主元，并用PCA-SIFT将原来的2×39×39维的向量降成20维，以达到更精确的表示方式。
+
+
+
+　　　　•它的主要步骤为，对每一个关键点：在关键点周围提取一个41×41的像斑于给定的尺度，旋转到它的主方向；计算39×39水平和垂直的梯度，形成一个大小为3042的矢量；用预先计算好的投影矩阵n×3042与此矢量相乘；这样生成一个大小为n的PCA-SIFT描述子。
+
+
+
+
+
+
+===============================
+   
+
+   辅助资料：
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   ===============================
+
+   
+
+   Reference:
+
+   Lowe SIFT 原文：http://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf
+
+   SIFT 的C实现：https://github.com/robwhess/opensift/blob/master/src
+
+   MATLAB 应用Sift算子的模式识别方法：http://blog.csdn.net/abcjennifer/article/details/7372880
+
+   
+
+   http://blog.csdn.net/abcjennifer/article/details/7365882
+
+   http://en.wikipedia.org/wiki/Scale-invariant_feature_transform#David_Lowe.27s_method
+
+   http://blog.sciencenet.cn/blog-613779-475881.html
+
+   http://www.cnblogs.com/linyunzju/archive/2011/06/14/2080950.html
+
+   http://www.cnblogs.com/linyunzju/archive/2011/06/14/2080951.html
+
+   http://blog.csdn.net/ijuliet/article/details/4640624
+
+   http://www.cnblogs.com/cfantaisie/archive/2011/06/14/2080917.html (部分图片有误，以本文中的图片为准)
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   关于computer vision的更多讨论与交流，敬请关注本博客和新浪微博Rachel____Zhang。

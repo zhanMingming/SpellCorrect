@@ -1,0 +1,132 @@
+Guava库：Preconditions实现优雅校验实际开发中需要做入参校验的情况比比皆是，比如开发一个rest接口，肯定要对参数各种校验，防止错误的输入导致程序出错。我们可以使用Preconditions(前置条件)，这样我们自己代码中就不会出现大段的if代码了。
+
+
+   // bad practice
+public static void insert(String name, int age) {
+	if (name == null || name.equals(&quot;&quot;)) {
+		throw new IllegalArgumentException(&quot;name should not be empty.&quot;);
+	}
+
+	if (age &lt;= 0) {
+		throw new IllegalArgumentException(&quot;age should not be negative.&quot;);
+	}
+}
+
+   
+
+
+   如果入参很多，或者校验逻辑很复杂，这个函数中if会越来越多，圈复杂度越来越高。
+
+
+   
+
+
+   // best practice
+public static void insert(String name, int age) {
+	Preconditions.checkNotNull(name);
+	Preconditions.checkArgument(!name.equals(&quot;&quot;));
+	Preconditions.checkArgument(age &gt;= 0);
+}使用Preconditions就可以消除代码中的if了。
+
+   
+
+
+   
+
+
+
+
+   1 .checkArgument(boolean) ：
+
+　　功能描述：检查boolean是否为真。 用作方法中检查参数
+
+　　失败时抛出的异常类型: IllegalArgumentException
+
+
+
+
+   
+
+
+
+
+   2.checkNotNull(T)：  
+
+　　功能描述：检查value不为null， 直接返回value；
+
+　　失败时抛出的异常类型：NullPointerException
+
+
+
+
+   
+
+
+
+
+   3.checkState(boolean)：
+
+　　功能描述：检查对象的一些状态，不依赖方法参数。
+
+　　失败时抛出的异常类型：IllegalStateException
+
+
+
+
+   
+
+
+
+
+   4.checkElementIndex(int index, int size)：
+
+　　功能描述：检查index是否为在一个长度为size的list， string或array合法的范围。 index的范围区间是[0, size)。
+
+　　失败时抛出的异常类型：IndexOutOfBoundsException
+
+
+
+
+   
+
+
+
+
+   5.checkPositionIndex(int index, int size)：
+
+　　功能描述：检查位置index是否为在合法的范围。 index的范围区间是[0， size]。
+
+　　失败时抛出的异常类型：IndexOutOfBoundsException
+
+
+
+
+
+6.checkPositionIndexes(int start, int end, int size)：
+
+　　功能描述：检查[start, end)是一个长度为size的list， string或array合法的范围子集。0&lt;=start&lt;=end&lt;=size。
+
+　　失败时抛出的异常类型：IndexOutOfBoundsException
+
+
+
+
+   
+
+
+
+
+   一些开源框架中，也经常使用Preconditions。下面是guava retryer的代码，感觉校验的很标准，很优雅，还有丰富友好的异常错误信息。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   Preconditions类&#20284;我们写junit单元测试或者spring中的assert。

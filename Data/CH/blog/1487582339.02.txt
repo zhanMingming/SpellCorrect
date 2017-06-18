@@ -1,0 +1,40 @@
+纹理特征提取一幅图像的纹理是在图像计算中经过量化的图像特征。图像纹理描述图像或其中小块区域的空间颜色分布和光强分布。
+
+
+   纹理特征的提取分为基于结构的方法和基于统计数据的方法。一个基于结构的纹理特征提取方法是将所要检测的纹理进行建模，在图像中搜索重复的模式。该方法对人工合成的纹理识别效果较好。但对于交通图像中的纹理识别，基于统计数据的方法效果更好。
+
+
+   1.1.1LBP纹理特征
+
+
+   LBP方法（Local binary patterns）是一个计算机视觉中用于图像特征分类的一个方法。LBP方法在1994年首先由T. Ojala, M.Pietikäinen, 和 D. Harwood 提出[43][44]，用于纹理特征提取。后来LBP方法与HOG特征分类器联合使用，改善了一些数据集[45]上的检测效果。
+
+
+   对LBP特征向量进行提取的步骤如下：
+
+
+   首先将检测窗口划分为16×16的小区域（cell），对于每个cell中的一个像素，将其环形邻域内的8个点（也可以是环形邻域多个点，如图 3‑4. 应用LBP算法的三个邻域示例所示）进行顺时针或逆时针的比较，如果中心像素&#20540;比该邻点大，则将邻点赋&#20540;为1，否则赋&#20540;为0，这样每个点都会获得一个8位二进制数（通常转换为十进制数）。然后计算每个cell的直方图，即每个数字（假定是十进制数）出现的频率（也就是一个关于每一个像素点是否比邻域内点大的一个二进制序列进行统计），然后对该直方图进行归一化处理。最后将得到的每个cell的统计直方图进行连接，就得到了整幅图的LBP纹理特征，然后便可利用SVM或者其他机器学习算法进行分类了。
+
+
+   
+
+
+   2.
+
+灰度共生矩阵是另一种纹理特征提取方法，首先对于一幅图像定义一个方向（orientation）和一个以pixel为单位的步长(step)，灰度共生矩阵T（N×N），则定义M(i,j)为灰度级为i和j的像素同时出现在一个点和沿所定义的方向跨度步长的点上的频率。其中N是灰度级划分数目。由于共生矩阵有方向和步长的组合定义，而决定频率的一个因素是对矩阵有贡献的像素数目，而这个数目要比总共数目少，且随着步长的增加而减少。因此所得到的共生矩阵是一个稀疏矩阵，所以灰度级划分N常常减少到8级。如在水平方向上计算左右方向上像素的共生矩阵，则为对称共生矩阵。类&#20284;的，如果仅考虑当前像素单方向（左或右）上的像素，则称为非对称共生矩阵。
+
+
+   
+
+
+
+
+   
+
+
+   [43] T. Ojala, M. Pietikäinen, and D. Harwood (1994), &quot;Performance evaluation of texture measures with classification based on Kullback discrimination of distributions&quot;, Proceedings of the 12th IAPR International Conference
+ on Pattern Recognition (ICPR 1994), vol. 1, pp. 582 - 585.
+
+[44] T. Ojala, M. Pietikäinen, and D. Harwood (1996), &quot;A Comparative Study of Texture Measures with Classification Based on Feature Distributions&quot;, Pattern Recognition, vol. 29, pp. 51-59.
+
+[45] Xiaoyu Wang, Tony X. Han, Shuicheng Yan,&quot;An HOG-LBP Human Detector with Partial Occlusion Handling&quot;, ICCV 2009

@@ -1,0 +1,176 @@
+浙大06复试题-hdu 1230火星A&#43;B
+Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)
+
+Total Submission(s): 6946Accepted Submission(s): 2267
+
+
+
+
+Problem Description
+
+
+读入两个不超过25位的火星正整数A和B，计算A&#43;B。需要注意的是：在火星上，整数不是单一进制的，第n位的进制就是第n个素数。例如：地球上的10进制数2，在火星上记为“1,0”，因为火星个位数是2进制的；地球上的10进制数38，在火星上记为“1,1,1,0”，因为火星个位数是2进制的，十位数是3进制的，百位数是5进制的，千位数是7进制的……
+
+
+
+
+
+
+
+
+Input
+
+
+测试输入包含若干测试用例，每个测试用例占一行，包含两个火星正整数A和B，火星整数的相邻两位数用逗号分隔，A和B之间有一个空&#26684;间隔。当A或B为0时输入结束，相应的结果不要输出。
+
+
+
+
+
+
+
+
+Output
+
+
+对每个测试用例输出1行，即火星表示法的A&#43;B的&#20540;。
+
+
+
+
+
+
+
+
+Sample Input
+
+
+
+   1,0 2,1
+4,2,0 1,2,0
+1 10,6,4,2,1
+0 0
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   1,0,1
+1,1,1,0
+1,0,0,0,0,0
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生复试上机考试-2006年
+
+
+
+
+
+
+
+
+
+
+
+悲剧了……换了n次方法，一直各种错……
+
+
+最后发现prim数组打错了……！！！
+
+
+
+
+
+
+
+
+   #include &quot;iostream&quot;  
+#include &quot;stdio.h&quot;  
+#include &quot;math.h&quot;  
+#include &quot;vector&quot;  
+#include &quot;queue&quot;  
+#include &quot;memory.h&quot;  
+#include &quot;algorithm&quot;  
+#include &quot;string&quot;  
+using namespace std;  
+#define max(a,b) a&gt;b?a:b
+#define min(a,b) a&lt;b?a:b
+
+int prim[27] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101};
+
+int Analyse(char *s,int* res)
+{
+     int t=0;
+     int x=0;
+     int i=0;
+     while(i&lt;strlen(s))
+     {
+ if(s[i]==',')
+ {
+    i++;
+    res[t++]=x;
+    x=0;
+    continue;
+ }
+ x*=10;
+ x+=s[i]-'0';
+ i++;
+     }
+     res[t++]=x;
+     return t-1;//array length
+}
+
+void Trans(char *s1,char *s2)
+{
+     int s[30];
+     memset(s,0,sizeof(s));
+     int i,j,x;
+     int a[30],b[30];
+     int lena=Analyse(s1,a);
+     int lenb=Analyse(s2,b);
+     int len=max(lena,lenb);
+     for(i=0;i&lt;=len;i++)
+     {
+x=s[i];
+if(i&lt;=lena)
+   x+=a[lena-i];
+if(i&lt;=lenb)
+   x+=b[lenb-i];
+s[i]=x%prim[i];
+s[i+1]+=x/prim[i];
+     }
+     while(s[i]==0)
+ i--;
+     while(i&gt;0)
+ printf(&quot;%d,&quot;,s[i--]);
+     printf(&quot;%d\n&quot;,s[i]);
+}
+
+int main()
+{
+    //CalPrim();
+    int len,lena,lenb;
+    char a[100],b[100];
+    while(scanf(&quot;%s%s&quot;,a,b))
+    {
+if(strcmp(a,&quot;0&quot;)==0&amp;&amp;strcmp(b,&quot;0&quot;)==0)
+    break;
+Trans(a,b);  
+    }
+}

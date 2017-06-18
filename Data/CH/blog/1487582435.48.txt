@@ -1,0 +1,19 @@
+Eclipse 调试 快捷键1.Step Into (also F5) 跳入2.Step Over (also F6) 跳过3.Step Return (also F7) 执行完当前method，然后return跳出此method4.step Filter 逐步过滤 一直执行直到遇到未经过滤的位置或断点(设置Filter:window-preferences-java-Debug-step Filtering)5.resume 重新开始执行debug,一直运行直到遇到breakpoint6.hit count 设置执行次数 适合程序中的for循环(设置 breakpoint view-右键hit count)7.inspect 检查 运算。执行一个表达式显示执行值8.watch 实时地监视变量的变化9.我们常说的断点(breakpoints)是指line breakpoints,除了line breakpoints,还有其他的断点类型：field(watchpoint)breakpoint,method breakpoint,exception breakpoint.10.field breakpoint 也叫watchpoint(监视点) 当成员变量被读取或修改时暂挂11.添加method breakpoint 进入/离开此方法时暂挂(Run-method breakpoint)12.添加Exception breakpoint 捕抓到Execption时暂挂(待续...)断点属性： 1.hit count 执行多少次数后暂挂 用于循环 2.enable condition 遇到符合你输入条件(为ture/改变时)就暂挂 3.suspend thread 多线程时暂挂此线程 4.suspend VM 暂挂虚拟机13.variables 视图里的变量可以改变变量值，在variables 视图选择变量点击右键--change value.一次来进行快速调试。14.debug 过程中修改了某些code后--〉save&amp;build--&gt;resume--&gt;重新暂挂于断点
+
+
+   
+
+
+   
+
+
+   最常用的监视：
+
+
+   
+
+
+   Ctrl+Shift+B(set breakpoint) -&gt;debug -&gt;F5(step into) -&gt;双击选中我想监视的对象 -&gt;watch(监视) 
+
+
+   或者选中一行带断点的表达式，然后inspect

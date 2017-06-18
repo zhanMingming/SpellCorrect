@@ -1,0 +1,94 @@
+Web Server 架构浅谈-Simple Multiple Threaded AchitectureWeb Server的架构基本分为多线程和事件驱动两个基本观点，在实现上对多线程和事件驱动取长补短形成了流水线的架构。
+
+
+    在Web Server高并发，高吞吐率，低资源消耗，低延迟的要求下，Web Server的发展也历经了事件驱动占主流，到多线程反击[1][2]，以及比较成熟的流水线架构。
+
+
+    在多线程的优点主要是容易理解，对资源的使用很容易饱和，缺点是上下文切换太多（线程代码段1份，10万个线程的话，就是重复10万份，要想无上下文切换就需要要10万个核），资源占用过多（线程创建需要给线程栈分配内存，虽有办法降低这个消耗，但依然可观），同步代码调试困难（正确性很难验证）。
+
+
+   事件驱动的主要缺点是系统的资源（内存，CPU）不容易饱和使用，用户响应时间较长。优点是编程简单，可以支持很高的并发量，linux2.6内核开始支持的epoll就是事件驱动的典型实现，事件驱动可以支持很高的并发量。
+
+
+    流水线的架构是介于多线程和事件驱动之间的一种形态，是目前广泛采用的架构。
+
+
+   
+
+
+    从本次开始，依次将会介绍
+
+
+    1）简单的多线程架构
+
+
+    2）基于线程池的多线程架构
+
+
+    3）简单的事件驱动架构（将会结合epoll进行介绍）
+
+
+    4）流水线的架构(cooperative multithreading Model和lock-free queue的相关介绍)
+
+
+    5）多流水线的架构
+
+
+    
+
+
+    下图是简单的多线程架构，很容易理解，不再赘述，未完待续。
+
+
+    螺旋线表线程的含义，如下图所示合计4个线程。Accept Loop承担的是dispatch任务的线程，其余线程处理用户请求。
+
+
+    带箭头环线表示循环，带箭头直线表示控制流。
+
+
+    detached表示线程执行完后即退出，因此一个线程的从生到死只为一个client的request服务。
+
+
+   
+
+
+   
+
+
+   推荐阅读：
+
+
+   1）<a onmousedown="function onmousedown()
+{
+function onmousedown()
+{
+function onmousedown()
+{
+function onmousedown()
+{
+function onmousedown()
+{
+return scife_clk(this.href,'','res','1')
+}
+}
+}
+}
+}" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.160.5229&amp;rep=rep1&amp;type=pdf" target="_blank">Why threads are a bad idea (for most purposes)
+
+
+   2）<a onmousedown="function onmousedown()
+{
+function onmousedown()
+{
+function onmousedown()
+{
+function onmousedown()
+{
+function onmousedown()
+{
+return scife_clk(this.href,'ggp','res','0')
+}
+}
+}
+}
+}" href="http://www.usenix.org/events/hotos03/tech/talks/vonbehren.pdf" target="_blank">Why events are a bad idea (for high-concurrency servers)

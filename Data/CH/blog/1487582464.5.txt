@@ -1,0 +1,307 @@
+多线程同步-event在所有的内核对象中，事件内核对象是个最基本的。它包含一个使用计数（与所有内核对象一样），一个BOOL值(用于指明该事件是个自动重置的事件还是一个人工重置的事件)，还有一个BOOL值(用于指明该事件处于已通知状态还是未通知状态)。事件能够通知一个线程的操作已经完成。有两种类型的事件对象。一种是人工重置事件，另一种是自动重置事件。他们不同的地方在于：当人工重置的事件得到通知时，等待该事件的所有线程均变为可调度线程。当一个自动重置的事件得到通知时，等待该事件的线程中只有一个线程变为可调度线程。
+
+
+   
+
+
+   当一个线程执行初始化操作，然后通知另一个线程执行剩余的操作时，事件使用得最频繁。在这种情况下，事件初始化为未通知状态，然后，当该线程完成它的初始化操作后，它就将事件设置为已通知状态，而一直在等待该事件的另一个线程在事件已经被通知后，就变成可调度线程。
+
+
+   windows API CreateEvent()函数用来创建事件内核对象：
+
+
+   HANDLE CreateEvent(
+
+
+    PSECURITY_ATTRIBUTES psa, //安全描述符，瞧，这是个内核对象
+
+
+    BOOL fManualReset,
+
+
+    BOOL fInitialState,
+
+
+    PCTSTR pszName);
+
+
+   fManualReset参数为TRUE时，表示创建一个人工重置的时间，为FALSE时表示创建一个自动重置事件。
+
+
+   fInitialState参数为TRUE时，指明该事件是要初始化为已通知状态，反之为未通知状态。
+
+
+   当系统创建事件对象后，CreateEvent返回一个事件句柄。其他进程中的线程可以获得对该对象的访问权，方法是使用在p s z N a m e参数中传递的相同值，使用继承属性，或者是使用DuplicateHandle函数等来调用CreateEvent，或者调用OpenEvent ,在p szName参数中设定一个与调用CreateEvent时设定的名字相匹配的名字：
+
+
+   HANDLE OpenEvent(
+
+
+    DWORD fdwAccess,
+
+
+    BOOL fInherit,
+
+
+    PCTSTR pszName);
+
+
+   与所有情况中一样，当不再需要事件内核对象时，应该调用CloseHandle()函数。
+
+
+   
+
+
+    一旦事件已经创建，就可以直接控制它的状态。调用SetEvent，可以将事件改为已通知状态：BOOL SetEvent(HANDLE hEvent);
+
+
+   当调用ResetEvent函数时，可以将该事件改为未通知状态：
+
+
+   BOOL ResetEvent(HANDLE hEvent);
+
+
+   当线程成功地等待到该对象时，自动重置的事件就会自动重置到未通知状态。通常没有必要为自动重置的事件调用ResetEvent函数，因为系统会自动对事件进行重置.这一点不适用于人工重置的事件对象。
+
+
+   
+
+
+   一个简单的例子：
+
+
+   // 全局句柄
+
+
+   HANDLE g_hEvent;
+
+
+   int WINAPI WinMain(...)
+
+
+   {
+
+
+    //创建一个人工重置的事件对象
+
+
+    g_hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+
+    //产生三个线程
+
+
+    HANDLE hThread[3];
+
+
+    DWORD dwThreadID;
+
+
+    hThread[0] = _beginthreadex(NULL, 0, WordCount, NULL, 0, &amp;dwThreadID);
+
+
+    hThread[1] = _beginthreadex(NULL, 0, SpellCheck, NULL, 0, &amp;dwThreadID);
+
+
+    hThread[2] = _beginthreadex(NULL, 0, GrammarCheck, NULL, 0, &amp;dwThreadID);
+
+
+    OpenFileAndReadContentsIntoMemory(...);
+
+
+    //通知等待的线程，告诉他们，我的工作做完了，你们可以开始执行了
+
+
+    SetEvent(g_hEvent);
+
+
+    ...
+
+
+   }
+
+
+   
+
+
+   DWORD WINAPI WordCount(PVOID pvParam)
+
+
+   {
+
+
+    //等待事件
+
+
+    WaitForSingleObject(g_hEvent, INFINITE);
+
+
+    //Access the memory block.
+
+
+    ...
+
+
+    return(0);
+
+
+   }
+
+
+   
+
+
+   DWORD WINAPI SpellCheck(PVOID pvParam)
+
+
+   {
+
+
+    //等待事件
+
+
+    WaitForSingleObject(g_hEvent, INFINITE);
+
+
+    //Access the memory block.
+
+
+    ...
+
+
+    return(0);
+
+
+   }
+
+
+   
+
+
+   DWORD WINAPI GrammarCheck(PVOID pvParam)
+
+
+   {
+
+
+    //Wait until the file's data is in memory.
+
+
+    WaitForSingleObject(g_hEvent, INFINITE);
+
+
+    //Access the memory block.
+
+
+    ...
+
+
+    return(0);
+
+
+   }
+
+
+   当这个进程启动时，它创建一个人工重置的未通知状态的事件，并且将句柄保存在一个全局变量中。这使得该进程中的其他线程能够非常容易地访问同一个事件对象。程序一开始创建了三个线程，这些线程在初始化后就被挂起，等待事件。这些线程要等待文件的内容读入内存，然后每个线程都会访问这段文件内容。一个线程进行单词计数，另一个线程运行拼写检查，第三个线程运行语法检查。这3个线程函数的代码的开始部分都相同，每个函数都调用WaitForSingleObject.，这将使线程暂停运行，直到文件的内容由主线程读入内存为止。一旦主线程将数据准备好，它就调用SetEvent，给事件发出通知信号。这时，系统就使所有这3个辅助线程进入可调度状态，它们都获得了C P U时间，并且可以访问内存块。这3个线程都必须以只读方式访问内存,否则会出现内存错误。这就是所有3个线程能够同时运行的唯一原因。如果计算机上配有三个以上CPU，理论上这个3个线程能够真正地同时运行，从而可以在很短的时间内完成大量的操作。
+
+
+   
+
+
+   如果你使用自动重置的事件而不是人工重置的事件，那么应用程序的行为特性就有很大的差别。当主线程调用S e t E v e n t之后，系统只允许一个辅助线程变成可调度状态。同样，也无法保证系统将使哪个线程变为可调度状态。其余两个辅助线程将继续等待。已经变为可调度状态的线程拥有对内存块的独占访问权。
+
+
+   
+
+
+   让我们重新编写线程的函数，使得每个函数在返回前调用S e t E v e n t函数（就像Wi n M a i n函数所做的那样）。这些线程函数现在变成下面的形式：
+
+
+   DWORD WINAPI WordCount(PVOID pvParam)
+
+
+   {
+
+
+    WaitForSingleObject(g_hEvent, INFINITE);
+
+
+    ...
+
+
+    SetEvent(g_hEvent);
+
+
+    return(0);
+
+
+   }
+
+
+   
+
+
+   DWORD WINAPI SpellCheck(PVOID pvParam)
+
+
+   {
+
+
+    WaitForSingleObject(g_hEvent, INFINITE);
+
+
+    ...
+
+
+    SetEvent(g_hEvent);
+
+
+    return(0);
+
+
+   }
+
+
+   
+
+
+   DWORD WINAPI GrammarCheck(PVOID pvParam)
+
+
+   {
+
+
+    WaitForSingleObject(g_hEvent, INFINITE);
+
+
+    ...
+
+
+    SetEvent(g_hEvent);
+
+
+    return(0);
+
+
+   }
+
+
+   当主线程将文件内容读入内存后，它就调用SetEvent函数，这样操作西永就会使这三个在等待的线程中的一个成为可调度线程。我们不知道系统将首先选择哪个线程作为可调度线程。当该线程完成操作时，它也将调用S e t E v e n t函数，使下一个被调度。这样，三个线程会以先后顺序执行，至于什么顺序，那是操作系统决定的。所以，就算每个辅助线程均以读/写方式访问内存块，也不会产生任何问题，这些线程将不再被要求将数据视为只读数据。
+
+
+   这个例子清楚地展示出使用人工重置事件与自动重置事件之间的差别。
+
+
+   
+
+
+   还有一个可以用于事件的函数:
+
+
+   BOOL PulseEvent(HANDLE hEvent);
+
+
+   
+
+
+   P u l s e E v e n t函数使得事件变为已通知状态，然后立即又变为未通知状态，这就像在调用S e t E v e n t后又立即调用R e s e t E v e n t函数一样。如果在人工重置的事件上调用P u l s e E v e n t函数，那么在发出该事件时，等待该事件的任何一个线程或所有线程将变为可调度线程。如果在自动重置事件上调用P u l s e E v e n t函数，那么只有一个等待该事件的线程变为可调度线程。如果在发出事件时没有任何线程在等待该事件，那么将不起任何作用。

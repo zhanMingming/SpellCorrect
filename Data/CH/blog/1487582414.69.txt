@@ -1,0 +1,77 @@
+搜索 dfs基础题：
+
+
+   input:
+
+
+   n m
+
+
+   下面是n行m列的矩阵，由&lsquo;.&rsquo;和&lsquo;x&rsquo;组成，求由(1,1)到(n,m)的最短路
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define M 100
+#define INF 10000000
+int dir[4][2]={0,1,0,-1,1,0,-1,0};
+char map[M][M];
+int ans,step=0,a=0;
+int n,m;
+//suppose '.' means can walk
+//      'x' means cannot walk
+bool judge(int x,int y)
+{
+	if(x&gt;=0&amp;&amp;x&lt;n&amp;&amp;y&gt;=0&amp;&amp;y&lt;n&amp;&amp;map[x][y]=='.')
+		return 1;
+	return 0;
+}
+void dfs(int x,int y,int step)//cal the min step
+{
+	if(x==n-1&amp;&amp;y==m-1)
+	{
+		if(step&lt;ans)
+			ans=step;
+	}
+	for(int i=0;i&lt;4;i++)
+	{
+		int tx=x+dir[i][0];
+		int ty=y+dir[i][1];
+		if(judge(tx,ty))
+		{
+			step++;
+			map[tx][ty]='x';
+			dfs(tx,ty,step);
+			step--;
+			map[tx][ty]='.';
+		}
+	}
+}
+
+int main()
+{
+	while(cin&gt;&gt;n&gt;&gt;m&amp;&amp;m&amp;&amp;n)
+	{
+		ans=INF;
+		step=0;
+		a=0;
+		for(int i=0;i&lt;n;i++)
+		{
+			getchar();
+			for(int j=0;j&lt;m;j++)
+			{
+				scanf("%c",&amp;map[i][j]);
+				if(map[i][j]=='.')
+					a++;
+			}
+		}
+		dfs(0,0,0);
+		if(ans!=INF)
+			cout&lt;&lt;ans&lt;&lt;endl;
+		else
+			cout&lt;&lt;"Cannot achieve"&lt;&lt;endl;
+	}
+}

@@ -1,0 +1,60 @@
+C#接触…… 入门建立一个控制台应用程序，主要注意用追加模式打开文件记录并予以写入的代码：
+
+
+   
+
+
+   将错误信息写入日志是实际控制台应用中一项必须任务：
+
+
+   using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Collections;
+using System.IO;
+
+namespace CSDemo
+{
+    class Test40
+    {
+ static Hashtable users = null;
+ private static string logfile = "d://eror.log";
+ static Test40()
+ {
+     users = new Hashtable();
+     users["张睿卿"] = (int)1234;
+     users["老马"] = (int)4567;
+     users["宁波大学"] = (int)6789;
+ }
+ static void Main(string[] args)
+ {
+     while (true)
+     {
+  Console.WriteLine("Please input user name:");
+  string user = Console.ReadLine();
+  Console.WriteLine("Please input password");
+  int psw = int.Parse(Console.ReadLine());
+  if (users[user]!=null&amp;&amp;(int)(users[user]) == psw)
+  {
+      Console.WriteLine("Welcome to {0}!", user);
+  }
+  else
+  {
+      Console.WriteLine("Sorry, you can't access to here!");
+      //以追加模式打开记录文件
+      TextWriter error = new StreamWriter(logfile, true);
+      error.WriteLine("{0} tries to login with the psw of {1} at {2}!", user, psw, DateTime.Now);
+      error.Close();
+  }
+     }
+ }
+    }
+}
+ 
+
+
+   
+
+
+   其中TextWriter error=new StreamWriter(logfile,true);中的第二个参数true就表示以追加模式写入。

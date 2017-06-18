@@ -1,0 +1,106 @@
+apache配置压缩模块和效果检测检查 httpd.conf中是否有这么一段LoadModule deflate_module modules/mod_deflate.so
+
+
+   我自己的机器，已经自动装好，因此忽略。
+
+
+   在/etc/httpd/conf/httpd.conf 文件最后增加这么一段
+
+
+   &lt;Location /&gt;
+
+
+
+
+
+# Insert filter
+
+SetOutputFilter DEFLATE
+
+
+
+
+
+# Netscape 4.x has some problems...
+
+BrowserMatch ^Mozilla/4 gzip-only-text/html
+
+
+
+
+
+# Netscape 4.06-4.08 have some more problems
+
+BrowserMatch ^Mozilla/4\.0[678] no-gzip
+
+
+
+
+
+# MSIE masquerades as Netscape, but it is fine
+
+# BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+
+
+
+
+
+# NOTE: Due to a bug in mod_setenvif up to Apache 2.0.48
+
+# the above regex won't work. You can use the following
+
+# workaround to get the desired effect:
+
+BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+
+
+
+# Don't compress images
+
+SetEnvIfNoCase Request_URI \
+
+    \.(?:gif|jpe?g|png)$ no-gzip dont-vary
+
+# Make sure proxies don't deliver the wrong content
+
+Header append Vary User-Agent env=!dont-vary
+
+&lt;/Location&gt;
+
+
+
+
+   然后
+
+
+   重启apache
+
+
+   
+
+
+
+
+   再用curl进行测试
+
+
+   例如
+
+
+   curl -o test.gz -H&quot;Accept-Encoding:gzip,deflat&quot; http://192.168.56.10/index.php?content=ERP&amp;submit=ok
+
+
+
+
+   zcat test.gz &gt; test
+
+
+   比较 test 和 test.gz的大小区别，体验压缩效果。
+
+
+   
+
+
+
+
+   参考：http://httpd.apache.org/docs/2.0/mod/mod_deflate.html#recommended

@@ -1,0 +1,633 @@
+huffman编码——原理与实现哈夫曼算法原理
+
+
+
+
+
+
+   Wikipedia上面说的很清楚了，这里我就不再赘述，直接贴过来了。
+
+
+
+
+
+
+
+   1952年, David A. Huffman提出了一个不同的算法，这个算法可以为任何的可能性提供出一个理想的树。香农-范诺编码（Shanno-Fano）是从树的根节点到叶子节点所进行的的编码，哈夫曼编码算法却是从相反的方向，暨从叶子节点到根节点的方向编码的。
+
+
+为每个符号建立一个叶子节点，并加上其相应的发生频率当有一个以上的节点存在时，进行下列循环:
+
+把这些节点作为带权&#20540;的二叉树的根节点，左右子树为空选择两棵根结点权&#20540;最小的树作为左右子树构造一棵新的二叉树，且至新的二叉树的根结点的权&#20540;为其左右子树上根结点的权&#20540;之和。把权&#20540;最小的两个根节点移除将新的二叉树加入队列中.
+最后剩下的节点暨为根节点，此时二叉树已经完成。
+
+
+
+
+
+
+
+
+示例
+
+
+
+
+
+
+
+
+
+Huffman Algorithm
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+符号
+
+A
+
+B
+
+C
+
+D
+
+E
+
+
+
+
+计数
+
+15
+
+7
+
+6
+
+6
+
+5
+
+
+
+
+概率
+
+0.38461538
+
+0.17948718
+
+0.15384615
+
+0.15384615
+
+0.12820513
+
+
+
+
+
+   在这种情况下，D，E的最低频率和分配分别为0和1，分组结合概率的0.28205128。现在最低的一双是B和C，所以他们就分配0和1组合结合概率的0.33333333在一起。这使得BC和DE所以0和1的前面加上他们的代码和它们结合的概率最低。然后离开只是一个和BCDE，其中有前缀分别为0和1，然后结合。这使我们与一个单一的节点，我们的算法是完整的。
+
+
+   
+
+
+
+
+   可得A代码的代码长度是1比特，其余字符是3比特。
+
+
+
+
+
+
+
+字符
+
+A
+
+B
+
+C
+
+D
+
+E
+
+
+
+
+代码
+
+0
+
+100
+
+101
+
+110
+
+111
+
+
+
+
+
+
+
+
+
+  Entropy：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Pseudo-code
+
+
+   
+ 1:  begin
+ 2:     count frequencies of single characters (source units)
+ 3:     output(frequencies using Fibonacci Codes of degree 2)
+ 4:     sort them to non-decreasing sequence
+ 5:     create a leaf node (character, frequency c, left son = NULL, right son = NULL) 
+ 6:  	   of the tree for each character and put nodes into queue F
+ 7:     while (|F|&gt;=2) do 
+ 8:      begin
+ 9: pop the first two nodes (u1, u2) with the lowest 
+10:  	      frequencies from sorted queue
+11: create a node evaluated with sum of the chosen units, 
+12:  	      successors are chosen units (eps, c(u1)&#43;c(u2), u1, u2)
+13: insert new node into queue
+14:      end
+15:     node evaluate with way from root to leaf node (left son 1, right son 0)
+16:     create output from coded intput characters
+17:  end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+哈夫曼算法实现
+
+
+
+
+
+
+
+
+
+
+
+
+
+实现的时候我们用vector&lt;bool&gt;记录每个char的编码；用map&lt;char,vector&lt;bool&gt;&gt;表示整个字典；
+
+
+就得到了下面的代码（下面有两个，一对一错）：
+
+
+
+
+
+
+
+先放出来这个错的，以示警戒：
+
+
+
+
+
+
+
+
+   /************************************************************************/
+/*	File Name: Huffman.cpp
+*		@Function: Lossless Compression
+		@Author: Sophia Zhang
+		@Create Time: 2012-9-26 10:40
+		@Last Modify: 2012-9-26 11:10
+*/
+/************************************************************************/
+
+#include&quot;iostream&quot;
+#include &quot;queue&quot;
+#include &quot;map&quot;
+#include &quot;string&quot;
+#include &quot;iterator&quot;
+#include &quot;vector&quot;
+#include &quot;algorithm&quot;
+using namespace std;
+
+#define NChar 8	//suppose use at most 8 bits to describe all symbols
+#define Nsymbols 1&lt;&lt;NChar	//can describe 256 symbols totally (include a-z, A-Z)
+typedef vector&lt;bool&gt; Huff_code;//8 bit code of one char
+map&lt;char,Huff_code&gt; Huff_Dic;	//huffman coding dictionary
+
+class HTree
+{
+public :
+	HTree* left;
+	HTree* right;
+	char ch;
+	int weight;
+
+	HTree(){left = right = NULL; weight=0;}
+	HTree(HTree* l,HTree* r,int w,char c){left = l;	right = r;	weight=w;	ch=c;}
+	~HTree(){delete left; delete right;}
+	int Getweight(){return weight?weight:left-&gt;weight+right-&gt;weight;}
+	bool Isleaf(){return !left &amp;&amp; !right; }
+	bool operator &lt; (const HTree tr) const
+	{
+		return tr.weight &lt; weight;
+	}
+};
+
+HTree* BuildTree(int *frequency)
+{
+	priority_queue&lt;HTree*&gt; QTree;
+
+	//1st level add characters
+	for (int i=0;i&lt;Nsymbols;i++)
+	{
+		if(frequency[i])
+			QTree.push(new HTree(NULL,NULL,frequency[i],(char)i));			
+	}
+
+	//build
+	while (QTree.size()&gt;1)
+	{
+		HTree* lc  = QTree.top();
+		QTree.pop();
+		HTree* rc = QTree.top();
+		QTree.pop();
+
+		HTree* parent = new HTree(lc,rc,parent-&gt;Getweight(),(char)256);
+		QTree.push(parent);
+	}
+	//return tree root
+	return QTree.top();
+}
+
+void Huffman_Coding(HTree* root, Huff_code&amp; curcode)
+{
+	if(root-&gt;Isleaf())
+	{
+		Huff_Dic[root-&gt;ch] = curcode;
+		return;
+	}
+	Huff_code&amp; lcode = curcode;
+	Huff_code&amp; rcode = curcode;
+	lcode.push_back(false);
+	rcode.push_back(true);
+
+	Huffman_Coding(root-&gt;left,lcode);
+	Huffman_Coding(root-&gt;right,rcode);
+}
+
+int main()
+{
+	int freq[Nsymbols] = {0};
+	char *str = &quot;this is the string need to be compressed&quot;;
+
+	//statistic character frequency
+	while (*str!='\0')
+		freq[*str++]++;
+
+	//build tree
+	HTree* r = BuildTree(freq);
+	Huff_code nullcode;
+	nullcode.clear();
+	Huffman_Coding(r,nullcode);
+
+	for(map&lt;char,Huff_code&gt;::iterator it = Huff_Dic.begin(); it != Huff_Dic.end(); it++)
+	{
+		cout&lt;&lt;(*it).first&lt;&lt;'\t';
+		Huff_code vec_code = (*it).second;
+		for (vector&lt;bool&gt;::iterator vit = vec_code.begin(); vit!=vec_code.end();vit++)
+		{
+			cout&lt;&lt;(*vit)&lt;&lt;endl;
+		}
+	}
+}
+
+
+
+
+
+
+上面这段代码，我运行出来不对。在调试的时候发现了一个问题，就是QTree优先队列中的排序出了问题，说来也是，上面的代码中，我重载小于号是对HTree object做的；而实际上我建树时用的是指针，那么优先级队列中元素为指针时该怎么办呢？
+
+
+
+
+
+
+
+
+
+   
+那我们将friend bool operator &gt;(Node node1,Node node2)修改为friend bool operator &gt;(Node* node1,Node* node2)，也就是传递的是Node的指针行不行呢?
+
+
+   
+
+
+
+
+
+   
+答案是不可以，因为根据c&#43;&#43;primer中重载操作符中讲的“程序员只能为类类型或枚举类型的操作数定义重载操作符，在把操作符声明为类的成员时，至少有一个类或枚举类型的参数按照&#20540;或者引用的方式传递”，也就是说friend
+ bool operator &gt;(Node* node1,Node* node2)形参中都是指针类型的是不可以的。我们只能再建一个类，用其中的重载（）操作符作为优先队列的比较函数。
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+就得到了下面正确的代码：
+
+
+   
+
+
+
+
+
+   
+
+
+
+   /************************************************************************/
+/*	File Name: Huffman.cpp
+*		@Function: Lossless Compression
+		@Author: Sophia Zhang
+		@Create Time: 2012-9-26 10:40
+		@Last Modify: 2012-9-26 12:10
+*/
+/************************************************************************/
+
+#include&quot;iostream&quot;
+#include &quot;queue&quot;
+#include &quot;map&quot;
+#include &quot;string&quot;
+#include &quot;iterator&quot;
+#include &quot;vector&quot;
+#include &quot;algorithm&quot;
+using namespace std;
+
+#define NChar 8	//suppose use 8 bits to describe all symbols
+#define Nsymbols 1&lt;&lt;NChar	//can describe 256 symbols totally (include a-z, A-Z)
+typedef vector&lt;bool&gt; Huff_code;//8 bit code of one char
+map&lt;char,Huff_code&gt; Huff_Dic;	//huffman coding dictionary
+
+/************************************************************************/
+/* Tree Class elements:
+*2 child trees
+*character and frequency of current node
+*/
+/************************************************************************/
+class HTree
+{
+public :
+	HTree* left;
+	HTree* right;
+	char ch;
+	int weight;
+
+	HTree(){left = right = NULL; weight=0;ch ='\0';}
+	HTree(HTree* l,HTree* r,int w,char c){left = l;	right = r;	weight=w;	ch=c;}
+	~HTree(){delete left; delete right;}
+	bool Isleaf(){return !left &amp;&amp; !right; }
+};
+
+/************************************************************************/
+/* prepare for pointer sorting*/
+/*because we cannot use overloading in class HTree directly*/
+/************************************************************************/
+class Compare_tree
+{
+public:
+	bool operator () (HTree* t1, HTree* t2)
+	{
+		return t1-&gt;weight&gt; t2-&gt;weight;
+	}
+};
+
+/************************************************************************/
+/* use priority queue to build huffman tree*/
+/************************************************************************/
+HTree* BuildTree(int *frequency)
+{
+	priority_queue&lt;HTree*,vector&lt;HTree*&gt;,Compare_tree&gt; QTree;
+
+	//1st level add characters
+	for (int i=0;i&lt;Nsymbols;i++)
+	{
+		if(frequency[i])
+			QTree.push(new HTree(NULL,NULL,frequency[i],(char)i));			
+	}
+
+	//build
+	while (QTree.size()&gt;1)
+	{
+		HTree* lc  = QTree.top();
+		QTree.pop();
+		HTree* rc = QTree.top();
+		QTree.pop();
+
+		HTree* parent = new HTree(lc,rc,lc-&gt;weight+rc-&gt;weight,(char)256);
+		QTree.push(parent);
+	}
+	//return tree root
+	return QTree.top();
+}
+
+/************************************************************************/
+/* Give Huffman Coding to the Huffman Tree*/
+/************************************************************************/
+void Huffman_Coding(HTree* root, Huff_code&amp; curcode)
+{
+	if(root-&gt;Isleaf())
+	{
+		Huff_Dic[root-&gt;ch] = curcode;
+		return;
+	}
+	Huff_code lcode = curcode;
+	Huff_code rcode = curcode;
+	lcode.push_back(false);
+	rcode.push_back(true);
+
+	Huffman_Coding(root-&gt;left,lcode);
+	Huffman_Coding(root-&gt;right,rcode);
+}
+
+int main()
+{
+	int freq[Nsymbols] = {0};
+	char *str = &quot;this is the string need to be compressed&quot;;
+
+	//statistic character frequency
+	while (*str!='\0')
+		freq[*str++]++;
+
+	//build tree
+	HTree* r = BuildTree(freq);
+	Huff_code nullcode;
+	nullcode.clear();
+	Huffman_Coding(r,nullcode);
+
+	for(map&lt;char,Huff_code&gt;::iterator it = Huff_Dic.begin(); it != Huff_Dic.end(); it++)
+	{
+		cout&lt;&lt;(*it).first&lt;&lt;'\t';
+		std::copy(it-&gt;second.begin(),it-&gt;second.end(),std::ostream_iterator&lt;bool&gt;(cout));
+		cout&lt;&lt;endl;
+	}
+}
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+Reference：
+
+
+1.http://www.binaryessence.com/dct/en000042.htm
+
+
+2.http://zh.wikipedia.org/zh/%E9%A6%99%E5%86%9C-%E8%8C%83%E8%AF%BA%E7%BC%96%E7%A0%81#.E5.93.88.E5.A4.AB.E6.9B.BC.E7.AE.97.E6.B3.95
+
+
+3.http://www.stringology.org/DataCompression/sh/index_en.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+关于Compression更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

@@ -1,0 +1,430 @@
+理解JMS规范中消息的传输模式和消息持久化JMS规范定义了2种消息传输模式：持久传送模式和非持久传输模式。发送者可以通过如下类&#20284;的代码进行设置
+
+
+   TopicPublisher publihser = session.createPublisher(topic);
+
+// 设置持久化传输
+publihser.setDeliveryMode(DeliveryMode.PERSISTENT);   这种方式对publisher发送的所有消息都有效，相当于是一个全局的效果。如果只是想设置某一个消息的传输模式，可以通过以下代码设置消息头的属性来实现
+
+
+
+   
+
+
+   TextMessage message = session.createTextMessage(text);
+		
+message.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+
+   使用传输模式是一件很容易的事，直接调用API就可以了。那什么是传输模式呢？传输模式是用来控制消息属性的，DeliveryMode.PERSISTENT代表这是持久消息，DeliveryMode.NON_PERSISTENT代表是非持久消息。个人觉得传输模式和消息持久化是同一个概念，只不过是不同的叫法而已。
+
+
+   
+
+
+
+1.NON_PERSISTENT模式和PERSISTENT模式
+
+
+
+
+
+
+ 对于非持久的消息，JMS provider不会将它存到文件/数据库等稳定的存储介质中。也就是说非持久消息驻留在内存中，如果jms provider宕机，那么内存中的非持久消息会丢失。A JMS provider must diliver a NON_PERSISTENT messageat-most-once。对于持久消息，消息提供者会使用存储-转发机制，先将消息存储到稳定介质中，等消息发送成功后再删除。如果jms
+ provider挂掉了，那么这些未送达的消息不会丢失；jms provider恢复正常后，会重新读取这些消息，并传送给对应的消费者。A JMS provider must diliver a PERSISTENT messageonce-and-only-once。
+
+
+
+
+
+
+
+
+
+
+
+
+
+2.消息是否持久和是否送达
+
+
+
+
+
+
+  消息的持久特性就是为了在异常发生的时候保证消息的送达。如果网络、jms provider、消息生产者、消息消费者都不会出现任何故障，那么持久消息和非持久消息就没有差别了。因为一旦消息成功传送给它的所有消费者，那么jms provider会从内存/硬盘上删除这些无用的消息。显然一切正常的情况下，使用PERSISTENT消息非常浪费，因为持久传送消息前，需要先将消息保存到硬盘；消息发送成功后，还需要将消息从硬盘上删除。但现实情况是，网络可能出现断连、provider和消费者都有可能宕机。因此对于一些非常重要，不容许任何丢失的消息，一定要采用PERSISTENT模式。
+
+
+
+
+
+
+
+3.持久消息和持久订阅者
+
+
+
+
+
+
+
+
+ 我的另一篇博客 理解JMS规范中的持久订阅和非持久订阅介绍了持久订阅者和非持久订阅者的差别。持久订阅者和持久消息有什么区别和联系吗？持久消息发送给持久订阅者和非持久订阅有什么差别？非持久消息能够发送给持久订阅者吗？下面通过一些测试代码，来阐述持久消息和持久订阅者的关系。测试代码是基于ActiveMQ5.8.0版本。
+
+
+
+
+
+
+
+3.1生产者发送持久消息和非持久消息，但是消息没有消费者，即这是一条无用消息
+
+
+
+   package mq.aty.persistentmsg;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+
+import mq.aty.JmsUtils;
+
+/**
+ * 直接运行该程序和activeMQ,不运行任何的消费者，然后观察持久化介质(我们使用了数据库)
+ *
+ */
+public class NoReceiverTest
+{
+	private static TopicConnection connection = null;
+
+	private static Topic topic = null;
+
+	public static void main(String[] args) throws Exception
+	{
+		connection = JmsUtils.getConnection();
+		topic = JmsUtils.getTopic();
+		
+		sentPersistent();
+		sentNonPersistent();
+		
+		connection.close();
+	}
+
+	public static void sentPersistent() throws Exception
+	{
+		TopicSession session = connection.createTopicSession(false,
+				Session.AUTO_ACKNOWLEDGE);
+
+		TopicPublisher publihser = session.createPublisher(topic);
+
+		publihser.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+		for (int i = 0; i &lt; 3; i++)
+		{
+			String text = &quot;I am persistent message.order=&quot; + i;
+
+			TextMessage message = session.createTextMessage(text);
+			
+			message.setJMSPriority(i);
+
+			publihser.publish(message);
+		}
+
+	}
+	
+	public static void sentNonPersistent() throws Exception
+	{
+		TopicSession session = connection.createTopicSession(false,
+				Session.AUTO_ACKNOWLEDGE);
+
+		TopicPublisher publihser = session.createPublisher(topic);
+
+		publihser.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+		for (int i = 0; i &lt; 3; i++)
+		{
+			String text = &quot;non-persistent message.id=&quot; + i;
+
+			TextMessage message = session.createTextMessage(text);
+
+			publihser.publish(message);
+		}
+
+	}
+
+}
+我使用了mysql数据库，并配置了activeMQ将消息持久化到数据库。运行上面的程序，发现mysql数据库中activemq_msgs表没有任何数据。可以证明：持久消息和非持久消息都被MQ消息服务器丢弃了。无论是持久消息，还是非持久消息，如果消息没有对应的消费者，那么activeMQ会认为这些消息无用，直接删除。
+
+
+
+
+
+
+
+
+
+
+
+
+3.2生产者发送持久消息和非持久消息，只有非持久订阅者
+
+
+
+
+之前的博客已经介绍了：非持久订阅者只有在活动状态，并且和jms provider的保持连接情况下，才能收到消息。如果非持久订阅者挂掉了，那么不能再接收任何消息(无论是持久消息，还是非持久消息)。如果订阅者挂掉了，后续jms provider再收到消息，就变成了3.1的情况。也就是说：消息是否持久化，和非持久订阅者没有关系。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.3持久消息和非持久消息，发送给离线的持久订阅者
+
+
+
+
+消息的发送者源码：
+
+
+   package mq.aty.persistentmsg;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+
+import mq.aty.JmsUtils;
+
+/**
+ * 直接运行该程序和activeMQ,没有任何的消费者，然后观察持久化介质(我们使用了数据库)
+ *
+ */
+public class NoReceiverTest
+{
+	private static TopicConnection connection = null;
+
+	private static Topic topic = null;
+
+	public static void main(String[] args) throws Exception
+	{
+		connection = JmsUtils.getConnection();
+		topic = JmsUtils.getTopic();
+		
+		sentPersistent();
+		sentNonPersistent();
+		
+		connection.close();
+	}
+
+	public static void sentPersistent() throws Exception
+	{
+		TopicSession session = connection.createTopicSession(false,
+				Session.AUTO_ACKNOWLEDGE);
+
+		TopicPublisher publihser = session.createPublisher(topic);
+
+		publihser.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+		for (int i = 0; i &lt; 3; i++)
+		{
+			String text = &quot;I am persistent message.order=&quot; + i;
+
+			TextMessage message = session.createTextMessage(text);
+			
+			message.setJMSPriority(i);
+
+			publihser.publish(message);
+		}
+
+	}
+	
+	public static void sentNonPersistent() throws Exception
+	{
+		TopicSession session = connection.createTopicSession(false,
+				Session.AUTO_ACKNOWLEDGE);
+
+		TopicPublisher publihser = session.createPublisher(topic);
+
+		publihser.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+		for (int i = 0; i &lt; 3; i++)
+		{
+			String text = &quot;non-persistent message.id=&quot; + i;
+
+			TextMessage message = session.createTextMessage(text);
+
+			publihser.publish(message);
+		}
+
+	}
+
+}
+持久订阅者源码如下：
+
+
+   package mq.aty.persistentmsg;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+
+import mq.aty.JmsUtils;
+
+/**
+ * &lt;pre&gt;
+ *  1、先运行监听者,向jms server注册,让jms server知道有这个持久订阅者。类似于你向腾讯申请个QQ号码
+ *  
+ *  2、启动jms server和持久订阅者(运行该类)。查看数据库可以发现activemq_acks中多了一条记录，
+ *     也就是说activeMQ识别和接受了我们的持久订阅者
+ *    
+ *  3、停止持久订阅者，启动生产者向MQ服务器发送持久消息和非持久消息。发现activemq_msgs中多持久消息
+ *  
+ *  4、运行持久订阅者。发现持久消息和非持久消息都能接受到
+ * &lt;/pre&gt;
+ * 
+ */
+public class DurableSubscriberTest
+{
+
+	public static void main(String[] args) throws Exception
+	{
+		TopicConnection connection = JmsUtils.getConnection();
+		Topic topic = JmsUtils.getTopic();
+
+		// 创建持久订阅的时候,必须要设置client,否则会报错:
+		// javax.jms.JMSException: You cannot create a durable subscriber
+		// without specifying a unique clientID on a Connection
+
+		// 如果clientID重复(已经存在相同id的活动连接),会报错
+		// javax.jms.InvalidClientIDException: Broker: localhost - Client: 1
+		// already connected from tcp://127.0.0.1:2758
+		connection.setClientID(&quot;1&quot;);
+
+		TopicSession session = connection.createTopicSession(false,
+				Session.AUTO_ACKNOWLEDGE);
+
+		// 在同一个连接的ClientID下,持久订阅者的名称必须唯一
+		// javax.jms.JMSException: Durable consumer is in use for client: 1 and
+		// subscriptionName: 11
+
+		// TopicSubscriber subscriber = session.createSubscriber(topic);
+		TopicSubscriber subscriber = session.createDurableSubscriber(topic,
+				&quot;11&quot;);
+
+		subscriber.setMessageListener(new MessageListener() {
+
+			@Override
+			public void onMessage(Message msg)
+			{
+				try
+				{
+					TextMessage textMsg = (TextMessage) msg;
+					System.out.println(&quot;DurableSubscriber get:&quot;
+							+ textMsg.getText());
+				} catch (JMSException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		});
+
+		connection.start();// 一定要start
+	}
+}
+
+
+
+
+
+在第二步操作的时候，查看mysql数据库可以发现，数据库表activemq_acks中多了一条记录，记录我们的持久订阅者
+
+
+
+
+
+
+
+在第三步操作的时候，查看数据库表activemq_msgs中多了3条持久消息。可以发现activeMQ会将持久消息保存到硬盘。
+
+
+
+
+
+
+
+
+最后当我们重新启动持久订阅者的时候，可以发现，持久消息和非持久消息都能够接收到。这个时候activemq_msgs中的消息被删除。
+
+
+
+
+
+
+
+
+
+
+
+通过这种情况测试，只能看出持久订阅者和非持久订阅者存在差别：持久订阅者能够接收离线消息,不管该消息是不是持久消息。
+
+
+我们好像还看出持久消息和非持久消息的区别，这是因为我们进行上述测试的时候，没有关闭activeMQ服务器，所以无论是硬盘上的持久消息，还是内存中的非持久消息，都不会丢。
+
+
+
+
+
+
+
+接下来我们还是使用上面的发送者和接收者源码，但是改变下操作顺序。按照如下顺序进行操作：
+
+
+
+   * &lt;pre&gt;
+ *  1、先运行监听者,向jms server注册,让jms server知道有这个持久订阅者。类似于你向腾讯申请个QQ号码
+ *
+ *  2、启动jms server和持久订阅者(运行该类)。查看数据库可以发现activemq_acks中多了一条记录，
+ *     也就是说activeMQ识别和接受了我们的持久订阅者
+ *  
+ *  3、停止持久订阅者，启动生产者向MQ服务器发送持久消息和非持久消息
+ *  
+ *  4、消息发送成功后，停止activemq服务器、
+ *  
+ *  5、重新启动mq服务器和订阅者。发现只能接收到持久消息
+ * 
+ * &lt;/pre&gt;
+
+我们发现当activeMQ服务器挂掉再重启的时候，持久订阅者只能收到持久消息，不能收到非持久消息。
+
+
+
+
+
+
+
+
+4.总结
+ 通过上述测试代码和执行结果，我们得出以下结论：
+
+
+ 持久订阅者/非持久订阅者，只影响离线的时候消息(包括持久消息和非持久消息)是否能接收到，和消息是否持久无关；持久消息/非持久消息，只是影响jms provider宕机后。消息是否会丢失，如果永远不会宕机，那么持久消息和非持久消息没有区别。

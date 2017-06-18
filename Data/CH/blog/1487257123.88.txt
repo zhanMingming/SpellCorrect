@@ -1,0 +1,211 @@
+BP算法浅谈（Error Back-propagation）最近在打基础，大致都和向量有关，从比较基础的人工智能常用算法开始，以下是对BP算法研究的一个小节。
+
+
+     本文只是自我思路的整理，其中举了个例子，已经对一些难懂的地方做了解释，有兴趣恰好学到人工智能对这块不能深入理解的，可以参考本文。
+
+
+     因为大部分涉及公式，我就直接贴图了，请谅解，如果需要全文可以联系@梁斌penny 谢谢。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+   通过带*的权重&#20540;重新计算误差，发现误差为0.18，比老误差0.19小，则继续迭代，得神经元的计算结果更加&#36924;近目标&#20540;0.5
+
+
+   
+
+
+   感想
+
+
+   
+
+
+
+
+   在一个复杂样本空间下，对输入和输出进行拟合
+
+
+   （1）多少个hidden unit才能符合需要（hidden unit就是图中的P，Q）
+
+
+   （2）多少层unit才能符合需要（本例为1层）
+
+
+   （3）如果有n层，每层m个unit，k个输入，1个输出，那么就有K*m^(n&#43;1)条边，每条边有一个权重&#20540;，这个计算量非常巨大
+
+
+   （4）如果k个输入，1个输出，相当于将k维空间，投射到一个1维空间，是否可以提供足够的准确性，如果是k个输入，j个输出，j比k大，是否是一个升维的过程，是否有价&#20540;？
+
+
+   
+
+
+   收获
+
+
+   1） 了解偏导。
+
+
+   2） 了解梯度。
+
+
+   3） 产生新的思考
+
+
+   
+
+
+   参考文献：
+
+
+   1 http://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)
+
+
+   2 http://www.rgu.ac.uk/files/chapter3%20-%20bp.pdf
+
+
+   3 
+http://www.cedar.buffalo.edu/~srihari/CSE574/Chap5/Chap5.3-BackProp.pdf
+
+
+   
+
+验证代码：
+
+
+   #include &quot;stdio.h&quot;
+
+#include &lt;math.h&gt;
+
+const double e = 2.7182818;
+
+int main(void)
+
+{
+
+ double input[] = {0.35,0.9};
+
+ double matrix_1[2][2]={
+
+ {0.1,0.4},
+
+ {0.8,0.6},
+
+ };
+
+ double matrix_2[] = { 0.3,0.9 };
+
+ for(int s= 0; s&lt;1000; &#43;&#43;s)
+
+ {
+
+ double tmp[] = {0.0,0.0};
+
+ double value = 0.0;
+
+ {
+
+ for(int i = 0;i&lt;2;&#43;&#43;i)
+
+ {
+
+ for(int j = 0;j&lt;2;&#43;&#43;j)
+
+ {
+
+ tmp[i] &#43;= input[j]*matrix_1[j][i];
+
+ }
+
+ tmp[i] = 1/(1&#43;pow(e,-1*tmp[i]));
+
+ }
+
+ for(int i = 0;i&lt;2;&#43;&#43;i)
+
+ {
+
+ value &#43;= tmp[i]*matrix_2[i];
+
+ }
+
+ value = 1/(1&#43;pow(e,-1*value));
+
+ }
+
+
+    
+
+
+    double RMSS = (0.5)*( value - 0.5)*(value-0.5);
+
+ printf(&quot;%f,%f\n&quot;,value,RMSS);
+
+
+    if(value - 0.5 &lt; 0.01)
+
+ {
+
+ break;
+
+ }
+
+ double E = value - 0.5;
+
+ matrix_2[0] = matrix_2[0] - E*value*(1-value)*tmp[0];
+
+ matrix_2[1] = matrix_2[1] - E*value*(1-value)*tmp[1];
+
+ //printf(&quot;##%f,%f\n&quot;,matrix_2[0],matrix_2[1]);
+
+ matrix_1[0][0] = matrix_1[0][0] - E*value*(1-value)*matrix_2[0]*tmp[0]*(1-tmp[0])*matrix_1[0][0];
+
+ matrix_1[1][0] = matrix_1[1][0] - E*value*(1-value)*matrix_2[0]*tmp[0]*(1-tmp[0])*matrix_1[1][0];
+
+
+    matrix_1[0][1] = matrix_1[0][1] - E*value*(1-value)*matrix_2[0]*tmp[0]*(1-tmp[1])*matrix_1[0][1];
+
+ matrix_1[1][1] = matrix_1[1][1] - E*value*(1-value)*matrix_2[0]*tmp[0]*(1-tmp[1])*matrix_1[1][1];
+
+
+    //printf(&quot;##%f,%f\n&quot;,matrix_1[0][0],matrix_1[1][0]);
+
+ //printf(&quot;##%f,%f\n&quot;,matrix_1[0][1],matrix_1[1][1]);
+
+ }
+
+ return 0;
+
+}

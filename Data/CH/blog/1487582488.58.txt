@@ -1,0 +1,881 @@
+ShellExecute()用法以及和system()的区别ShellExecute Functionshell32.dll ShellExecute
+	PRE.clsCode { font-size:110%; } 
+	PRE.clsSyntax { font-size:100%; }  
+	TD DIV.clsBeta { display:none;}
+  
+	A:link { color:#0000ff; text-decoration:underline;}
+	A:visited { color:#0000ff; text-decoration:underline;}
+	A:hover { color:#3366ff; text-decoration:underline;}
+MSHelp/:link {
+    color:#0000ff;
+    text-decoration:underline;
+    cursor:hand;
+    hoverColor:#3366ff;
+    filterString: ;}
+<!-- 
+ 
+ 
+	//&lt;!--
+	var gbDBG = false;
+	//--&gt;
+// -->
+<!-- 
+ 
+ 
+//&lt;!--
+var gsHTCPath = &quot;../../../code/&quot;;
+//--&gt;
+// -->
+<!-- 
+ 
+ 
+//&lt;!--
+var gsContextMenuPath = gsHTCPath + &quot;contextmenu.htc&quot;;
+var gsCodeDecoPath = gsHTCPath + &quot;codedeco.htc&quot;;
+var gsStoreName=&quot;platform&quot;;
+var gsGraphicsPath = &quot;/platform/graphics/&quot;;
+//--&gt;
+// -->
+<!-- 
+ 
+ 
+//&lt;!--
+//--&gt;
+// -->
+<!-- 
+ 
+ 
+//&lt;!--
+//--&gt;
+// -->
+<!-- 
+ 
+ 
+//&lt;!--
+function InitPage()
+{
+  if (!assert( (typeof(oBD) == 'object' &amp;&amp; oBD != null), &quot;browdata object unavailable!&quot;) )
+  {
+    return;
+  }
+  if (&quot;MSIE&quot; == oBD.browser &amp;&amp; oBD.majorVer &gt;= 5 &amp;&amp; (oBD.platform.toLowerCase()!=&quot;x&quot; &amp;&amp; oBD.platform!=&quot;Mac&quot; &amp;&amp; oBD.platform!=&quot;PPC&quot; ))
+  {
+    if (typeof(PreInit) == 'function') PreInit();
+    if (typeof(PostGBInit) == 'function') PostGBInit();
+    if (typeof(PostInit) == 'function') PostInit();
+    if (typeof(initTabbedMembers) == 'function') initTabbedMembers();
+    if (typeof(hideExamples) == 'function') hideExamples();
+  }
+  if (oBD.getsNavBar &amp;&amp; oBD.platform!=&quot;PPC&quot; )
+  {
+    if (typeof(SetShowMes) == 'function') SetShowMes();
+  }
+}
+
+function assert(bCond, sMsg)
+{
+  if (bCond) { return true; }
+  else { if (gbDBG) { alert(sMsg); } return false; }
+}
+
+window.onload = InitPage;
+
+//--&gt;
+// -->
+
+
+
+
+ShellExecute Function
+
+
+   摘选自msdn：
+
+
+   Performs an operation on a specified file.
+
+
+   Syntax
+
+
+
+   HINSTANCEShellExecute(
+
+
+
+HWNDhwnd
+
+
+
+,
+LPCTSTRlpOperation
+
+
+
+,
+LPCTSTRlpFile
+
+
+
+,
+LPCTSTRlpParameters
+
+
+
+,
+LPCTSTRlpDirectory
+
+
+
+,
+INTnShowCmd
+
+
+
+
+);
+
+
+   Parameters
+
+
+hwnd
+
+
+
+[in]A handle to the owner window used for displaying a user interface (UI) 
+or error messages. This value can be NULL if the operation is not associated 
+with a window.
+
+
+lpOperation
+
+
+
+[in]A pointer to a null-terminated string, referred to in this case as a 
+verb
+
+, that specifies the action to be performed. The set of available 
+verbs depends on the particular file or folder. Generally, the actions available 
+from an object's shortcut menu are available verbs. The following verbs are 
+commonly used.
+edit
+
+
+
+Launches an editor and opens the document for editing. If lpFile
+
+ is 
+not a document file, the function will fail.
+
+
+explore
+
+
+
+Explores a folder specified by lpFile
+
+.
+
+
+find
+
+
+
+Initiates a search beginning in the directory specified by 
+lpDirectory
+
+.
+
+
+open
+
+
+
+Opens the item specified by the lpFile
+
+ parameter. The item can be a 
+file or folder.
+
+
+print
+
+
+
+Prints the file specified by lpFile
+
+. If lpFile
+
+ is not a 
+document file, the function fails.
+
+
+NULL
+
+
+
+
+
+   In systems prior to Microsoft Windows 2000, the default verb is used if it is 
+valid and available in the registry. If not, the &quot;open&quot; verb is used.
+
+
+   In Windows 2000 and later, the default verb is used if available. If not, the 
+&quot;open&quot; verb is used. If neither verb is available, the system uses the first 
+verb listed in the registry.
+
+
+
+
+
+
+
+lpFile
+
+
+
+[in]A pointer to a null-terminated string that specifies the file or object 
+on which to execute the specified verb. To specify a Shell namespace object, 
+pass the fully qualified parse name. Note that not all verbs are supported on 
+all objects. For example, not all document types support the &quot;print&quot; verb. If a 
+relative path is used for the lpDirectory
+
+ parameter do not use a relative 
+path for lpFile
+
+.
+
+
+lpParameters
+
+
+
+[in]If lpFile
+
+ specifies an executable file, this parameter is a 
+pointer to a null-terminated string that specifies the parameters to be passed 
+to the application. The format of this string is determined by the verb that is 
+to be invoked. If lpFile
+
+ specifies a document file, lpParameters
+
+ 
+should be NULL.
+
+
+lpDirectory
+
+
+
+[in]A pointer to a null-terminated string that specifies the default 
+(working) directory for the action. If this value is NULL, the current working 
+directory is used. If a relative path is provided at lpFile
+
+, do not use a 
+relative path for lpDirectory
+
+.
+
+
+nShowCmd
+
+
+
+[in]The flags that specify how an application is to be displayed when it is 
+opened. If lpFile
+
+ specifies a document file, the flag is simply passed to 
+the associated application. It is up to the application to decide how to handle 
+it.
+SW_HIDE
+
+
+
+Hides the window and activates another window.
+
+
+SW_MAXIMIZE
+
+
+
+Maximizes the specified window.
+
+
+SW_MINIMIZE
+
+
+
+Minimizes the specified window and activates the next top-level window in 
+the z-order.
+
+
+SW_RESTORE
+
+
+
+Activates and displays the window. If the window is minimized or maximized, 
+Windows restores it to its original size and position. An application should 
+specify this flag when restoring a minimized window.
+
+
+SW_SHOW
+
+
+
+Activates the window and displays it in its current size and position.
+
+
+SW_SHOWDEFAULT
+
+
+
+Sets the show state based on the SW_ flag specified in the STARTUPINFO 
+structure passed to the CreateProcess 
+function by the program that started the application. An application should call 
+ShowWindow with 
+this flag to set the initial show state of its main window.
+
+
+SW_SHOWMAXIMIZED
+
+
+
+Activates the window and displays it as a maximized window.
+
+
+SW_SHOWMINIMIZED
+
+
+
+Activates the window and displays it as a minimized window.
+
+
+SW_SHOWMINNOACTIVE
+
+
+
+Displays the window as a minimized window. The active window remains active.
+
+
+SW_SHOWNA
+
+
+
+Displays the window in its current state. The active window remains active.
+
+
+SW_SHOWNOACTIVATE
+
+
+
+Displays a window in its most recent size and position. The active window 
+remains active.
+
+
+SW_SHOWNORMAL
+
+
+
+Activates and displays a window. If the window is minimized or maximized, 
+Windows restores it to its original size and position. An application should 
+specify this flag when displaying the window for the first 
+time.
+
+
+
+
+
+
+
+
+
+   Return Value
+
+
+
+   Returns a value greater than 32 if successful, or an error value that is less 
+than or equal to 32 otherwise. The following table lists the error values. The 
+return value is cast as an HINSTANCE for backward compatibility with 16-bit 
+Windows applications. It is not a true HINSTANCE, however. The only thing that 
+can be done with the returned HINSTANCE is to cast it to an int
+
+ and 
+compare it with the value 32 or one of the error codes below.
+
+
+
+
+
+	0
+	The operating system is out of memory or resources.
+
+
+
+	ERROR_FILE_NOT_FOUND
+	The specified file was not found.
+
+
+
+	ERROR_PATH_NOT_FOUND
+	The specified path was not found.
+
+
+
+	ERROR_BAD_FORMAT
+	The .exe file is invalid (non-Microsoft Win32 .exe or error in .exe 
+image).
+
+
+
+	SE_ERR_ACCESSDENIED
+	The operating system denied access to the specified file.
+
+
+
+	SE_ERR_ASSOCINCOMPLETE
+	The file name association is incomplete or invalid.
+
+
+
+	SE_ERR_DDEBUSY
+	The Dynamic Data Exchange (DDE) transaction could not be completed because 
+other DDE transactions were being processed.
+
+
+
+	SE_ERR_DDEFAIL
+	The DDE transaction failed.
+
+
+
+	SE_ERR_DDETIMEOUT
+	The DDE transaction could not be completed because the request timed 
+out.
+
+
+
+	SE_ERR_DLLNOTFOUND
+	The specified DLL was not found.
+
+
+
+	SE_ERR_FNF
+	The specified file was not found.
+
+
+
+	SE_ERR_NOASSOC
+	There is no application associated with the given file name extension. This 
+error will also be returned if you attempt to print a file that is not 
+printable.
+
+
+
+	SE_ERR_OOM
+	There was not enough memory to complete the operation.
+
+
+
+	SE_ERR_PNF
+	The specified path was not found.
+
+
+
+	SE_ERR_SHARE
+	A sharing violation occurred.
+
+
+
+
+
+
+
+   Remarks
+
+
+
+   This method allows you to execute any commands in a folder's shortcut menu or 
+stored in the registry.
+
+To open a folder, use either of the following calls:
+
+   ShellExecute
+
+
+
+(handle, NULL, &lt;fully_qualified_path_to_folder&gt;, NULL, NULL, SW_SHOWNORMAL);
+
+   or
+
+
+   ShellExecute
+
+
+
+(handle, &quot;open&quot;, &lt;fully_qualified_path_to_folder&gt;, NULL, NULL, SW_SHOWNORMAL);
+
+   To explore a folder, use the following call: 
+
+
+   ShellExecute
+
+
+
+(handle, &quot;explore&quot;, &lt;fully_qualified_path_to_folder&gt;, NULL, NULL, SW_SHOWNORMAL);
+
+   
+
+
+   To launch the Shell's Find utility for a directory, use the following call. 
+
+
+   ShellExecute
+
+
+
+(handle, &quot;find&quot;, &lt;fully_qualified_path_to_folder&gt;, NULL, NULL, 0);
+
+   
+
+
+   If lpOperation
+
+ is NULL, the function opens the file specified by 
+lpFile
+
+. If lpOperation
+
+ is &quot;open&quot; or &quot;explore&quot;, the function 
+attempts to open or explore the folder.
+
+
+   To obtain information about the application that is launched as a result of 
+calling ShellExecute
+
+, use ShellExecuteEx.
+
+Note
+
+The Launch folder windows in a separate 
+process
+
+ setting in Folder Options affects ShellExecute
+
+. If that 
+option is disabled (the default setting), ShellExecute
+
+ uses an open 
+Explorer window rather than launch a new one. If no Explorer window is open, 
+ShellExecute
+
+ launches a new one.
+
+
+   Windows 95/98/Me
+
+: ShellExecute
+
+ is supported by the Microsoft 
+Layer for Unicode. To use this, you must add certain files to your application, 
+as outlined in Microsoft Layer for Unicode on 
+Windows Me/98/95 Systems.
+
+
+
+   FunctionInformation
+
+
+
+
+
+
+Minimum DLL Version
+	shell32.dll
+
+ version 
+3.51
+
+ or later
+
+
+
+Custom Implementation
+	No
+
+
+
+Header
+	shellapi.h
+
+
+
+
+
+Import library
+	shell32.lib
+
+
+
+
+
+Minimum operating systems
+	Windows NT3.1, Windows95
+
+
+
+Unicode
+	Implemented as ANSI and Unicode versions. 
+
+
+
+
+
+
+
+
+   
+
+
+   部分翻译如下：
+
+
+   
+
+
+   
+ 
+  Normal
+  0
+  
+  
+  false
+  false
+  false
+  
+   
+   
+   
+   
+   
+   
+  
+  MicrosoftInternetExplorer4
+ 
+
+ 
+ 
+<!--  
+ /* Font Definitions */
+ @font-face
+	{font-family:宋体;
+	panose-1:2 1 6 0 3 1 1 1 1 1;
+	mso-font-alt:SimSun;
+	mso-font-charset:134;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:3 135135232 16 0 262145 0;}
+@font-face
+	{font-family:"/@宋体";
+	panose-1:2 1 6 0 3 1 1 1 1 1;
+	mso-font-charset:134;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:3 135135232 16 0 262145 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:宋体;}
+pre
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:宋体;}
+p.clsref, li.clsref, div.clsref
+	{mso-style-name:clsref;
+	mso-margin-top-alt:auto;
+	margin-right:0cm;
+	mso-margin-bottom-alt:auto;
+	margin-left:0cm;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:宋体;}
+span.clsliteral
+	{mso-style-name:clsliteral;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	mso-header-margin:36.0pt;
+	mso-footer-margin:36.0pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+<!--
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:普通表格;
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+-->
+
+
+
+
+   对指定文件
+(文件夹
+)进行某项操作
+(打开，编辑，打印等等
+)。
+
+
+
+   函数原型：
+
+
+
+   HINSTANCEShellExecute( HWNDhwnd
+
+,
+
+
+
+    
+
+LPCTSTRlpOperation
+
+,
+
+
+
+    
+
+LPCTSTRlpFile
+
+,
+
+
+
+    
+
+LPCTSTRlpParameters
+
+,
+
+
+
+    
+
+LPCTSTRlpDirectory
+
+,
+
+
+
+    
+
+INTnShowCmd
+
+);
+
+
+
+   参数
+:
+
+
+   hwnd
+ 
+
+
+   [in]指向所从属的
+window的句柄。如果这个操作与其他的
+window没有什么关系，值可以为
+NULL。
+
+
+
+   lpOperation
+ 
+
+
+   [in]A pointer to a
+null-terminated string, referred to in this case as a verb
+, that 
+
+
+   字符串指针，指向以
+NULL为终结符的字符串。指明对这个文件所进行的操作。操作的集合取决于文件的类型。比如说对文件和文件夹的操作是不一样的。一般来说，在一个文件或文件夹的右键菜单里可进行的操作都是支持的。常见的有：
+
+
+
+   edit
+
+
+
+   启动编辑程序来编辑文件。如果传进去的对象不是文件，则函数会失败。
+
+
+
+
+   
+
+
+   lpFile
+
+     指定的文件名。
+
+
+
+
+
+lpParameters
+
+     指定的参数
+
+
+
+
+
+lpDirectory
+
+     工作路径
+
+
+
+
+
+nShowCmd
+
+
+
+
+
+      窗口的显示模式。
+
+
+
+而system()函数是c语言运行库里的函数，用于在程序中执行系统命令。凡事在cmd模式下可以运行的命令，都可以用来做system的参数。
+
+
+
+显而易见的，shellexcute和system的用途是不一样的。system用于执行cmd命令，而shellexcute只是对文件和文件夹执行某些动作。

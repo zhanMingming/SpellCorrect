@@ -1,0 +1,106 @@
+MATLAB安装 The installer cannot read the mwinstall.dll...很头疼的问题，解决方案转载自http://hi.baidu.com/hclgogo1/blog/item/aae0891cac10368c87d6b629.html，经本人实验已成功。
+
+
+   
+
+
+
+
+   
+
+
+   前提：安装前的文件 的 目录 不需含有 中文
+
+
+   
+
+
+   
+
+安装MATLAB7时弹出以下警告对话框，显示“ The installer cannot read the mwinstall.dll file, This is probably due to a CD reader which can only read files with an eight.three naming convention. Please see the technical support page atwww.mathworks.com”
+网上有很多人说解决方法如下，这其实是Matlab的一个BUG，一般情况文件解压是把临时文件放到C:\Windows\Temp下，但Matlab却是放在了根目录，所以只要把临时文件夹移到根目录下就可以解决问题了!!
+解决方案：把Matlab放在C盘,右键点击“我的电脑”-&gt;“属性”-&gt;“高级”-&gt;“环境变量”，把TMP和TEMP的&#20540;都编辑为C:\Temp ,同时在C的根目录下建立一个Temp文件夹!然后解压缩.然后点击安装就可以了!!不过安装后,最好还是把原来更改了的设置再改回来!把 C盘下的Temp文件删除就可以了.
+我试用了没有用！后上网看看，上一韩文网站上以现了解决问题的加减法，大家可试试
+
+很多人下载的安装文件都是放在下载工具的下载目录内，甚至是中文录内，将下载目录改为数字或英文试试，要是成功啊请留言告诉我一下！
+
+原文如下：
+
+Problem Description
+Why do I get the following error after downloading MATLAB R12 and running the installer?
+
+   
+
+
+   
+The installer cannot read the mwinstall.dll file that is probably due to a CD reader which can only read files with an eight.three naming convention. Please see the technical support page atwww.mathwoorks.comfor
+ assistance.
+
+
+   
+
+
+   Solution:
+This issue has been addressed in the R12.1 Professional Version of MATLAB and in the R12 Student Version of MATLAB PC installer.
+
+
+   This error is caused when trying to run the PC Installer in a directory that contains a space in it or in a directory whose parent directory contains a space. For example, downloading and installing files from the following location
+ would cause this problem:
+
+
+   C:\Program Files\temp
+
+
+   If you encounter this problem, you will NOT have to redownload the files. To correct this problem, there are two solutions:
+
+
+   1) After running the Installer.exe file the first time, several files are extracted and the setup.exe file is automatically implemented. The use of setup.exe causes the problems with the missing DLL file. After running the Installer.exe
+ file, a file called jins.exe will be created within the temporary directory. If you run the jins.exe file, you should not encounter the problem relating to the missing DLL file.
+
+
+   2) Move all the downloaded files into a directory that does not contain any spaces within it or its parent directories.
+
+
+   For example:
+
+
+   C:\temp\downloads\matlab\R12
+
+
+   
+
+
+
+
+   /************************************************************************************************************************************************************************/
+
+
+   
+
+
+matlab安装之后出现runtime错误
+在winxpsp1下安装matlab7.0成功,但重启机器后,却不能启动matlab
+
+弹出一个MicrosoftvisualC&#43;&#43;RuntimeLibrary提示框:
+
+RunTimeError!
+
+Program:E:\MATLAB701\bin\win32\MATLAB.exe
+
+ThisapplicationhasrequestedtheRuntimetoterminateitinanunusualway
+
+Pleasecontacttheapplicatin'ssupportteamformoreinformation
+
+
+   
+
+
+   
+
+
+
+
+   Solution:把兼容性设置成WIN2000就行了
+
+
+   就是右键单击matlab可执行文件的图标 然后点属性 在兼容性那一栏修改WIN2000就ok了

@@ -1,0 +1,64 @@
+c#  运行时创建事件处理程序 &amp;  DialogResult属性e.g
+
+
+   在form1.cs中加入一个函数
+
+
+   
+
+
+    private void Form1_MouseClick(object sender, MouseEventArgs e)
+ {
+     MessageBox.Show("YES!");
+ } 
+
+
+   
+
+
+   比如我要把这个函数实现功能加给一个button来响应，
+
+
+   则在该button的响应函数中加入Myfun(sender,e);
+
+
+   
+
+
+   或者在Form1.Designer.cs中写
+
+
+   Buttonname.Click+=new System.EventHandler(Myfun);
+
+
+   
+
+
+   再说一个比较有用的属性：DialogResult
+
+
+   一个按钮的DialogResult属性，可以在关闭对话框以后返回到底点击的是哪个按钮，具体代码如下：
+
+
+   我定义了两个Button，分别把DialogResult属性定义为: OK和Cancel；
+
+
+   
+
+
+    private void button1_Click(object sender, EventArgs e)
+ {
+     Form2 sform = new Form2();
+     if (sform.ShowDialog() == DialogResult.OK)
+     {
+  MessageBox.Show("OK");
+     }
+     else
+  MessageBox.Show("Cancel");
+ } 
+
+
+   
+
+
+   可以实现点击两个按钮都会关闭对话框，但是会弹出不同的messagebox

@@ -1,0 +1,63 @@
+javascript正则表达式修饰符之multiline(/m)的使用javascript正则表达式有3种修饰符/i、/m和/g。/i是我们最常用，也是最好理解的，代表正则表达式匹配的时候不区分大小写。
+
+
+   
+
+
+   var regex = /abc/i;
+alert(regex.test(&quot;aBc&quot;));//true
+
+   
+
+
+   
+
+
+
+/m代表多行模式multiline，如果目标字符串中不含有换行符\n，即只有一行，那么/m修饰符没有任何意义。
+
+   
+
+
+   var multiline = /abc/m;
+var singleline = /abc/;
+
+//目标字符串不含换行符\n
+var target = &quot;abcabcabc&quot;;
+
+如果正则表达式中不含有^或$匹配字符串的开头或结尾，那么/m修饰符没有任何意义。
+
+   
+
+
+   
+
+
+   //正则表达式不含^或$
+var multiline = /abc/m;
+var singleline = /abc/;
+
+var target = &quot;abcab\ncabc&quot;;
+
+也就是说只有当目标字符串含有\n，而且正则表达式中含有^或$的时候，/m修饰符才有作用。如果 multiline 为 false，那么“^”与字符串的开始位置相匹配，而“$”与字符串的结束位置相匹配。 如果 multiline 为 true，那么“^”与字符串开始位置以及“\n”或“\r”之后的位置相匹配，而“$”与字符串结束位置以及“\n”或“\r”之前的位置相匹配。
+
+   
+
+
+   
+
+
+   var mutiline = /^abc/m;
+var singleline = /^abc/;
+var target = &quot;ef\r\nabcd&quot;;
+alert(mutiline.test(target));//true
+alert(singleline.test(target));//false
+
+   
+
+
+   
+
+
+
+\r\n在windows下代表换行，如果只有1个\n也是一样的效果。由于target不是以abc开头的字符串，所以匹配singleline的结果是false；由于target是多行字符串(含有\n)，而第2行是以abc开头，所以匹配multiline结果是true。

@@ -1,0 +1,36 @@
+文件夹超过1万个压缩文件时，Argument list too long问题的解决最开始的命令如下
+
+
+   ls *.tar.gz | xargs -n1 tar xzvf
+
+
+
+
+   系统报错：
+
+
+   Argument list too long
+
+
+
+
+   
+
+
+
+
+   原因是ls* 不能list这么多的文件。
+
+
+   
+
+
+
+
+   改为
+
+
+   find ./ -type f -name '*.tar.gz' -exec zcat {} \;
+
+
+   就可以了。zcat后面空&#26684;{}，再空&#26684;\，再加一个分号

@@ -1,0 +1,35 @@
+SQL server 2008 创建主键为自增列的表使用Tranact-SQL 编写代码来创建一个新表：
+
+
+   
+
+
+   
+
+
+   
+
+
+   USE [OnlineJudge]
+GO
+
+/****** Object:  Table [dbo].[User1]    Script Date: 05/17/2010 14:05:06 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[User2](/*notice convert the tablename*/
+	[num] [int]IDENTITY(1,1) NOT NULL,
+	[userid] [nchar](10) NOT NULL,
+	[password] [nchar](10) NOT NULL,
+	[authority] [int] NOT NULL,
+	[logintime] [datetime] NOT NULL,
+ CONSTRAINT [PK_User2] PRIMARY KEY CLUSTERED /*notice convert the tablename*/
+(
+	[num] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO

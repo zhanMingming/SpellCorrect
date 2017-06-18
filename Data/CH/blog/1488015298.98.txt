@@ -1,0 +1,124 @@
+一段代码弄清楚CSS属性display和visibility的差别，以及dom元素可见的条件CSS如果想要将DOM元素隐藏，有2种做法：将display属性设置成none，或者将visibility属性设置成hidden。
+
+
+   
+
+
+
+
+   1、没有设置display和visibility属性
+
+
+   &lt;div id=&quot;outA&quot; style=&quot;width:400px; height:400px; background:#CDC9C9;position:relative;&quot;&gt;
+	&lt;div id=&quot;outB&quot; style=&quot;height:200; background:#0000ff;top:100px;position:relative;&quot;&gt;
+	&lt;/div&gt;
+	&lt;div id=&quot;outC&quot; style=&quot;height:100px; background:#FFB90F;top:50px;position:relative;&quot;&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+
+   
+
+
+
+
+
+
+   
+
+
+
+
+   2、使用display:none隐藏outB，outA和outC样式不变
+
+
+   &lt;div id=&quot;outA&quot; style=&quot;width:400px; height:400px; background:#CDC9C9;position:relative;&quot;&gt;
+	&lt;div id=&quot;outB&quot; style=&quot;height:200; background:#0000ff;top:100px;position:relative;display:none;&quot;&gt;
+	&lt;/div&gt;
+	&lt;div id=&quot;outC&quot; style=&quot;height:100px; background:#FFB90F;top:50px;position:relative;&quot;&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+
+   
+
+
+   
+
+
+
+
+   3、使用visibility:hidden隐藏outB，outA和outC样式不变
+
+
+   &lt;div id=&quot;outA&quot; style=&quot;width:400px; height:400px; background:#CDC9C9;position:relative;&quot;&gt;
+	&lt;div id=&quot;outB&quot; style=&quot;height:200; background:#0000ff;top:100px;position:relative;visibility:hidden;&quot;&gt;
+	&lt;/div&gt;
+	&lt;div id=&quot;outC&quot; style=&quot;height:100px; background:#FFB90F;top:50px;position:relative;&quot;&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+
+   
+
+
+   
+
+
+
+
+   对比结果可以很容易得出结论：
+
+
+   display:none，元素实际上就从页面中移走了，它后面的元素就会自动上移；
+
+
+   visibility:hidden，则仅仅隐藏该元素，它占据的页面空间依然存在。
+
+
+   
+
+
+   对于outB元素，如果将display和visibility组合使用会是什么结果呢？
+
+
+   display:block;visibility:hidden; outB看不见，但仍然占页面空间。
+
+
+   display:none;visibility:hidden; outB看不见，也不占页面空间。
+
+
+   display:none;visibility:visible; 
+outB看不见，也不占有空间。
+
+
+   display:block;visibility:visible; 
+outB可见，肯定占有空间。
+
+
+   上面的测试结果，在IE11/FF17/Chrome39下表现都是一致的。可以看到：如果1个dom元素可见，必须要满足:display属性不能是none，visibility属性不能是hidden。
+
+
+   
+
+
+
+
+   
+
+
+   &lt;div style=&quot;display:none;&quot;&gt;
+	&lt;div id=&quot;outA&quot; style=&quot;width:400px; height:400px; background:#CDC9C9;position:relative;&quot;&gt;
+		&lt;div id=&quot;outB&quot; style=&quot;height:200; background:#0000ff;top:100px;position:relative;&quot;&gt;
+		&lt;/div&gt;
+		&lt;div id=&quot;outC&quot; style=&quot;height:100px; background:#FFB90F;top:50px;position:relative;&quot;&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+&lt;/div&gt;浏览器运行这段代码，可以发现outA、outB、outC都不可见，因为父元素的display属性被设置成了none。所以如果一个元素可见，那么它的父元素一定也要是可见的。
+
+   
+
+
+   
+
+
+
+
+   综上：一个元素如果可见，必须满足3个条件：display不能是none，visibility不能是hidden，父元素可见。

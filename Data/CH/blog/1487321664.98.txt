@@ -1,0 +1,133 @@
+将神的恩赐发挥到极致【转自Maling】转自：http://blog.csdn.net/linguranus/archive/2011/02/16/6189676.aspx
+
+
+   希望CSDN的编辑，将这个博客推荐到首页，非常了不起的成果。以下全文转载，来自Maling。
+
+
+   
+
+
+   
+
+   The comment from Linus is &ldquo;The code looks clever and nice&rdquo;!
+
+
+   
+
+
+   a.memcpy in Linux kernel
+
+
+   Patch:https://patchwork.kernel.org/patch/296282/
+
+
+   commit id: 59daa706fbec745684702741b9f5373142dd9fdc
+
+
+   First completely avoid memory false dependence in CPU pipeline, which impacts all x86 CPU, the performance is improved up to 3X, pushed into Linux kernel release version, and replaced original one, which stayed for 8 years.
+
+
+   
+
+
+   b.memmove in Linux kernel
+
+
+   Patch:http://lkml.org/lkml/2010/9/16/502
+
+
+   commit id: 3b4b682becdfa9f42321aa024d5cc84f71f06d8c
+
+
+   Avoid long latency and some limitation from mov string instruction, which cost much time in decoding stage, and memory false dependence forunalignedcases.
+
+
+   
+
+
+   H.J and I provide the below codes.
+
+
+   
+
+
+   a.64bit memcpy/memmovefor Atom, Core2 and Core i7
+
+
+   http://article.gmane.org/gmane.comp.lib.glibc.alpha/15278
+
+
+   This patch includes optimized 64bit memcpy/memmove for Atom, Core 2 and
+
+
+   Core i7.It improves memcpy up to 3X on Atom, up to 4X on Core 2 and
+
+
+   up to 1X on Core i7.It also improves memmove by up to 3X on Atom, up to
+
+
+   4X on Core 2 and up to 2X on Core i7.
+
+
+   
+
+
+   b.64bit memcmp for Core i7
+
+
+   http://sourceware.org/ml/libc-alpha/2010-04/msg00030.html
+
+
+   This is 64bit SSE4 optimized memcmp. It improves memcmp by up to 3X
+
+   on Intel Core i7.
+
+   
+
+
+   c.64bit strcmp
+
+
+   http://sources.redhat.com/ml/libc-alpha/2009-07/msg00063.html
+
+
+   The code is checked in glibc and opensolaris library.
+
+
+   
+
+
+   d.64bit strcpy
+
+
+   http://src.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/lib/libc/amd64/gen/strcpy.s
+
+
+   The code is checked in glibc and opensolaris library.
+
+
+   
+
+
+   e.32bit memset/memcpy for Atom, Core2 and Corei7
+
+
+   http://sources.redhat.com/ml/libc-alpha/2010-01/msg00016.html
+
+
+   Their performances are all improved up to 3x~4x, pushed into moblin libc successfully.
+
+
+   
+
+
+   f.32bit memcmp/strcmp/strncmp for Atom, Core2 and Corei7.
+
+
+   http://sourceware.org/ml/libc-alpha/2010-02/msg00028.html
+
+
+   The patch is to provide 32bit memcmp/strcmp/strncmp optimized for
+
+
+   SSSE3/SSS4.2.It can improve memcmp by up to 3X, strcmp by up to 7x

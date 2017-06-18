@@ -1,0 +1,153 @@
+今日悲剧……Bonsai%&gt;_&lt;%
+
+
+   
+
+
+   今天不是一般的被虐啊！！！
+
+
+   先是高高兴兴的在发展中学校A了一题，发现没人做，过来HDU就悲剧了&hellip;&hellip;
+
+Bonsai
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 43Accepted Submission(s): 33
+
+Problem Description
+
+After being assaulted in the parking lot by Mr. Miyagi following the "All Valley Karate Tournament", John Kreese has come to you for assistance. Help John in his quest for justice by chopping off all the leaves from Mr. Miyagi's bonsai tree!You are given an undirected tree (i.e., a connected graph with no cycles), where each edge (i.e., branch) has a nonnegative weight (i.e., thickness). One vertex of the tree has been designated the root of the tree.The remaining vertices of the tree each have unique paths to the root; non-root vertices which are not the successors of any other vertex on a path to the root are known as leaves.Determine the minimum weight set of edges that must be removed so that none of the leaves in the original tree are connected by some path to the root.
+
+
+
+
+   
+
+Input
+
+The input file will contain multiple test cases. Each test case will begin with a line containing a pair of integers n (where 1 &lt;= n &lt;= 1000) and r (where r &isin; ｛1,&hellip;&hellip;, n｝) indicating the number of vertices in the tree and the index of the root vertex, respectively. The next n-1 lines each contain three integers ui vi wi (where ui, vi &isin; {1,&hellip;&hellip;, n} and 0 &lt;= wi &lt;= 1000) indicating that vertex ui is connected to vertex vi by an undirected edge with weight wi. The input file will not contain duplicate edges. The end-of-file is denoted by a single line containing "0 0".
+
+
+
+
+   
+
+Output
+
+For each input test case, print a single integer indicating the minimum total weight of edges that must be deleted in order to ensure that there exists no path from one of the original leaves to the root.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   15 15
+1 2 1
+2 3 2
+2 5 3
+5 6 7
+4 6 5
+6 7 4
+5 15 6
+15 10 11
+10 13 5
+13 14 4
+12 13 3
+9 10 8
+8 9 2
+9 11 3
+0 0
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   16
+
+
+
+Source
+
+2009 Stanford Local ACM Programming Contest 
+
+TLE n次+WA n次
+
+错误原因：根节点特殊特殊处理错误！现贴出悲剧代码&hellip;&hellip;
+
+
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+int n,r;
+struct EDGE
+{
+	int ver[1010][2];//weight;
+}edge[1010];
+
+bool visited[1010];
+int deg[1010];
+
+int dfs(int root)
+{
+	visited[root]=true;
+	int temp=0;
+	int ori=0;
+	if(deg[root]==1)
+		return edge[root].ver[1][1];
+	for(int i=1;i&lt;=deg[root];i++)
+	{
+		if(!visited[edge[root].ver[i][0]])
+		{
+			temp+=dfs(edge[root].ver[i][0]);
+		}
+		else
+			ori=edge[root].ver[i][1];
+	}
+	return temp&lt;ori?temp:ori;
+}
+
+void init()
+{
+	int from,to,w;
+	for(int k=1;k&lt;n;k++)
+	{
+		scanf("%d%d",&amp;from,&amp;to);
+		scanf("%d",&amp;w);
+		edge[from].ver[++deg[from]][0]=to;
+		edge[to].ver[++deg[to]][0]=from;
+		edge[from].ver[deg[from]][1]=w;
+		edge[to].ver[deg[to]][1]=w;
+	}
+}
+
+int main()
+{
+	while(scanf("%d%d",&amp;n,&amp;r)!=EOF&amp;&amp;(n||r))
+	{
+		for(int i=0;i&lt;=n;i++)
+		{
+			deg[i]=0;
+			visited[i]=false;
+		}
+		init();
+		int t=0;
+		visited[r]=true;
+		for(int j=1;j&lt;=deg[r];j++)
+			t+=min(edge[r].ver[j][1],dfs(edge[r].ver[j][0]));
+		cout&lt;&lt;t&lt;&lt;endl;
+	}
+}

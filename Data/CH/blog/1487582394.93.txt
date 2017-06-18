@@ -1,0 +1,96 @@
+Strange Calendar III zoj 4011Strange Calendar III
+
+Time Limit:2 Seconds Memory Limit:65536 KB
+
+
+   As we know, in the Bzu planet and in the cc98 planet, people use special calendar which is similar to that used in the earth. In fact, in the BoMb planet, people use a similar calendar as well!
+
+
+   As a matter of fact, people who live in the BoMb planet are all from the earth after a big bomb blew up on the earth. Because of being used to the calendar in the earth, they useDay,MonthandYearin the calendar in the BoMb too. But the operational cycle of the BoMb planet is so ridiculous that people have to make strange rules for their new calendar.
+
+
+   The rules are listed below:
+
+
+For YearX, there aref(X)months in total, wheref(X) = (X mod 12) + 1.
+For each year, there arei3day(s) in theithmonth.
+There are also leap years in the BoMb planet. For YearX, ifX mod 11 = 0, it is considered as a leap year and there are 1 day more in the first month of the year.
+
+
+   Now given two dates in the format of BoMb calendar, you are to calculate how many days there are in total between the two days(include the two days).
+
+Input
+
+   The input contains multiple test cases. There are only two lines in each test case. The first line is a string"m1-d1-y1", indicating thed1thday in them1thmonth of Yeary1. The second line is a string"m2-d2-y2"indicating the date of the other day. You can assume the two dates are legal in BoMb calendar and are diffrent, andy1andy2are in the range of [0, 109].
+
+Output
+
+   For each test case, output a single line the number of days between the two days (include the two days) given in the input.
+
+Sample Input
+
+   2-2-14
+2-3-15
+
+Sample Output
+
+   38
+
+
+
+   
+
+
+   Author:LI, DinghuaContest:ZOJ Monthly, September 2010
+
+
+   
+
+
+   #include &lt;iostream&gt;
+#include &lt;stdio.h&gt;
+using namespace std;
+typedef long long LL;
+LL month[13];
+LL yeard[13];
+LL sum12;//days in 12 years in total
+LL work(LL m,LL d,LL y)
+{
+	LL yy,total;
+	int i;
+	yy=y%12+1;//have already passed 20 years
+	total=(y/12)*sum12;
+	for(i=1;i&lt;yy;i++)
+		total+=yeard[i];
+	for(i=1;i&lt;m;i++)
+		total+=month[i];
+	total+=d;
+	if(y&gt;0)
+		total+=(y-1)/11;
+	if(y%11==0&amp;&amp;m&gt;1)
+		total++;
+	return total;
+}
+int main()
+{
+	yeard[0] = 0;
+	int i;
+	for(i=1;i&lt;13;i++)
+	{
+		month[i]=i*i*i;
+		yeard[i]=month[i]+yeard[i-1];
+		sum12+=yeard[i];
+	}
+	LL m1, d1, y1, m2, d2, y2;
+	while ( scanf( "%lld-%lld-%lld", &amp;m1, &amp;d1, &amp;y1) != EOF) 
+	{
+		scanf( "%lld-%lld-%lld", &amp;m2, &amp;d2, &amp;y2);
+		LL total = work(m2,d2,y2) - work(m1,d1,y1);
+		if (total&lt;0)
+			total=-total;
+		total++;
+		if (y1==0&amp;&amp;y2!=0||y2 ==0&amp;&amp;y1!=0) total++;
+		printf( "%lld/n", total);
+	}
+	return 0;
+}

@@ -1,0 +1,27 @@
+nodejs搭建一个简单的httpserver学习开源组件HttpClient的时候，需要连接一个httpserver。我们可以使用eclipse&#43;tomcat&#43;j2ee搭建一个httpserver开发和部署环境，但是这种方式稍微麻烦一些。我的做法是：安装nodejs，用nodejs来开发一个简易的httpserver，这样可以直接用js来编写点，对开发环境和部署要求少。下面这段代码就可以在8080端口启动httpserver：
+
+
+   
+   // 加载http模块和url模块
+var http = require(&quot;http&quot;);
+var url = require(&#39;url&#39;);
+
+var server = http.createServer(function(request, response) {
+	// url请求参数{&quot;name&quot;:&quot;aty&quot;,&quot;age&quot;:26}
+    var args = url.parse(request.url, true).query;
+		
+	response.writeHead(200, {&quot;Content-Type&quot;: &quot;text/html&quot;});
+	response.write(&quot;&lt;html&gt;&quot;);
+	response.write(&quot;&lt;head&gt;&quot;);
+	response.write(&quot;&lt;title&gt;Hello World Page&lt;/title&gt;&quot;);
+	response.write(&quot;&lt;/head&gt;&quot;);
+	response.write(&quot;&lt;body&gt;&quot;);
+	response.write(&quot;Hello World!&quot;);
+	response.write(&quot;&lt;/body&gt;&quot;);
+	response.write(&quot;&lt;/html&gt;&quot;);
+	response.end();
+});
+
+server.listen(8080);
+
+console.log(&quot;server is listening&quot;);

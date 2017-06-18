@@ -1,0 +1,22 @@
+贴一段关闭tabpage的源码private void tabControl1_MouseDoubleClick(object sender, MouseEventArgs e)
+  {
+      if (e.Button == MouseButtons.Left)
+      {
+   if (tabControl1.SelectedTab == tab2)
+   {
+int x = e.X, y = e.Y;
+//计算关闭区域   
+Rectangle myTabRect = tabControl1.GetTabRect(tabControl1.SelectedIndex);
+     
+
+//如果鼠标在区域内就关闭选项卡   
+bool isClose=myTabRect.Contains(new Point(e.X,e.Y));
+     
+if (isClose)
+{
+    tabControl1.TabPages.Remove(tabControl1.SelectedTab);
+}
+
+   }
+      }
+  }

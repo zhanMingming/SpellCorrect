@@ -1,0 +1,81 @@
+算法导论习题Exercises 14.2-5Exercises 14.2-5: ⋆
+
+
+    
+ 
+
+     
+ 
+    
+
+
+   We wish to augment red-black trees with an operation RB-ENUMERATE(x, a, b) that outputs all the keys k such that a &le; k &le; b in a red-black tree rooted at x. Describe how RB-ENUMERATE can be implemented in &Theta;(m +lg n) time, where m is the number of keys that are output and n is the number of internal nodes in the tree. (Hint: There is no need to add new fields to the red-black tree.)
+
+
+   解：
+
+
+   RB-ENUMERATE(x, a, b)1 start TREE-SEARCH(x, a) //该方法返回不大于a的最紧下解,时间复杂度O(lgn)2 if start &lt; a3 then start SUCC[start]4 while start&lt; b //O(m) 次循环5 print start6 start SUCC[start] //时间复杂度O(1),每个节点必须存储Succ这个域,指向下一个节点的位置.
+
+
+   总的时间复杂度O(m+lgn)
+
+
+   
+
+
+   We can also answer this question without resorting to augmenting the datastructure: we perform an inorder tree walk, except we ignore (do not recurseon) the left children of nodes with key &lt; a and the right children of nodes withkey &gt; b. Thus, if we consider both children of a node we will output at least oneof them, therefore, all nodes not counted by m will lie on two paths from the rootto a leaf in the tree. This yields a total running time of (m + lg n) as before.
+
+
+   RB-ENUMERATE(x, a, b)
+
+
+   {
+
+
+    
+    
+if( a&lt;=x&lt;=b)
+
+    
+    
+    
+ print (x)
+
+    
+    
+    
+ RB-ENUMERATE(left[x], a, b)
+
+    
+    
+    
+ RB-ENUMERATE(right[x], a, b)
+
+    
+    
+    
+else if(x&lt;a)
+
+    
+    
+    
+ RB-ENUMERATE(right[x], a, b)
+
+    
+    
+    
+else if(x&gt;b)
+
+    
+    
+    
+ RB-ENUMERATE(left[x], a, b)
+
+    
+
+
+   }
+
+
+   这个时间复杂度会是O(m+lgn)吗?不解.

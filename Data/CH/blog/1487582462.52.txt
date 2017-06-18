@@ -1,0 +1,143 @@
+c++操作mysql - 查询讲完了连接，接着就讲查询了。
+
+
+   
+
+
+   mysql的执行和查询都是使用一下2个接口： 
+
+
+   1. mysql_query(MYSQL* mysql, const char* sql);
+
+
+   2.int mysql_real_query(MYSQL *mysql, const char *query, unsigned long 
+length);
+
+
+   
+
+
+   一下就分别描述这两个函数：
+
+
+   
+
+
+   1.mysql_query()
+
+
+
+
+
+
+
+   	int mysql_query(MYSQL *mysql, const char *query)
+
+
+   
+
+
+
+
+
+
+
+
+   描述
+
+
+   执行由&ldquo;Null终结的字符串&rdquo;查询指向的SQL查询。正常情况下，字符串必须包含1条SQL语句，而且不应为语句添加终结分号（&lsquo;;&rsquo;）或&ldquo;/g&rdquo;。如果允许多语句执行，字符串可包含多条由分号隔开的语句。但是连接的时候必须指定CLIENT_MULTI_STATEMENTS选项。
+
+
+   
+
+
+   mysql_query()不能用于包含二进制数据的查询，应使用mysql_real_query()取而代之（二进制数据可能包含字符&lsquo;/0&rsquo;，mysql_query()会将该字符解释为查询字符串结束）。
+
+
+   
+
+
+   如果希望了解查询是否应返回结果集，可使用mysql_field_count()进行检查。请参见25.2.3.22节，&ldquo;mysql_field_count()&rdquo;。
+
+
+   
+
+
+   返回值
+
+
+   如果查询成功，返回0。如果出现错误，返回非0值。
+
+
+   
+
+
+   2.mysql_real_query()
+
+
+   
+
+
+   int mysql_real_query(MYSQL *mysql, const char *query, unsigned long 
+length)
+
+
+   
+
+
+   描述
+
+
+   执行由&ldquo;query&rdquo;指向的SQL查询，它应是字符串长度字节&ldquo;long&rdquo;。正常情况下，字符串必须包含1条SQL语句，而且不应为语句添加终结分号（&lsquo;;&rsquo;）或&ldquo;/g&rdquo;。如果允许多语句执行，字符串可包含由分号隔开的多条语句。但是连接的时候必须指定CLIENT_MULTI_STATEMENTS选项。
+
+
+   
+
+
+   对于包含二进制数据的查询，必须使用mysql_real_query()而不是mysql_query()，这是因为，二进制数据可能会包含&lsquo;/0&rsquo;字符。此外，mysql_real_query()比mysql_query()快，这是因为它不会在查询字符串上调用strlen()。
+
+
+   
+
+
+   如果希望知道查询是否应返回结果集，可使用mysql_field_count()进行检查25.2.3.22节，&ldquo;mysql_field_count()&rdquo;。
+
+
+   
+
+
+   
+
+
+   返回值
+
+
+   如果查询成功，返回0。如果出现错误，返回非0值。
+
+
+   
+
+
+   
+
+
+   如果失败，可使用mysql_error(MYSQL* mysql)看看错误信息。
+
+
+   
+
+
+   
+
+
+   使用mysql_query和mysql_real_query可以执行任何的mysql语句。不需要在语句末尾加上分号！
+
+
+   对于没有像select一样的查询，需要接着调用mysql_store_result或者mysql_use_result来保存结果集。
+
+
+   对于insert或者delete，create语句，不返回结果集的，判断返回值看看是否执行成功，然后用mysql_affected_rows函数来
+
+
+   查询被影响的行数。用mysql_error(MYSQL* mysql)来看错误信息。

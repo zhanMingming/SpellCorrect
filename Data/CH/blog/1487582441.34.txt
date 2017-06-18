@@ -1,0 +1,65 @@
+hdu 1948 How many waysProblem G 
+Time Limit : 3000/1000ms (Java/Other)Memory Limit : 32768/32768K (Java/Other)
+Total Submission(s) : 7Accepted Submission(s) : 5
+Font: Times New Roman | Verdana | Georgia 
+Font Size: &larr; &rarr;
+Problem Description
+这是一个简单的生存游戏，你控制一个机器人从一个棋盘的起始点(1,1)走到棋盘的终点(n,m)。游戏的规则描述如下：1.机器人一开始在棋盘的起始点并有起始点所标有的能量。2.机器人只能向右或者向下走，并且每走一步消耗一单位能量。3.机器人不能在原地停留。4.当机器人选择了一条可行路径后，当他走到这条路径的终点时，他将只有终点所标记的能量。如上图，机器人一开始在(1,1)点，并拥有4单位能量，蓝色方块表示他所能到达的点，如果他在这次路径选择中选择的终点是(2,4)点，当他到达(2,4)点时将拥有1单位的能量，并开始下一次路径选择，直到到达(6,6)点。我们的问题是机器人有多少种方式从起点走到终点。这可能是一个很大的数，输出的结果对10000取模。 
+
+Input
+第一行输入一个整数T,表示数据的组数。对于每一组数据第一行输入两个整数n,m(1 &lt;= n,m &lt;= 100)。表示棋盘的大小。接下来输入n行,每行m个整数e(0 &lt;= e &lt; 20)。 
+
+Output
+对于每一组数据输出方式总数对10000取模的结果. 
+
+Sample Input
+
+
+   1
+6 6
+4 5 6 6 4 3
+2 2 3 1 7 2
+1 1 4 6 2 7
+5 8 4 3 9 5
+7 6 6 2 1 5
+3 1 1 3 7 2
+
+
+Sample Output
+
+
+   3948
+
+   #include &lt;iostream&gt;
+#include &lt;memory.h&gt;
+using namespace std;
+int main()
+{
+	int map[110][110];
+	int dp[110][110];
+	int m,n;
+	int i,j,k,h;
+	int cases;
+	scanf("%d",&amp;cases);
+	while(cases--)
+	{
+		scanf("%d%d",&amp;n,&amp;m);
+		memset(dp,0,sizeof(dp));
+		for(i=0;i&lt;n;i++)
+			for(j=0;j&lt;m;j++)
+				scanf("%d",&amp;map[i][j]);
+		dp[0][0]=1;
+		for(i=0;i&lt;n;i++)
+			for(j=0;j&lt;m;j++)
+				for(k=0;k&lt;=map[i][j]&amp;&amp;j+k&lt;m;k++)
+					for(h=0;h+k&lt;=map[i][j]&amp;&amp;i+h&lt;n;h++)
+					{
+						if(h!=0||k!=0)
+						{
+							dp[i+h][j+k]=(dp[i+h][j+k]+dp[i][j])%10000;
+						}
+					}
+		printf("%d/n",dp[n-1][m-1]);
+	}
+	return 0;
+}

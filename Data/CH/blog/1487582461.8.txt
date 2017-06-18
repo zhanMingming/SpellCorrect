@@ -1,0 +1,238 @@
+STL Map使用详解(一)Map是一种关联容器，用来存储key-value数据。其中的key是用来查找的关键字，value是实际存放的值。
+
+
+   一个特定的关键字只能与一个唯一的值相联系。map是由一对一对的键值(key/value)所组成的排序结构体，
+
+
+   键值是读一无二的(unique)的。
+
+
+   map通常是以平衡二叉查找树来实现的，因此map对插入，删除，查找能保证log(N)的时间复杂度。对于
+
+
+   海量的数据的插入和查询，map是一个不错的选择。
+
+
+   本文将对map的常见操作进行讲解。不当之处，欢迎批评指正(bicheng.gui@gmail.com).
+
+
+   1. map的构造：
+
+
+   map提供了以下模板构造函数：
+
+
+    template&lt;class T1, class T2&gt;
+
+
+    map();             // 默认构造函数
+
+
+    map(const map&amp; m)  // 拷贝构造函数
+
+
+    map(iterator begin, iterator end ); //区间构造函数
+
+
+    map(iterator begin, iterator end, const traits&amp; _compare) //带比较谓词的构造函数
+
+
+    map(iterator begin, iterator end, const traits&amp; _compare, const allocator&amp; all) //带分配器
+
+
+   例子：
+
+
+   #include &lt;map&gt;
+
+
+   #include &lt;iostream&gt;
+
+
+   using namespace std;　
+
+
+   	typedef pair&lt;int,int&gt; int_pair;
+
+
+   	map&lt;int,int&gt;::iterator itr1;
+
+
+   	map&lt;int,int&gt; m1; //默认升序，从小到大
+
+
+   	m1[1] = 10;
+
+
+   	m1[2] = 20;
+
+
+   	m1[3] = 30;
+
+
+   	//输出结果10 20 30,有换行
+
+
+   	for (itr1 = m1.begin(); itr1 != m1.end(); ++itr1)
+
+
+   	{
+
+
+    cout &lt;&lt; itr1-&gt;second &lt;&lt; endl;
+
+
+   	}
+
+
+   	map&lt;int,int,greater&lt;int&gt;&gt; m2; //降序的map
+
+
+   	map&lt;int,int,greater&lt;int&gt;&gt;::iterator itr2;
+
+
+   	m2[1] = 10; //插入键值为1，value为10的元素，multimap不支持operator[]
+
+
+   	m2.insert(int_pair(2,20)); //map的valuetype是pair(t1,t2);
+
+
+   	m2[3] = 30;
+
+
+   	//输出30,20,10
+
+
+   	for (itr2 = m2.begin(); itr2 != m2.end(); ++itr2)
+
+
+   	{
+
+
+    cout &lt;&lt; itr2-&gt;second &lt;&lt; endl;
+
+
+   	}
+
+
+   	//利用m1的内存分配器构造一个m3
+
+
+   	map&lt;int,int&gt;::allocator_type al = m1.get_allocator();
+
+
+   	map&lt;int,int&gt; m3(less&lt;int&gt;(), al);
+
+
+   	//根据m1拷贝一个m4
+
+
+   	map&lt;int,int&gt; m4(m1); //谓词和类型必须要匹配。
+
+
+   	//根据两个iterator构造map
+
+
+   	map&lt;int,int,greater&lt;int&gt;&gt; m5(m2.begin(), m2.end());
+
+
+   	//输出m5, 30,20,10 ,带换行。
+
+
+   	for (itr2 = m5.begin(); itr2 != m5.end(); ++itr2)
+
+
+   	{
+
+
+    cout &lt;&lt; itr2-&gt;second &lt;&lt; endl;
+
+
+   }
+
+
+   以上代码需要VS2005以上编译器。
+
+
+   2. map的常见操作：
+
+
+   map支持常见的迭代器接口，例如begin(),end(),rbegin(),rend().
+
+
+   empty()    判断map是否为空。为空的话返回真。	
+
+
+   size()      返回map的长度
+
+
+   maxsize()  返回map能容纳的最大的元素个数，根据编译器和平台而变化。
+
+
+   3.pair&lt;iterator, bool&gt;insert(iterator where，const value_type&amp; val)
+
+
+   可以插入一个对象，一个对象的若干份拷贝，或者一个范围内的对象.
+
+
+   insert函数把对象插入到where所指的元素之前。
+
+
+   示例代码：
+
+
+   map&lt;int,int&gt;::iterator itr1,itr2;
+
+
+   map&lt;int,int&gt; m1,m2;
+
+
+   typedef pair&lt;int,int&gt; int_pair;
+
+
+   m1.insert( int_pair( 1, 10) );
+
+
+   m1.insert( int_pair( 3, 30) );
+
+
+   由于map容器不允许键值重复，在执行插入操作后，可以根据返回值获取操作是否成功。
+
+
+   返回值是一个迭代器和布尔值的pair，迭代器指向map中具有该值的元素，布尔值表示是否插入成功。
+
+
+   如果布尔值为true，表示插入成功，则迭代器为新插入值在map中的位置。
+
+
+   如果布尔值为false，表示插入失败（已经存在该值），迭代器为原有值在map中的位置。
+
+
+   pair&lt;map&lt;int,int&gt;::iterator, bool&gt; insertresult;
+
+
+   insertresult = m1.insert(int_pair(1,10));
+
+
+   if (insertresult-&gt;second)
+
+
+   {
+
+
+   //插入成功
+
+
+   }
+
+
+   else
+
+
+   {
+
+
+   //插入失败
+
+
+   }

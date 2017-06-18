@@ -1,0 +1,130 @@
+一个简单的类，来管理mysql的结果集的指针。有点类似于智能指针了。
+
+
+   
+
+
+   当然，这是一个模板类，你可以用于任何你想要管理的指针。
+
+
+   
+
+
+   //用来删除mysql结果集的函数对象
+struct Mysql_Result_Deleter
+{
+ void operator()(MYSQL_RES* result)
+ {
+
+
+     if (result != NULL)
+
+
+      mysql_free_result(result);
+ }
+};
+
+
+   
+
+
+   
+
+
+    //默认删除资源的策略，用delete
+
+
+    template&lt;class _Ty&gt;
+  struct my_default_delete
+  { // default deleter for unique_ptr
+   typedef my_default_delete&lt;_Ty&gt; _Myt;
+
+   my_default_delete()
+   { // default construct
+   }
+
+   template&lt;class _Ty2&gt;
+   my_default_delete(const my_default_delete&lt;_Ty2&gt;&amp;)
+   { // construct from another default_delete
+   }
+
+   void operator()(_Ty *_Ptr) const
+   { // delete a pointer
+    if (0 &lt; sizeof (_Ty)) // won't compile for incomplete type
+     delete _Ptr;
+   }
+  };
+
+
+  // this class is as simple as possbile to hold the stack pointers
+  // to make sure that the pointer will be deleted if there is any exception
+  // 
+
+
+      //模板函数
+
+
+     template&lt;typename T1, typename T2 = my_default_delete&lt;T1&gt;&gt;
+  class scope_ptr_holder
+  {
+   T1* original_pointer;
+   T2 itsdeleter;
+  public:
+
+   explicit scope_ptr_holder(T1* t) // constructor
+    :original_pointer(t){}
+
+   explicit scope_ptr_holder(T1* t , T2 deleter) // constructor
+    :original_pointer(t),
+    itsdeleter(deleter){}
+
+   void Reset(T1* newptr)
+   {
+    if(newptr == original_pointer)
+     return;
+    if (original_pointer != NULL)
+     itsdeleter(original_pointer);
+    original_pointer = newptr;
+   }
+
+   ~scope_ptr_holder()
+   {
+    if (original_pointer != NULL)
+    {
+     itsdeleter(original_pointer);
+     original_pointer = NULL;
+    }
+   }
+
+  protected:
+   scope_ptr_holder(const scope_ptr_holder&amp;);
+   const scope_ptr_holder&amp; operator=(const scope_ptr_holder&amp;);
+  };
+ }
+
+
+   
+
+
+   
+
+
+   实例代码:
+
+
+   
+
+
+   sqlstream &lt;&lt; &quot;select * from pagecontainequipment where pageid = &quot; &lt;&lt; page-&gt;GetID() &lt;&lt; endl;
+ string sql = sqlstream.str();
+ MYSQL_RES* result = QueryAndReturnResult(sql.c_str());
+ if (result == NULL)
+  return false;
+
+ scope_ptr_holder&lt;MYSQL_RES, Mysql_Result_Deleter&gt; resultholder(result);
+
+
+   
+
+
+   该代码已用在实际的项目中了，是没有什么问题的。

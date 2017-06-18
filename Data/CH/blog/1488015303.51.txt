@@ -1,0 +1,41 @@
+javascript正则RegExp.test()需要注意:不具有可重入性先看下面这段代码：
+
+
+   // 2012-12-12 12:12:12
+var regex = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/g;  
+
+// true
+alert(regex.test(&quot;2012-12-12 12:12:12&quot;));
+
+// false			
+alert(regex.test(&quot;2012-12-12 12:12:12&quot;));
+
+   
+
+
+   
+
+
+
+执行结果已经在代码注释里了，可以看到：对于同一个正则表达式对象regex，不能重复调用：第一次返回true，第二次就返回false，很显然这种效果不是我们想要的。这是因为RegExp.test()方法，第一次从位置0开始查找，可以匹配；第二次的查找位置就不是0了，说以就不能匹配了。
+
+   
+
+
+
+
+   解决方式挺简单：每次都让test从第0个位置开始匹配就可以了：
+
+
+   
+
+
+   // 2012-12-12 12:12:12
+var regex = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/g;  
+
+// true
+alert(regex.test(&quot;2012-12-12 12:12:12&quot;));
+
+regex.lastIndex = 0;
+// true			
+alert(regex.test(&quot;2012-12-12 12:12:12&quot;));

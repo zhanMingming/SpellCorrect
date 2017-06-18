@@ -1,0 +1,95 @@
+opencv 金字塔图像分割我所知的opencv中分割函数：watershed（只是看看效果，不能返回每类pixel类属），cvsegmentImage，cvPyrSegmentation（返回pixel类属）
+
+   金字塔分割原理篇在这里，本文只提供代码。
+
+   Segment函数：
+
+   
+
+   
+
+   #include&lt;cv.h&gt;
+#include &lt;cvaux.h&gt;
+#include &lt;opencv\cxcore.hpp&gt;
+#include &lt;opencv.hpp&gt;
+#include &lt;nonfree.hpp&gt;
+#include &lt;core/core.hpp&gt;
+#include &lt;imgproc/imgproc.hpp&gt;
+#include &lt;imgproc/imgproc_c.h&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;highgui.h&gt;
+using namespace std;
+using namespace cv;
+void Segment(IplImage* I)
+{
+
+	////////////////////parameters initialization//////////////////////
+	int mode = CV_RETR_LIST;
+	int level = 2, block_size = 1000;
+	CvMemStorage* storage = cvCreateMemStorage(block_size);
+	CvSeq* components;
+	double threshold1 = 100,threshold2 = 50;
+
+	IplImage *src = cvCreateImage(cvGetSize(I),IPL_DEPTH_8U,1);
+	cvCvtColor(I,src,CV_RGB2GRAY);
+	IplImage* dst = cvCreateImage(cvGetSize(I),IPL_DEPTH_8U,1);
+
+	src-&gt;width = dst-&gt;width = (I-&gt;width &amp; -(1 &lt;&lt; level));
+	src-&gt;height = dst-&gt;height = (I-&gt;height &amp; -(1 &lt;&lt; level));
+
+	//////////////////////Segment/////////////////////////
+	cvPyrSegmentation(src,dst,storage,&amp;components,level,threshold1,threshold2);
+	int ncomp = components-&gt;total;
+	cout&lt;&lt;&quot;segemented into &quot;&lt;&lt;ncomp&lt;&lt;&quot; components.&quot;&lt;&lt;endl;
+
+	//////////////////////////Get Components/////////////////////////////
+	map&lt;int, int&gt;mapping;//map color value to component id (classify)
+	for (int i = 0; i&lt;ncomp; i++)//foreach connection component
+	{
+		CvConnectedComp* cc = (CvConnectedComp*) cvGetSeqElem(components,i);
+		cvDrawRect(dst,cvPoint(cc-&gt;rect.x,cc-&gt;rect.y),cvPoint(cc-&gt;rect.x+cc-&gt;rect.width,cc-&gt;rect.y+cc-&gt;rect.height),cvScalar(255,255,0));
+		mapping.insert(pair&lt;int,int&gt;(cc-&gt;value.val[0],i));
+	}
+	cvShowImage(&quot;segementation&quot;,dst);
+	waitKey();
+	cvReleaseMemStorage(&amp;storage);
+}
+   
+
+   彩色图分割版本：
+
+   
+   void Segment(IplImage* I)
+{
+	////////////////////parameters initialization//////////////////////
+	int mode = CV_RETR_LIST;
+	int level = 2, block_size = 1000;
+	CvMemStorage* storage = cvCreateMemStorage(block_size);
+	CvSeq* components;
+	double threshold1 = 10,threshold2 = 50;
+
+	IplImage *src = cvCreateImage(cvGetSize(I),IPL_DEPTH_8U,3);
+	src = cvCloneImage(I);
+	IplImage* dst = cvCreateImage(cvGetSize(I),IPL_DEPTH_8U,3);
+
+	src-&gt;width = dst-&gt;width = (I-&gt;width &amp; -(1 &lt;&lt; level));
+	src-&gt;height = dst-&gt;height = (I-&gt;height &amp; -(1 &lt;&lt; level));
+
+	//////////////////////Segment/////////////////////////
+	cvPyrSegmentation(src,dst,storage,&amp;components,level,threshold1,threshold2);
+	int ncomp = components-&gt;total;
+	cout&lt;&lt;&quot;segemented into &quot;&lt;&lt;ncomp&lt;&lt;&quot; components.&quot;&lt;&lt;endl;
+
+	//////////////////////////Get Components/////////////////////////////
+	map&lt;int, int&gt;mapping;//map color value to component id (classify)
+	for (int i = 0; i&lt;ncomp; i++)//foreach connection component
+	{
+		CvConnectedComp* cc = (CvConnectedComp*) cvGetSeqElem(components,i);
+		cvDrawRect(dst,cvPoint(cc-&gt;rect.x,cc-&gt;rect.y),cvPoint(cc-&gt;rect.x+cc-&gt;rect.width,cc-&gt;rect.y+cc-&gt;rect.height),cvScalar(255,255,0));
+		mapping.insert(pair&lt;int,int&gt;(cc-&gt;value.val[0],i));
+	}
+	cvShowImage(&quot;segementation&quot;,dst);
+	waitKey();
+	cvReleaseMemStorage(&amp;storage);
+}

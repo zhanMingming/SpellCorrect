@@ -1,0 +1,94 @@
+关于编译器的一个问题今天看了下@leekayak 提到的一个问题http://weibo.com/1465082730/znOSZzU4v
+
+
+     我试图用一个简单的例子来解释下，首先看一段更简单的代码。
+
+
+    
+
+
+   #include &quot;stdio.h&quot;
+#include &quot;stdlib.h&quot;
+#include &lt;pthread.h&gt;
+
+int f = 0;
+int x=  0;
+
+void* t1(void*)
+{
+ while(f==0)
+ {
+  if(x!=0) printf(&quot;error&quot;);
+ }
+ return NULL;
+};
+
+void* t2(void*)
+{
+ x=1;
+ f=1;
+ return NULL;
+};
+
+
+int main(void)
+{
+  pthread_t* worker =  (pthread_t*) malloc(2*sizeof( pthread_t));
+  pthread_create(&amp;worker[0],NULL,t1,NULL);
+  pthread_create(&amp;worker[1],NULL,t2,NULL);
+
+  pthread_join(worker[0],NULL);
+  pthread_join(worker[1],NULL);
+
+  free(worker);
+
+ return 0;
+
+}
+
+
+   
+
+我们用-O3 来编译，就发现问题了。编译器版本：gcc version 4.7.2 20120921 (Red Hat 4.7.2-2) (GCC)
+
+
+   
+
+
+   
+
+
+   在400788：处发现指令自己jmp到自己(_z2t1pv&#43;0x18) = 400770&#43;18 = 400788就死循环了。
+
+
+   这是因为在t1这个函数的局部，看不到f被改变的期望，因此编译器就自作主张认为f不会变化，等价于死循环，其实这个等价是错误的，因为f可能被外部修改。比如t2
+
+
+   
+
+
+   因此就这个case，将f的定义 加上volatile是一个简明的法子，volatile int f = 0; 声明了编译器不能假设f&#20540;会是什么，而是必须去read一下才行。
+
+
+   
+
+
+   另外的方法就是显示的加入memory barrier，强制编译器必须读取。
+
+
+   while(f==0) { if(x!=0) printf(&quot;error&quot;); }
+
+
+   改成
+
+
+   for(__sync_synchronize();f==0;__sync_synchronize())
+
+
+   {
+
+
+    if(x!=0) printf(&quot;error&quot;);
+
+
+   }

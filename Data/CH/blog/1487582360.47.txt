@@ -1,0 +1,208 @@
+01背包变形——hdu 最大报销额最大报销额
+Time Limit: 1000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)
+
+Total Submission(s): 8910Accepted Submission(s): 2329
+
+
+
+
+Problem Description
+
+
+现有一笔经费可以报销一定额度的发票。允许报销的发票类型包括买图书（A类）、文具（B类）、差旅（C类），要求每张发票的总额不得超过1000元，每张发票上，单项物品的价&#20540;不得超过600元。现请你编写程序，在给出的一堆发票中找出可以报销的、不超过给定额度的最大报销额。
+
+
+
+
+
+
+
+
+Input
+
+
+测试输入包含若干测试用例。每个测试用例的第1行包含两个正数 Q 和 N，其中 Q 是给定的报销额度，N（&lt;=30）是发票张数。随后是 N 行输入，每行的&#26684;式为：
+
+m Type_1:price_1 Type_2:price_2 ... Type_m:price_m
+
+其中正整数 m 是这张发票上所开物品的件数，Type_i 和 price_i 是第 i 项物品的种类和价&#20540;。物品种类用一个大写英文字母表示。当N为0时，全部输入结束，相应的结果不要输出。
+
+
+
+
+
+
+
+
+Output
+
+
+对每个测试用例输出1行，即可以报销的最大数额，精确到小数点后2位。
+
+
+
+
+
+
+
+
+Sample Input
+
+
+
+   200.00 3
+2 A:23.50 B:100.00
+1 C:650.00
+3 A:59.99 A:120.00 X:10.00
+1200.00 2
+2 B:600.00 A:400.00
+1 C:200.50
+1200.50 3
+2 B:600.00 A:400.00
+1 C:200.50
+1 A:100.00
+100.00 0
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   123.50
+1000.00
+1200.50
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生复试上机考试-2007年
+
+
+
+
+
+
+Recommend
+
+
+lcy
+
+
+   
+
+
+
+
+   动态规划-01背包变形，注意点如下：
+
+
+   1.题目规定“单项&lt;=600”是指item[A],item[B],item[C]都&lt;=600
+
+
+   2.该题目中物品每个只能用一次（而非多个），即为单01背包&lt;详见代码注释&gt;
+
+
+   3.物品体积=物品价&#20540;
+
+
+   dp[i][j]表示前i件物品中体积为j背包能获得的max价&#20540;
+
+
+   dp[i][j]=max(dp[i-1][j],dp[i-1][j-c[i]]&#43;v[i]);
+
+
+   
+
+
+
+
+   由于c[i]==v[i]，所以dp[i][j]的最优状态必然建立在dp[i-1][j]的最优状态上，于是降维(只留体积)：
+
+
+   dp[x]=max(dp[x-c[i]]&#43;v[i]);
+
+
+   
+
+
+
+
+   
+
+
+   #include &quot;iostream&quot;  
+#include &quot;stdio.h&quot;  
+#include &quot;math.h&quot;  
+#include &quot;vector&quot;  
+#include &quot;queue&quot;  
+#include &quot;memory.h&quot;  
+#include &quot;algorithm&quot;  
+#include &quot;string&quot;  
+using namespace std;  
+#define max(a,b) a&gt;b?a:b
+
+int bill[35];
+int dp[31*1000*100];
+
+int main()
+{
+	double maxx;
+	int n;
+	while(scanf(&quot;%lf%d&quot;,&amp;maxx,&amp;n)!=EOF&amp;&amp;n)
+	{
+		int i,j,m,count=0;
+		double tmp,item[3],sum;
+		char type;
+		maxx=(int)(maxx*100);
+
+		for(i=0;i&lt;n;i++)
+		{
+     item[0]=item[1]=item[2]=0;
+     sum=0;
+			scanf(&quot;%d&quot;,&amp;m);
+			bool flag=true;//feasible
+			sum=0;
+			for(j=0;j&lt;m;j++)
+			{
+				getchar();
+				type=getchar();
+				scanf(&quot;:%lf&quot;,&amp;tmp);
+				if(type=='A'||type=='B'||type=='C')
+				{
+     item[type-'A']+=tmp;
+     sum+=tmp;
+  }
+				else
+					flag=false;
+			}
+			if(flag&amp;&amp;sum&lt;=1000&amp;&amp;item[0]&lt;=600&amp;&amp;item[1]&lt;=600&amp;&amp;item[2]&lt;=600)
+				bill[++count]=(int)(sum*100); 
+		}
+
+		for(i=0;i&lt;=maxx;i++)
+			dp[i]=0;
+
+		for(i=1;i&lt;=count;i++)
+			//for(j=0;j&lt;=(int)maxx;j++);==这样的话物品就可以多次选择了
+			for(j=(int)maxx;j&gt;=bill[i];j--)    //==说明每张发票（物品）只有一件
+			{
+				if(j&gt;=bill[i])
+					dp[j]=max(dp[j],dp[j-bill[i]]+bill[i]);
+			}
+
+			printf(&quot;%.2lf\n&quot;,1.0*dp[(int)maxx]/100);
+	}
+}

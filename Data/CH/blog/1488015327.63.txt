@@ -1,0 +1,118 @@
+ionic入门贴：ionic的引入以及创建一个典型的mobile页面我们的hybrid app使用了ionicframework作为UI框架，基于ionic开发我们自己业务相关的控件。
+
+
+   ionic下载地址：http://code.ionicframework.com/
+
+
+   ionic图标库：http://ionicons.com/
+
+
+   ionic文档：http://ionicframework.com/docs/
+
+
+   
+
+
+
+
+   在页面引入ionic库的js和css文件就可以使用了，如果引入遇到问题，可以看下这篇文章，也许会帮上你。
+
+
+   &lt;html&gt;
+	&lt;head&gt;
+		&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+		&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+		&lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;head&gt;
+&lt;/html&gt;
+
+   
+
+
+   
+
+
+
+
+   下面我们来创建一个典型的页面：包含header、content和footer的页面。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+    &lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;
+	$(function(){
+		// 创建angular模块,必需要继承ionic模块,才能使用ionic的特性
+		var ourModule = angular.module(&#39;testApp&#39;, [&#39;ionic&#39;]);
+		ourModule.controller(&#39;MyController&#39;, function($scope, $ionicPopover) {
+		
+		});
+		
+		// 启动angularjs模块
+		angular.bootstrap($(&quot;#body&quot;), [&quot;testApp&quot;]);
+	});
+	&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+  
+	&lt;!--页面header--&gt;
+	&lt;div class=&quot;bar bar-header bar-positive&quot;&gt;
+		&lt;a class=&quot;button button-icon icon ion-android-more-vertical&quot;&gt;&lt;/a&gt;
+		&lt;h1 class=&quot;title&quot;&gt;bar-positive&lt;/h1&gt;
+		&lt;a class=&quot;button button-icon icon ion-more&quot;&gt;&lt;/a&gt;
+	&lt;/div&gt;
+	
+	&lt;!--页面content,注意:一定要设置has-header,否则content会被header遮挡--&gt;
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+			&lt;button&gt;left Popover1&lt;/button&gt;
+			&lt;button&gt;left Popover2&lt;/button&gt;
+			&lt;button&gt;right Popover1&lt;/button&gt;
+			&lt;button&gt;right Popover2&lt;/button&gt;	
+	&lt;/ion-content&gt;
+
+	
+	&lt;!--footer--&gt;
+	&lt;div class=&quot;bar bar-footer bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+有2点需要说明下：
+
+   
+
+
+   1.创建我们自己的angular模块，必须要继承ionic，否则无法使用&lt;ion-content&gt;等。
+
+
+   2.&lt;ion-content&gt;元素的class属性一定要加上has-header，否则content会被header遮挡。
+
+
+   
+
+
+
+
+   我们也可以使用&lt;ion-header-bar&gt;和&lt;ion-footer-bar&gt;创建header和footer。
+
+
+   &lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+	&lt;a class=&quot;button button-icon icon ion-more&quot; id=&quot;left&quot;&gt;&lt;/a&gt;
+	&lt;h1 class=&quot;title&quot;&gt;bar-positive&lt;/h1&gt;
+	&lt;a class=&quot;button button-icon icon ion-more&quot; id=&quot;right&quot;&gt;&lt;/a&gt;
+&lt;/ion-header-bar&gt;
+
+&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+	&lt;button ng-click=&quot;openPopoverUseEvent($event)&quot;&gt;left Popover1&lt;/button&gt;
+	&lt;button ng-click=&quot;openPopoverUseElement(&#39;left&#39;)&quot;&gt;left Popover2&lt;/button&gt;
+	&lt;button ng-click=&quot;openPopoverUseEvent($event)&quot;&gt;right Popover1&lt;/button&gt;
+	&lt;button ng-click=&quot;openPopoverUseElement(&#39;right&#39;)&quot;&gt;right Popover2&lt;/button&gt;
+&lt;/ion-content&gt;
+
+&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+	&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+&lt;/ion-footer-bar&gt;

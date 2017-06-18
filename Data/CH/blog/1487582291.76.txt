@@ -1,0 +1,130 @@
+python并行调参——scikit-learn  grid_search上篇应用scikit-learn做文本分类中以20newsgroups为例讲了如何用三种方法提取训练集=测试集的文本feature，但是
+
+   vectorizer取多少个word呢？
+
+   预处理时候要过滤掉tf&gt;max_df的words，max_df设多少呢？
+
+   tfidftransformer只用tf还是加idf呢？
+
+   classifier分类时迭代几次？学习率怎么设？
+
+   ……
+
+   “循环一个个试过来啊”……啊好吧，matlab里就是这么做的……
+
+   好在scikit-learn中提供了pipeline(for estimator connection) &amp; grid_search(searching best parameters)进行并行调参。
+
+   
+
+   官网上pipeline解释如下：
+
+   
+
+   Pipelinecan be used to chain multiple estimators into one. This is useful as there is often a fixed sequence of steps in processing the data, for example feature selection, normalization and classification.Pipelineserves two purposes here:
+
+   Convenience: You only have to callfitandpredictonce on your data to fit a whole sequence of estimators.
+
+   Joint parameter selection: You cangrid searchover parameters of all estimators in the pipeline at once.
+
+   
+
+   调用方式：
+
+   仍以20newsgroups为例，上一篇文章中有讲数据集加载方式，这里不予赘述，
+
+   pipeline+gridsearchcv (grid search parameters with cross validation)代码：
+
+   1. pipeline定义，输入备选parameter
+
+   
+
+   print '*************************\nFeature Extraction\n*************************'
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
+from sklearn.grid_search import GridSearchCV
+
+pipeline = Pipeline([
+('vect',CountVectorizer()),
+('tfidf',TfidfTransformer()),
+('clf',SGDClassifier()),
+]);
+
+parameters = {
+    'vect__max_df': (0.5, 0.75),
+    'vect__max_features': (None, 5000, 10000),
+    'tfidf__use_idf': (True, False),
+#    'tfidf__norm': ('l1', 'l2'),
+    'clf__alpha': (0.00001, 0.000001),
+#    'clf__penalty': ('l2', 'elasticnet'),
+    'clf__n_iter': (10, 50),
+}
+
+   
+
+   
+
+   2. gridsearch寻找vectorizer词频统计, tfidftransformer特征变换和SGD classifier的最优参数
+
+   GridSearchCV函数定义见官网。
+
+   
+
+   grid_search = GridSearchCV(pipeline,parameters,n_jobs = 1,verbose=1);
+print(&quot;Performing grid search...&quot;)
+print(&quot;pipeline:&quot;, [name for name, _ in pipeline.steps])
+print(&quot;parameters:&quot;)
+pprint(parameters)
+from time import time
+t0 = time()
+grid_search.fit(newsgroup_train.data, newsgroup_train.target)
+print(&quot;done in %0.3fs&quot; % (time() - t0))
+print()
+print(&quot;Best score: %0.3f&quot; % grid_search.best_score_)
+
+   
+
+   
+
+   
+
+   结果：
+
+   Performing grid search...('pipeline:', ['vect', 'tfidf', 'clf'])parameters:{'clf__alpha': (1e-05, 1e-06),'clf__n_iter': (10, 50),'tfidf__use_idf': (True, False),'vect__max_df': (0.5, 0.75),'vect__max_features': (None, 5000, 10000)}Fitting 3 folds for each of 48 candidates, totalling 144 fits[Parallel(n_jobs=1)]: Done  1 jobs    | elapsed:  1.1s[Parallel(n_jobs=1)]: Done 50 jobs    | elapsed: 1.1min[Parallel(n_jobs=1)]: Done 144 out of 144 | elapsed: 3.1min finisheddone in 189.978s()Best score: 0.871
+
+   
+3. 输出最佳参数，在此基础上求最佳结果
+   
+
+   from sklearn import metrics
+best_parameters = dict();
+best_parameters = grid_search.best_estimator_.get_params()
+for param_name in sorted(parameters.keys()):
+    print(&quot;\t%s: %r&quot; % (param_name, best_parameters[param_name]));
+pipeline.set_params(clf__alpha = 1e-05, 
+      clf__n_iter = 50, 
+      tfidf__use_idf = True,
+      vect__max_df = 0.5,
+      vect__max_features = None);
+pipeline.fit(newsgroup_train.data, newsgroup_train.target);
+pred = pipeline.predict(newsgroups_test.data)
+calculate_result(newsgroups_test.target,pred);
+
+   结果：
+
+   	clf__alpha: 1e-05	clf__n_iter: 50	tfidf__use_idf: True	vect__max_df: 0.5	vect__max_features: Nonepredict info:precision:0.806recall:0.805f1-score:0.804
+
+   
+
+   
+
+   
+
+   Other references:
+
+   grid search + cross validation
+
+   
+
+   
+
+   关于Python更多的学习资料将继续更新，敬请关注本博客和新浪微博Rachel Zhang。

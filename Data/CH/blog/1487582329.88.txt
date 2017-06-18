@@ -1,0 +1,40 @@
+Hough变换——Opencv版本void CCVMFCView::OnHoughLines()
+{
+	IplImage* src = 0,*color_dst;
+	CvMemStorage* storage = cvCreateMemStorage(0);
+	CvSeq* lines = 0;
+	int i;
+
+	if (workImg-&gt;nChannels==3) {
+		src = cvCreateImage(cvGetSize(workImg), IPL_DEPTH_8U, 1);
+		cvCvtColor(workImg, src, CV_BGR2GRAY);
+	}
+	else {
+		src = cvCloneImage( workImg );
+	}
+
+	dst = cvCreateImage( cvGetSize(src), 8 ,1 );
+	color_dst = cvCreateImage( cvGetSize(src), 8 ,3);
+	cvFlip(src);
+	cvCanny( src, dst, 50, 120, 3 );
+	cvCvtColor(dst,color_dst,CV_GRAY2BGR);
+
+	lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180, 20, 20,30 );
+	//lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1,CV_PI/180, 80, 60,30 );
+
+	for( i = 0; i &lt; lines-&gt;total; i++ )
+	{
+		CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
+		cvLine( color_dst, line[0], line[1], CV_RGB(255,0,0), 3, CV_AA, 0 );
+	}
+
+	cvNamedWindow( &quot;Hough&quot;, 1 );
+	cvShowImage( &quot;Hough&quot;, color_dst );
+
+	cvWaitKey(0);
+
+	cvReleaseMemStorage(&amp;storage );
+	cvReleaseImage( &amp;src );
+	cvReleaseImage( &amp;dst );
+	cvDestroyWindow( &quot;Hough&quot; );
+}

@@ -1,0 +1,40 @@
+mac终端新建标签/窗口ssh重复输入密码问题mac的终端默认在打开一个新的tab/window的时候需要重新输入ssh的密码， 很不方便。本文完成在mac中设置，实现secureCRT/xshell里的克隆会话功能， 即新开一个terminal进行ssh连接无需重新输入密码。
+
+
+
+   原理很简单，开一个ssh连接在后台放着，以后再有需要用到ssh到同样主机的时候，直接使用这个连接的socket文件，不用再创建连接了，同理，也不需要再进行用户身份验证。
+
+
+
+   默认是关闭的，可以在~/.ssh/config中打开, 加入以下代码段：
+
+
+
+
+
+   Host *
+    ControlMaster auto
+    ControlPath ~/.ssh/master-%r@%h:%p
+
+
+   就可以了
+
+
+
+   参考博客： 
+
+http://www.fwolf.com/blog/post/385
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

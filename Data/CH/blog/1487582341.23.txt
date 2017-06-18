@@ -1,0 +1,28 @@
+Opencv实现Canny算子边缘检测void CCVMFCView::OnCannyBorddetec()
+{
+	IplImage* src = 0;
+	IplImage* dst = 0;
+	IplImage* color_dst = 0;
+	CvMemStorage* storage = cvCreateMemStorage(0);
+	CvSeq* lines = 0;
+	int i;
+
+	if (workImg-&gt;nChannels==3) {
+		src = cvCreateImage(cvGetSize(workImg), IPL_DEPTH_8U, 1);
+		cvCvtColor(workImg, src, CV_BGR2GRAY);
+	}
+	else {
+		src = cvCloneImage( workImg );
+	}
+	cvFlip(src);
+
+	dst = cvCreateImage( cvGetSize(src), 8 ,1 );
+	color_dst = cvCreateImage( cvGetSize(src), 8, 3 );
+
+	cvCanny( src, dst, 50, 200, 3 );
+	cvCvtColor( dst, color_dst, CV_GRAY2BGR );
+
+	cvFlip(color_dst);
+	m_dibFlag=imageClone(color_dst,&amp;workImg);
+	Invalidate();
+}

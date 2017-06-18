@@ -1,0 +1,25 @@
+Bag of words模型Bag of words，也叫做&ldquo;词袋&rdquo;，在信息检索中，Bag of words model假定对于一个文本，忽略其词序和语法，句法，将其仅仅看做是一个词集合，或者说是词的一个组合，文本中每个词的出现都是独立的，不依赖于其他词是否出现，或者说当这篇文章的作者在任意一个位置选择一个词汇都不受前面句子的影响而独立选择的。
+
+
+    
+
+
+    这种假设虽然对自然语言进行了简化，便于模型化，但是其假定在有些情况下是不合理的，例如在新闻个性化推荐中，采用Bag of words的模型就会出现问题。例如用户甲对&ldquo;南京醉酒驾车事故&rdquo;这个短语很感兴趣，采用bag of words忽略了顺序和句法，则认为用户甲对&ldquo;南京&rdquo;、&ldquo;醉酒&rdquo;、&ldquo;驾车&rdquo;和&ldquo;事故&rdquo;感兴趣，因此可能推荐出和&ldquo;南京&rdquo;，&ldquo;公交车&rdquo;，&ldquo;事故&rdquo;相关的新闻，这显然是不合理的。
+
+
+    
+
+
+    解决的方法可以采用SCPCD的方法抽取出整个短语，或者采用高阶（2阶以上）统计语言模型，例如bigram，trigram来将词序保留下来，相当于bag of bigram和bag of trigram，这样能在一定程度上解决这种问题。
+
+
+    
+
+
+    简言之，bag of words模型是否适用需要根据实际情况来确定。对于那些不可以忽视词序，语法和句法的场合均不能采用bag of words的方法。
+
+
+   
+
+
+   参考：http://en.wikipedia.org/wiki/Bag_of_words_model

@@ -1,0 +1,149 @@
+maven项目常用技巧：将依赖打包到文件夹并生产可执行的jar我maven项目结构如下：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   pom.xml内容如下：
+
+
+   
+
+
+   &lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+  xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;net.aty.mybatis&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-demo&lt;/artifactId&gt;
+    &lt;packaging&gt;jar&lt;/packaging&gt;
+    &lt;version&gt;1.0&lt;/version&gt;
+    &lt;name&gt;maven-demo&lt;/name&gt;
+    &lt;url&gt;http://maven.apache.org&lt;/url&gt;
+
+
+    &lt;dependencies&gt;
+ &lt;dependency&gt;
+     &lt;groupId&gt;org.apache.ignite&lt;/groupId&gt;
+     &lt;artifactId&gt;ignite-zookeeper&lt;/artifactId&gt;
+     &lt;version&gt;1.8.0&lt;/version&gt;
+ &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+ &lt;plugins&gt;
+     &lt;!--编译期使用的JDK版本--&gt;
+     &lt;plugin&gt;
+  &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+  &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+  &lt;version&gt;2.5.1&lt;/version&gt;
+  &lt;configuration&gt;
+      &lt;encoding&gt;UTF-8&lt;/encoding&gt;
+      &lt;source&gt;1.8&lt;/source&gt;
+      &lt;target&gt;1.8&lt;/target&gt;
+  &lt;/configuration&gt;
+     &lt;/plugin&gt;
+
+     &lt;!--将项目依赖打包到单独文件夹--&gt;
+     &lt;plugin&gt;
+  &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+  &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
+  &lt;version&gt;2.5.1&lt;/version&gt;
+  &lt;executions&gt;
+      &lt;execution&gt;
+   &lt;id&gt;copy-dependencies&lt;/id&gt;
+   &lt;phase&gt;prepare-package&lt;/phase&gt;
+   &lt;goals&gt;
+&lt;goal&gt;copy-dependencies&lt;/goal&gt;
+   &lt;/goals&gt;
+   &lt;configuration&gt;
+&lt;outputDirectory&gt;${project.build.directory}/lib&lt;/outputDirectory&gt;
+&lt;overWriteReleases&gt;false&lt;/overWriteReleases&gt;
+&lt;overWriteSnapshots&gt;false&lt;/overWriteSnapshots&gt;
+&lt;overWriteIfNewer&gt;true&lt;/overWriteIfNewer&gt;
+   &lt;/configuration&gt;
+      &lt;/execution&gt;
+  &lt;/executions&gt;
+     &lt;/plugin&gt;
+
+     &lt;!--生成可执行的jar--&gt;
+     &lt;plugin&gt;
+  &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+  &lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+  &lt;version&gt;2.4&lt;/version&gt;
+  &lt;configuration&gt;
+      &lt;classesDirectory&gt;target/classes/&lt;/classesDirectory&gt;
+      &lt;archive&gt;
+   &lt;manifest&gt;
+&lt;addClasspath&gt;true&lt;/addClasspath&gt;
+&lt;classpathPrefix&gt;../lib/&lt;/classpathPrefix&gt;
+&lt;mainClass&gt;net.aty.Main&lt;/mainClass&gt;
+   &lt;/manifest&gt;
+      &lt;/archive&gt;
+      &lt;excludes&gt;
+   &lt;exclude&gt;ip.dat&lt;/exclude&gt;
+      &lt;/excludes&gt;
+  &lt;/configuration&gt;
+     &lt;/plugin&gt;
+ &lt;/plugins&gt;
+    &lt;/build&gt;
+
+
+&lt;/project&gt;
+
+
+maven打包后的结果：
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   lib内容如下：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   maven-demo-1.0.jar内容和MANIFEST.MF
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   这样我据可以执行启动jar:

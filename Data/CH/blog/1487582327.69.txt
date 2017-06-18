@@ -1,0 +1,662 @@
+MFC 窗口分割与通信一、关于CSplitterWnd类
+
+我们在使用CuteFtp或者NetAnt等工具的时候，一般都会被其复杂的界面所吸引，在这些界面中窗口被分割为若干的区域，真正做到了窗口的任意分割。 那么我们自己如何创建类&#20284;的界面，也实现窗口的任意的分割呢 ？在VC6.0中这就需要使用到CSplitterWnd类。CSplitterWnd看上去像是一种特殊的框架窗口，每个窗口都被相同的或者不同的视图所填充。当窗口被切分后用户可以使用鼠标移动切分条来调整窗口的相对尺寸。虽然VC6.0支持从AppWizard中创建分割窗口，但是自动加入的分割条总是不能让我们满意，因此我们还是通过手工增加代码来熟悉这个类。
+
+CSplitterWnd的构造函数主要包括下面三个。
+
+
+   
+BOOL Create(CWnd* pParentWnd,int nMaxRows,int nMaxCols,SIZE sizeMin,CCreateContext* pContext,DWORD dwStyle,UINT nID);
+
+功能描述：该函数用来创建动态切分窗口。 参数含义：pParentWnd 切分窗口的父框架窗口。 nMaxRows,nMaxCols是创建的最大的列数和行数。 sizeMin是窗&#26684;的现实大小。 pContext 大多数情况下传给父窗口。 nID是字窗口的ID号.
+
+BOOL CreateStatic(CWnd* pParentWnd,int nRows,int nCols,DWORD dwStyle,UINT nID)
+
+功能描述：用来创建切分窗口。 参数含义同上。
+
+BOOL CreateView (int row,int col,CruntimeClass* pViewClass,SIZE sizeinit,CcreateContext* pContext);
+
+功能描述：为静态切分的窗口的网&#26684;填充视图。在将视图于切分窗口联系在一起的时候必 须先将切分窗口创建好。
+
+参数含义：同上。
+
+从CSplitterWnd源程序可以看出不管是使用动态创建Create还是使用静态创建CreateStatic，在函数中都调用了一个保护函数CreateCommon，从下面的CreateCommon函数中的关键代码可以看出创建CSplitterWnd的实质是创建了一系列的MDI子窗口。
+
+
+   
+DWORD dwCreateStyle = dwStyle &amp; ~(WS_HSCROLL|WS_VSCROLL);
+
+if (afxData.bWin4)
+
+ dwCreateStyle &amp;= ~WS_BORDER; //create with the same wnd-class as MDI-Frame (no erase bkgnd)
+
+if (!CreateEx(0, _afxWndMDIFrame, NULL, dwCreateStyle,
+
+ 0, 0, 0, 0,pParentWnd-&gt;m_hWnd, (HMENU)nID, NULL))
+
+ return FALSE; // create invisible
+
+
+   
+二、创建嵌套分割窗口
+
+2.1创建动态分割窗口
+
+动态分割窗口使用Create方法。下面的代码将创建2x2的窗&#26684;。
+
+
+   
+m_wndSplitter.Create(this,2,2,CSize(100,100),pContext);
+
+
+   
+但是动态创建的分割窗口的窗&#26684;数目不能超过2x2，而且对于所有的窗&#26684;，都必须共享同一个视图，所受的限制也比较多，因此我们不将动态创建作为重点。我们的主要精力放在静态分割窗口的创建上。
+
+2.2创建静态分割窗口
+
+与动态创建相比，静态创建的代码要简单许多，而且可以最多创建16x16的窗&#26684;。不同的窗&#26684;我们可以使用CreateView填充不同的视图。
+
+在这里我们将创建CuteFtp的窗口分割。CuteFtp的分割情况如下：
+
+
+   
+
+
+
+   
+
+
+
+   
+
+
+
+   
+创建步骤：
+
+▲ 在创建之前我们必须先用AppWizard生成单文档CuteFTP，生成的视类为 CCuteFTPView.同时在增加三个视类或者从视类继承而来的派生类CView2,CView3 CView4.
+
+▲ 增加成员：
+
+在Cmainfrm.h中我们将增加下面的代码：
+
+
+
+   CSplitterWnd wndSplitter1;
+
+ CSplitterWnd wndSplitter2;
+
+▲ 重载CMainFrame::OnCreateClient()函数：
+
+BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext)
+
+{ //创建一个静态分栏窗口，分为三行一列
+
+ if(m_wndSplitter1.CreateStatic(this,3,1)==NULL)
+
+ return FALSE;
+
+//将CCuteFTPView连接到0行0列窗&#26684;上
+
+ m_wndSplitter1.CreateView(0,0,RUNTIME_CLASS(CCuteFTPView),CSize(100,100), pContext);
+
+ m_wndSplitter1.CreateView(2,0,RUNTIME_CLASS(CView4),CSize(100,100),pContext);
+
+//将CView4连接到0行2列
+
+ if(m_wndSplitter2.CreateStatic(&amp;m_wndSplitter,1,2,WS_CHILD|WS_VISIBLE,
+
+ m_wndSplitter.IdFromRowCol(1, 0))==NULL)
+
+ return FALSE; //将第1行0列再分开1行2列
+
+//将CView2类连接到第二个分栏对象的0行0列
+
+ m_wndSplitter2.CreateView(0,0,RUNTIME_CLASS(CView2),CSize(400,300),pContext);
+
+//将CView3类连接到第二个分栏对象的0行1列
+
+ m_wndSplitter2.CreateView(0,1,RUNTIME_CLASS(CView3),CSize(400,300),pContext);
+
+ return TRUE;
+
+}
+
+2.3实现各个分割区域的通信
+
+■有文档相连的视图之间的通信
+
+由AppWizard生成的CCuteFTPView是与文档相连的，同时我们也让CView2与文档相连，因此我们需要修改CCuteFTPApp的InitInstance()函数，我们将增加下面的部分。
+
+
+   AddDocTemplate (new CMultiDocTemplate(IDR_VIEW2TYPE,
+
+
+
+ RUNTIME_CLASS(CMainDoc),
+
+ RUNTIME_CLASS(CMDIChildWnd),
+
+ RUNTIME_CLASS(CView2)));
+
+我们现在来实现CCuteFTPView与CView2之间的通信。由于跟文档类相连的视图类 是不能安全的与除文档类之外的其余的视图类通信的。因此我们只能让他们都与文档 类通信。在文档中我们设置相应的指针以用来获的各个视图。我们重载 CCuteFTPDoc::OnOpenDocument()函数；
+
+
+   CCuteFTPView* pCuteFTPView;CView2* pView2;
+
+POSITION pos;
+
+CView* pView;
+
+while(pos!=NULL)
+
+{
+
+ pView=GetNextView(pos);
+
+ if(pView-&gt;IsKindOf(RUNTIME_CLASS(CCuteFTPView))==NULL)
+
+ pCuteFTPView=(CCuteFTPView*)pView;
+
+ else
+
+ pView2=(CView2*)pView;
+
+}
+
+这样我们在文档类中就获的了跟它相连的所有的视图的指针。
+
+如果需要在 CCuteFTPView中调用CView2中的一个方法DoIt()则代码如下：
+
+
+   CCuteFTPDoc* pDoc=GetDocument();CView2* pView2=pDoc-&gt;pView3;pView3.DoIt();
+
+
+   ■无文档视图与文档关联视图之间的通信
+
+CView3和CView4都是不与文档相关联的。我们现在实现CView3与CView2的通信.正如前面所说，CView2只能安全的与CCuteFTPDoc通信，因此，CView3如果需要跟CView2通信，也必须借助于文档类。因此程序的关键是如何在CView3中获得文档的指针。视图类中没有这样的类成员可以用来直接访问文档类。但是我们知道在主窗口类MainFrame中我们可以获得程序的任意窗口类的指针。因此我们只要获得程序主窗口了的指针，就可以解决问题了。代码实现在CView3中访问CView2中的DoIt()方法。
+
+
+   CView3中的代码如下：
+
+CMainFrame* MainFrame=(CMainFrame*)this-&gt;GetParent()-&gt;GetParent();
+
+
+
+ CCuteFTPDoc* Doc=(CCuteFTPDoc*)MainFrame-&gt;GetActiveDocument();
+
+ if(Doc!=NULL) Doc-&gt;DoIt();
+
+
+
+ CCuteFTPDoc中的相应的处理函数DoIt()代码如下：
+
+
+
+ CView2* pView2;
+
+ POSITION pos;
+
+ CView* pView;
+
+ while(pos!=NULL)
+
+ {
+
+ pView=GetNextView(pos);
+
+ if(pView-&gt;IsKindOf(RUNTIME_CLASS(CView2))==NULL)
+
+ pView2=(CView2*)pView;
+
+ }
+
+ pView2-&gt;DoIt();
+
+■无文档关联视图之间的通信
+
+CView3和CView4都是不跟文档相连的，如何实现他们之间的通信呢。 正如我们在上面所说的那样，由于在主框架中我们可以访问任意的视图，因此我们的主要任 务还是在程序中获得主框架的指针。在CView3中访问CView4中的方法DoIt()。
+
+
+   CMainFrame* MainFrame=(CMainFrame*)this-&gt;GetParent()-&gt;GetParent();
+
+
+
+ CView4* View4=(CView4*)MainFrame-&gt;m_wndSplitter1.GetPane(2,0);
+
+ View4-&gt;DoIt();
+
+
+   到现在我们已经实现了CuteFTP的主窗口的框架并且能够实现他们之间相互通信的框架。 同样的我们可以实现其他的一些流行界面例如NetAnts，Foxmail的分割。
+
+
+   三、关于对话框的分割
+
+到目前为止，只有基于文档/视图的程序才能使用CSplitterWnd，而基于对话框的应用程序却不支持CSplitterWnd,但是如果我们在继承类中重载一些虚拟方法，也能使CSplitterWnd 在对话框程序中使用。从MFC的源程序WinSplit.cpp中可以看出，为了获得父窗口的地方程序都调用了虚拟方法GetParentFrame(),因此如果在对话框中使用，我们必须将它改为GetParent();因此我们将CSplitterWnd的下面几个方法重载。
+
+
+   virtual void StartTracking(int ht);
+
+virtual CWnd* GetActivePane(int* pRow = NULL, int* pCol = NULL);
+
+virtual void SetActivePane( int row, int col, CWnd* pWnd = NULL );
+
+virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+
+virtual BOOL OnNotify( WPARAM wParam, LPARAM lParam, LRESULT* pResult );
+
+virtual BOOL OnWndMsg( UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult );
+
+具体实现如下，实现中我将给出原有代码的主要部分以及修改后的代码以作对比。
+
+在cpp文件中加入下面的枚举类型。
+
+
+   enum HitTestValue
+
+{
+
+ noHit = 0,//表示没有选中任何对象
+
+ vSplitterBox = 1,
+
+ hSplitterBox = 2,
+
+ bothSplitterBox = 3,
+
+ vSplitterBar1 = 101,//代表各个方向的水平分割条
+
+ vSplitterBar15 = 115,
+
+ hSplitterBar1 = 201,//代表垂直方向的各个分割条
+
+ hSplitterBar15 = 215,
+
+ splitterIntersection1 = 301,//代表各个交叉点
+
+ splitterIntersection225 = 525
+
+};
+
+
+
+CWnd* CxSplitterWnd::GetActivePane(int* pRow, int* pCol)
+
+ {
+
+ ASSERT_VALID(this);
+
+ //获得当前的获得焦点的窗口
+
+ //下面注释粗体的是原有的代码的主要部分。
+
+ // CWnd* pView = NULL;
+
+ //CFrameWnd* pFrameWnd = GetParentFrame();
+
+ //ASSERT_VALID(pFrameWnd);
+
+ //pView = pFrameWnd-&gt;GetActiveView();
+
+ //if (pView == NULL)
+
+ // pView = GetFocus();
+
+ CWnd* pView = GetFocus();
+
+ if (pView != NULL &amp;&amp; !IsChildPane(pView, pRow, pCol))
+
+ pView = NULL;
+
+ return pView;
+
+}
+
+
+
+void CxSplitterWnd::SetActivePane( int row, int col, CWnd* pWnd)
+
+{
+
+ CWnd* pPane = pWnd == NULL ? GetPane(row, col) : pWnd;
+
+ //下面加注释粗体的是原有代码的主要部分。
+
+ //FrameWnd* pFrameWnd = GetParentFrame();
+
+ //ASSERT_VALID(pFrameWnd);
+
+ //pFrameWnd-&gt;SetActiveView((CView*)pPane);
+
+ pPane-&gt;SetFocus();//修改后的语句
+
+}
+
+
+
+void CxSplitterWnd::StartTracking(int ht)
+
+{
+
+ ASSERT_VALID(this);
+
+ if (ht == noHit)
+
+ return;
+
+ // GetHitRect will restrict ''''m_rectLimit'''' as appropriate
+
+
+
+ GetInsideRect(m_rectLimit);
+
+ if (ht &gt;= splitterIntersection1 &amp;&amp; ht &lt;= splitterIntersection225)
+
+
+
+ {
+
+ // split two directions (two tracking rectangles)
+
+
+
+ int row = (ht - splitterIntersection1) / 15;
+
+
+
+ int col = (ht - splitterIntersection1) % 15;
+
+
+
+ GetHitRect(row &#43; vSplitterBar1, m_rectTracker);
+
+
+
+ int yTrackOffset = m_ptTrackOffset.y;
+
+ m_bTracking2 = TRUE;
+
+ GetHitRect(col &#43; hSplitterBar1, m_rectTracker2);
+
+
+
+ m_ptTrackOffset.y = yTrackOffset;
+
+ }
+
+ else if (ht == bothSplitterBox)
+
+ {
+
+ // hit on splitter boxes (for keyboard)
+
+ GetHitRect(vSplitterBox, m_rectTracker);
+
+ int yTrackOffset = m_ptTrackOffset.y;
+
+ m_bTracking2 = TRUE;
+
+ GetHitRect(hSplitterBox, m_rectTracker2);
+
+ m_ptTrackOffset.y = yTrackOffset; // center it
+
+ m_rectTracker.OffsetRect(0, m_rectLimit.Height()/2); m_rectTracker2.OffsetRect(m_rectLimit.Width()/2,
+
+ 0);
+
+ }
+
+ else
+
+ {
+
+ // only hit one bar
+
+ GetHitRect(ht, m_rectTracker);
+
+ }
+
+
+
+ //下面加注释的将从程序中删去。
+
+ //CView* pView = (CView*)GetActivePane();
+
+ //if (pView != NULL &amp;&amp; pView-&gt;IsKindOf(RUNTIME_CLASS(CView)))
+
+ //{
+
+ // ASSERT_VALID(pView);
+
+ // CFrameWnd* pFrameWnd = GetParentFrame();
+
+ //ASSERT_VALID(pFrameWnd);
+
+ //pView-&gt;OnActivateFrame(WA_INACTIVE, pFrameWnd);
+
+ // }
+
+ // steal focus and capture
+
+ SetCapture();
+
+ SetFocus();
+
+ // make sure no updates are pending
+
+ RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW);
+
+
+
+ // set tracking state and appropriate cursor
+
+ m_bTracking = TRUE;
+
+ OnInvertTracker(m_rectTracker);
+
+ if (m_bTracking2)
+
+ OnInvertTracker(m_rectTracker2);
+
+ m_htTrack = ht;
+
+ SetSplitCursor(ht);
+
+}
+
+
+
+BOOL CxSplitterWnd::OnCommand(WPARAM wParam, LPARAM lParam)
+
+{
+
+ if (CWnd::OnCommand(wParam, lParam))
+
+ return TRUE;
+
+ //下面粗体的是原程序的语句
+
+ //return GetParentFrame()-&gt;SendMessage(WM_COMMAND, wParam, lParam);
+
+
+
+ return GetParent()-&gt;SendMessage(WM_COMMAND, wParam, lParam);
+
+
+
+}
+
+BOOL CxSplitterWnd::OnNotify( WPARAM wParam, LPARAM lParam, LRESULT* pResult )
+
+{
+
+ if (CWnd::OnNotify(wParam, lParam, pResult))
+
+ return TRUE;
+
+ //下面粗体的是源程序的语句
+
+ //*pResult = GetParentFrame()-&gt;SendMessage(WM_NOTIFY,
+
+ wParam, lParam);
+
+ *pResult = GetParent()-&gt;SendMessage(WM_NOTIFY, wParam, lParam);
+
+ return TRUE;
+
+}
+
+
+
+BOOL CxSplitterWnd::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+
+{
+
+ // The code line below is necessary if using CxSplitterWnd
+
+ in a regular dll
+
+ // AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+ return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+
+
+
+}
+
+这样我们就可以在对话框中使用CxSplitterWnd类了。
+
+
+   四、CSplitterWnd的扩展
+
+CSplitterWnd扩展话题是很多的，我们可以通过对原有方法的覆盖或者增加新的方法来扩展CSplitterWnd。我们在此仅举两个方面的例子。
+
+4.1锁定切分条
+
+当用户创建好分割窗口后，有时并不希望通过拖动切分条来调节窗口的大小。这时就必须锁定切分条。锁定切分条的最简单的方法莫过于不让CSplitterWnd来处理WM_LBUTTONDOWN,WM_MOUSEMOVE,WM_SETCURSOR消息，而是将这些消息交给CWnd窗口进行处理，从而屏蔽掉这些消息。拿WM_LBUTTONDOWN处理过程来说。修改为如下：
+
+
+   void CXXSplitterWnd::OnLButtonDown(UINT nFlags,CPoint point) {
+
+ CWnd::OnLButtonDown(nFlags,point);
+
+}
+
+其余的处理方法类&#20284;。
+
+4.2切分条的定制
+
+由Window自己生成的切分条总是固定的，没有任何的变化，我们在使用一些软件比如ACDSee的时候却能发现它们的切分条却是和自动生成的切分条不一样的。那么如何定制自己的切分条呢？通过重载CSplitterWnd的虚方法OnDrawSplitter和OnInvertTracker可以达到这样的目的。下面的代码生成的效果是分割窗口的边界颜色为红色，分割条的颜色为绿色.代码如下：
+
+
+   void CSplitterWndEx::OnDrawSplitter(CDC *pDC, ESplitType nType, const CRect &amp;rectArg)
+
+{
+
+ if(pDC==NULL)
+
+ {
+
+ RedrawWindow(rectArg,NULL,RDW_INVALIDATE|RDW_NOCHILDREN);
+
+ return;
+
+ }
+
+ ASSERT_VALID(pDC);
+
+ CRect rc=rectArg;
+
+ switch(nType)
+
+ {
+
+ case splitBorder:
+
+ //重画分割窗口边界,使之为红色
+
+ pDC-&gt;Draw3dRect(rc,RGB(255,0,0),RGB(255,0,0));
+
+ rc.InflateRect(-CX_BORDER,-CY_BORDER);
+
+ pDC-&gt;Draw3dRect(rc,RGB(255,0,0),RGB(255,0,0));
+
+
+
+ return;
+
+ case splitBox:
+
+ pDC-&gt;Draw3dRect(rc,RGB(0,0,0),RGB(0,0,0));
+
+ rc.InflateRect(-CX_BORDER,-CY_BORDER);
+
+ pDC-&gt;Draw3dRect(rc,RGB(0,0,0),RGB(0,0,0));
+
+ rc.InflateRect(-CX_BORDER,-CY_BORDER);
+
+ pDC-&gt;FillSolidRect(rc,RGB(0,0,0));
+
+ pDC-&gt;Draw3dRect(rc,RGB(0,0,0),RGB(0,0,0));
+
+ return;
+
+ case splitBar:
+
+ //重画分割条，使之为绿色
+
+ pDC-&gt;FillSolidRect(rc,RGB(255,255,255));
+
+ rc.InflateRect(-5,-5);
+
+ pDC-&gt;Draw3dRect(rc,RGB(255,0,0),RGB(255,0,0));
+
+
+
+ return;
+
+ default:
+
+ ASSERT(FALSE);
+
+ }
+
+ pDC-&gt;FillSolidRect(rc,RGB(0,0,255));
+
+}
+
+void CSplitterWndEx::OnInvertTracker(CRect &amp;rect)
+
+{
+
+ ASSERT_VALID(this);
+
+ ASSERT(!rect.IsRectEmpty());
+
+ ASSERT((GetStyle()&amp;WS_CLIPCHILDREN)==0);
+
+ CRect rc=rect;
+
+ rc.InflateRect(2,2);
+
+ CDC* pDC=GetDC();
+
+ CBrush* pBrush=CDC::GetHalftoneBrush();
+
+ HBRUSH hOldBrush=NULL;
+
+ if(pBrush!=NULL) hOldBrush=(HBRUSH)SelectObject(pDC-&gt;m_hDC,pBrush-&gt;m_hObject);
+
+ pDC-&gt;PatBlt(rc.left,rc.top,rc.Width(),rc.Height(),BLACKNESS);
+
+
+
+ if(hOldBrush!=NULL)
+
+ SelectObject(pDC-&gt;m_hDC,hOldBrush);
+
+ ReleaseDC(pDC);
+
+}
+
+同样我们只要继承CSplitterWnd中的其余的一些虚拟方法就可以生成具有自己个性的分割窗口了。

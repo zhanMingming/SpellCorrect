@@ -1,0 +1,85 @@
+关于网站页面优化的一些建议谷歌的page加速建议软件，需要首先安装Firebug
+
+
+   http://code.google.com/speed/page-speed/
+
+
+   
+
+
+   
+
+
+   雅虎给出的web提速的建议汇总
+
+
+   http://developer.yahoo.com/performance/rules.html
+
+
+   
+
+
+   
+
+
+   不错的web测试站点，做得很棒，自动生成测试报告，用户体验很赞。
+
+
+   http://www.webpagetest.org/
+
+
+   以下是为某搜索引擎做得测试结果：
+
+
+   http://www.webpagetest.org/result/100705_YAE/1/performance_optimization/
+
+
+   
+
+
+   以下是百度搜索测试结果：
+
+
+   http://www.webpagetest.org/result/100706_YCX/
+
+
+   
+
+
+   Web加速的基本思路：
+
+
+   从页面本身看，需要
+
+
+   （1）降低页面元素，合并尽可能多的元素（CSS，图片等等）
+
+
+   （2）降低单位页面元素的大小，图片尽可能压缩；对css，js等文本文件web服务器上提供gzip的支持。
+
+
+   （3）减少下载的次数，尽可能缓存页面元素在本地
+
+
+   （4）降低页面的复杂程度和页面的大小
+
+
+   （6）多域名的策略，图片要多域名（浏览器一般最大并发2个图片的下载），静态脚本采用cookieless的域名，可以加快速度（参见）
+
+
+   
+
+
+   从架构上看，需要
+
+
+   （1）前端配置squid或类似web缓存服务器，降低磁盘IO和后端的计算量
+
+
+   （2）前端配置负载均衡，硬件的例如F5（某搜索引擎就采用了这种方案），软件的方式例如LVS（机器不多的情况下可以采用）
+
+
+   （3）web服务器，apache,ngix需要优化配置，支持高并发，压缩等等。
+
+
+   （4）后端的部分，比如索引缓存等等。

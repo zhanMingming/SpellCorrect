@@ -1,0 +1,96 @@
+opencv 图像阴影检测参数说明：
+
+
+   IplImage *workImg-当前全局变量,表示正在显示的图片。
+
+
+   downleft, upright- 检测出的阴影部分矩形框的两个对角顶点。
+
+
+   
+
+
+
+
+   
+   /*********************************************/
+ //阴影检测
+/*********************************************/
+
+CvPoint downleft,upright;
+int cnt;
+int dir[8][2]={-1,-1,-1,0,-1,1,0,1,0,-1,1,1,1,0,1,-1};
+#define SHADOW 170
+#define Thres_KindNumber 20
+
+bool InRange(CvPoint point,IplImage* pi) 
+{
+	int w=pi-&gt;width;
+	int h=pi-&gt;height;
+	if(point.x&gt;=0&amp;&amp;point.x&lt;w&amp;&amp;point.y&gt;=0&amp;&amp;point.y&lt;h)
+	{
+		float  v[3];
+		for(i=0;i&lt;3;i++)
+		{
+			v[i]=((uchar*)(pi-&gt;imageData + pi-&gt;widthStep*point.y))[point.x*3+i];
+			if(v[i]&lt;=SHADOW)
+				return true;
+		}
+	}
+	return false;
+}
+
+void Dye(IplImage** curimg,CvPoint s)
+{
+	int i;
+	queue&lt;CvPoint&gt;Q;
+	Q.push(s);
+
+	for(i=0;i&lt;3;i++)
+		((uchar*)((*curimg)-&gt;imageData + (*curimg)-&gt;widthStep*s.y))[s.x*3+i]=SHADOW+10;
+
+	while(!Q.empty())
+	{
+		s=Q.front();
+		Q.pop();
+
+		if(s.x&lt;downleft.x)	downleft.x=s.x;
+		if(s.y&lt;downleft.y)	downleft.y=s.y;
+		if(s.x&gt;upright.x)	upright.x=s.x;
+		if(s.y&gt;upright.y)	upright.y=s.y;
+
+		//dye around
+		for(i=0;i&lt;8;i++)
+		{
+			CvPoint now=cvPoint(s.x+dir[i][0],s.y+dir[i][1]);
+			if(InRange(now,*curimg))
+			{
+				Q.push(now);
+				cnt++;
+				for(i=0;i&lt;3;i++)
+					((uchar*)((*curimg)-&gt;imageData + (*curimg)-&gt;widthStep*now.y))[now.x*3+i]=SHADOW+10;
+			}
+		}
+	}
+}
+
+void CCVMFCView::OnShadowDetect()
+{
+	//detect shadows,find the region with highest pixel value
+	int x,y;
+	srcimg=workImg;
+	for(y=0;y&lt;srcimg-&gt;height;y++)
+		for(x=0;x&lt;srcimg-&gt;width;x++)
+		{
+			CvPoint curp=cvPoint(x,y);
+			downleft.x=srcimg-&gt;width;downleft.y=srcimg-&gt;height;
+			upright.x=upright.y=0;
+			cnt=0;
+
+			if(InRange(curp,srcimg))
+				Dye(&amp;srcimg,curp);
+			if(cnt&gt;Thres_KindNumber)
+				cvRectangle(workImg , downleft,upright,CV_RGB(0,255,0),1,CV_AA,0);
+		}
+		Invalidate();
+}

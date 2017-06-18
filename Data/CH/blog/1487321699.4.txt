@@ -1,0 +1,46 @@
+语言统计学三大定律：Zipf law，Heaps law和Benford law语言统计学三大定律：Zipf law，Heaps law和Benford law
+
+
+   zipf law：在给定的语料中，对于任意一个term，其频度(freq)的排名（rank）和freq的乘积大致是一个常数。
+
+
+   Heaps law：在给定的语料中，其独立的term数（vocabulary的size）v（n）大致是语料大小（n）的一个指数函数。
+
+
+   Benford law：在自然形成的十进制数据中，任何一个数据的第一个数字d出现的概率大致log10(1+1/d)
+
+
+   
+
+
+   其中Benford law还在会计作假帐的审查和政治选票合法性审查起到了重要作用。
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+
+   推荐阅读：
+
+
+   （1）Zipf and Heaps Laws&rsquo; Coefficients Depend on Language：http://www.gelbukh.com/CV/Publications/2001/CICLing-2001-Zipf.htm
+
+
+   (2) http://limiao.net/1450
+
+
+   (3) http://www.douban.com/group/topic/11417532/
+
+
+   (4) http://blog.csdn.net/pennyliang/archive/2006/09/11/1207832.aspx

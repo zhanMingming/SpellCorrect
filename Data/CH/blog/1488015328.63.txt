@@ -1,0 +1,74 @@
+html页面中引入ionic.bundle.min.js正常,但是引入ionic.bundle.js报错Invalid regular expression我们的android hybrid app开发使用到了ionicframework作为UI框架，ionic框架的发展和更新非常快，而且做出的界面也很好看。我自己引入ionic框架的时候，遇到了问题。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+		&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+		&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+		&lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+		&lt;div class=&quot;bar bar-header bar-positive&quot;&gt;
+			&lt;a class=&quot;button button-icon icon ion-android-more-vertical&quot;&gt;&lt;/a&gt;
+			&lt;h1 class=&quot;title&quot;&gt;bar-positive&lt;/h1&gt;
+			&lt;a class=&quot;button button-icon icon ion-more&quot;&gt;&lt;/a&gt;
+		&lt;/div&gt;	
+	
+		&lt;div class=&quot;bar bar-footer bar-balanced&quot;&gt;
+			&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+		&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;	
+
+
+
+
+
+   
+
+
+   还是上面的页面，我们引入ionic.bundle.min.js，而不是引入ionic.bundle.js，可以看到没有报错。
+
+
+   
+
+
+
+
+   有点奇怪，我们知道对于js文件来说，min是压缩版(实际部署的时候都是使用min版本)，不含min(源文件，一般在开发过程中使用)。但是压缩版和源码版功能都是一样的，一时半会儿也不知道为啥引入源码版会报错，但是引入压缩版没有问题。只好看源码，从源码中寻找答案了。
+
+
+   
+
+
+
+
+   下面这段报错代码在ionic.bundle.js中：
+
+
+   angular.module(&#39;ngSanitize&#39;).filter(&#39;linky&#39;, [&#39;$sanitize&#39;, function($sanitize) {
+  var LINKY_URL_REGEXP =
+ /((ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+-]+@)\S*[^\s.;,(){}&lt;&gt;&quot;”’]/i,
+      MAILTO_REGEXP = /^mailto:/i;
+
+   
+
+
+   
+
+
+
+对应ionic.bundle.min.js中代码如下：
+   h.module(&quot;ngSanitize&quot;).filter(&quot;linky&quot;,[&quot;$sanitize&quot;,function(a){var f=/((ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+-]+@)\S*[^\s.;,(){}&lt;&gt;&quot;\u201d\u2019]/i,d=/^mailto:/i;
+
+可以看出差别了吧：是中文问题在作怪，ionic.bundle.js中直接使用中文的单引号和双引号，而ionic.bundle.min.js中对中文字符进行了转义。所以解决方案就很简单了：上面我们的html没有设置编码，所以默认不支持中文。只需要在头部加入下面代码即可：
+   &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+
+   
+
+
+   
+
+
+
+设置好html的编码&#26684;式后，发现引入ionic.bundle.js或者ionic.bundle.min.js的时候，都不会再报错了。

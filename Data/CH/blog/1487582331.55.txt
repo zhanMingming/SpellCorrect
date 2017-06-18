@@ -1,0 +1,58 @@
+对话框中获取View类指针解决问题：View类的菜单中打开Dialog，并将Dialog的&#20540;传回View类
+
+
+   解决方案：
+
+
+   设Dialog类为Judge，View类为CVMFCView
+
+
+   1.Judge.h 中定义一个C****View*类变量：CCVMFCView* pMain;
+
+2. 在Judge类中添加函数 OnShowDialog(CCVMFCView* pview)，代替Domodal
+
+
+
+
+   void CJudge::OnShowDialog(CCVMFCView* pview)
+{
+	pMain=pview;
+	DoModal();
+}
+这样就将pMain用pview代替了。那么怎么将CVMFCView的对象指针传到pview呢？见下一步。
+
+
+
+3.CVMFCView中的菜单响应函数写成
+
+   
+
+
+   
+
+
+   void CCVMFCView::OnSelectResult()
+{
+	CJudge dlg;
+	dlg.OnShowDialog(this);
+}大功告成！
+
+以后再在对话框Judge.cpp中使用View类的函数即可用pMain直接调用。
+
+   
+
+
+   
+
+
+   ====================================================================
+
+
+   另外还有一种方法获取View类指针，但有时候不work，因为获取方法不对的话View类指针可能指向空&#20540;
+
+
+   
+
+
+   CMainFrame*   pFrame=(CMainFrame*)AfxGetMainWnd();   
+    CListCtrlView* pView = (CListCtrlView*)pFrame-&gt;GetActiveView();

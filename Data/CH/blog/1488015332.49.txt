@@ -1,0 +1,161 @@
+软件设计度量工具structure101学习(六)：Project Properties现在我们看下如何新建一个structure101项目以及Project Properties的设置。项目设置包括如下内容：Project type、breakout、Excludes、Externals、Granularity、Source files和Transformations。配置好这些设置选项之后，我们可以另存为一个.hsp文件，这样下次使用的时候就可以直接打开hsp。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   1.project type，指定需要用structure101分析的项目字节码位置。我们知道structure101的分析是基于字节码的，而不是源码。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   2.breakout，有logical和physical两种。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   举个例子：我们分析commons-collections.jar、commons-io.jar、commons-lang.jar这3个jar包之间的关系。下边作图是phsical视图，右图是logical视图。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   3.Granularity
+
+
+   
+
+
+
+
+   之前也介绍过，为了性能和显示效果考虑，structure101默认粒度是normal，不会显示某个类内部之间的依赖关系(比如：类的成员变量和成员函数间的依赖关系、内部类之间的依赖关系)。如果我们想要看到这些更细粒度的信息，可以将Granularity设置为Detail级别。
+
+
+   
+
+
+
+
+   4.Externals
+
+
+   
+
+
+
+
+   这个主要是为了忽略第三方类库，比如我们分析自己项目的依赖，肯定不关注自己类库与jre的依赖关系、与apache等第三方库的依赖关系。也就是说我们重点关注自己的代码，而不是第三方的代码。
+
+
+   
+
+
+
+
+   5.Excludes
+
+
+   
+
+
+
+
+   忽略某些类和包，不用进行依赖关系的分析。Occasionally, you may want to point at a jar file (or classes directory) but not include all the class files it contains. The most common scenario here is where you wish to exclude Test classes. You do this
+ by specifying Exclude patterns. For example, *.Test* will exclude all classes whose local name begins with &quot;Test&quot;。
+
+
+   
+
+
+
+
+   6.Source files
+
+
+   
+
+
+
+
+   设置好项目字节码对应的源码位置之后，就可以使用structure101内置的源码阅读器或者外置阅读器了。这样点击某个方法或者类的时候，structure101会显示对应源码。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   7.Transformations
+
+
+   
+
+
+
+
+   还是先举个例子，比如我们上面分析了commons-collections.jar、commons-io.jar、commons-lang.jar这3个jar包。现在我想把这3个jar下面的所有异常拿出来，放在一个异常目录下。我们可以设置如下的Transformations。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   我们看下显示效果图：
+
+
+   
+
+
+
+
+   可以看到所有的异常都被拿出了，放在我们自己命名的exceptions下了。Transformations give you almost unlimited control over the structure of your model. You can specify a number of expressions that modify the fully-qualified names
+ of the classes in your project - in effect moving them to locations other than their physical locations in the code-base.
+
+
+   
+
+
+
+
+   设置好上面的这些配置，就能成功新建一个structure101项目了。structure101允许我们在创建之后修改这些参数。

@@ -1,0 +1,26 @@
+_PyUnicodeUCS4_AsDefaultEncodedString“_PyUnicodeUCS4_AsDefaultEncodedString”的出现一般源于你在两个地方分别装了python，两个分别用UCS2和UCS4编码进行的build。
+
+
+
+   解决方案：
+
+
+
+
+
+   export PATH=$PYTHONPATH/bin:$PATH
+export LD_LIBRARY_PATH=$PYTHONHOME/lib:$LD_LIBRARY_PATH
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

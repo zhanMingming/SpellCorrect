@@ -1,0 +1,169 @@
+opencv MFC中的鼠标响应函数方法一：
+
+
+   
+
+
+   bool check_line_state=false;
+IplImage* imgshow;
+
+void on_mouse4(int event, int x,int y,int flags,void* param)
+{
+	int thickness=1;
+	CvPoint p1,p2;
+	if(event==CV_EVENT_LBUTTONDOWN)
+	{
+		ROI_rect.x=x;
+		ROI_rect.y=y;
+		check_line_state=true;
+	}
+	else if(check_line_state&amp;&amp;event==CV_EVENT_MOUSEMOVE)
+	{
+		p1=cvPoint(ROI_rect.x,ROI_rect.y);
+		p2=cvPoint(x,y);
+		cvLine(imgshow,p1,p2,CV_RGB(0,255,150),thickness,CV_AA,0);
+		cvShowImage(&quot;image&quot;,imgshow);
+	}
+	else if(check_line_state&amp;&amp;event==CV_EVENT_LBUTTONUP)
+	{
+		check_line_state=false;
+		cvWaitKey(20);
+	}
+}
+
+void CCVMFCView::OnDemarcateLine()
+{
+	imageClone(workImg,&amp;imgshow);
+	cvFlip(imgshow);
+	ROI_rect.x=ROI_rect.y=0;
+	cvNamedWindow(&quot;image&quot;,CV_WINDOW_AUTOSIZE);
+	cvShowImage(&quot;image&quot;,imgshow);
+
+	cvSetMouseCallback(&quot;image&quot;,on_mouse4);
+	cvWaitKey();
+	cvDestroyWindow(&quot;image&quot;);
+}
+
+效果图1：
+
+   
+
+
+   
+
+
+
+
+   方法二：
+
+
+   只能画一条直线
+
+
+   
+
+
+   bool check_line_state=false;
+IplImage* imgshow;
+
+void on_mouse4(int event, int x,int y,int flags,void* param)
+{
+	int thickness=1;
+	if(event==CV_EVENT_LBUTTONDOWN)
+	{
+		ROI_rect.x=x;
+		ROI_rect.y=y;
+		check_line_state=true;
+	}
+	else if(check_line_state&amp;&amp;event==CV_EVENT_MOUSEMOVE)
+	{
+		cvCopy(srcimg,imgshow);
+		pt1=cvPoint(ROI_rect.x,ROI_rect.y);
+		pt2=cvPoint(x,y);
+		cvLine(imgshow,pt1,pt2,CV_RGB(0,255,150),thickness,CV_AA,0);
+		cvShowImage(&quot;image&quot;,imgshow);
+		cvWaitKey(20);
+	}
+	else if(check_line_state&amp;&amp;event==CV_EVENT_LBUTTONUP)
+	{
+		check_line_state=false;
+		cvWaitKey(20);
+		
+	}
+}
+
+void CCVMFCView::OnDemarcateLine()
+{
+	imageClone(workImg,&amp;srcimg);
+	cvFlip(srcimg);
+	imageClone(srcimg,&amp;imgshow);
+	pt1.x=pt1.y=pt2.x=pt2.y=ROI_rect.x=ROI_rect.y=0;
+	
+	cvNamedWindow(&quot;image&quot;,CV_WINDOW_AUTOSIZE);
+	cvShowImage(&quot;image&quot;,imgshow);
+
+	cvSetMouseCallback(&quot;image&quot;,on_mouse4);
+	cvWaitKey();
+	cvDestroyWindow(&quot;image&quot;);
+}
+
+
+效果图：
+
+   
+
+
+   
+
+
+
+
+   方法三：
+
+
+   可以画多条直线，但是划线的时候看不见线
+
+
+   
+
+
+   void on_mouse4(int event, int x,int y,int flags,void* param)
+{
+	int thickness=1;
+	if(event==CV_EVENT_LBUTTONDOWN)
+	{
+		ROI_rect.x=x;
+		ROI_rect.y=y;
+		check_line_state=true;
+	}
+	else if(check_line_state&amp;&amp;event==CV_EVENT_MOUSEMOVE)
+	{
+		pt1=cvPoint(ROI_rect.x,ROI_rect.y);
+		pt2=cvPoint(x,y);
+		
+	}
+	else if(check_line_state&amp;&amp;event==CV_EVENT_LBUTTONUP)
+	{
+		check_line_state=false;
+		//cvWaitKey(20);
+		cvLine(imgshow,pt1,pt2,CV_RGB(0,255,150),thickness,CV_AA,0);
+		cvShowImage(&quot;image&quot;,imgshow);
+	}
+}
+
+void CCVMFCView::OnDemarcateLine()
+{
+	imageClone(workImg,&amp;imgshow);
+	cvFlip(imgshow);
+	pt1.x=pt1.y=pt2.x=pt2.y=ROI_rect.x=ROI_rect.y=0;
+	
+	cvNamedWindow(&quot;image&quot;,CV_WINDOW_AUTOSIZE);
+	cvShowImage(&quot;image&quot;,imgshow);
+
+	cvSetMouseCallback(&quot;image&quot;,on_mouse4);
+	cvWaitKey();
+	cvDestroyWindow(&quot;image&quot;);
+}
+
+
+效果图3：

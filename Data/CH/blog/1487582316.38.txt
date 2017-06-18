@@ -1,0 +1,461 @@
+解决Opencv高低版本不兼容问题目前OpenCV版本已更新到2.4...由此出现了一系列问题，解决如下：
+
+
+   
+1、cxcore.h等头文件找不到：
+
+
+   
+法一、将opencv1.0中的各种.h或者.lib文件拷到opencv2.3.1对应include/library的路径的文件夹下。
+
+
+   
+
+
+
+
+
+   
+e.g.  Cannot open include file: 'cxtypes.h': No such file or directory
+
+
+
+
+   
+像这种情况，在opencv1.0中又搜索不到的，果断把#include&quot;cxtypes.h&quot;删掉，其他问题慢慢解决。
+
+
+   
+2、CvFilter未定义：
+
+
+
+
+   
+opencv高级版本不在含有CvFilter，那么就把类型改成int吧……
+
+
+   
+3、CvvImage类找不到定义……
+
+
+   
+高级版本中，以前版本的CvvImage类不见了...为了能够继续使用这个类，下面把这个类的源代码贴出来，使用的时候将该代码加入到工程中便可以使用了。为了方便切换OpenCV的版本，这里用到了一些条件编译宏，来保证代码的灵活性。
+
+
+   
+ 不过OpenCV 2.2.0取消CvvImage这个类，一定是有它的原因的，具体可以在做实验的时候体会这些原因。
+
+
+   
+========================================================================
+
+
+   
+CvvImage头文件
+
+
+
+
+   
+
+
+
+   #ifndef CVVIMAGE_CLASS_DEF
+#define CVVIMAGE_CLASS_DEF
+
+#ifndef RC_OPENCV_2_1_0
+
+#include &lt;opencv/cv.h&gt;
+#include &lt;opencv/highgui.h&gt;
+
+/* CvvImage class definition */
+class  CvvImage
+{
+public:
+    CvvImage();
+    virtual ~CvvImage();
+
+    /* Create image (BGR or grayscale) */
+    virtual bool  Create( int width, int height, int bits_per_pixel, int image_origin = 0 );
+
+    /* Load image from specified file */
+    virtual bool  Load( const char* filename, int desired_color = 1 );
+
+    /* Load rectangle from the file */
+    virtual bool  LoadRect( const char* filename,
+ int desired_color, CvRect r );
+
+#if defined WIN32 || defined _WIN32
+    virtual bool  LoadRect( const char* filename,
+ int desired_color, RECT r )
+    {
+ return LoadRect( filename, desired_color,
+     cvRect( r.left, r.top, r.right - r.left, r.bottom - r.top ));
+    }
+#endif
+
+    /* Save entire image to specified file. */
+    virtual bool  Save( const char* filename );
+
+    /* Get copy of input image ROI */
+    virtual void  CopyOf( CvvImage&amp; image, int desired_color = -1 );
+    virtual void  CopyOf( IplImage* img, int desired_color = -1 );
+
+    IplImage* GetImage() { return m_img; };
+    virtual void  Destroy(void);
+
+    /* width and height of ROI */
+    int Width() { return !m_img ? 0 : !m_img-&gt;roi ? m_img-&gt;width : m_img-&gt;roi-&gt;width; };
+    int Height() { return !m_img ? 0 : !m_img-&gt;roi ? m_img-&gt;height : m_img-&gt;roi-&gt;height;};
+    int Bpp() { return m_img ? (m_img-&gt;depth &amp; 255)*m_img-&gt;nChannels : 0; };
+
+    virtual void  Fill( int color );
+
+    /* draw to highgui window */
+    virtual void  Show( const char* window );
+
+#if defined WIN32 || defined _WIN32
+    /* draw part of image to the specified DC */
+    virtual void  Show( HDC dc, int x, int y, int width, int height,
+ int from_x = 0, int from_y = 0 );
+    /* draw the current image ROI to the specified rectangle of the destination DC */
+    virtual void  DrawToHDC( HDC hDCDst, RECT* pDstRect );
+#endif
+
+protected:
+
+    IplImage*  m_img;
+};
+
+typedef CvvImage CImage;
+
+#endif
+
+#endif
+
+ CvvImage源文件
+
+
+   
+
+
+   
+
+
+
+   #include &quot;stdafx.h&quot;  
+  
+#ifndef RC_OPENCV_2_1_0  
+#include &quot;CvvImage.h&quot;  
+  
+//////////////////////////////////////////////////////////////////////  
+// Construction/Destruction  
+//////////////////////////////////////////////////////////////////////  
+  
+CV_INLINE RECT NormalizeRect( RECT r );  
+CV_INLINE RECT NormalizeRect( RECT r )  
+{  
+    int t;  
+  
+    if( r.left &gt; r.right )  
+    {  
+ t = r.left;  
+ r.left = r.right;  
+ r.right = t;  
+    }  
+  
+    if( r.top &gt; r.bottom )  
+    {  
+ t = r.top;  
+ r.top = r.bottom;  
+ r.bottom = t;  
+    }  
+  
+    return r;  
+}  
+  
+CV_INLINE CvRect RectToCvRect( RECT sr );  
+CV_INLINE CvRect RectToCvRect( RECT sr )  
+{  
+    sr = NormalizeRect( sr );  
+    return cvRect( sr.left, sr.top, sr.right - sr.left, sr.bottom - sr.top );  
+}  
+  
+CV_INLINE RECT CvRectToRect( CvRect sr );  
+CV_INLINE RECT CvRectToRect( CvRect sr )  
+{  
+    RECT dr;  
+    dr.left = sr.x;  
+    dr.top = sr.y;  
+    dr.right = sr.x + sr.width;  
+    dr.bottom = sr.y + sr.height;  
+  
+    return dr;  
+}  
+  
+CV_INLINE IplROI RectToROI( RECT r );  
+CV_INLINE IplROI RectToROI( RECT r )  
+{  
+    IplROI roi;  
+    r = NormalizeRect( r );  
+    roi.xOffset = r.left;  
+    roi.yOffset = r.top;  
+    roi.width = r.right - r.left;  
+    roi.height = r.bottom - r.top;  
+    roi.coi = 0;  
+  
+    return roi;  
+}  
+  
+void  FillBitmapInfo( BITMAPINFO* bmi, int width, int height, int bpp, int origin )  
+{  
+    assert( bmi &amp;&amp; width &gt;= 0 &amp;&amp; height &gt;= 0 &amp;&amp; (bpp == 8 || bpp == 24 || bpp == 32));  
+  
+    BITMAPINFOHEADER* bmih = &amp;(bmi-&gt;bmiHeader);  
+  
+    memset( bmih, 0, sizeof(*bmih));  
+    bmih-&gt;biSize = sizeof(BITMAPINFOHEADER);  
+    bmih-&gt;biWidth = width;  
+    bmih-&gt;biHeight = origin ? abs(height) : -abs(height);  
+    bmih-&gt;biPlanes = 1;  
+    bmih-&gt;biBitCount = (unsigned short)bpp;  
+    bmih-&gt;biCompression = BI_RGB;  
+  
+    if( bpp == 8 )  
+    {  
+ RGBQUAD* palette = bmi-&gt;bmiColors;  
+ int i;  
+ for( i = 0; i &lt; 256; i++ )  
+ {  
+     palette[i].rgbBlue = palette[i].rgbGreen = palette[i].rgbRed = (BYTE)i;  
+     palette[i].rgbReserved = 0;  
+ }  
+    }  
+}  
+  
+CvvImage::CvvImage()  
+{  
+    m_img = 0;  
+}  
+  
+void CvvImage::Destroy()  
+{  
+    cvReleaseImage( &amp;m_img );  
+}  
+  
+CvvImage::~CvvImage()  
+{  
+    Destroy();  
+}  
+  
+bool  CvvImage::Create( int w, int h, int bpp, int origin )  
+{  
+    const unsigned max_img_size = 10000;  
+  
+    if( (bpp != 8 &amp;&amp; bpp != 24 &amp;&amp; bpp != 32) ||  
+ (unsigned)w &gt;=  max_img_size || (unsigned)h &gt;= max_img_size ||  
+ (origin != IPL_ORIGIN_TL &amp;&amp; origin != IPL_ORIGIN_BL))  
+    {  
+ assert(0); // most probably, it is a programming error  
+ return false;  
+    }  
+  
+    if( !m_img || Bpp() != bpp || m_img-&gt;width != w || m_img-&gt;height != h )  
+    {  
+ if( m_img &amp;&amp; m_img-&gt;nSize == sizeof(IplImage))  
+     Destroy();  
+  
+ /* prepare IPL header */  
+ m_img = cvCreateImage( cvSize( w, h ), IPL_DEPTH_8U, bpp/8 );  
+    }  
+  
+    if( m_img )  
+ m_img-&gt;origin = origin == 0 ? IPL_ORIGIN_TL : IPL_ORIGIN_BL;  
+  
+    return m_img != 0;  
+}  
+  
+void  CvvImage::CopyOf( CvvImage&amp; image, int desired_color )  
+{  
+    IplImage* img = image.GetImage();  
+    if( img )  
+    {  
+ CopyOf( img, desired_color );  
+    }  
+}  
+  
+  
+#define HG_IS_IMAGE(img) \  
+    ((img) != 0 &amp;&amp; ((const IplImage*)(img))-&gt;nSize == sizeof(IplImage) &amp;&amp; \  
+    ((IplImage*)img)-&gt;imageData != 0)  
+  
+  
+void  CvvImage::CopyOf( IplImage* img, int desired_color )  
+{  
+    if( HG_IS_IMAGE(img) )  
+    {  
+ int color = desired_color;  
+ CvSize size = cvGetSize( img );   
+  
+ if( color &lt; 0 )  
+     color = img-&gt;nChannels &gt; 1;  
+  
+ if( Create( size.width, size.height,  
+     (!color ? 1 : img-&gt;nChannels &gt; 1 ? img-&gt;nChannels : 3)*8,  
+     img-&gt;origin ))  
+ {  
+     cvConvertImage( img, m_img, 0 );  
+ }  
+    }  
+}  
+  
+  
+bool  CvvImage::Load( const char* filename, int desired_color )  
+{  
+    IplImage* img = cvLoadImage( filename, desired_color );  
+    if( !img )  
+ return false;  
+  
+    CopyOf( img, desired_color );  
+    cvReleaseImage( &amp;img );  
+  
+    return true;  
+}  
+  
+  
+bool  CvvImage::LoadRect( const char* filename,  
+    int desired_color, CvRect r )  
+{  
+    if( r.width &lt; 0 || r.height &lt; 0 ) return false;  
+  
+    IplImage* img = cvLoadImage( filename, desired_color );  
+    if( !img )  
+ return false;  
+  
+    if( r.width == 0 || r.height == 0 )  
+    {  
+ r.width = img-&gt;width;  
+ r.height = img-&gt;height;  
+ r.x = r.y = 0;  
+    }  
+  
+    if( r.x &gt; img-&gt;width || r.y &gt; img-&gt;height ||  
+ r.x + r.width &lt; 0 || r.y + r.height &lt; 0 )  
+    {  
+ cvReleaseImage( &amp;img );  
+ return false;  
+    }  
+  
+    /* truncate r to source image */  
+    if( r.x &lt; 0 )  
+    {  
+ r.width += r.x;  
+ r.x = 0;  
+    }  
+    if( r.y &lt; 0 )  
+    {  
+ r.height += r.y;  
+ r.y = 0;  
+    }  
+  
+    if( r.x + r.width &gt; img-&gt;width )  
+ r.width = img-&gt;width - r.x;  
+  
+    if( r.y + r.height &gt; img-&gt;height )  
+ r.height = img-&gt;height - r.y;  
+  
+    cvSetImageROI( img, r );  
+    CopyOf( img, desired_color );  
+  
+    cvReleaseImage( &amp;img );  
+    return true;  
+}  
+  
+  
+bool  CvvImage::Save( const char* filename )  
+{  
+    if( !m_img )  
+ return false;  
+    cvSaveImage( filename, m_img );  
+    return true;  
+}  
+  
+  
+void  CvvImage::Show( const char* window )  
+{  
+    if( m_img )  
+ cvShowImage( window, m_img );  
+}  
+  
+  
+void  CvvImage::Show( HDC dc, int x, int y, int w, int h, int from_x, int from_y )  
+{  
+    if( m_img &amp;&amp; m_img-&gt;depth == IPL_DEPTH_8U )  
+    {  
+ uchar buffer[sizeof(BITMAPINFOHEADER) + 1024];  
+ BITMAPINFO* bmi = (BITMAPINFO*)buffer;  
+ int bmp_w = m_img-&gt;width, bmp_h = m_img-&gt;height;  
+  
+ FillBitmapInfo( bmi, bmp_w, bmp_h, Bpp(), m_img-&gt;origin );  
+  
+ from_x = MIN( MAX( from_x, 0 ), bmp_w - 1 );  
+ from_y = MIN( MAX( from_y, 0 ), bmp_h - 1 );  
+  
+ int sw = MAX( MIN( bmp_w - from_x, w ), 0 );  
+ int sh = MAX( MIN( bmp_h - from_y, h ), 0 );  
+  
+ SetDIBitsToDevice(  
+     dc, x, y, sw, sh, from_x, from_y, from_y, sh,  
+     m_img-&gt;imageData + from_y*m_img-&gt;widthStep,  
+     bmi, DIB_RGB_COLORS );  
+    }  
+}  
+  
+  
+void  CvvImage::DrawToHDC( HDC hDCDst, RECT* pDstRect )   
+{  
+    if( pDstRect &amp;&amp; m_img &amp;&amp; m_img-&gt;depth == IPL_DEPTH_8U &amp;&amp; m_img-&gt;imageData )  
+    {  
+ uchar buffer[sizeof(BITMAPINFOHEADER) + 1024];  
+ BITMAPINFO* bmi = (BITMAPINFO*)buffer;  
+ int bmp_w = m_img-&gt;width, bmp_h = m_img-&gt;height;  
+  
+ CvRect roi = cvGetImageROI( m_img );  
+ CvRect dst = RectToCvRect( *pDstRect );  
+  
+ if( roi.width == dst.width &amp;&amp; roi.height == dst.height )  
+ {  
+     Show( hDCDst, dst.x, dst.y, dst.width, dst.height, roi.x, roi.y );  
+     return;  
+ }  
+  
+ if( roi.width &gt; dst.width )  
+ {  
+     SetStretchBltMode(  
+  hDCDst,    // handle to device context  
+  HALFTONE );  
+ }  
+ else  
+ {  
+     SetStretchBltMode(  
+  hDCDst,    // handle to device context  
+  COLORONCOLOR );  
+ }  
+  
+ FillBitmapInfo( bmi, bmp_w, bmp_h, Bpp(), m_img-&gt;origin );  
+  
+ ::StretchDIBits(  
+     hDCDst,  
+     dst.x, dst.y, dst.width, dst.height,  
+     roi.x, roi.y, roi.width, roi.height,  
+     m_img-&gt;imageData, bmi, DIB_RGB_COLORS, SRCCOPY );  
+    }  
+}  
+  
+  
+void  CvvImage::Fill( int color )  
+{  
+    cvSet( m_img, cvScalar(color&amp;255,(color&gt;&gt;8)&amp;255,(color&gt;&gt;16)&amp;255,(color&gt;&gt;24)&amp;255) );  
+}  
+#endif

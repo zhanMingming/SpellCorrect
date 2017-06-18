@@ -1,0 +1,57 @@
+[置顶]
+ 在博客中用latex写公式在博客中插入Latex 公式的方法：
+
+   1. 访问Latex在线编辑器，将下方code复制到博客中的源代码里，如：
+
+   
+
+   P(x|c)=\frac{P(c|x)\cdot P(x)}{P(x)}得到
+   &lt;a href=&quot;http://www.codecogs.com/eqnedit.php?latex=P(x|c)=\frac{P(c|x)\cdot P(x)}{P(x)}&quot; target=&quot;_blank&quot;&gt;&lt;img src=&quot;http://latex.codecogs.com/gif.latex?P(x|c)=\frac{P(c|x)\cdot P(x)}{P(x)}&quot; title=&quot;P(x|c)=\frac{P(c|x)\cdot P(x)}{P(x)}&quot; /&gt;&lt;/a&gt;
+插入源代码，得到：
+   
+
+   
+
+   
+
+   或者直接在html中添加：&lt;img src=&quot;http://latex.codecogs.com/gif.latex?在这里填写你的latex代码&quot; /&gt;例如：&lt;img src=&quot;http://latex.codecogs.com/gif.latex?35*d_5+1(\oe%20)&quot; /&gt;
+
+   
+
+   
+
+   2. 公式手写器
+
+   只要手写就好了哦，亲！！！
+
+   链接在此~~
+
+   
+
+   
+
+   3.Google Chart Tools / Image Charts
+
+   
+
+
+   Google Chart地址：
+http://chart.apis.google.com/chart?cht=tx&amp;chl=(个人测试好像不能使用https；基于Google主域名，相对安全–指Google主域名一般不会撞墙)http://chart.googleapis.com/chart?cht=tx&amp;chl=(非SSL链接，基于Google Apis域名)https://chart.googleapis.com/chart?cht=tx&amp;chl=(安全链接，基于Google Apis域名)
+但Google Chart对于插入公式来说是大材小用了。
+
+
+
+
+除了常规的饼形图、折线图、冒泡图和柱状图等，还有QR二维码、能量条、极坐标图……好吧，只要你能想到，就能通过URL调用。
+
+   
+
+   
+
+   Reference:
+
+   1. 吉博的blog
+
+   2. Latex 公式的书写：Practice Box
+
+   3.Delbert's Blog

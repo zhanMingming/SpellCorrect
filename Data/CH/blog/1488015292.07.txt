@@ -1,0 +1,42 @@
+maven项目构建:maven-antrun-plugin插件实现文件内容拷贝和文件重命名之前的文章“profile与资源过滤”介绍过，通过激活不同的profile，可以改变同一个文件中的${propertyName}占位符。也就是说：通过profile与资源过滤，我们实现了：同一个文件，打包到不同的环境，文件的内容不同。
+
+
+   
+
+
+
+
+   我们项目有这样的场景：我们知道log4j框架会自动加载classpath下的log4j.properties文件。我们开发环境和生产环境的日志配置文件名是：log4j-dev.properties，log4j-online.properties，虽然这2个文件都在classpath下，但是log4j并不会自动去加载，因为文件名称不是log4j.properties。
+
+
+   
+
+
+   
+
+
+
+
+   也就是说，我们想实现这样的效果：打dev环境的包时候，将log4j-dev.properties复制到log4j.properties；打online环境的包时候，将log4j-online.properties复制到log4j.properties。这样启动项目的时候，log4j框架就能自动加载配置文件了。通过maven-antrun-plugin插件可以实现这样的需求：
+
+
+   &lt;!--${log.conf}读取profile下的属性值--&gt;
+&lt;plugin&gt;
+	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+	&lt;artifactId&gt;maven-antrun-plugin&lt;/artifactId&gt;
+	&lt;version&gt;1.8&lt;/version&gt;
+	&lt;executions&gt;
+		&lt;execution&gt;
+			&lt;phase&gt;compile&lt;/phase&gt;
+			&lt;goals&gt;
+				&lt;goal&gt;run&lt;/goal&gt;
+			&lt;/goals&gt;
+			&lt;configuration&gt;
+				&lt;tasks&gt;
+					&lt;move file=&quot;${project.build.directory}/classes/${log.conf}&quot;
+						  tofile=&quot;${project.build.directory}/classes/log4j.properties&quot; /&gt;
+				&lt;/tasks&gt;
+			&lt;/configuration&gt;
+		&lt;/execution&gt;
+	&lt;/executions&gt;
+&lt;/plugin&gt;

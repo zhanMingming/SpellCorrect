@@ -1,0 +1,47 @@
+开源日志系统 - log4cplus (四)### 如何将log记录到文件 ###
+
+   我们在例5中给出了一个将log记录到文件的例子，用的是FileAppender类实现的，log4cplus提供了三个类用于文件操作，它们是FileAppender类、RollingFileAppender类、DailyRollingFileAppender类。
+
+   1. FileAppender类
+
+   实现了基本的文件操作功能，构造函数如下：
+
+   FileAppender(const log4cplus::tstring&amp; filename, LOG4CPLUS_OPEN_MODE_TYPE mode = LOG4CPLUS_FSTREAM_NAMESPACE::ios::trunc, bool immediateFlush = true); filename : 文件名mode : 文件类型，可选择的文件类型包括app、ate、binary、in、out、trunc，因为实际上只是对 stl的一个简单包装，呵呵，这里就不多讲了。缺省是trunc，表示将先前文件删除。immediateFlush ：缓冲刷新标志，如果为true表示每向文件写一条记录就刷新一次缓存，否则直到FileAppender 被关闭或文件缓存已满才更新文件，一般是要设置true的，比如你往文件写的过程中出现 了错误（如程序非正常退出），即使文件没有正常关闭也可以保证程序终止时刻之前的所有 记录都会被正常保存。
+
+   FileAppender类的使用情况请参考例5，这里不再赘述。
+
+   				2. RollingFileAppender类
+
+   构造函数如下：log4cplus::RollingFileAppender::RollingFileAppender(const log4cplus::tstring&amp; filename, long maxFileSize, int maxBackupIndex, bool immediateFlush)
+
+   filename : 文件名maxFileSize : 文件的最大尺寸maxBackupIndex : 最大记录文件数immediateFlush : 缓冲刷新标志 RollingFileAppender类可以根据你预先设定的大小来决定是否转储，当超过该大小，后续log信息会另存到新文件中，除了定义每个记录文件的大小之外，你还要确定在RollingFileAppender类对象构造时最多需要多少个这样的记录文件(maxBackupIndex+1)，当存储的文件数目超过maxBackupIndex+1时，会删除最早生成的文件，保证整个文件数目等于maxBackupIndex+1。然后继续记录，比如以下代码片段：
+
+    ... ...  #define LOOP_COUNT 200000  SharedAppenderPtr _append(new RollingFileAppender("Test.log", 5*1024, 5)); _append-&gt;setName("file test"); _append-&gt;setLayout( std::auto_ptr(new TTCCLayout()) ); Logger::getRoot().addAppender(_append);
+
+    Logger root = Logger::getRoot(); Logger test = Logger::getInstance("test"); Logger subTest = Logger::getInstance("test.subtest");
+
+    for(int i=0; i { NDCContextCreator _context("loop"); LOG4CPLUS_DEBUG(subTest, "Entering loop #" &lt;&lt; i) }  ... ... 
+
+   运行结果：
+
+   运行后会产生6个输出文件，Test.log、Test.log.1、Test.log.2、Test.log.3、Test.log.4、Test.log.5其中Test.log存放着最新写入的信息，而最后一个文件中并不包含第一个写入信息，说明已经被不断更新了。需要指出的是，这里除了Test.log之外，每个文件的大小都是200K,而不是我们想像中的5K，这是因为log4cplus中隐含定义了文件的最小尺寸是200K，只有大于200K的设置才生效，&lt;= 200k的设置都会被认为是200K.
+
+   				3. DailyRollingFileAppender类
+
+   构造函数如下：DailyRollingFileAppender::DailyRollingFileAppender(const log4cplus::tstring&amp; filename, DailyRollingFileSchedule schedule, bool immediateFlush, int maxBackupIndex) filename : 文件名schedule : 存储频度immediateFlush : 缓冲刷新标志maxBackupIndex : 最大记录文件数
+
+   DailyRollingFileAppender类可以根据你预先设定的频度来决定是否转储，当超过该频度，后续log信息会另存到新文件中，这里的频度包括：MONTHLY（每月）、WEEKLY（每周）、DAILY（每日）、TWICE_DAILY（每两天）、HOURLY（每时）、MINUTELY（每分）。maxBackupIndex的含义同上所述，比如以下代码片段：
+
+    ... ...  SharedAppenderPtr _append(new DailyRollingFileAppender("Test.log", MINUTELY, true, 5)); _append-&gt;setName("file test"); _append-&gt;setLayout( std::auto_ptr(new TTCCLayout()) ); Logger::getRoot().addAppender(_append);
+
+    Logger root = Logger::getRoot(); Logger test = Logger::getInstance("test"); Logger subTest = Logger::getInstance("test.subtest");
+
+    for(int i=0; i { NDCContextCreator _context("loop"); LOG4CPLUS_DEBUG(subTest, "Entering loop #" &lt;&lt; i) }  ... ...
+
+   				运行结果：
+
+   运行后会以分钟为单位，分别生成名为Test.log.2004-10-17-03-03、Test.log.2004-10-17-03-04和Test.log.2004-10-17-03-05这样的文件。
+
+   需要指出的是，刚看到按照频度（如HOURLY、MINUTELY）转储这样的概念，以为log4cplus提供了内部定时器，感觉很奇怪，因为日志系统不应该主动记录，而loging事件总是应该被动触发的啊。仔细看了源代码后才知道这里的"频度"并不是你写入文件的速度，其实是否转储的标准并不依赖你写入文件的速度，而是依赖于写入的那一时刻是否满足了频度条件，即是否超过了以分钟、小时、周、月为单位的时间刻度，如果超过了就另存。
+
+   本部分详细介绍log信息的几种文件操作方式，下面将重点介绍一下如何有选择地控制log信息的输出。

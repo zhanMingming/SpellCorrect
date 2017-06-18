@@ -1,0 +1,69 @@
+【CSDN日报】文章收录指北CSDN每天有太多的文章，有很多的优质文章，他们值得被更多的人阅读。
+
+
+
+
+   
+【CSDN日报】内容来自soledadzz和博乐收录，也欢迎大家踊跃自荐。
+   
+
+
+
+
+
+   P.S.  soledadzz并非程序员，但Ta有Ta的智囊团（博乐） ，日报文章会参考智囊团的意见。
+
+
+
+   自荐请加QQ群：374041348，加群时请备注你的CSDN博客地址：（示例）http://blog.csdn.net/soledadzz
+
+
+
+   自荐须知：
+
+
+
+  
+  
+   格式：【日报自荐】文章标题+文章地址。
+
+  
+   文章必须为原创。
+
+  
+   上首页的文章不一定会收录进日报，不要为什么。
+
+  
+   拒绝一切有推广嫌疑（软文、广告等）的文章。
+
+  
+   文章是否被收录，请关注站每日CSDN日报推送（站内通知+QQ群），soledadzz不会一一回复。
+
+  
+
+
+
+   入选【CSDN日报】，你将会得到：
+
+
+
+  
+  奖励50C币/篇（手动发放，请勿催促）
+  阅读量、粉丝的增加
+  文章会在CSDN、博客首页等地被推荐
+  每月统计排行Top5，会有CSDN定制礼品
+  
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

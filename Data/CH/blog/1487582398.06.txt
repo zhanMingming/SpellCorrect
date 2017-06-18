@@ -1,0 +1,122 @@
+模板[最小费用最大流]事实上这个问题是最大费用最大流，为了用最小费用最大流存，把费用改为负去加边。
+
+
+   #include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;cstdio&gt;
+#include &lt;queue&gt;
+#include&lt;memory.h&gt;
+using namespace std;
+const int sz = 75000;
+const int INF = 200000000;
+struct Edge
+{
+	int v,w,capacity;
+	int next;	
+}adj[sz * 8];
+int head[sz],pre[sz],dist[sz],road[sz],src,dest,k;
+bool inq[sz];
+void init(const int &amp;n)
+{
+	src = 1;
+	dest = n;
+	k = 0;
+	fill(head,head+dest+1,-1);
+}
+void add(const int &amp;v1,const int &amp;v2,const int &amp;w,const int &amp;capacity) {
+	adj[k].v = v2;
+	adj[k].w = w;
+	adj[k].capacity = capacity;
+	adj[k].next = head[v1];
+	head[v1] = k ++;
+}
+void addEdge(const int &amp;v1,const int &amp;v2,const int &amp;w,const int &amp;capacity)
+{
+	add(v1,v2,w,capacity);
+	add(v2,v1,-w,0);
+}
+bool SPFA() 
+{
+	fill(dist,dist+dest+1,INF);
+	fill(inq,inq+dest+1,false);
+	inq[src] = true;
+	dist[src] = 0;
+	queue &lt; int &gt; q;
+	q.push(src);
+	while(!q.empty()) 
+	{
+		int t = q.front();
+		q.pop();
+		inq[t] = false;
+		int index = head[t];
+		while(index != -1)
+		{
+			if(adj[index].capacity &gt; 0 &amp;&amp; dist[t] + adj[index].w &lt; dist[adj[index].v]) 
+			{
+				dist[adj[index].v] = dist[t] + adj[index].w;
+				pre[adj[index].v] = t;
+				road[adj[index].v] = index;
+				if(!inq[adj[index].v])
+				{
+					q.push(adj[index].v);
+					inq[adj[index].v] = true;
+				}	
+			} 
+			index = adj[index].next;
+		}
+	}
+	return (dist[dest] != INF);
+}
+int minCostMaxFlow()
+{
+	int minCost = 0,t,nowCost; 
+	while(SPFA())
+	{
+		int flow = INF;
+		for(t = dest ; t != src ; t = pre[t] ) 
+		{
+			if(adj[road[t]].capacity &lt; flow)
+				flow = adj[road[t]].capacity;	
+		}
+		nowCost=0;
+		for(t = dest ; t != src ; t = pre[t] ) 
+		{
+			adj[road[t]].capacity -= flow;//positive edge capacity -= flow
+			adj[road[t]^1].capacity += flow;//nagative edge capacity += flow
+			//	cout&lt;&lt;flow&lt;&lt;endl;
+			//	cout&lt;&lt;adj[road[t]].w&lt;&lt;endl;
+			nowCost += flow * adj[road[t]].w;
+		}
+		if (nowCost&lt;0) minCost+=nowCost;
+	}
+	return minCost;	
+}
+int a[200];
+int main()
+{
+	int n,m,v,i,v1,v2,w,c;
+	while(~scanf("%d%d",&amp;n,&amp;m))
+	{
+		init(n+1);
+		for(i=2;i&lt;=n;i++)
+		{
+			scanf("%d",&amp;a[i]);
+			addEdge(i,n+1,-a[i],INF);
+		}
+		for(i=1;i&lt;=m;i++)
+		{
+			scanf("%d%d%d%d",&amp;v1,&amp;v2,&amp;c,&amp;w);
+			addEdge(v1,v2,w,c);
+			addEdge(v2,v1,w,c);
+		}
+		printf("%d/n",-minCostMaxFlow());
+	}
+	return 0;
+}
+ 
+
+
+   
+
+
+   （ZOJ 3362 Beer Problem）

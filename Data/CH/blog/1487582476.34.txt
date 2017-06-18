@@ -1,0 +1,128 @@
+开源日志系统 - log4cplus (二)基本用法:
+
+
+   使用log4cplus有六个基本步骤：
+
+   1. 实例化一个appender对象
+
+   2. 实例化一个layout对象
+
+   3. 将layout对象绑定(attach)到appender对象
+
+   4. 实例化一个logger对象,调用静态函数：log4cplus::Logger::getInstance("logger_name"
+
+   5. 将appender对象绑定(attach)到logger对象，如省略此步骤，标准输出（屏幕）appender对象会绑定到logger
+
+   6. 设置logger的优先级，如省略此步骤，各种有限级的消息都将被记录
+
+   下面通过一些例子来了解log4cplus的基本使用。
+
+   〖例1〗/* 严格实现步骤1-6，appender输出到屏幕, 其中的布局格式和LogLevel后面会详细解释。*/#include &lt;log4cplus/logger.h&gt;#include &lt;log4cplus/consoleappender.h&gt;#include &lt;log4cplus/layout.h&gt;
+
+   using namespace log4cplus;using namespace log4cplus::helpers;
+
+   int main(){ /* step 1: 实例化一个appender对象*/ SharedObjectPtr _append (new ConsoleAppender()); _append-&gt;setName("append for test");
+
+    /* step 2: 实例化一个layout对象 */ std::string pattern = "%d{%m/%d/%y %H:%M:%S} - %m [%l]%n"; std::auto_ptr _layout(new PatternLayout(pattern));
+
+    /* step 3: 将layout对象set给appender */ _append-&gt;setLayout( _layout );
+
+    /* step 4: 实例化一个logger对象*/ Logger _logger = Logger::getInstance("test");
+
+    /* step 5: 将appender添加到logger对象，同一个logger对象可以管理很多appender */ _logger.addAppender(_append);
+
+    /* step 6: 设置loglevelr */ _logger.setLogLevel(ALL_LOG_LEVEL);
+
+    /* log activity */ LOG4CPLUS_DEBUG(_logger, "This is the FIRST log message...") sleep(1); LOG4CPLUS_WARN(_logger, "This is the SECOND log message...")
+
+    return 0;}
+
+   输出结果：10/14/04 09:06:24 - This is the FIRST log message... [main.cpp:31]10/14/04 09:06:25 - This is the SECOND log message... [main.cpp:33]
+
+   				〖例2〗/* 简洁使用模式，appender输出到屏幕。*/#include &lt;log4cplus/logger.h&gt;#include &lt;log4cplus/consoleappender.h&gt;
+
+   using namespace log4cplus;using namespace log4cplus::helpers;
+
+   int main(){ /* step 1: Instantiate an appender object */ SharedAppenderPtr _append(new ConsoleAppender()); _append-&gt;setName("append test");
+
+    /* step 4: Instantiate a logger object */ Logger _logger = Logger::getInstance("test");
+
+    /* step 5: Attach the appender object to the logger */ _logger.addAppender(_append);
+
+    /* log activity */ LOG4CPLUS_DEBUG(_logger, "This is the FIRST log message...") sleep(1); LOG4CPLUS_WARN(_logger, "This is the SECOND log message...")
+
+    return 0;}
+
+   输出结果：DEBUG - This is the FIRST log message...WARN - This is the SECOND log message...
+
+   				〖例3〗/* iostream模式，appender输出到屏幕。*/#include &lt;log4cplus/logger.h&gt;#include &lt;log4cplus/consoleappender.h&gt;#include &lt;iomanip&gt; /* 其实这个东东还是放到log4cplus头文件中比较合适些，个人意见：） */using namespace log4cplus;
+
+   int main(){ /* step 1: Instantiate an appender object */ SharedAppenderPtr _append(new ConsoleAppender()); _append-&gt;setName("append test");
+
+    /* step 4: Instantiate a logger object */ Logger _logger = Logger::getInstance("test");
+
+    /* step 5: Attach the appender object to the logger */ _logger.addAppender(_append);
+
+    /* log activity */
+
+      //之所以这样，是因为第二个参数会进行简单的宏替换。这里也可以输出变量啊啥的。
+
+   // LOG4CPLUS_TRACE(_logger, "This is" &lt;&lt; " just a t" &lt;&lt; "est." &lt;&lt; std::endl) LOG4CPLUS_DEBUG(_logger, "This is a bool: " &lt;&lt; true) LOG4CPLUS_INFO(_logger, "This is a char: " &lt;&lt; 'x') LOG4CPLUS_WARN(_logger, "This is a int: " &lt;&lt; 1000) LOG4CPLUS_ERROR(_logger, "This is a long(hex): " &lt;&lt; std::hex &lt;&lt; 100000000) LOG4CPLUS_FATAL(_logger, "This is a double: " &lt;&lt; std::setprecision(15) &lt;&lt; 1.2345234234)
+
+    return 0;}
+
+   输出结果：DEBUG - This is a bool: 1INFO - This is a char: xWARN - This is a int: 1000ERROR - This is a long(hex): 5f5e100FATAL - This is a double: 1.2345234234
+
+   				〖例4〗/* 调试模式，通过loglog来控制输出调试、警告或错误信息，appender输出到屏幕。
+
+       不可以输出到文件*/#include &lt;iostream&gt;#include &lt;log4cplus/helpers/loglog.h&gt;
+
+   using namespace log4cplus::helpers;
+
+   void printMsgs(void){ std::cout &lt;&lt; "Entering printMsgs()..." &lt;&lt; std::endl; LogLog::getLogLog()-&gt;debug("This is a Debug statement..."); LogLog::getLogLog()-&gt;warn("This is a Warning..."); LogLog::getLogLog()-&gt;error("This is a Error..."); std::cout &lt;&lt; "Exiting printMsgs()..." &lt;&lt; std::endl &lt;&lt; std::endl;}
+
+   int main(){ /* LogLog类实现了debug, warn, error 函数用于输出调试、警告或错误信息， 同时提供了两个方法来进一步控制所输出的信息，其中：
+
+    setInternalDebugging方法用来控制是否屏蔽输出信息中的调试信息，当输入 参数为false则屏蔽，缺省设置为false。
+
+    setQuietMode方法用来控制是否屏蔽所有输出信息，当输入参数为true则屏蔽， 缺省设置为false。
+
+    LogLog::getLogLog()-&gt;setInternalDebugging(false); */
+
+    printMsgs();
+
+    std::cout &lt;&lt; "Turning on debug..." &lt;&lt; std::endl; LogLog::getLogLog()-&gt;setInternalDebugging(true); printMsgs();
+
+    std::cout &lt;&lt; "Turning on quiet mode..." &lt;&lt; std::endl; LogLog::getLogLog()-&gt;setQuietMode(true); printMsgs();
+
+    return 0;}
+
+   输出结果：Entering printMsgs()...log4cplus:WARN This is a Warning...log4cplus:ERROR This is a Error...Exiting printMsgs()...
+
+   Turning on debug...Entering printMsgs()...log4cplus: This is a Debug statement...log4cplus:WARN This is a Warning...log4cplus:ERROR This is a Error...Exiting printMsgs()...
+
+   Turning on quiet mode...Entering printMsgs()...Exiting printMsgs()...
+
+   需要指出的是，输出信息中总是包含"log4cplus:"前缀，有时候会感觉不爽，这是因为LogLog在实现时候死定了要这么写：
+
+   LogLog::LogLog(): mutex(LOG4CPLUS_MUTEX_CREATE), debugEnabled(false), quietMode(false), PREFIX( LOG4CPLUS_TEXT("log4cplus: ") ), WARN_PREFIX( LOG4CPLUS_TEXT("log4cplus:WARN ") ), ERR_PREFIX( LOG4CPLUS_TEXT("log4cplus:ERROR ") ){}
+
+   你可以把这些前缀换成自己看着爽的提示符号，然后重新编译，hihi。除非万不得已或者实在郁闷的不行，否则还是不要这样干。
+
+   				〖例5〗
+/*文件模式，appender输出到文件。*/
+
+//采用默认的layout#include&lt;log4cplus/logger.h&gt;#include&lt;log4cplus/fileappender.h&gt;usingnamespacelog4cplus;intmain(){/*step1:实例化一个appender对象*/SharedAppenderPtr_append(newFileAppender("Test.log"));_append-&gt;setName("filelogtest");
+
+/*step4:实例化一个logger对象,参数为logger名字*/Logger_logger=Logger::getInstance("test.subtestof_filelog");
+
+  /*step5:Attachtheappender*/_logger.addAppender(_append);
+
+/*logactivity*/inti;for(i=0;i&lt;5;++i){LOG4CPLUS_DEBUG(_logger,"Enteringloop#"&lt;&lt;i&lt;&lt;"Endline#")}return0;}
+
+
+   输出结果（Test.log文件）：
+
+   DEBUG - Entering loop #0End line #DEBUG - Entering loop #1End line #DEBUG - Entering loop #2End line #DEBUG - Entering loop #3End line #DEBUG - Entering loop #4End line #
+
+   有问题请联系博主:  bicheng.gui@gmail.com

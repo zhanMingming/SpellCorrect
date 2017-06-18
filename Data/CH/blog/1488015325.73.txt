@@ -1,0 +1,131 @@
+Hibernate的FlushMode与session.flush()我们借助于Session来操作数据库，Session是有缓存的(在hibernate中称为一级缓存)，当我们调用session.save()或者update()等的方法的时候，hibernate并不一定会马上将修改同步到数据库，而是先将这些信息存储在session缓存中，由hibernate自己在合适的时候将缓存中的数据，同步刷新到数据库中。正是由于hibernate的这种缓存机制，在同一个session中多次修改一个记录，最终只会向数据库发出一条update语句。由于session缓存以及脏数据检查机制，能够帮助我们尽可能少地发出SQL语句。
+
+
+   
+
+
+
+
+   hibernate提供了FlushMode接口，能够让我们干预hibernate将脏数据同步到数据库的时机。Session.flush()会触发hibernate将数据同步到数据库。可以通过session.setFlushMode()来修改刷新模式。FlushMode提供了4种缓存模式：MANUAL、COMMIT、AUTO和ALWAYS。
+
+
+   
+
+
+
+
+   MANUAL：我们必须在代码中手动调用session.flush()，hibernate才会将脏数据同步到数据库。如果我们忘记了手动刷新，那么就算是通过session.getTransaction().commit()提交了事务，也不能将修改同步到数据库。
+
+
+   Session session = sessionFactory.openSession();
+session.setFlushMode(FlushMode.MANUAL);
+
+.....
+
+session.flush();//切记不能遗忘
+session.getTransaction().commit();
+session.close();
+
+   
+
+
+   
+
+
+
+
+   COMMIT：当数据库事务提交的时候会刷新缓存，当然手动调用flush()肯定也是可以的，不过没有必要罢了。
+
+
+   Session session = sessionFactory.openSession();
+session.setFlushMode(FlushMode.COMMIT);
+
+.....
+
+session.getTransaction().commit();
+session.close();
+
+   
+
+
+   
+
+
+
+AUTO：The Session is sometimes flushed before query execution in order to ensure that queries never return stale state. This is the default flush mode. 事务提交或者手动刷新，都能将脏数据同步到数据库。除此之外，某些查询出现的时候也会导致缓存刷新。
+
+   
+
+
+
+
+   ALWAYS：The Session is flushed before every query. This is almost always unnecessary and inefficient. 只要有查询出现，或者事务提交，或者手动刷新，都会导致缓存刷新。这个策略性能比较差，实际中不会使用。
+
+
+   
+
+
+
+
+   hibernate默认的刷新模式是AUTO，但是这个策略并不合理， 实际中也不会用到。
+
+
+   public void testFifferenceBetweenAutoAndAlways() {
+	Session session = sessionFactory.openSession();
+	session.setFlushMode(FlushMode.AUTO);
+	session.beginTransaction();
+
+	Student student = new Student();
+	student.setId(1);
+	student.setAge(100000);
+
+	session.update(student);
+
+	System.out.println(&quot;after save&quot;);
+
+	Query query = session.createQuery(&quot;from Student where id =2&quot;);
+	System.out.println(query.list().get(0));
+
+	System.out.println(&quot;after query&quot;);
+
+	session.getTransaction().commit();
+	session.close();
+}
+
+   
+
+
+   
+
+
+
+这段代码我们设置的是AUTO，代码中出现了一次查询，按道理来说这次查询并不需要将update操作同步到数据库。但是实际上执行结果如下：
+
+   
+
+
+
+
+   
+
+
+
+
+   可以看到AUTO并没有我们想象中的那么智能，stackoverflow上这篇文章也列出了AUTO一些不好的地方。
+
+
+   1.you don't control when Hibernate will decide to execute UPDATE/INSERT/DELETE.
+
+
+   2.potential performance issues because every object modification may lead to dirty checking &#43; DML statement execution.
+
+
+   3.you are not taking advantage of batching and other optimizations that Hibernate can perform when it is not trying to avoid 'stale' state
+
+
+   
+
+
+
+
+   所以最常用其实是MANUAL和COMMIT策略，如果使用了MANUAL，切记需要手动刷新session缓存。

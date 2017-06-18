@@ -1,0 +1,19 @@
+大规模数据处理漫谈【3】最后讲解一个优化话题，结束磁盘部分的内容。 我们知道无论如何磁盘是一个慢速设备，在大规模数据处理时，例如归并排序。总会有类似这样的情况： for all block-i of the file { (1) Read block-i to buffer (2) Process Data in buffer } 这样在任意一个时刻，要么CPU闲了，要么磁盘闲了，造成这个局面的原因是我们只有一个buffer，注意即便多线程，只要是一个buffer也不可避免会等待。 粗略算一下处理时间： 令：第（1）个语句需时间为R；第（2）个语句需要时间为P；总块数为n。 则总耗时为:n(P+R)
+
+
+    如果这样处理  时间流向 ---------------------------------------------------------&gt; Read block-1 to buffer1 Read block-2 to buffer2 ... Process Data in buffer1 Process Data in Buffer2 ...
+
+
+    可以看出block-2的读取（IO密集），process buffer1(CPU密集）重叠起来。 假定R的时间是其主导地位的。 则最后的总时长为nR+P,显然已经比n(R+P)要小得多，但问题是是否还可以再省呢？答案是不可以，因为nR的开销是不可避免的，而总有最后一次在读取完(R)后需要进行一次处理（P）,否则R就是废IO。因此至少有一个P是不可以被&ldquo;隐藏&rdquo;起来的。  实现的时候只需要双缓存，双线程即可，一个线程用来读取数据，一个线程用来处理数据。 但问题是真得不能再快了吗？nR能否在压缩呢？我们想到了用阵列的方法，在资源允许的情况下，如果我们有2块盘，这样一半的数据在盘A上读取，一半的数据在盘B上读取 Read block-1 from disk1&amp;2 to buffer1 Read block-2 from disk1&amp;2 to buffer2 Process Data in buffer1 
+
+
+    显然最后的总时长约为(nR/2+P),处理器2个buffer的时间可以隐藏在2次磁盘并发读取中。这就是RAID 0，特别是硬件RAID 0几乎不需CPU的参与。
+
+
+    最后就需要讨论一下多大的block size为宜，可能直觉的认为block size越小越好，因为最后一次P不可免，block size越小，最后一次P的代价就越小，但这里有一个误解，nR并不是一个常数，block size越小 n越大，读取的次数越多，其结果时间反而长。因此确定一次读取的内容是需要在实践中调节的一个重要参数。
+
+
+   
+
+
+    讨论参见：http://www.newsmth.net/bbscon.php?bid=715&amp;id=14865

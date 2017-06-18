@@ -1,0 +1,13 @@
+velocity大会明天在京召开，对架构和性能优化感兴趣的朋友请积极关注大会网址：http://velocity.oreilly.com.cn
+
+
+    
+
+
+    大会的视频和PPT下载地址：http://velocity.oreilly.com.cn/index.php?func=slidesvideos，会议结束后会陆续放出。
+
+
+    
+
+
+   本次 Velocity 中国大会精英云集，会议主席 Steve Souders 和章文嵩博士邀请国内外著名公司的技术专家，分享性能与运维前沿技术的最佳实践，包括 Google、Yahoo!、Facebook、Youtube，同时国内互联网企业阵容也空前强大，除淘宝网外还包括阿里云、百度、腾讯、盛大、新浪、网易、凤凰网等诸多名企的技术专家确认出席。

@@ -1,0 +1,56 @@
+False Sharing问题在多处理器，多线程情况下，如果两个线程分别运行在不同的CPU上，而其中某个线程修改了cache line中的元素，由于cache一致性的原因，另一个线程的cache line被宣告无效，在下一次访问时会出现一次cache line miss，哪怕该线程根本无效改动的这个元素，因此出现了False Sharing问题【1】。
+
+
+   如下图所示，thread1修改了memory灰化区域的第[2]个元素，而Thread0只需要读取灰化区域的第[1]个元素，由于这段memory被载入了各自CPU的硬件cache中，虽然在memory的角度这两种的访问时隔离的，但是由于错误的紧凑地放在了一起，而导致了，thread1的修改，在cache一致性的要求下，宣告了运行Thread0的CPU0的cache line非法，从而出现了一次miss，导致从小从memory中读取到cache line中，而一致性的代价付出了，但结果并不是thread0所care的，导致了效率的降低。关于实验可以参考[2]。
+
+
+   
+
+
+   因此在多核编程情况下，要特别注意False Sharing问题。
+
+
+   解决的方法可以是：详细参见【1】
+
+
+   __declspec (align(64)) int thread1_global_variable;__declspec (align(64)) int thread2_global_variable;
+
+
+   或者是
+
+
+   
+structThreadParams
+{
+//Forthefollowing4variables:4*4=16bytes
+unsignedlongthread_id;
+unsignedlongv;//Frequentread/writeaccessvariable
+unsignedlongstart;
+unsignedlongend;
+
+//expandto64bytestoavoidfalse-sharing
+//(4unsignedlongvariables+12padding)*4=64
+intpadding[12];
+};
+
+__declspec(align(64))structThreadParamsArray[10];
+
+
+   
+
+
+
+
+   
+
+
+   
+
+
+   
+
+
+   【1】http://software.intel.com/en-us/articles/avoiding-and-identifying-false-sharing-among-threads/
+
+
+   【2】http://www.codeproject.com/KB/threads/FalseSharing.aspx

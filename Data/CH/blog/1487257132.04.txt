@@ -1,0 +1,212 @@
+【Machine Learning实验3】SoftMax regression神奇的SoftMax regression，搞了一晚上搞不定，凌晨3点起来继续搞，刚刚终于调通。我算是彻底理解了，哈哈。代码试验了Andrew Ng的第四课上提到的SoftMax regression算法，并参考了http://ufldl.stanford.edu/wiki/index.php/Softmax_Regression
+
+
+   最终收敛到这个结果，巨爽。
+
+
+   smaple 0: 0.983690,0.004888,0.011422,likelyhood:-0.016445
+
+smaple 1: 0.940236,0.047957,0.011807,likelyhood:-0.061625
+
+smaple 2: 0.818187,0.001651,0.180162,likelyhood:-0.200665
+
+smaple 3: 0.000187,0.999813,0.000000,likelyhood:-0.000187
+
+smaple 4: 0.007913,0.992087,0.000000,likelyhood:-0.007945
+
+smaple 5: 0.001585,0.998415,0.000000,likelyhood:-0.001587
+
+smaple 6: 0.020159,0.000001,0.979840,likelyhood:-0.020366
+
+smaple 7: 0.018230,0.000000,0.981770,likelyhood:-0.018398
+
+smaple 8: 0.025072,0.000000,0.974928,likelyhood:-0.025392
+
+
+
+
+   
+
+
+
+
+   #include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+
+double matrix[9][4]={{1,47,76,24}, //include x0=1
+{1,46,77,23},
+{1,48,74,22},
+{1,34,76,21},
+{1,35,75,24},
+{1,34,77,25},
+{1,55,76,21},
+{1,56,74,22},
+{1,55,72,22},
+  };
+
+double result[]={1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   3,
+   3,
+   3,};
+
+double theta[2][4]={
+   {0.3,0.3,0.01,0.01},
+   {0.5,0.5,0.01,0.01}}; // include theta0
+
+double function_g(double x)
+{
+ double ex = pow(2.718281828,x);
+ return ex/(1+ex);
+}
+
+double function_e(double x)
+{
+ return pow(2.718281828,x);
+}
+
+int main(void)
+{
+ double likelyhood = 0.0;
+ for(int j = 0;j&lt;9;++j)
+ {
+  double sum = 1.0; // this is very important, because exp(thetak x)=1
+  for(int l = 0;l&lt;2;++l)
+  {
+   double xi = 0.0;
+   for(int k=0;k&lt;4;++k)
+   {
+    xi += matrix[j][k]*theta[l][k];
+
+   }
+   sum += function_e(xi);
+  }
+  double xi = 0.0;
+  for(int k=0;k&lt;4;++k)
+  {
+   xi += matrix[j][k]*theta[0][k];
+
+  }
+  double p1 = function_e(xi)/sum;
+  xi = 0.0;
+  for(int k=0;k&lt;4;++k)
+  {
+   xi += matrix[j][k]*theta[1][k];
+
+  }
+  double p2 = function_e(xi)/sum;
+  double p3 = 1-p1-p2;
+
+
+ double ltheta = 0.0;
+       if(result[j]==1)
+           ltheta = log(p1);
+       else if(result[j]==2)
+           ltheta = log(p2);
+       else if(result[j]==3)
+           ltheta = log(p3);
+       else
+       {}
+  printf(&quot;smaple %d: %f,%f,%f,likelyhood:%f\n&quot;,j,p1,p2,p3,ltheta);
+
+ }
+
+ for(int i =0 ;i&lt;1000;++i)
+ {
+  for(int j=0;j&lt;9;++j)
+  {
+   double sum = 1.0; // this is very important, because exp(thetak x)=1
+   for(int l = 0;l&lt;2;++l)
+   {
+    double xi = 0.0;
+    for(int k=0;k&lt;4;++k)
+    {
+     xi += matrix[j][k]*theta[l][k];
+
+    }
+    sum += function_e(xi);
+   }
+   double xi = 0.0;
+   for(int k=0;k&lt;4;++k)
+   {
+    xi += matrix[j][k]*theta[0][k];
+
+   }
+   double p1 = function_e(xi)/sum;
+   xi = 0.0;
+   for(int k=0;k&lt;4;++k)
+   {
+    xi += matrix[j][k]*theta[1][k];
+
+   }
+   double p2 = function_e(xi)/sum;
+   double p3 = 1-p1-p2;
+   for(int m = 0; m&lt;4; ++m)
+   {
+    if(result[j]==1)
+    {
+     theta[0][m] = theta[0][m] + 0.001*(1-p1)*matrix[j][m];
+    }
+    else
+    {
+     theta[0][m] = theta[0][m] + 0.001*(-p1)*matrix[j][m];
+    }
+    if(result[j]==2)
+    {
+     theta[1][m] = theta[1][m] + 0.001*(1-p2)*matrix[j][m];
+    }
+    else
+    {
+     theta[1][m] = theta[1][m] + 0.001*(-p2)*matrix[j][m];
+    }
+   }
+  }
+  double likelyhood = 0.0;
+  for(int j = 0;j&lt;9;++j)
+  {
+   double sum = 1.0; // this is very important, because exp(thetak x)=1
+   for(int l = 0;l&lt;2;++l)
+   {
+    double xi = 0.0;
+    for(int k=0;k&lt;4;++k)
+    {
+     xi += matrix[j][k]*theta[l][k];
+
+    }
+    sum += function_e(xi);
+   }
+   double xi = 0.0;
+   for(int k=0;k&lt;4;++k)
+   {
+    xi += matrix[j][k]*theta[0][k];
+
+   }
+   double p1 = function_e(xi)/sum;
+   xi = 0.0;
+   for(int k=0;k&lt;4;++k)
+   {
+    xi += matrix[j][k]*theta[1][k];
+
+   }
+   double p2 = function_e(xi)/sum;
+   double p3 = 1-p1-p2;
+
+
+   double ltheta = 0.0;
+           if(result[j]==1)
+               ltheta = log(p1);
+           else if(result[j]==2)
+               ltheta = log(p2);
+           else if(result[j]==3)
+               ltheta = log(p3);
+           else
+           {}
+   printf(&quot;smaple %d: %f,%f,%f,likelyhood:%f\n&quot;,j,p1,p2,p3,ltheta);
+  }
+ }
+ return 0;
+}

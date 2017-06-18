@@ -1,0 +1,31 @@
+Twitter使用短信进行锐推(Retweet)了【techcrunch新闻】Twitter&rsquo;s New Retweets Work Via SMS Too
+
+
+   First of all, yes, everyone on Twitter now should have access to the new Retweet functionality. Currently, only Twitter.com and a handful of clients support the new mechanism. But did you know that you can also trigger the new Retweets via SMS?
+
+
+   首先，每个twitter的用户现在可以使用新的锐推方式了。此前只有twitter.com和客户端支持锐推，但是现在用户可以通过短信进行锐推了。
+
+
+   
+
+
+   As the Twitter mobile account noted earlier tonight, if you simply send &ldquo;RT USERNAME&rdquo; to 40404 (at least in the U.S.) it will automatically retweet the last tweet of whatever username you entered has sent. And yes, it will be a new-style Retweet.
+
+
+   Twitter移动账号今晚得到通知，如果用RT USERNAME发送到40404（限于美国），那么USERNAME所发送的内容将会被自动锐推。是的，这是一种新的锐推方式。
+
+
+   
+
+
+   If you love the new Retweets, that&rsquo;s a great feature. If you hate them, well, then, you&rsquo;ll hate this too. For more on that, see here.
+
+
+   如果你喜欢这种新的锐推方式，你会认为他是一个很不错的功能。如果你不喜欢，你同样会讨厌它。
+
+
+   
+
+
+   【详情】http://www.techcrunch.com/2009/11/19/twitters-new-retweets-sms/

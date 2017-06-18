@@ -1,0 +1,90 @@
+Bundle Adjustment - 基于feature的3D场景重建算法<!--
+@page
+	{margin:0.79in}
+p
+	{margin-bottom:0.08in;
+	direction:ltr;
+	color:#000000;
+	widows:0;
+	orphans:0}
+p.western
+	{font-family:"Liberation Serif","Times New Roman",serif;
+	font-size:12pt}
+p.cjk
+	{font-family:"WenQuanYi Micro Hei";
+	font-size:12pt}
+p.ctl
+	{font-family:"Lohit Hindi";
+	font-size:12pt}
+-->
+
+
+
+
+   给出从不同视角拍摄的，描述同一个场景的一系列图片，bundleadjustment可以根据所有点在图像中的投影作为标准，同时提炼出描述场景结构的3D点坐标、相对运动参数和相机的光学参数。
+
+
+   
+
+
+
+
+   通常在每个基于feature的3D场景重建算法中都要用到BundleAdjustment，它是基于3D结构和视角参数（即相机位置，朝向，固有标定和径向畸变）的优化问题，在假定所获得的图像特征中有一些noise的基础上获得最佳重构效果：如果图像featureerror服从标准高斯分布，那么BundleAdjustment就基于最大&#20284;然估计。BundleAdjustment的名字由来于每个3D特征和相机光学中心“发射”出的光束，而这些光束可以根据结构和视角参数进行最佳调节。BundleAdjustment诞生于1950年的摄影学中，之后迅速的被ComputerVision应用。
+
+
+   
+
+
+   径向畸变（radial distortion）
+
+
+
+
+   
+
+
+
+
+   BundleAdjustment可以将所观测的图像位置和预测的图像位置点进行最小error的映射（匹配），由很多非线性函数的平方和表示（error）。因此，最小化error由非线性最小二乘法实现，Levenberg-Marquardt由其简单实现性和阻&#23612;策略（这样就能使其从初始假设&#20540;很快converge到稳定状态）成为最好的方法。通过迭代observedimage和predicted
+ image之间的最小距离，L-M方法在线性系统中通过正态方程解决了该问题。
+
+
+   
+
+
+
+
+   用下式表示BundleAdjustment的工作过程：
+
+
+   
+
+
+
+
+   其中假设：
+
+
+   n个3D点在m个view（拍摄场景）中，
+
+
+   向量Xij：imgj上的第i个点projection（坐标）
+
+
+   &#20540;vij：如果点i在imgj上有映射，则vij=1;
+ elsevij=0;
+
+
+   每个imgj由向量aj参数化
+
+
+   每个3D点由bi参数化
+
+
+   Q(ai,bj):点i在imgj上的predictedprojection
+
+
+   d（x,y）:向量x,y的欧式距离
+
+
+   可见，BundleAdjustment可以容忍特征点的丢失。

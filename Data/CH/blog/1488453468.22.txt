@@ -1,0 +1,53 @@
+25	考虑写出一个不抛出异常的swap函数——effective c++学习笔记std::swap是一个模板，他提供的是置换操作，即将同一类型对象a,b互换内部值。swap操作要求对象支持copying构造函数和copying赋值函数，在内部操作上，他使用了三个赋值对象。
+
+
+   这里有一个问题，就是对于特定的对象，它的效率会非常的低。所以我们要针对特定的对象进行特殊的swap。
+
+
+   总结：
+
+
+   1、
+如果swap的缺省实现码对你的class或者class template提供可以接受的效率，你不需要额外做任何事情，。
+
+
+   2、
+如果swap缺省实现版的效率不足，试着做下面的事情
+
+
+   (1)
+提供一个public swap函数，让他高效的置换你的类型的两个对象，这个函数不可以抛出异常。这一限制仅限于成员版swap。
+
+
+   (2)
+在你的class或template所在的命名空间内，提供一个non-member swap，并令他调用swap成员函数。
+
+
+   (3)
+如果你正在编写一个class或template，为你的class特化std::swap，并令他们调用你的swap函数。
+
+
+   3、
+如果你调用swap，请确保包含一个using声明式，以便让std::swap在你的函数内曝光可见，然后不叫任何namespace修饰符，赤裸裸的调用swap。
+
+
+   
+
+
+   注意：
+
+
+   1、
+当std::swap效率不高时，提供一个swap成员函数，并确保这个函数不抛出异常。
+
+
+   2、
+如果你提供一个members swap，也应该声明一个non-member swap来调用前者，对于classes而非template，也请特化std::swap。
+
+
+   3、
+如果你调用swap，请确保包含一个using声明式，以便让std::swap在你的函数内曝光可见，然后不叫任何namespace修饰符，赤裸裸的调用swap。
+
+
+   4、
+为用户定义类型进行std template全特化是好的，但千万不要尝试在std内加入某些对std而言全新的东西。

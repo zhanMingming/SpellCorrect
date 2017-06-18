@@ -1,0 +1,112 @@
+java静态代码检查工具：JavaNCSS的使用在学习jDepend的时候，看到了这JavaNCSS静态代码分析工具。jDepend检查java包的稳定性、抽象性、包之间的依赖关系，而JavaNCSS则检查java源文件、类、方法等更细粒度的指标。JavaNCSS统计packages信息、classes信息、functions信息。
+
+
+   
+
+
+
+
+   1.Packages信息
+
+
+   
+
+
+
+
+   
+
+
+
+
+   2.Classes信息
+
+
+   
+
+
+
+
+   
+
+
+
+
+   3.functions信息
+
+
+   
+
+
+
+
+   
+
+
+
+
+   有几个名词解释下：
+
+
+   NCSS：Non Commenting Source Statements，除了注释和空行外的java有效代码行数。
+
+
+   CNN：Cyclomatic Complexity Number (McCabe metric)，函数的圈复杂度，就是if、while、for、catch等逻辑控制语句的分支个数。这个跟Eclipse Mertics插件统计的函数圈复杂度指标类&#20284;，只不过两者使用的计算规则不同罢了。
+
+
+   JVDC：Javadoc comments，是否编写了符合javadoc规范的注释。0代表无javadoc，1代表有javadoc。
+
+
+   
+
+
+
+
+   关于JavaNCSS的统计规则，官网上有介绍，有兴趣的可以自己研究下。写点测试代码，用JavaNCSS跑下看结果，对比下就知道了。
+
+
+   
+
+
+
+
+   下面介绍下，如何在windows下安装使用JavaNCSS工具。我用的是JavaNCSS 32.53。首先从官方下载javancss-32.53.zip安装包。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   由于JavaNCSS是用java编写的工具，所以必需要安装JDK，并配置好JAVA_HOME环境变量。并不需要配置什么CLASSPATH环境变量，javaNCSS会自动将javancss.jar、ccl.jar、jhbasic.jar加入CLASSPATH中。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   如果遇到上面这个错误，是因为我们JAVA_HOME中路径含有空&#26684;。这个看下javancss.bat很容易知道：
+
+
+   %JAVA_HOME%\bin\java -classpath %CLASSPATH% javancss.Main %1 %2 %3 %4 %5 %6 %7 %8 %9
+
+解决方法也很简单：用双引号即可：
+   &quot;%JAVA_HOME%\bin\java&quot; -classpath %CLASSPATH% javancss.Main %1 %2 %3 %4 %5 %6 %7 %8 %9
+
+javaNCSS使用也很简单：
+   #统计结果输出到文件
+javancss -out &quot;result.txt&quot; D:\workspace\demo\src\
+
+#统计结果显示到javancss自带的GUI
+javancss -gui D:\workspace\demo\src\

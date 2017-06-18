@@ -1,0 +1,45 @@
+如何判断进程是否具有administrator权限判断进程是否具有admin权限的source code。
+
+
+   是的话返回TRUE，否则为FALSE。
+
+
+   
+
+
+   static BOOL IsAdmin(void) 
+{ 
+ HANDLE hAccessToken; 
+ BYTE InfoBuffer[1024]; 
+ PTOKEN_GROUPS ptgGroups; 
+ DWORD dwInfoBufferSize; 
+ PSID psidAdministrators; 
+ SID_IDENTIFIER_AUTHORITY siaNtAuthority = SECURITY_NT_AUTHORITY; 
+ UINT i; 
+ BOOL bRet = FALSE; 
+ 
+ if(!OpenProcessToken(GetCurrentProcess(),TOKEN_QUERY,&amp;hAccessToken)) 
+ return bRet; 
+ 
+ bRet = GetTokenInformation(hAccessToken, TokenGroups, InfoBuffer, 1024, &amp;dwInfoBufferSize); 
+ CloseHandle(hAccessToken); 
+ if(!bRet) 
+ return bRet; 
+
+ if(!AllocateAndInitializeSid(&amp;siaNtAuthority, 
+ 2, 
+ SECURITY_BUILTIN_DOMAIN_RID, 
+ DOMAIN_ALIAS_RID_ADMINS, 
+ 0,0,0,0,0,0, 
+ &amp;psidAdministrators)) 
+ return FALSE; 
+ 
+ bRet = FALSE; 
+ ptgGroups = (PTOKEN_GROUPS)InfoBuffer; 
+ for(i=0;i&lt;ptgGroups-&gt;GroupCount;i++) 
+ if(EqualSid(psidAdministrators,ptgGroups-&gt;Groups[i].Sid)) 
+ bRet = TRUE; 
+
+ FreeSid(psidAdministrators); 
+ return bRet;
+}

@@ -1,0 +1,53 @@
+Python数据可视化——散点图PS: 翻了翻草稿箱， 发现居然存了一篇去年2月的文章。。。虽然naive，还是发出来吧。。。
+
+   
+
+   本文记录了python中的数据可视化——散点图scatter，
+
+   令x作为数据（50个点，每个30维），我们仅可视化前两维。labels为其类别（假设有三类）。
+
+   这里的x就用random来了，具体数据具体分析。
+
+   label设定为[1:20]-&gt;1, [21:35]-&gt;2, [36:50]-&gt;3，（python中数组连接方法：先强制转为list，用+，再转回array）
+
+   用matplotlib的scatter绘制散点图，legend和matlab中稍有不同，详见代码。
+
+   
+
+   
+
+   x = rand(50,30)
+from numpy import *
+import matplotlib
+import matplotlib.pyplot as plt
+
+#basic
+f1 = plt.figure(1)
+plt.subplot(211)
+plt.scatter(x[:,1],x[:,0])
+
+# with label
+plt.subplot(212)
+label = list(ones(20))+list(2*ones(15))+list(3*ones(15))
+label = array(label)
+plt.scatter(x[:,1],x[:,0],15.0*label,15.0*label)
+
+# with legend
+f2 = plt.figure(2)
+idx_1 = find(label==1)
+p1 = plt.scatter(x[idx_1,1], x[idx_1,0], marker = 'x', color = 'm', label='1', s = 30)
+idx_2 = find(label==2)
+p2 = plt.scatter(x[idx_2,1], x[idx_2,0], marker = '+', color = 'c', label='2', s = 50)
+idx_3 = find(label==3)
+p3 = plt.scatter(x[idx_3,1], x[idx_3,0], marker = 'o', color = 'r', label='3', s = 15)
+plt.legend(loc = 'upper right')
+
+   
+
+   result：
+
+   figure(1)：
+
+   
+
+   figure(2)：

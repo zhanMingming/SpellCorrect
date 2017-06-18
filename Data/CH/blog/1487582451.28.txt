@@ -1,0 +1,84 @@
+hdu 1018很久没A题。。。原来学过的都忘了&hellip;&hellip;
+
+
+   很久以前的一个题，试着再A一遍也难了，物是人非啊&hellip;&hellip;
+
+
+   复习一下吧！
+
+
+   
+
+
+   
+
+Big Number
+
+   Time Limit: 20000/10000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 6291Accepted Submission(s): 2836
+
+Problem Description
+
+In many applications very large integers numbers are required. Some of these applications are using keys for secure transmission of data, encryption, etc. In this problem you are given a number, you have to determine the number of digits in the factorial of the number.
+
+
+
+
+   
+
+Input
+
+Input consists of several lines of integer numbers. The first line contains an integer n, which is the number of cases to be tested, followed by n lines, one integer 1 &le; n &le; 107 on each line.
+
+
+
+
+   
+
+Output
+
+The output contains the number of digits in the factorial of the integers appearing in the input.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2
+10
+20
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   7
+19
+
+
+题意就是求一个数阶乘的位数！
+
+#include &lt;stdio.h&gt;#include &lt;math.h&gt;void main(){int count,var,j;double sum;scanf("%d",&amp;count);while(count--){sum=0;scanf("%d",&amp;var);for(j=1;j&lt;=var;j++)sum+=log10(j);printf("%d/n",(int)sum+1);}}这是最简单的方法，但是耗时长，406ms。
+
+好吧！我们换个方法：
+
+这需要组合数学的知识。log10(n!) = log10(sqrt(2 * pi * n)) + n * log10(n / e)
+
+////Problem ID: 1018////Problem Title: ////Run result: Accept////Run time:0MS////Run memory:332KB//////////////////System Comment End//////////////////#include &lt;iostream&gt;#include &lt;cmath&gt;
+
+#define PI 3.14159265
+
+int n;int num,ans;
+
+void solve(){ double t; int i; t = (num*log(num) - num + 0.5*log(2*num*PI))/log(10); ans = t+1; printf("%d/n",ans);}
+
+int main(){ while(scanf("%d",&amp;n)!=EOF) { while(n--) { scanf("%d",&amp;num); solve(); } } return 0;}

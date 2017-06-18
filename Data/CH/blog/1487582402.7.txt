@@ -1,0 +1,240 @@
+动态规划经典——石子归并1.链式归并
+
+
+   
+
+
+   问题描述 
+
+
+   设有N堆沙子排成一排，其编号为1,2,3,&hellip;,N(N&lt;=100)。每堆沙子有一定的数量。现要将N堆沙子并成为一堆。归并的过程只能每次将相邻的两堆沙子堆成一堆，这样经过N-1次归并后成为一堆。找出一种合理的归并方法，使总的代价最小。
+
+
+   【输入格式】
+
+
+    输入由若干行组成，第一行有一个整数，n（1&le;n&le;100）；表示沙子堆数。第2至m+1行是每堆沙子的数量。
+
+
+   【输出格式】
+
+
+    一个整数，归并的最小代价。
+
+
+   【输入样例】
+
+
+   输入文件名：shizi.in
+
+
+   713781621418
+
+
+   【输出样例】
+
+
+   输出文件名：shizi.out
+
+
+   239
+
+
+   
+
+令f[i,j]表示归并第i个数到第j数的最小代价,sum[i,j]表示第i个数到第j个数的和，这个可以事先计算出来。sum[i,j]可以在O(1)的时间内算出.容易的到以下的动态转移方程：
+
+
+   
+
+
+   阶段：以归并石子的长度为阶段，一共有n-1个阶段。状态：每个阶段有多少堆石子要归并，当归并长度为2时，有n-1个状态；当归并长度为3时，有n-2个状态；当归并长度为n时，有1个状态。决策：当归并长度为2时，有1个决策；当归并长度为3时，有2个决策；当归并长度为n时，有n-1个决策。
+
+
+   
+
+
+   #include &lt;iostream&gt;   
+using namespace std;
+#define M 101
+#define INF 1000000000
+int n,f[M][M],sum[M][M],stone[M];
+int main()
+{
+	int i,j,k,t;
+	cin&gt;&gt;n;
+	for(i=1;i&lt;=n;i++)
+		scanf("%d",&amp;stone[i]);
+
+	for(i=1;i&lt;=n;i++)
+	{
+		f[i][i]=0;
+		sum[i][i]=stone[i];
+		for(j=i+1;j&lt;=n;j++)
+			sum[i][j]=sum[i][j-1]+stone[j];
+	}
+
+	for(int len=2;len&lt;=n;len++)//归并的石子长度
+	{
+		for(i=1;i&lt;=n-len+1;i++)//i为起点，j为终点
+		{
+			j=i+len-1;
+			f[i][j]=INF;
+			for(k=i;k&lt;=j-1;k++)
+			{
+				if(f[i][j]&gt;f[i][k]+f[k+1][j]+sum[i][j])
+					f[i][j]=f[i][k]+f[k+1][j]+sum[i][j];
+			}
+		}
+	}
+	printf("%d/n",f[1][n]);  
+	return 0;
+} 
+
+
+   
+
+
+   
+
+
+   [算法优化]
+
+
+   见 http://it.dgzx.net/drkt/oszt/zltk/yxlw/dongtai3.htm
+
+
+   
+
+
+   优化后，无非加了一个s[i,j] 记录i...j之间f[i,j]为最优状态的分割点
+
+
+   #include &lt;iostream&gt;   
+using namespace std;
+#define M 101
+#define INF 1000000000
+int n,f[M][M],sum[M][M],stone[M],s[M][M];
+int main()
+{
+	int i,j,k,t;
+	cin&gt;&gt;n;
+	for(i=1;i&lt;=n;i++)
+		scanf("%d",&amp;stone[i]);
+
+	for(i=1;i&lt;=n;i++)
+	{
+		f[i][i]=0;
+		s[i][i]=i;
+		sum[i][i]=stone[i];
+		for(j=i+1;j&lt;=n;j++)
+			sum[i][j]=sum[i][j-1]+stone[j];
+	}
+
+	for(int len=2;len&lt;=n;len++)//归并的石子长度
+	{
+		for(i=1;i&lt;=n-len+1;i++)//i为起点，j为终点
+		{
+			j=i+len-1;
+			f[i][j]=INF;
+			for(k=s[i][j-1];k&lt;=s[i+1][j];k++)
+			{
+				if(f[i][j]&gt;f[i][k]+f[k+1][j]+sum[i][j])
+				{
+					f[i][j]=f[i][k]+f[k+1][j]+sum[i][j];
+					s[i][j]=k;
+				}
+			}
+		}
+	}
+	printf("%d/n",f[1][n]);
+	return 0;
+} 
+
+
+   
+
+
+   2.
+
+环型石子合并
+
+   问题描述在一个圆形操场的四周摆放着n堆石子。现要将石子有次序地合并成一堆。规定每次只能选相邻的2堆石子合并成新的一堆，并将新的一堆石子数记为该次合并的得分。试设计一个算法，计算出将n堆石子合并成一堆的最小得分和最大得分。
+
+
+   输入文件输入文件stone.in包含两行，第1行是正整数n(1&le;n&le;100)，表示有n堆石子。第2行有n个整数，分别表示每堆石子的个数。
+
+
+   输出文件输出文件stone.out 包含两行，第1行中的数是最小得分；第2行中的数是最大得分。
+
+
+   输入样例44 4 5 9
+
+
+   输出样例4354
+
+
+   
+
+
+   #include&lt;cstdio&gt;
+using namespace std;
+
+typedef int Arr[210][210];
+int N;
+Arr M1,M2,S1,S2;
+int main()
+{
+    scanf("%d",&amp;N);
+    for(int i=1;i&lt;=N;++i)
+	{
+ int a; scanf("%d",&amp;a);
+ M1[i][i]=M2[i][i]=M1[i+N][i+N]=M2[i+N][i+N]=a;
+ S1[i][i]=S2[i][i]=S1[i+N][i+N]=S2[i+N][i+N]=0;
+    }
+    for(int k=2;k&lt;=N;++k)
+	{
+ for(int i=1;i&lt;=2*N-k+1;++i)
+		{
+     int j=i+k-1;
+     M1[i][j]=S1[i][j]=0xFFFFFFF;
+     M2[i][j]=S2[i][j]=0;
+     for(int t=j-1;t&gt;=i;--t)
+			{
+  if(M1[i][j]&gt;M1[i][t]+M1[t+1][j])
+				{
+      M1[i][j]=M1[i][t]+M1[t+1][j];
+      if(S1[i][j]&gt;M1[i][j]+S1[i][t]+S1[t+1][j])
+   S1[i][j]=M1[i][j]+S1[i][t]+S1[t+1][j];
+  }
+  else if(M1[i][j]==M1[i][t]+M1[t+1][j])
+				{
+      if(S1[i][j]&gt;M1[i][j]+S1[i][t]+S1[t+1][j])
+   S1[i][j]=M1[i][j]+S1[i][t]+S1[t+1][j];
+  }
+  if(M2[i][j]&lt;=M2[i][t]+M2[t+1][j])
+				{
+      M2[i][j]=M2[i][t]+M2[t+1][j];
+      if(S2[i][j]&lt;M2[i][j]+S2[i][t]+S2[t+1][j])
+   S2[i][j]=M2[i][j]+S2[i][t]+S2[t+1][j];
+  }
+  else if(M2[i][j]==M2[i][t]+M2[t+1][j])
+				{
+      if(S2[i][j]&lt;M2[i][j]+S2[i][t]+S2[t+1][j])
+   S2[i][j]=M2[i][j]+S2[i][t]+S2[t+1][j];
+  }
+     }
+ }
+    }
+    int ans=0xFFFFFFF;
+    for(int i=1;i&lt;=N;++i)
+ if(S1[i][i+N-1]&lt;ans)
+     ans=S1[i][i+N-1];
+    printf("%d/n",ans);
+    ans=0;
+    for(int i=1;i&lt;=N;++i)
+ if(S2[i][i+N-1]&gt;ans)
+     ans=S2[i][i+N-1];
+    printf("%d/n",ans);
+    return 0;
+}

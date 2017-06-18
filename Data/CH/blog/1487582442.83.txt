@@ -1,0 +1,269 @@
+San Guo ShaProblem Description
+
+San Guo Sha is a popular Board Game. There are four kinds of cards: identity, role, life and magic card. Today we just regard the identity cards. There are four kinds of identity: Lord(ZG), Loyal minister(ZC), Provocateur(NJ) and Rebel(FZ). To win the game Lord and Loyal minister 's goal is make all of Provocateur and rebel dead, Rebel's goal is make Lord dead, Provocateur's goal is to be the last survivor. If Load dead and there's only one Provocateur then he wins (just one Provocateur win), others Rebels win.
+
+In the standard contest, there are score rule:(If you know Chinese, could see the second picture)
+
+The last score equal basic score plus extra score. Now I will tell the identity of everyone and who killed who, please compute everyone' last score.
+
+
+
+Input
+
+On the first line of input is a single positive integer, 1&lt;=T&lt;=100, specifying the number of test cases to follow.Each test case begins with 2 integers N , M (4&lt;=N&lt;=100, 0&lt;=M&lt;N). N is the number of players and M is the relation of who kill who.Then N string on next line("ZG","ZC","FZ","NJ"), specifying each's identity(begin with 0). I promise each identity will be at least one and there is one and only one ZG.Then M lines follow, each line with two numbers A B, meaning A killed B.I promise A and B must alive player. If someone was win then you should not deal with the remain instruct.
+
+
+
+
+Output
+
+Please output the everyone's last score in a line, n integers separate by a empty.
+
+
+
+
+Sample Input
+
+
+
+   3
+4 3
+ZG ZC NJ FZ
+1 3
+2 1
+0 2
+
+6 1
+ZG ZC NJ FZ FZ FZ
+3 0
+
+8 7
+ZG ZC ZC NJ NJ FZ FZ FZ
+3 1
+3 2
+3 4
+3 5
+3 6
+3 7
+3 0
+
+
+
+
+
+
+Sample Output
+
+
+
+   5 6 4 0
+0 0 1 11 9 9
+1 0 0 20 0 0 0 0
+
+
+
+
+
+太欺负人了，第一欺负姐姐没玩儿过三国杀，第二欺负姐姐不懂什么叫&ldquo;单挑！&rdquo;
+
+所谓&ldquo;单挑&rdquo;，就是说&mdash;&mdash;必须有一个主公，忠臣有没有无所谓，内奸一个，没有反贼！
+
+害我WA了不知道多少次！心痛&hellip;&hellip;
+
+#include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+#define zg 1
+#define zc 2
+#define fz 3
+#define nj 4
+
+struct person
+{
+    int score;
+    int mode;
+    bool isalive;
+    int killedby;
+    int isdantiao;
+}node[110];
+
+int num[5];
+int win;
+int a,b,flag;
+
+int m,n,j,k,t,temp;
+
+void init()
+{
+    string str;
+    flag=0;
+    int i,j;
+    scanf("%d%d",&amp;m,&amp;n);
+    win=0;
+    memset(num,0,sizeof(num));
+    for(i=0;i&lt;110;i++)
+    {
+ node[i].isalive=1;
+ node[i].killedby=0;
+ node[i].mode=0;
+ node[i].score=0;
+ node[i].isdantiao=0;
+    }
+    for(i=0;i&lt;m;i++)
+    {
+ cin&gt;&gt;str;
+ if(str=="ZG")
+ {
+     num[zg]++;
+     node[i].mode=zg;
+     node[i].isalive=1;
+     node[i].score=0;
+ }
+ if(str=="ZC")
+ {
+     num[zc]++;
+     node[i].mode=zc;
+     node[i].isalive=1;
+     node[i].score=0;
+ }
+ if(str=="FZ")
+ {
+     num[fz]++;
+     node[i].mode=fz;
+     node[i].isalive=1;
+     node[i].score=0;
+ }
+ if(str=="NJ")
+ {
+     num[nj]++;
+     node[i].mode=nj;
+     node[i].isalive=1;
+     node[i].score=0;
+ }
+    }
+    for(j=0;j&lt;n;j++)
+    {
+ scanf("%d%d",&amp;a,&amp;b);
+ if(!flag)
+ {
+     node[b].killedby=a;
+     if(node[a].mode==zg&amp;&amp;node[b].mode==nj&amp;&amp;(num[fz]==0&amp;&amp;num[nj]==1))
+     {
+  node[b].isdantiao=1;
+     }
+     node[b].isalive=0; 
+     num[node[b].mode]--;
+ }
+ if(node[b].mode==zg)
+ {
+     flag=1; 
+     if(num[nj]==1&amp;&amp;num[fz]==0&amp;&amp;num[zc]==0)
+  win=nj;
+     else
+  win=fz;
+ }
+ if(num[nj]==0&amp;&amp;num[fz]==0)
+ {
+     flag=1;
+     win=zg;
+ }
+    }
+}
+
+void calbasic()
+{
+    int i;
+    if(win==fz)
+    {
+ for(i=0;i&lt;m;i++)
+ {
+     if(node[i].mode==fz)
+  node[i].score+=num[fz]*3;
+     else if(node[i].mode==nj&amp;&amp;node[i].isalive)
+  node[i].score++;
+ }
+    }
+    if(win==zg)
+    {
+ for(i=0;i&lt;m;i++)
+ {
+     if(node[i].mode==zg)
+  node[i].score+=4+num[zc]*2;
+     if(node[i].mode==zc)
+  node[i].score+=5+num[zc];
+     if(node[i].mode==nj&amp;&amp;node[node[i].killedby].mode==zg&amp;&amp;node[i].isdantiao)
+     {
+  node[i].score+=m;
+     }
+ }
+    }
+    if(win==nj)
+    {
+ for(i=0;i&lt;m;i++)
+ {
+     if(node[i].mode==zg)
+  node[i].score++;
+     else if(node[i].mode==nj&amp;&amp;node[i].isalive)
+  node[i].score+=4+m*2;
+ }
+    }
+}
+
+void extra()
+{
+    int i;
+    if(win==fz)
+    {
+ for(i=0;i&lt;m;i++)
+ {
+     if(node[node[i].killedby].mode==fz&amp;&amp;(node[i].mode==zc||node[i].mode==nj))
+  node[node[i].killedby].score++;
+     if(node[node[i].killedby].mode==fz&amp;&amp;node[i].mode==zg)
+  node[node[i].killedby].score+=2;
+ }
+    }
+    if(win==zg)
+    {
+ for(i=0;i&lt;m;i++)
+ {
+     if((node[node[i].killedby].mode==zg||node[node[i].killedby].mode==zc)&amp;&amp;(node[i].mode==fz||node[i].mode==nj))
+  node[node[i].killedby].score++;
+ }
+    }
+}
+
+void judge()
+{
+    if(num[zg]==0&amp;&amp;num[nj]==1&amp;&amp;num[zc]==0&amp;&amp;num[fz]==0)
+ win=nj;
+    else if(num[fz]==0&amp;&amp;num[nj]==0)
+ win=zg;
+    else 
+ win=fz;
+}
+
+void out()
+{
+    int i;
+    printf("%d",node[0].score);
+    for(i=1;i&lt;m;i++)
+ printf(" %d",node[i].score);
+    cout&lt;&lt;endl;
+}
+
+int main()
+{
+    int cases;
+    scanf("%d",&amp;cases);
+    while(cases--)
+    {
+ init();
+ if(!win)
+     judge();
+ calbasic();
+ extra();
+ out();
+    }
+    return 0;
+}

@@ -1,0 +1,141 @@
+jQuery数据缓存方案详解：$.data()的使用我们经常使用隐藏控件或者是js全局变量来临时存储数据，全局变量容易导致命名污染，隐藏控件导致经常读写dom浪费性能。jQuery提供了自己的数据缓存方案，能够达到和隐藏控件、全局变量相同的效果，但是jQuery实现方式更优雅。为了更好地使用jQuery数据缓存方案，我们需要掌握$.data()、$.cache、$.expando、$.hasData()、$.removeData()。
+
+
+   
+
+
+
+
+   $.hasData()用来判断某个对象是否有附加的属性，可以给任何javascript对象和HTMLElement对象附加属性。$.data()用来读取或者修改属性&#20540;。$.removeData()用来删除已经添加的属性，这是为了释放内存，避免过多无用属性浪费内存。
+
+
+   var myObj = {};
+// hasData用来判断HTMLElement或JS对象是否具有数据
+console.log(jQuery.hasData($(&quot;#a&quot;)));// false
+
+// data()添加属性
+$.data(myObj, &#39;name&#39;, &#39;aty&#39;);
+console.log(jQuery.hasData(myObj));// true
+
+// data()读取属性
+console.log($.data(myObj, &#39;name&#39;));//aty
+
+// removeData删除属性
+$.removeData(myObj, &#39;name&#39;);
+console.log($.data(myObj, &#39;name&#39;));//undefined
+
+// 如果所有属性都被删除,那么hasData返回false
+console.log(jQuery.hasData(myObj));// false 
+
+   
+
+
+
+
+   给HTMLElement对象添加属性，使用方式跟为普通js对象添加属性一模一样。
+
+
+   &lt;div id=&quot;content&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+    var el = document.getElementById(&#39;content&#39;);
+    $.data(el, &#39;name&#39;, &#39;aty&#39;);
+    console.log($.data(el, &#39;name&#39;)); // aty
+&lt;/script&gt;
+
+   
+
+
+   
+
+
+
+可以看到使用jQuery数据缓存的API是很容易的，现在我们要大致看下jQuery是如何实现缓存方案。为普通JS对象提供缓存时，jquery直接将数据保存在原始的JS对象上。此时会偷偷的给JS对象添加个属性(类&#20284;于jQuery16101803968874529044)，属性&#20540;也是一个对象。
+   var myObj = {};
+$.data(myObj, &#39;name&#39;, &#39;aty&#39;);
+console.log(myObj);
+console.log($.expando);
+
+   
+
+
+   我们可以看到myObj结构发生了变化：jquery给普通对象偷偷添加的属性名称其实就是$.expando。
+
+
+   
+
+
+
+
+   jQuery.expando是一个字符串，使用Math.random生成，去掉了非数字字符。它作为HTMLElement或JS对象的属性名。页面引入jQuery框架的时候，会随机生成一个字符串。
+
+
+   expando: &quot;jQuery&quot; + ( jQuery.fn.jquery + Math.random() ).replace( /\D/g, &quot;&quot; ),
+
+现在我们知道了jQuery如何给普通对象添加属性，以及expando的含义，那么我们就可以通过下面的代码获取添加的属性。
+   var hisObj = {};
+$.data(hisObj, &#39;name&#39;, &#39;him&#39;);
+console.log(hisObj[jQuery.expando].data.name);//him
+
+   
+
+
+   
+
+
+
+为HTMLElement提供缓存时，却不会直接保存在HTMLElement上。而是保存在jQuery.cache这个全局对象上。此时先给HTMLElement添加属性(jQuery.expando)，属性&#20540;为数字(1,2,3递增)。即只将一些数字保存在了HTMLElement上，不会直接将数据置入。这是因为IE老版本中可能会存在内存泄露危险。而HTMLElement如何与jQuery.cache建立联系呢？ 还是id。刚刚提到属性&#20540;数字就是id。
+   &lt;div id=&quot;a&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+var dom = document.getElementById(&quot;a&quot;);
+$.data(dom, &#39;name&#39;, &#39;aty&#39;);
+console.log(dom[jQuery.expando]); // 1
+console.log(jQuery.cache); // {1 : {data:{name:&#39;aty&#39;}}}
+&lt;/script&gt;
+
+知道了jQuery如何为dom对象添加属性，我们就可以通过下面的代码获取属性。
+   console.log(jQuery.cache[dom[jQuery.expando]].data.name); 
+
+
+
+
+   
+
+
+   现在我们看下DOM对象和jQuery封装后的对象有什么区别。
+
+
+   // 给dom元素添加数据
+var dom = document.getElementById(&quot;a&quot;);
+$.data(dom, &#39;name&#39;, &#39;aty&#39;);
+console.log(jQuery.hasData(dom));//true
+console.log($.data(document.getElementById(&quot;a&quot;), &#39;name&#39;));//aty
+console.log($.data($(&quot;#a&quot;)[0], &#39;name&#39;));//aty
+
+// 给jquery包装后的dom附加对象
+var $dom = $(&quot;#a&quot;);
+$.data($dom, &#39;age&#39;, &#39;25&#39;);
+console.log(jQuery.hasData($dom));//true
+console.log($.data($dom, &#39;age&#39;));//25
+console.log($.data($(&quot;#a&quot;), &#39;age&#39;));//undefined
+
+这是因为本质区别在于：原始的DOM对象会被jQuery特殊对待，而jQuery包装后的对象与普通JS对象无异。通过jQuery选择器每次获取的对象并不是同一个对象。
+   var $dom = $(&quot;#a&quot;);
+$.data($dom, &#39;age&#39;, &#39;25&#39;);
+
+// dom对象支持多次获取,jQuery对象不支持
+console.log( document.getElementById(&quot;a&quot;) ===  document.getElementById(&quot;a&quot;));///true
+console.log( document.getElementById(&quot;a&quot;) ===  $(&quot;#a&quot;)[0]);///true
+console.log($(&quot;#a&quot;) ===  $(&quot;#a&quot;));//false
+
+// jQuery包装后的对象，与普通javascript对象无异
+console.log($dom[jQuery.expando].data.age);//25
+
+最后再提一下，可以使用$.data获取某个对象上附加的所有属性。
+   var $dom = $(&quot;#a&quot;);
+$.data($dom, &#39;age&#39;, &#39;25&#39;);
+
+console.log($.data($dom));//Object {age: &quot;25&quot;}
+
+参考文章：
+
+   读jQuery之六(缓存数据) http://www.cnblogs.com/snandy/archive/2011/06/10/2077298.html

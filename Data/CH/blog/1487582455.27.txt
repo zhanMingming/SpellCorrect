@@ -1,0 +1,59 @@
+开源zlib库使用心得前篇：
+
+
+   最近在做的一个项目中需要用到数据传输，为了节省流量，需要对传输的数据进行压缩。由于之前
+
+
+   对这方面不是太了解，在网上搜索了下，决定使用大名鼎鼎的zlib库。
+
+
+   
+
+
+
+
+   下载地址：http://www.zlib.net/  最新的版本为1.2.7
+
+
+   下载后的文件解压缩有，是一个源代码包，需要重新编译才能使用。
+
+
+   博主的开发环境用的是VS2010.
+
+
+   编译过程如下：
+
+
+   	开启VS2010的Command Prompt (32bit)：
+	　	开启方式：　开始菜单-&gt;vs2010-&gt;Visual Studio Tools-&gt;Visual Studio 命令提示
+ 	　在命令行终端里，进入到zlib-1.2.7/contrib/masmx86目录
+	 - 执行bld_ml32.bat
+	- 打开工程项目zlib-1.2.7/contrib/vstudio/vc10/zlibvc.sln
+	- 编译整个solution，可编译成debug和release模式
+	编译后的文件在zlib-1.2.7/contrib/vstudio/vc10/x86目录下。对应各自的debug版和release版
+编译后，得到zlibwapi.lib, zlibwapi.dll。　同时，在zlib-1.2.7目录里拷贝出zlib.h和zlibconf.h
+
+   
+
+
+   使用：
+
+   得到这些头文件后，就可以拿到你的工程里用了，用法跟使用其他的第三方库一样．建议不要把源代码加到你的
+
+   工程，那样太多太乱了，用编译后的lib和dll就可以了．
+
+   注意，在编译的时候，需要在你的工程里，加一个预定义宏：工程属性-&gt;C&#43;&#43;-&gt;预定义宏-&gt;预处理器定义(第一个)．
+
+   增加ZLIB_WINAPI这个宏．这一点很重要，否则你的工程会编译不通过．
+
+   
+
+
+   配置好工程后，你就可以使用了．我主要用到了compress和uncompress两个函数．具体的用法各位可以
+
+   去网络搜索或者是看API文档，使用很简单．
+
+   
+
+
+   如有疑问，欢迎联系博主：david.gui@weldtech.cn or  david.gui@gmail.com

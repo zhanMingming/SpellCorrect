@@ -1,0 +1,376 @@
+Single Image Haze Removal(图像去雾)-CVPR’09 Best Paper真正了解了什么叫最简单的就是最美好的
+
+   真正的好文章不需要大堆公式堆积显得充实，而是最最平实的思想！
+
+   这篇文章的：原文PDF、PPT。感兴趣的可以了解一下。
+
+   这篇文章的目的就是以最简单的思路将图像达到去雾效果。用Matlab编了一下，效果图特别好啊哈：
+
+   
+
+   
+
+   
+
+   下面是摘录的：
+
+   
+
+   CVPR的中文名是计算机视觉与模式识别会议，是计算机视觉领域最顶尖的国际 会议之一。09年的CVPR共收到约1450篇投稿，其中393篇文章被接收，接收率为26%。只有一篇文章被选为今年的最佳论文。这是CVPR创立25年 以来首次由中国人获得这个奖项。
+
+   2010年的结果也已经出来了，一共1724篇文章，CVPR2010 Paper Acceptance Rates: 78 papers were accepted for ORAL Presentation (4.5%).384 papers were accepted for POSTER Presentation (22.3%).
+
+   下面是作者的感想摘录，值得借鉴：
+
+   这篇论文研究的问题是图像的去雾技术，它可 以还原图像的颜色和能见度，同时也能利用雾的浓度来估计物体的距离，这些在计算机视觉上都有重要应用（例如三维重建，物体识别）。但是之前人们还没找到简 单有效的方法来达到这个目的。在这篇论文里，我们找到了一个非常简单的，甚至说令人惊讶统计规律，并提出了有效的去雾方法。
+
+   与之前的方法不同，我们把注意力放到了无雾图像的统计特征上。我们发 现，在无雾图像中，每一个局部区域都很有可能会有阴影，或者是纯颜色的东西，又或者是黑色的东西。因此，每一个局部区域都很有可能有至少一个颜色通道会有 很低的值。我们把这个统计规律叫做Dark Channel Prior。直观来说，Dark Channel Prior认为每一个局部区域都总有一些很暗的东西。这个规律很简单，但在我们研究的去雾问题上却是本质的基本规律。
+
+   由于雾总是灰白色的，因此一旦图像受到雾的影响，那么这些本来应该很暗 的东西就会变得灰白。不仅如此，根据物理上雾的形成公式，我们还能根据这些东西的灰白程度来判断雾的浓度。因此，我们提出的Dark Channel Prior能很有效地去除雾的影响，同时利用物的浓度来估算物体的距离。
+大道之行在于简
+   我们这篇文章的三个审稿人都给出了最高的评分。他们认为我们的方法简单 而有效。其中一位评委说，Dark Channel Prior的想法听起来很不可思议，但我们却证明了其真实性。另一位评委认为很少有文章能够用如此简单的方法使实验结果获得如此大的提升。还有一位评委甚 至亲自实现了我们的方法并确认其可行。孙剑说阅读这样的评审结果是一件让人快乐的事情。而汤老师认为，这篇文章的成功在于三个方面。第一，方法非常简单； 第二，对于一个很困难的问题，给出了很好的结果；第三，发现了一个基本的自然规律并且应用在实际的问题中。在迈阿密的演讲结束后，观众也给予了很高的评 价。他们跟我说，这是这次CVPR上最有趣的一个演讲。
+
+   一位与会的研究员说，最好的idea，往往就是那些看起来很简单，但说 出来大家都会觉得怎么没有人想到过的idea。而我们的idea正好就符合了这一点。我们论文摘要的第一句话是这么说的，“我们提出了一个简单而有效的方 法”。或许，这就是对我们这次工作最好的概括——简单的，就是美的。
+
+
+   
+
+   代码如下：
+
+   1.MATLAB
+
+   
+
+   %=========================================================%
+%调用规则：（有雾时调用，否则不调用）
+%实际操作时,according to experiments：
+%percent=under_50/total
+%percent&lt;0.1%,取w=0.6
+%percent&gt;0.1%&amp;&amp;percent&lt;1%,取w=0.45
+%percenet&gt;1%&amp;&amp;percent&lt;2%,取w=0.3
+%else not use haze-free-adjust
+%有雾：绘制出的直方图&lt;50的部分&lt;1%
+%最后控制台还会输出原图中under_50像素点所占比例
+%=========================================================%
+close all
+clear all
+clc
+blockSize=15; %每个block为15个像素
+w0=0.6;      
+t0=0.1;
+% A=200;
+I=imread('D:\毕业设计\Images\pic_loc\1870575550604291415.jpg');
+%I=imread('C:\Users\Zrq\Desktop\同济.jpg');
+h = figure;
+%set(gcf,'outerposition',get(0,'screensize'));%获得SystemScreenSize 传递给当前图像句柄gcf的outerposition属性
+subplot(321)%表示3（行数）*2（列数）的图像，1代表所画图形的序号
+imshow(I);
+title('Original Image');
+
+
+subplot(323);
+grayI=rgb2gray(I);
+imshow(grayI,[]);
+title('原图像灰度图')
+
+subplot(324);
+imhist(grayI,64);
+
+%统计&lt;50的像素所占的比例
+%%%%%%%%%%%%%%%%%%%%%%
+[COUNT x]=imhist(grayI);
+under_50=0;
+for i=0:50
+    under_50=under_50+COUNT(x==i);
+end
+under_50
+total=size(I,1)*size(I,2)*size(I,3);
+percent=under_50/total
+%%%%%%%%%%%%%%%%%%%%%%
+
+if(percent&gt;0.02)
+    error('This image need not Haze-Free-Proprocessing.');
+else if(percent&lt;0.001)
+ w=0.6;
+    else if (percent&gt;0.01)
+     w=0.3;
+ else
+     w=0.45;
+ end
+    end
+end
+
+[h,w,s]=size(I);
+min_I=zeros(h,w);
+
+for i=1:h   
+    for j=1:w
+ dark_I(i,j)=min(I(i,j,:));%取每个点的像素为RGB分量中最低的那个通道的值
+    end
+end
+
+Max_dark_channel=double(max(max(dark_I)))
+dark_channel=double(dark_I);
+t=1-w0*(dark_channel/Max_dark_channel);
+
+T=uint8(t*255);
+
+t=max(t,t0);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+I1=double(I);
+J(:,:,1) = uint8((I1(:,:,1) - (1-t)*Max_dark_channel)./t);
+
+J(:,:,2) = uint8((I1(:,:,2) - (1-t)*Max_dark_channel)./t);
+
+J(:,:,3) =uint8((I1(:,:,3) - (1-t)*Max_dark_channel)./t);
+subplot(322)
+imshow(J);
+imwrite(J,'tj2.jpg');
+title('Haze-Free Image:');
+
+subplot(325);
+grayJ=rgb2gray(J);
+imshow(grayJ,[]);
+title('去雾后灰度图')
+
+subplot(326);
+imhist(grayJ,64);
+2.OPENCV
+   
+
+   //Hazefree helper
+
+char tbarname1[] = &quot;调节block&quot;;
+//定义两个滑动条,用于调节参数
+char tbarname2[] = &quot;调节w&quot;;
+//w是为了保留一部分的雾
+int block=5;
+int w1=80;
+double w;
+IplImage *dst=NULL;
+
+IplImage *quw(IplImage *src,int block,double w)
+{
+	//图像分别有三个颜色通道
+	IplImage *dst1=NULL;
+	IplImage *dst2=NULL;
+	IplImage *dst3=NULL;
+	IplImage *imgroi1;
+	//dst1的ROI
+	IplImage *imgroi2;
+	//dst2的ROI
+	IplImage *imgroi3;
+	//dst3的ROI
+	IplImage *roidark;
+	//dark channel的ROI
+	IplImage *dark_channel=NULL;
+	//暗原色先验的指针
+	IplImage *toushelv=NULL;
+	//透射率
+
+	//去雾算法运算后的三个通道
+	IplImage *j1=NULL;
+	IplImage *j2=NULL;
+	IplImage *j3=NULL;
+	//去雾后的图像,三通道合并成
+	IplImage *dst=NULL;
+	//源图像ROI位置以及大小
+	CvRect ROI_rect;
+
+	//分离的三个通道
+	dst1=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+	dst2=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+	dst3=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+
+	//为各个ROI分配内存
+	imgroi1=cvCreateImage(cvSize(block,block),IPL_DEPTH_8U,1);
+	imgroi2=cvCreateImage(cvSize(block,block),IPL_DEPTH_8U,1);
+	imgroi3=cvCreateImage(cvSize(block,block),IPL_DEPTH_8U,1);
+	roidark=cvCreateImage(cvSize(block,block),IPL_DEPTH_8U,1);
+
+	//为j1 j2 j3分配大小
+	j1=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+	j2=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+	j3=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+
+	//为暗原色先验指针分配大小
+	dark_channel=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+	//为透射率指针分配大小
+	toushelv=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,1);
+	//dst分配大小
+	dst=cvCreateImage(cvSize(src-&gt;width,src-&gt;height),IPL_DEPTH_8U,3);
+	//将原彩色图像分离成三通道
+	cvSplit(src,dst1,dst2,dst3,NULL);
+	//求暗原色
+	ROI_rect.width=block;
+	ROI_rect.height=block;
+	ROI_rect.x=0;
+	ROI_rect.y=0;
+
+
+	int i;
+	int j;
+	double min1=0;
+	double max1=0;
+	double min2=0;
+	double max2=0;
+	double min3=0;
+	double max3=0;
+	double min=0;
+	CvScalar value;
+	for(i=0;i&lt;src-&gt;width/block;i++)
+	{ for(j=0;j&lt;src-&gt;height/block;j++)
+	{
+		//分别计算三个通道内ROI的最小值
+		cvSetImageROI(dst1,ROI_rect);
+		cvCopy(dst1,imgroi1,NULL);
+		cvMinMaxLoc(imgroi1,&amp;min1,&amp;max1,NULL,NULL);
+		cvSetImageROI(dst2,ROI_rect);
+		cvCopy(dst2,imgroi2,NULL);
+		cvMinMaxLoc(imgroi2,&amp;min2,&amp;max2,NULL,NULL);
+		cvSetImageROI(dst3,ROI_rect);
+		cvCopy(dst3,imgroi3,NULL);
+		cvMinMaxLoc(imgroi3,&amp;min3,&amp;max3,NULL,NULL);
+		//求三个通道内最小值的最小值
+		if(min1&lt;min2)
+			min=min1;
+		else
+			min=min2;
+		if(min&gt;min3)
+			min=min3;//min为这个ROI中暗原色
+		value=cvScalar(min,min,min,min);//min放在value中
+		//min赋予dark_channel中相应的ROI
+		cvSetImageROI(dark_channel,ROI_rect);
+		cvSet(roidark,value,NULL);
+		cvCopy(roidark,dark_channel,NULL);
+		//释放各个ROI
+		cvResetImageROI(dst1);
+		cvResetImageROI(dst2);
+		cvResetImageROI(dst3);
+		cvResetImageROI(dark_channel);
+		//转入下一个ROI
+		ROI_rect.x=block*i;
+		ROI_rect.y=block*j;
+	}
+	}
+	//保存暗原色先验的图像
+	cvSaveImage(&quot;f:/dark_channel_prior.jpg&quot;,dark_channel);
+	//利用得到的暗原色先验dark_channel_prior.jpg求大气光强
+	double min_dark;
+	double max_dark;
+	CvPoint min_loc;
+	CvPoint max_loc;//max_loc是暗原色先验最亮一小块的原坐标
+	cvMinMaxLoc(dark_channel,&amp;min_dark,&amp;max_dark,&amp;min_loc,&amp;max_loc,NULL);
+//	cout&lt;&lt;max_loc.x&lt;&lt;&quot; &quot;&lt;&lt;max_loc.y&lt;&lt;endl;
+	ROI_rect.x=max_loc.x;
+	ROI_rect.y=max_loc.y;
+	double A_dst1;//定义大气光成分的估计值
+	double dst1_min;
+	double A_dst2;
+	double dst2_min;
+	double A_dst3;
+	double dst3_min;
+	cvSetImageROI(dst1,ROI_rect);
+	//按照论文方法求大气光强估计值
+	cvCopy(dst1,imgroi1,NULL);
+	cvMinMaxLoc(imgroi1,&amp;dst1_min,&amp;A_dst1,NULL,NULL);
+	cvSetImageROI(dst2,ROI_rect);
+	cvCopy(dst2,imgroi2,NULL);
+	cvMinMaxLoc(imgroi2,&amp;dst2_min,&amp;A_dst2,NULL,NULL);
+	cvSetImageROI(dst3,ROI_rect);
+	cvCopy(dst3,imgroi3,NULL);
+	cvMinMaxLoc(imgroi3,&amp;dst3_min,&amp;A_dst3,NULL,NULL);
+//	cout&lt;&lt;A_dst1&lt;&lt;&quot; &quot;&lt;&lt;A_dst2&lt;&lt;&quot; &quot;&lt;&lt;A_dst3&lt;&lt;endl;//这三值为大气光强度估计值
+	//求透射率
+	int k;
+	int l;
+	CvScalar m;
+	CvScalar n;//暗原色先验各元素值
+
+	for(k=0;k&lt;src-&gt;height;k++)
+	{
+		for(l=0;l&lt;src-&gt;width;l++)
+		{
+			m=cvGet2D(dark_channel,k,l);
+			n=cvScalar(255-w*m.val[0]);
+			//w目的是保留一部分的雾,使图像看起来真实些
+			cvSet2D(toushelv,k,l,n);
+		}
+	}
+	cvSaveImage(&quot;f:/toushelv.jpg&quot;,toushelv);
+
+	//求无雾图像
+	int p,q;
+	double tx;
+	double jj1,jj2,jj3;
+	CvScalar ix,jx;
+	for(p=0;p&lt;src-&gt;height;p++)
+	{
+		for(q=0;q&lt;src-&gt;width;q++)
+		{
+			tx=cvGetReal2D(toushelv,p,q);
+			tx=tx/255;
+			if(tx&lt;0.1)
+				tx=0.1;
+			ix=cvGet2D(src,p,q);
+			jj1=(ix.val[0]-A_dst1)/tx+A_dst1;//根据雾产生模型运算,还原出无雾图像
+			jj2=(ix.val[1]-A_dst2)/tx+A_dst2;
+			jj3=(ix.val[2]-A_dst3)/tx+A_dst3;
+			jx=cvScalar(jj1,jj2,jj3,0.0);
+			cvSet2D(dst,p,q,jx);
+		}
+	}
+	cvSaveImage(&quot;f:/removed_haze.jpg&quot;,dst);
+
+	//释放指针
+	cvReleaseImage(&amp;dst1);
+	cvReleaseImage(&amp;dst2);
+	cvReleaseImage(&amp;dst3);
+	cvReleaseImage(&amp;imgroi1);
+	cvReleaseImage(&amp;imgroi2);
+	cvReleaseImage(&amp;imgroi3);
+	cvReleaseImage(&amp;roidark);
+	cvReleaseImage(&amp;dark_channel);
+	cvReleaseImage(&amp;toushelv);
+	cvReleaseImage(&amp;j1);
+	cvReleaseImage(&amp;j2);
+	cvReleaseImage(&amp;j3);
+	return dst;
+}
+
+IplImage *source;
+void on_trackbar1(int h)
+{
+	dst=quw(source,block,w);
+	cvShowImage(&quot;目的图像&quot;,dst);
+	//      cvWaitKey(0);
+}
+void on_trackbar2(int h)
+{
+	w=(double)w1/100;
+	dst=quw(source,block,w);
+	cvShowImage(&quot;目的图像&quot;,dst);
+	//      cvWaitKey(0);
+}
+
+void CCVMFCView::OnImageHazefree()
+{
+	imageClone(workImg,&amp;source);
+	//cvNamedWindow(&quot;有雾图像&quot;,CV_WINDOW_AUTOSIZE);
+	cvFlip(source);
+	//cvShowImage(&quot;有雾图像&quot;,source);
+	cvNamedWindow(&quot;目的图像&quot;,CV_WINDOW_AUTOSIZE);
+	cvShowImage(&quot;目的图像&quot;,source);
+	cvCreateTrackbar(tbarname1, &quot;目的图像&quot;, &amp;block, 15, on_trackbar1);
+	cvCreateTrackbar(tbarname2, &quot;目的图像&quot;, &amp;w1, 100, on_trackbar2);
+	cvWaitKey(0);
+	
+	cvReleaseImage(&amp;source);
+
+	cvDestroyWindow(&quot;目的图像&quot;);
+	cvDestroyWindow(&quot;有雾图像&quot;);
+	cvFlip(dst);
+	m_dibFlag=imageReplace(dst,&amp;workImg);
+	Invalidate();
+}

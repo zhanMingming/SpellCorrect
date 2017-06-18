@@ -1,0 +1,213 @@
+spring mvc里的root/child WebApplicationContext的关系之前的博客搭建spring mvc应用的时候，我们使用spring中的ContextLoaderListener和DispatcherServlet分别加载了不同的spring配置文件。spring mvc程序里会有两个WebApplicationContext，一个是parent，从applicationContext.xml里加载的，一个是child，从servlet-context.xml里加载的。两者是继承关系，child
+ WebApplicationContext 可以通过getParent()函数获取到root WebApplicationContext。
+
+
+   
+
+
+
+
+   还是之前的代码和配置，我们修改下FirstController.java来验证下父子关系：
+
+
+   package net.aty.springmvc;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import net.aty.service.MyService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.servlet.DispatcherServlet;
+
+@Controller
+public class FirstController {
+
+	@Autowired
+	private MyService service;
+
+	@Autowired
+	private HttpServletRequest request;
+
+	public FirstController() {
+		System.out.println(&quot;I am a controller.&quot;);
+	}
+
+	@RequestMapping(&quot;/mvc/first/hello.do&quot;)
+	@ResponseBody
+	public String hello(@RequestParam(&quot;userName&quot;) String userName) {
+
+		testContext();
+
+		return service.process(userName);
+	}
+
+	private void testContext() {
+
+		WebApplicationContext root = ContextLoader
+				.getCurrentWebApplicationContext();
+
+		ServletContext servletContext = root.getServletContext();
+
+		// true
+		System.out
+				.println(root == servletContext
+						.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE));
+
+		// true
+		System.out.println(root == WebApplicationContextUtils
+				.getWebApplicationContext(servletContext));
+
+		WebApplicationContext child = (WebApplicationContext) request
+				.getAttribute(DispatcherServlet.WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+
+		// false
+		System.out.println(&quot;root:&quot; + root.containsLocalBean(&quot;myService&quot;));
+
+		// true
+		System.out
+				.println(&quot;root:&quot; + root.containsLocalBean(&quot;firstController&quot;));
+
+		// false
+		System.out.println(&quot;child:&quot; + child.containsLocalBean(&quot;myService&quot;));
+
+		// true
+		System.out.println(&quot;child:&quot;
+				+ child.containsLocalBean(&quot;firstController&quot;));
+
+		// true
+		System.out.println(&quot;is parent==&quot; + (child.getParent() == root));
+
+	}
+
+}
+
+   
+
+
+   
+
+
+
+
+   当我们再浏览器访问http://localhost:8080/SpringMvcDemo/mvc/first/hello.do?userName=11的时候，后台输出：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   代码有几点需要说明一下：
+
+
+   1.我们可以通过ContextLoader.getCurrentWebApplicationContext()获取rootWebApplicationContext。
+
+
+   2.也可以通过WebApplicationContextUtils.getWebApplicationContext(servletContext)获取root。
+
+
+   3.可以通过request.getAttribute(DispatcherServlet.WEB_APPLICATION_CONTEXT_ATTRIBUTE)获取child。
+
+
+   4.使用containsLocalBean()可以检查自己的是否包含这个bean，不会从父context中查找这个bean。
+
+
+   
+
+
+
+
+   区分不同的spring context也会带来一些问题，摘自这篇文章。
+
+
+   1.不少开发者不知道Spring mvc里分有两个WebApplicationContext，导致各种重复构造bean，各种bean无法注入的问题。 
+2.有一些bean，比如全局的aop处理的类，如果先root WebApplicationContext里初始化了，那么child 
+WebApplicationContext里的初始化的bean就没有处理到。如果在child WebApplicationContext里初始化，
+在root WebApplicationContext里的类就没有办法注入了。 
+3.区分哪些bean放在root/child很麻烦，不小心容易搞错，而且费心思。
+
+   
+
+
+   
+
+
+
+解决这些问题，其实只使用一个ApplicationContext即可，按照下面这样配置，可以让spring只创建一个spring上下文。
+   &lt;context-param&gt;
+	&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+	&lt;param-value&gt;/WEB-INF/spring/root-context.xml&lt;/param-value&gt;
+&lt;/context-param&gt;
+
+&lt;listener&gt;
+	&lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+&lt;/listener&gt;
+
+&lt;servlet&gt;
+	&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+	&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+	&lt;init-param&gt;
+		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+		&lt;param-value&gt;&lt;/param-value&gt;
+	&lt;/init-param&gt;
+	&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+	&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+	&lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+
+如果确实需要2个spring配置文件，root WebApplicationContext是通过listener初始化的，child WebApplicationContext是通过servlet初始化的。
+
+   
+
+
+
+
+   而在applicationContext.xml里通常只component-scan非Controller的类，如：
+
+
+   &lt;context:component-scan base-package=&quot;io.github.test&quot;&gt;
+	&lt;context:exclude-filter expression=&quot;org.springframework.stereotype.Controller&quot;
+		type=&quot;annotation&quot; /&gt;
+	&lt;context:exclude-filter type=&quot;annotation&quot;
+		expression=&quot;org.springframework.web.bind.annotation.ControllerAdvice&quot; /&gt;
+&lt;/context:component-scan&gt;
+
+   
+
+
+   
+
+
+
+在servlet-context.xml里通常只component-scan Controller类，如：
+   &lt;context:component-scan base-package=&quot;io.github.test.web&quot; use-default-filters=&quot;false&quot;&gt;
+	&lt;context:include-filter expression=&quot;org.springframework.stereotype.Controller&quot;
+		type=&quot;annotation&quot; /&gt;
+	&lt;context:include-filter type=&quot;annotation&quot;
+		expression=&quot;org.springframework.web.bind.annotation.ControllerAdvice&quot; /&gt;
+&lt;/context:component-scan&gt;
+
+   
+
+
+   
+
+
+
+
+   参考文章：扯谈spring mvc之WebApplicationContext的继承关系

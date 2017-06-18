@@ -1,0 +1,151 @@
+SVM实验再续（SMO）#include &quot;stdio.h&quot;
+#include &lt;vector&gt;
+using namespace std;
+
+float function(float alfa[5],float H[5][5],float sign[5])
+{
+
+ float ret = alfa[0]+alfa[1]+alfa[2]+alfa[3]+alfa[4];
+ for(int j=0;j&lt;5;++j)
+ {
+  float t=0.0;
+  for(int i=0;i&lt;5;++i)
+  {
+   t+=sign[i]*alfa[i]*H[j][i];
+  }
+  ret += -1*(t*alfa[j]*sign[j])/2;
+ }
+ return ret;
+}
+int main(void)
+{
+ float matrix[5][4]={
+  {1,5,1},
+  {1,2,1},
+  {2,2,-1},
+  {2,1,-1},
+  {1,1,-1}};
+ float H[5][5];
+ vector&lt;float&gt; c1;
+ vector&lt;float&gt; c2;
+ for(int i=0;i&lt;5;++i)
+ {
+  c1.push_back(matrix[i][0]);
+  c2.push_back(matrix[i][1]);
+ }
+ for(int i=0;i&lt;5;++i)
+ {
+  for(int j=0;j&lt;5;++j)
+  {
+   H[i][j]=c1[i]*c1[j]+c2[i]*c2[j];
+   printf(&quot;%f\t&quot;,H[i][j]);
+  }
+  printf(&quot;\n&quot;);
+ }
+ float alfa[5]={3,3,2,2,2};
+ float sign[5];
+ for(int i=0;i&lt;5;++i)
+  sign[i]=matrix[i][2];
+ float last_r = function(alfa,H,sign);
+ float new_r;
+ float con_r;
+ for(int i=0;i&lt;5;++i)
+ {
+  for(int j=0;j&lt;5;j++)
+  {
+   printf(&quot;%f,alfa={%f,%f,%f,%f,%f}\n&quot;,last_r,alfa[0],alfa[1],alfa[2],alfa[3],alfa[4]);
+   if(i==j) continue;
+   else if((alfa[i]&lt;0.01&amp;&amp;alfa[i]&gt;-0.01)&amp;&amp;(alfa[j]&lt;0.01&amp;&amp;alfa[j]&gt;-0.01)) continue;
+   else if((alfa[j]&gt;0.01)&amp;&amp;(alfa[i]&lt;0.01&amp;&amp;alfa[i]&gt;-0.01))
+   {
+    while(alfa[j]&gt;0.01){
+     alfa[i]+=0.1;
+     new_r = function(alfa,H,sign);
+     if( new_r &gt; last_r )
+     {
+      alfa[j] -= 0.1*sign[i]*sign[j];
+      last_r = function(alfa,H,sign);
+     }
+     else
+     {
+      alfa[i]-=0.1;
+      break;
+     }
+    };
+   }
+   else if((alfa[i]&gt;0.01)&amp;&amp;(alfa[j]&lt;0.01&amp;&amp;alfa[j]&gt;-0.01))
+   {
+    while(alfa[i]&gt;0.01){
+     alfa[j]+=0.1;
+     new_r = function(alfa,H,sign);
+     if( new_r &gt; last_r )
+     {
+      alfa[i] -= 0.1*sign[i]*sign[j];
+      last_r = function(alfa,H,sign);
+     }
+     else
+     {
+      alfa[j]-=0.1;
+      break;
+     }
+    };
+   }
+   else
+   {
+
+    alfa[j]+=0.1;
+    new_r = function(alfa,H,sign);
+    alfa[j]-=0.2;
+    con_r = function(alfa,H,sign);
+    alfa[j]+=0.1;
+
+    if(new_r&gt;con_r&amp;&amp;new_r&gt;last_r)
+    {
+     while(alfa[i]&gt;0.01&amp;&amp;alfa[j]&gt;0.01)
+     {
+      alfa[j] += 0.1;
+      alfa[i] -= 0.1*sign[i]*sign[j];
+      new_r = function(alfa,H,sign);
+      if(new_r &gt; last_r)
+      {
+last_r = new_r;
+      }
+      else
+      {
+      alfa[j] -= 0.1;
+      alfa[i] += 0.1*sign[i]*sign[j];
+      break;
+      }
+     };
+
+    }
+    else if(con_r&gt;new_r&amp;&amp;con_r&gt;last_r)
+    {
+     while(alfa[i]&gt;0.01&amp;&amp;alfa[j]&gt;0.01)
+     {
+      alfa[j] -= 0.1;
+      alfa[i] += 0.1*sign[i]*sign[j];
+      con_r = function(alfa,H,sign);
+      if(con_r &gt; last_r)
+      {
+last_r = con_r;
+      }
+      else
+      {
+      alfa[j] += 0.1;
+      alfa[i] -= 0.1*sign[i]*sign[j];
+      break;
+      }
+     }
+    }
+    else
+    {}
+   }
+
+  }
+ }
+ printf(&quot;%f,alfa={%f,%f,%f,%f,%f}\n&quot;,last_r,alfa[0],alfa[1],alfa[2],alfa[3],alfa[4]);
+ return 0;
+}
+
+   代码不解释，纯属实验，验证想法，不为实用，优化空间巨大，不详细解释，详细可参见各种论文。

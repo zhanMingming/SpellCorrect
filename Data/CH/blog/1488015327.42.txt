@@ -1,0 +1,248 @@
+通过项目中定位的一个问题：学习ionic框架$ionicPopover的使用以及注意事项popover是手机上很常用的控件，ionic框架提供了$ionicPopover来创建popover对象。为了学习ionic和popover，你可能需要了解一些基本知识。这些基本知识，也是我在修改项目中一个关于popover问题的时候总结学习的。
+
+
+   1.引入ionic框架的时候遇到了一个问题Invalid regular expression，有了这篇文章。
+
+
+   2.popover使用到了javascript模板技术，关于模板简单地作了个总结，有了这篇文章。
+
+
+   3.学习&lt;template&gt;的时候，了解了什么是文档碎片DocumentFragment，有了这篇文章。
+
+
+   4.简单对如何引入ionic框架以及常用的一些资源url，有了这篇文章。
+
+
+   
+
+
+
+
+   现在我来描述下项目中遇到的那个问题，有了上面的知识储备，这个问题就很好理解了，甚至是显而易见的。不过最开始我对上面这些知识了解不深，所以解决这个问题也是费了一些工夫。
+
+
+   
+
+
+
+
+   我们的项目会自定义很多控件，一个页面由很多个控件组成，每个控件都有一个dftype属性来表示控件的类型。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   页面加载完成后，我们会遍历所有的dftype组件，并创建其对象(dftype的&#20540;就对应js中的类)。然后用一个全局变量components记录当前页面包含的所有控件。每一个页面都是一个单独的angularjs模块，页面下的每个控件都有自己的ng-controller。
+
+
+   // $range是整个页面对应的jquery包装对象
+var $list = $range.find(&quot;*[dftype]&quot;);
+$list.each(function() {
+	var type = this.getAttribute(&quot;dftype&quot;);
+	var elementId = this.getAttribute(&quot;id&quot;);
+	eval(&quot;var cp = new &quot; + type + &quot;(elementId)&quot;);
+	var sid = cp.getSid();
+	components[sid] = cp;
+});
+
+// 启动angularjs模块
+angular.bootstrap(E(id), [id]);
+
+   
+
+
+   
+
+
+
+
+   下面是一个按钮控件的js代码：每个控件会根据id，使用jquery的id选择器获取配置信息。
+
+
+   define([&quot;spl/util&quot;, &quot;widget/mspl/button/Button&quot;], function() {
+	
+    Nf.mspl.button.ServiceButton = function(id) {
+ this.id = id;
+		// 根据id获取配置信息
+ var json = $.trim($E(id).attr(&quot;json&quot;));
+ this.options = JSON.parse(json);
+ this.init();
+    }
+	......
+});
+
+   
+
+
+   
+
+
+
+
+   页面footer使用了popover，点击的时候才会弹出popover。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   问题是：页面bootstrap的时候，无法初始化popover上面的Depart、Suspend等按钮控件。问题原因很简单：使用jquery选择器$range.find(&quot;*[dftype]&quot;)的时候无法选中这些在popover中的控件。
+
+
+   
+
+
+
+
+   现在我们研究下ionic的popover一些特性，参考$ionicPopover文档，可以很容易自己添加一个popover。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+	&lt;style&gt;
+		.left{margin-left:200px;}
+	&lt;/style&gt;
+	
+	&lt;script&gt;
+		var testModule = angular.module(&#39;testApp&#39;, [&#39;ionic&#39;]);
+		testModule.controller(&#39;MyController&#39;, function($scope, $ionicPopover) {
+			/* 方式1: fromTemplate() method
+			var template = &#39;&lt;ion-popover-view&gt;&lt;ion-header-bar&gt; &lt;h1 class=&quot;title&quot;&gt;My Popover Title&lt;/h1&gt; &lt;/ion-header-bar&gt; &lt;ion-content&gt; Hessssllo!&lt;/ion-content&gt;&lt;/ion-popover-view&gt;&#39;;
+
+			$scope.popover = $ionicPopover.fromTemplate(template, {
+				scope: $scope
+			});
+			*/
+			
+			// 方式2: fromTemplateUrl() method
+			$ionicPopover.fromTemplateUrl(&#39;my-popover.html&#39;, {
+				scope: $scope
+			}).then(function(popover) {
+				$scope.popover = popover;
+			});
+			
+			$scope.eventPopover = function($event) {
+				
+				$scope.popover.show($event);
+			};
+  
+			$scope.elementPopover = function(id) {
+				$scope.popover.show($(&quot;#&quot;+id));
+			};
+  
+			$scope.closePopover = function() {
+				$scope.popover.hide();
+			};
+			
+			//Cleanup the popover when we&#39;re done with it!
+		    $scope.$on(&#39;$destroy&#39;, function() {
+				$scope.popover.remove();
+		    });
+			
+			// Execute action on hide popover
+			$scope.$on(&#39;popover.hidden&#39;, function() {
+				// Execute action
+			});
+			
+			$scope.$on(&#39;popover.shown&#39;, function() {
+				// Execute action
+				alert(1);
+			});
+			
+			// Execute action on remove popover
+			$scope.$on(&#39;popover.removed&#39;, function() {
+				// Execute action
+		  });
+	});//end for controller
+
+
+	$(function(){
+		angular.bootstrap($(&quot;#body&quot;), [&quot;testApp&quot;]);
+	})
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+  
+	&lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+		&lt;a class=&quot;button button-icon icon ion-more&quot; id=&quot;left&quot;&gt;&lt;/a&gt;
+			&lt;h1 class=&quot;title&quot;&gt;bar-positive&lt;/h1&gt;
+		&lt;a class=&quot;button button-icon icon ion-more&quot; id=&quot;right&quot;&gt;&lt;/a&gt;
+	&lt;/ion-header-bar&gt;
+  
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+			&lt;button class=&quot;left&quot; ng-click=&quot;elementPopover(&#39;left&#39;)&quot;&gt;left1&lt;/button&gt;
+			&lt;button ng-click=&quot;eventPopover($event)&quot;&gt;left2&lt;/button&gt;
+			&lt;button ng-click=&quot;eventPopover($event)&quot;&gt;right1&lt;/button&gt;
+			&lt;button ng-click=&quot;elementPopover(&#39;right&#39;)&quot;&gt;right2&lt;/button&gt;
+	&lt;/ion-content&gt;
+	
+	&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/ion-footer-bar&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+&lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+	  &lt;ion-popover-view&gt;
+		&lt;ion-header-bar&gt;
+		  &lt;h1 class=&quot;title&quot;&gt;My Popover Title&lt;/h1&gt;
+		&lt;/ion-header-bar&gt;
+		&lt;ion-content&gt;
+		  Hello!
+		&lt;/ion-content&gt;
+	  &lt;/ion-popover-view&gt;
+&lt;/script&gt;	
+	
+
+
+运行上面的html，F12可以看到生成的html代码如下。ioinic给我们的元素添加了一些grade-a等熟悉。注意&lt;script&gt;标签存放的模板并没有发生变化。
+
+   
+
+
+
+
+   
+
+
+
+
+   现在我们点击上面的按钮，会弹出popover，之后在点击空白处隐藏popover，生成的html如下。
+
+
+   可以看到：ionic将&lt;script&gt;下的模板插入到页面的DOM树中了。
+
+
+   
+
+
+
+
+   现在回到我们在项目中遇到的问题，就很好理解了。页面初始化的时候，并没有弹出popover，所以我们并没有初始化popover。ionic不会将&lt;script&gt;下的模板内容插入到DOM树下，而jquery是不能选中&lt;script&gt;下的元素的。解决方案就很简单了：在页面初始化调用fromTemplateUrl的时候，先显示popover再隐藏即可。这样就能够触发ionic将&lt;script&gt;下的模板插入到DOM树，这样jquery就能选中了。
+
+
+   $ionicPopover.fromTemplateUrl(&#39;my-popover.html&#39;, {
+	scope: $scope
+}).then(function(popover) {
+	$scope.popover = popover;
+	$scope.popover.show($(&quot;#body&quot;));
+	$scope.popover.hide();
+});

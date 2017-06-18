@@ -1,0 +1,40 @@
+opencv求取RGB分量需要注意的是下面r,b,g的类型和顺序
+
+
+   须用IPL_DEPTH_8U类型创建图像且[0][1][2]分量分别是b,g,r.
+
+
+   另外多谢郑乾师兄帮我发现了IPL_DEPTH_8U问题
+
+
+   
+
+
+   	uchar r,b,g;//notice 'uchar' type must be used instead of double 
+	int h=workImg-&gt;height;
+	int w=workImg-&gt;width;
+	IplImage *D=cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,workImg-&gt;nChannels); 
+
+	CvScalar s,s1;
+
+	for(int x=0;x&lt;workImg-&gt;height;x++)
+	{
+		for(int y=0;y&lt;workImg-&gt;width;y++)
+		{
+
+			b=((uchar*)(workImg-&gt;imageData+x*workImg-&gt;widthStep))[y*3+0];
+			g=((uchar*)(workImg-&gt;imageData+x*workImg-&gt;widthStep))[y*3+1];
+			r=((uchar*)(workImg-&gt;imageData+x*workImg-&gt;widthStep))[y*3+2];
+		}
+	}
+
+
+   若用IPL_DEPTH_64U类型赋&#20540;会导致图片出现如下情况：
+
+
+   
+
+
+
+
+   这里大家一定要小心哦~

@@ -1,0 +1,194 @@
+java中使用堆外内存，关于内存回收需要注意的事和没有解决的遗留问题(等大神解答)JVM可以使用的内存分外2种：堆内存和堆外内存，堆内存完全由JVM负责分配和释放，如果程序没有缺陷代码导致内存泄露，那么就不会遇到java.lang.OutOfMemoryError这个错误。使用堆外内存，就是为了能直接分配和释放内存，提高效率。JDK5.0之后，代码中能直接操作本地内存的方式有2种：使用未公开的Unsafe和NIO包下ByteBuffer。
+
+   
+
+
+   
+
+
+
+
+   关于Unsafe对象的简介和获取方式，可以参考我的另一篇博客 java获取Unsafe类的实例和取消eclipse编译的错误
+
+
+   使用ByteBuffer分配本地内存则非常简单，直接ByteBuffer.allocateDirect(10 * 1024 * 1024)即可。
+
+
+   
+
+
+
+
+   C语言的内存分配和释放函数malloc/free，必须要一一对应，否则就会出现内存泄露或者是野指针的非法访问。java中我们需要手动释放获取的堆外内存吗？
+
+
+   1、首先我们看下NIO中提供的ByteBuffer
+
+
+   
+   import java.nio.ByteBuffer;
+
+public class TestDirectByteBuffer
+{
+	// -verbose:gc -XX:+PrintGCDetails -XX:MaxDirectMemorySize=40M
+	public static void main(String[] args) throws Exception
+	{
+		while (true)
+		{
+			ByteBuffer buffer = ByteBuffer.allocateDirect(10 * 1024 * 1024);
+		}
+	}
+}
+
+
+
+
+   
+
+   
+我们将最大堆外内存设置成40M，运行这段代码会发现：程序可以一直运行下去，不会报OutOfMemoryError。如果使用了-verbose:gc -XX:&#43;PrintGCDetails，会发现程序频繁的进行垃圾回收活动。于是我们可以得出结论：ByteBuffer.allocateDirect分配的堆外内存不需要我们手动释放，而且ByteBuffer中也没有提供手动释放的API。也即是说，使用ByteBuffer不用担心堆外内存的释放问题，除非堆内存中的ByteBuffer对象由于错误编码而出现内存泄露。
+
+   
+
+
+   2、接下来我们看下直接在方法体中使用Unsafe的效果
+
+
+   
+
+
+   import sun.misc.Unsafe;
+
+public class TestUnsafeMemo
+{
+	// -XX:MaxDirectMemorySize=40M
+	public static void main(String[] args) throws Exception
+	{
+		Unsafe unsafe = GetUsafeInstance.getUnsafeInstance();
+
+		while (true)
+		{
+			long pointer = unsafe.allocateMemory(1024 * 1024 * 20);
+			System.out.println(unsafe.getByte(pointer + 1));
+
+			// 如果不释放内存,运行一段时间会报错java.lang.OutOfMemoryError
+			// unsafe.freeMemory(pointer);
+		}
+	}
+
+}这段程序会报OutOfMemoryError错误，也就是说allocateMemory和freeMemory，相当于C语音中的malloc和free，必须手动释放分配的内存。
+
+
+
+
+   
+
+
+   3、类&#20284;于ByteBuffer，将Unsafe分配内存封装到一个类中
+
+
+   
+
+
+   import sun.misc.Unsafe;
+
+public class ObjectInHeap
+{
+	private long address = 0;
+
+	private Unsafe unsafe = GetUsafeInstance.getUnsafeInstance();
+
+	public ObjectInHeap()
+	{
+		address = unsafe.allocateMemory(2 * 1024 * 1024);
+	}
+
+	// Exception in thread &quot;main&quot; java.lang.OutOfMemoryError
+	public static void main(String[] args)
+	{
+		while (true)
+		{
+			ObjectInHeap heap = new ObjectInHeap();
+			System.out.println(&quot;memory address=&quot; + heap.address);
+		}
+	}
+}
+这段代码会抛出OutOfMemoryError。这是因为ObjectInHeap对象是在堆内存中分配的，当该对象被垃圾回收的时候，并不会释放堆外内存，因为使用Unsafe获取的堆外内存，必须由程序显示的释放，JVM不会帮助我们做这件事情。由此可见，使用Unsafe是有风险的，很容易导致内存泄露。
+
+
+
+   
+
+
+   
+
+
+
+
+   4、正确释放Unsafe分配的堆外内存
+
+
+       虽然第3种情况的ObjectInHeap存在内存泄露，但是这个类的设计是合理的，它很好的封装了直接内存，这个类的调用者感受不到直接内存的存在。那怎么解决ObjectInHeap中的内存泄露问题呢？可以覆写Object.finalize()，当堆中的对象即将被垃圾回收器释放的时候，会调用该对象的finalize。由于JVM只会帮助我们管理内存资源，不会帮助我们管理数据库连接，文件句柄等资源，所以我们需要在finalize自己释放资源。
+
+
+   
+
+
+   import sun.misc.Unsafe;
+
+public class RevisedObjectInHeap
+{
+	private long address = 0;
+
+	private Unsafe unsafe = GetUsafeInstance.getUnsafeInstance();
+
+	// 让对象占用堆内存,触发[Full GC
+	private byte[] bytes = null;
+
+	public RevisedObjectInHeap()
+	{
+		address = unsafe.allocateMemory(2 * 1024 * 1024);
+		bytes = new byte[1024 * 1024];
+	}
+
+	@Override
+	protected void finalize() throws Throwable
+	{
+		super.finalize();
+		System.out.println(&quot;finalize.&quot; + bytes.length);
+		unsafe.freeMemory(address);
+	}
+
+	public static void main(String[] args)
+	{
+		while (true)
+		{
+			RevisedObjectInHeap heap = new RevisedObjectInHeap();
+			System.out.println(&quot;memory address=&quot; + heap.address);
+		}
+	}
+
+}
+我们覆盖了finalize方法，手动释放分配的堆外内存。如果堆中的对象被回收，那么相应的也会释放占用的堆外内存。这里有一点需要注意下：
+
+   
+
+
+   
+
+
+   // 让对象占用堆内存,触发[Full GC
+private byte[] bytes = null;
+
+   
+
+
+   这行代码主要目的是为了触发堆内存的垃圾回收行为，顺带执行对象的finalize释放堆外内存。如果没有这行代码或者是分配的字节数组比较小，程序运行一段时间后还是会报OutOfMemoryError。这是因为每当创建1个RevisedObjectInHeap对象的时候，占用的堆内存很小（就几十个字节左右），但是却需要占用2M的堆外内存。这样堆内存还很充足（这种情况下不会执行堆内存的垃圾回收），但是堆外内存已经不足，所以就不会报OutOfMemoryError。
+
+
+   
+
+
+
+
+   虽然改进后的RevisedObjectInHeap不会有堆外内存泄露，但是这种解决方法却无端地浪费了堆内存。简单的看了下ByteBuffer的源码，它内部分配堆外内存也是通过unsafe.allocateMemory()实现的。那ByteBuffer又是怎么实现的堆外内存释放呢？难道也是通过第4种类&#20284;RevisedObjectInHeap的做法吗？欢迎大神指点迷津啊！

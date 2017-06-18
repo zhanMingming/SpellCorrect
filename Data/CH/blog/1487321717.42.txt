@@ -1,0 +1,88 @@
+从这个帖子说开“稀疏向量的计算方法”今天我在水木想找找fervvac (高远)发的帖子，无意间找到了这篇文章。
+
+
+   
+
+
+   fervvac是我的偶像，我向他学习，要努力并且低调，帮助别人。
+
+
+   
+
+
+    生活的快乐也许就是，在下班时往家赶的时候，家里人在分别了一天之后再次团聚，其乐融融。
+
+
+   ---------------------------------------------------------------------------------------发信人: pennyliang (pennyliang), 信区: SearchEngineTech标 题: 稀疏向量的计算方法发信站: 水木社区 (Sun Mar 16 09:09:12 2008), 站内
+
+
+   鉴于很多网友来信问此问题，我一并答复一下。
+
+
+   首先，我们来看什么是向量计算假定向量A:{x1,x2,....xn}向量B:{y1,y2,....yn}现在要想知道A*B=？（这里的*为向量的点乘）最直接的计算方法就是 x1*y1+x2*y2+...xn*yn (这里的*为一般乘法)这里假定乘法和加法代价相同，浮点计算不被考虑，这样的计算方法代价为2N-1次计算。N为向量维度。
+
+
+   然而，在实际环境中，N很大可能上百万，甚至亿万，而向量中大部分元素为0，因此0和0相乘是没有意义的。
+
+
+   于是第一个优化的想法是将向量变为这样的模式向量A:{&lt;x1',loc1'&gt;,&lt;x2',loc2'&gt;...&lt;xn',locn'&gt;}向量B:{&lt;y1',loc1'&gt;,&lt;y2',loc2'&gt;...&lt;yn',locn'&gt;},这里locx表示元素的位置信息。每个向量都不含零元素，或者接近于零的浮点数。显然向量数量远小于n，且向量A，B的长度取决于各自的非零元，不妨设向量A长度为m，向量B长度为n.
+
+
+   那么计算A*B，可以采用在向量A中循环，在向量B中二分的方法，例如找到向量A的首原素，&lt;x1',loc1'&gt;,将其位置loc1'在向量B中折半查找，直到找到，或者失败。这样计算代价为mlogn + min(m,n),前部为查找代价，后部为加法代价，加法代价必然比min(m,n)还要小,最大情况下为min(m,n)-1。
+
+
+   进一步来看，如果在计算向量A和向量B乘法时，我们已经知道了它们各自的长度，那么可以在小的向量上循环，在大向量上二分，这样代价为min(m,n)log(max(m，n))+min(m,n)
+
+
+   当然也可以不使用二分，采用哈希，假定认为哈希的代价为O(1),那么总代价为2min(m,n)这里创建哈希也需要代价。
+
+
+   至此，我们由原来2N-1的计算,降低到2min(m,n),
+
+
+   如果N极大，而m,n也不小，这样等待一次向量计算也不短，而如果是矩阵相乘，向量相乘只是其中的一部，那么速度也无法容忍的话，可以采用并行计算的方法，通过切分，把一个大计算的一部分派遣到某台机器，而另一部分派遣到另一台机器，最后综合计算结果。并行处理软件包有很多，比如MPI，都可以尝试使用。
+
+
+   本文只讨论思想，不涉及细节，希望给大家带来一些启发。最后我再次推销一下这几个思想precomputingcachingmirroringdistributingonce-computing有了难题都从这几个方面考虑，就有解了。。。 
+
+
+   
+
+
+   
+
+
+   --硕士要啥自行车啊 
+
+
+   发信人: fervvac (高远), 信区: SearchEngineTech标 题: Re: 稀疏向量的计算方法发信站: 水木社区 (Sun Mar 16 12:40:08 2008), 站内
+
+
+   Nice article. Just add a few comments 
+
+
+   1) An importnt property is that dimensions are sorted according to a global order and all sparse vectors encoded in that order as well. Therefore, theplain binary search * m times (m &lt; n) is redundant in that the key to probe inthe other vector is monotonically increasing. A simple rememdy is to keepa bookmark of the last matching position (if no match, the largest i s.t v[i]&lt;x) and the next binary search only need to be done within v[i+1, |v|]. 
+
+
+   This can be viewed as a nice marriage of index-based and merge-based approaches. More sophisticated methods and their analysis can be found in 
+
+
+   http://www.cs.uwaterloo.ca/~ajsaling/papers/paper-spire.pdfhttp://siam.org/proceedings/alenex/2007/alx07_008sandersp.pdf
+
+
+   2) many application actually only want those &lt;x, y&gt; &gt;= t, where t is a threhsold(e.g., near duplicate detection)
+
+
+   If the vector is of binary type (only 0 or 1), prefix filtering can be used to consider only those pairs s.t. their intersection (in binary case, &lt;x, y&gt; is intersection) *may* exceed t. 
+
+
+   In the general case, one can keep tract of the maximum value among the suffixof the vector and use it to prune candidate pairs. 
+
+
+   For more details, see 
+
+
+   http://www2007.org/papers/paper342.pdf
+
+
+   (they've also published their source code)

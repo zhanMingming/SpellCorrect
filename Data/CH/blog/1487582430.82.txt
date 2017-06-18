@@ -1,0 +1,60 @@
+C# 中，怎样处理 （批量）文件中的数据？怎样在C#中像C里的freopen()那样打开文件，读出数据并写入另一个文件中呢？
+
+
+   
+
+
+   比如我在D盘里新建两个记事本:input.txt和output.txt
+
+
+   
+
+
+   然后在input.txt中写
+
+
+   
+
+
+   张睿卿
+
+
+   1234
+
+
+   
+
+
+   就会对应的在output.txt中写上
+
+
+   
+
+
+   Please input user name:张睿卿Please input psw:1234
+
+
+   
+
+
+    private void button1_Click(object sender, EventArgs e)
+ {
+     string inputfile = "d://input.txt";
+     string outputfile = "d://output.txt";
+     TextReader input = new StreamReader(inputfile, System.Text.Encoding.Default, false);
+
+     TextWriter output = new StreamWriter(outputfile, false, System.Text.Encoding.Unicode);
+     Console.SetIn(input);
+
+     Console.SetOut(output);
+     Console.Write("Please input user name:");
+     user.Text = Console.ReadLine();
+     Console.WriteLine(user.Text);
+
+     Console.Write("Please input psw:");
+     password.Text = Console.ReadLine();
+     Console.WriteLine(password.Text);
+
+     input.Close();
+     output.Close();
+ }

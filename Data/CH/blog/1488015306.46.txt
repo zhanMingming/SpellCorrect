@@ -1,0 +1,84 @@
+Guava Cache特性：对于同一个key，只让一个请求回源load数据，其他线程阻塞等待结果设想高并发下的一种场景：假设我们将name=aty存放到缓存中，并设置的有过期时间。当缓存过期后，恰好有10个客户端发起请求，需要读取name的&#20540;。使用Guava Cache可以保证只让一个线程去加载数据(比如从数据库中)，而其他线程则等待这个线程的返回结果。这样就能避免大量用户请求穿透缓存。
+
+
+   import com.google.common.base.Stopwatch;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+
+public class Main {
+
+    // 1s无访问则缓存过期, 每次加载一个key需要耗时2s
+    private static LoadingCache&lt;String, String&gt; cache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.SECONDS)
+     .build(new CacheLoader&lt;String, String&gt;() {
+  @Override
+  public String load(String key) throws Exception {
+      System.out.println(&quot;begin to query db...&quot;);
+      Thread.sleep(2000);
+      System.out.println(&quot;success to query db...&quot;);
+      return UUID.randomUUID().toString();
+  }
+     });
+
+    private static CountDownLatch latch = new CountDownLatch(1);
+
+
+    public static void main(String[] args) throws Exception {
+
+ cache.put(&quot;name&quot;, &quot;aty&quot;);
+ Thread.sleep(1500);
+
+ for (int i = 0; i &lt; 8; i++) {
+     startThread(i);
+ }
+
+ // 让线程运行
+ latch.countDown();
+
+    }
+
+    private static void startThread(int id) {
+ Thread t = new Thread(new Runnable() {
+     @Override
+     public void run() {
+  try {
+      System.out.println(Thread.currentThread().getName() + &quot;...begin&quot;);
+      latch.await();
+      Stopwatch watch = Stopwatch.createStarted();
+      System.out.println(&quot;value...&quot; + cache.get(&quot;name&quot;));
+      watch.stop();
+
+      System.out.println(Thread.currentThread().getName() + &quot;...finish,cost time=&quot; + watch.elapsed(TimeUnit.SECONDS));
+  } catch (Exception e) {
+      e.printStackTrace();
+  }
+     }
+ });
+
+ t.setName(&quot;Thread-&quot; + id);
+ t.start();
+    }
+
+
+}
+
+
+   
+
+
+
+
+   上面输出结果可以看到：只有一个线程去数据库中加载数据，其他线程都在等待(每个线程都耗时2s)。使用Guava确实可以做到：对于同一个key，无论有多少请求，都只会允许一个线程去加载数据。
+
+
+   
+
+
+
+
+   但是也有一个很致命的缺陷：上面8个线程中，有一个线程实际去加载数据，其余7个线程都被阻塞了。如果能做到，当一个线程去加载数据，其余线程发现这个数据正在加载中，那么直接读取老的数据，这样就不会阻塞了。既然是缓存，读取旧一点数据也没有多大问题，却可以提高系统吞度量。

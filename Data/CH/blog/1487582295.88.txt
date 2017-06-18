@@ -1,0 +1,123 @@
+R语言 基本数据分析本文基于R语言进行基本数据统计分析，包括基本作图，线性拟合，逻辑回归，bootstrap采样和Anova方差分析的实现及应用。
+
+   不多说，直接上代码，代码中有注释。
+
+   
+
+   1. 基本作图（盒图，qq图）
+
+   
+
+   
+
+   #basic plot
+boxplot(x)
+qqplot(x,y)
+
+   
+
+   
+
+   2. 线性拟合
+
+   
+
+   #linear regression
+n = 10
+x1 = rnorm(n)#variable 1
+x2 = rnorm(n)#variable 2
+y = rnorm(n)*3
+mod = lm(y~x1+x2)
+model.matrix(mod) #erect the matrix of mod
+plot(mod) #plot residual and fitted of the solution, Q-Q plot and cook distance
+summary(mod) #get the statistic information of the model
+hatvalues(mod) #very important, for abnormal sample detection
+   
+
+   
+
+   3. 逻辑回归
+
+   
+
+   #logistic regression
+x &lt;- c(0, 1, 2, 3, 4, 5)
+y &lt;- c(0, 9, 21, 47, 60, 63) # the number of successes
+n &lt;- 70 #the number of trails
+z &lt;- n - y #the number of failures
+b &lt;- cbind(y, z) # column bind
+fitx &lt;- glm(b~x,family = binomial) # a particular type of generalized linear model
+print(fitx)
+
+plot(x,y,xlim=c(0,5),ylim=c(0,65)) #plot the points (x,y)
+
+beta0 &lt;- fitx$coef[1]
+beta1 &lt;- fitx$coef[2]
+fn &lt;- function(x) n*exp(beta0+beta1*x)/(1+exp(beta0+beta1*x))
+par(new=T)
+curve(fn,0,5,ylim=c(0,60)) # plot the logistic regression curve
+
+   
+3. Bootstrap采样
+   
+
+   # bootstrap
+# Application: 随机采样，获取最大eigenvalue占所有eigenvalue和之比，并画图显示distribution
+dat = matrix(rnorm(100*5),100,5)
+ no.samples = 200 #sample 200 times
+# theta = matrix(rep(0,no.samples*5),no.samples,5)
+ theta =rep(0,no.samples*5);
+ for (i in 1:no.samples)
+{
+    j = sample(1:100,100,replace = TRUE)#get 100 samples each time
+   datrnd = dat[j,]; #select one row each time
+   lambda = princomp(datrnd)$sdev^2; #get eigenvalues
+#   theta[i,] = lambda;
+   theta[i] = lambda[1]/sum(lambda); #plot the ratio of the biggest eigenvalue
+}
+
+# hist(theta[1,]) #plot the histogram of the first(biggest) eigenvalue
+hist(theta); #plot the percentage distribution of the biggest eigenvalue
+sd(theta)#standard deviation of theta
+
+#上面注释掉的语句，可以全部去掉注释并将其下一条语句注释掉，完成画最大eigenvalue分布的功能
+   
+
+   
+
+   4. ANOVA方差分析
+
+   
+
+   #Application：判断一个自变量是否有影响 (假设我们喂3种维他命给3头猪，想看喂维他命有没有用)
+# 
+y = rnorm(9); #weight gain by pig(Yij, i is the treatment, j is the pig_id), 一般由用户自行输入
+#y = matrix(c(1,10,1,2,10,2,1,9,1),9,1)
+Treatment &lt;- factor(c(1,2,3,1,2,3,1,2,3)) #each {1,2,3} is a group
+mod = lm(y~Treatment) #linear regression
+print(anova(mod))
+#解释：Df（degree of freedom）
+#Sum Sq: deviance (within groups, and residuals) 总偏差和
+# Mean Sq: variance (within groups, and residuals) 平均方差和
+# compare the contribution given by Treatment and Residual
+#F value: Mean Sq(Treatment)/Mean Sq(Residuals)
+#Pr(&gt;F): p-value. 根据p-value决定是否接受Hypothesis H0：多个样本总体均数相等(检验水准为0.05)
+qqnorm(mod$residual) #plot the residual approximated by mod
+#如果qqnorm of residual像一条直线，说明residual符合正态分布，也就是说Treatment带来的contribution很小，也就是说Treatment无法带来收益（多喂维他命少喂维他命没区别）如下面两图分别是
+   
+
+   （左）用y = matrix(c(1,10,1,2,10,2,1,9,1),9,1)和
+
+   （右）y = rnorm(9);
+
+   的结果。可见如果给定猪吃维他命2后体重特别突出的数据结果后，qq图种residual不在是一条直线，换句话说residual不再符合正态分布，i.e., 维他命对猪的体重有影响。
+
+   
+
+   
+
+   
+
+   
+
+   关注数据统计分析，欢迎一起讨论。微博 Rachel____Zhang

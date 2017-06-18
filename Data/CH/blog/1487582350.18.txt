@@ -1,0 +1,140 @@
+MFC+OPENCV实现角点检测//  角点检测 
+//  根据《基于OpenCV的计算机视觉技术实现》
+
+#define max_corners 200;      //  限定的最大角点数
+
+IplImage* srcImage  = 0;      //  待处理的源图像
+IplImage* ImageShow = 0;      //  存储显示带角点的图像
+IplImage* grayImage = 0;      //  原始图像转换成的灰阶图像
+IplImage* corners1  = 0;      //  临时图像
+IplImage* corners2  = 0;      //  临时图像
+
+int cornerCount0 = max_corners;
+int cornerCount;//  实际测得角点数
+int qualityLevel = 0;  //  最小质量因子
+int minDistance  = 15; //  角点最小距离
+CvScalar color = CV_RGB(255,0,0);    //  绘图颜色
+CvPoint2D32f corners[200];    //  角点坐标
+CvRect ROI_rect;//  测试范围
+char   chek_area_state = 0;   //  鼠标状态
+
+void re_find_corners(int)     //  滑动条响应函数
+{
+	int   i,x,y,xl,yu,xr,yd,k;
+	int   radius = 5;
+	int   thickness = 1;
+	double quality_level = (double) qualityLevel / 100 + 0.02;
+	double min_distance  = (double) minDistance;
+
+	cornerCount=cornerCount0; //  设置最大角点数
+	cvGoodFeaturesToTrack(grayImage, //  角点检测
+		corners1,corners2,corners,&amp;cornerCount,
+		quality_level,min_distance,NULL);
+
+	if (cornerCount&gt;0) {      //  测到角点
+		xl=ROI_rect.x;     yu=ROI_rect.y;   //  设置初始测试范围
+		xr=ROI_rect.x+ROI_rect.width;
+		yd=ROI_rect.y+ROI_rect.height;
+		cvCopy(srcImage,ImageShow);  //  恢复源图像
+		for (i=0,k=0;i&lt;cornerCount;i++) {
+			x=(int)corners[i].x;
+			y=(int)corners[i].y;
+			if ((xl&lt;x)&amp;&amp;(x&lt;xr)&amp;&amp;(yu&lt;y)&amp;&amp;(y&lt;yd)) {  //  范围检查
+				corners[k].x=corners[i].x;  //  保存范围内角点
+				corners[k].y=corners[i].y;
+				k++;
+			}
+		}
+		cornerCount=k; //  范围内角点数
+		cvCopy(srcImage,ImageShow);
+		for (i=0;i&lt;cornerCount;i++) {
+			x=(int)corners[i].x;
+			y=(int)corners[i].y;
+			cvCircle(ImageShow,cvPoint(x,y),   //  角点处画圈
+				radius,color,thickness,CV_AA,0);
+		}
+		cvRectangle(ImageShow,cvPoint(xl,yu),cvPoint(xr,yd),
+			CV_RGB(0,255,0),thickness,CV_AA,0);  //  画矩形
+		cvShowImage(&quot;image&quot;, ImageShow);    //  显示画圈图像
+	}
+}
+
+void on_mouse2(int event,int x,int y,int flags,void* param)
+{ //  鼠标响应函数
+	int  thickness = 1;
+	CvPoint point1,point2;
+
+	if (event == CV_EVENT_LBUTTONDOWN) {    //  鼠标左键按下
+		ROI_rect.x = x;//  记录检测窗口一角坐标
+		ROI_rect.y = y;
+		chek_area_state = 1;  //  设置状态标志
+	}
+	else if (chek_area_state &amp;&amp; event == CV_EVENT_MOUSEMOVE) {  //  鼠标移动
+		cvCopy(srcImage,ImageShow);  //  恢复原始图像
+		point1 = cvPoint(ROI_rect.x, ROI_rect.y);
+		point2 = cvPoint(x,y);//  当前坐标
+		cvRectangle(ImageShow,point1,point2,CV_RGB(0,255,0),
+			thickness,CV_AA,0);  //  画矩形
+		cvShowImage(&quot;image&quot;, ImageShow);    //  显示检测结果
+		cvWaitKey(20); //  延时
+	}
+	else if (chek_area_state &amp;&amp; event == CV_EVENT_LBUTTONUP) {  //  鼠标左键抬起
+		ROI_rect.width  = abs(x - ROI_rect.x);  //  记录检测窗口对角坐标
+		ROI_rect.height = abs(y - ROI_rect.y);
+
+		re_find_corners(0);   //  角点检测
+		chek_area_state = 0;  //  恢复状态标志
+		cvWaitKey(20); 
+	}
+}
+
+void CCVMFCView::OnCornersTest()     //  角点检测
+{
+	if (workImg-&gt;nChannels&gt;1) {      //  原图为真彩色图像==3
+		srcImage = cvCloneImage(workImg);
+	}
+	else {      //  原图为灰阶图像
+		srcImage = cvCreateImage(cvGetSize(workImg),IPL_DEPTH_8U,3);
+		cvCvtColor(workImg,srcImage,CV_GRAY2BGR);
+	}
+	cvFlip(srcImage);
+
+	grayImage = cvCreateImage(cvGetSize(srcImage),IPL_DEPTH_8U,1);
+	cvCvtColor(srcImage,grayImage,CV_BGR2GRAY);  //  转换为灰阶图像
+	ImageShow = cvCloneImage(srcImage);
+
+	ROI_rect.x =0;
+	ROI_rect.y =0;
+	ROI_rect.width  = grayImage-&gt;width;
+	ROI_rect.height = grayImage-&gt;height;
+
+	corners1 = cvCreateImage(cvGetSize(grayImage),IPL_DEPTH_32F,1);
+	corners2 = cvCreateImage(cvGetSize(grayImage),IPL_DEPTH_32F,1);
+
+	cvNamedWindow(&quot;image&quot;,0); //  设置显示窗口
+	cvResizeWindow(&quot;image&quot;,325,350); //  改变窗口尺寸
+
+	cvCreateTrackbar(&quot;角点最小距离&quot;, &quot;image&quot;,  //  设置距离滑动条
+		&amp;minDistance, 200,re_find_corners);
+	cvCreateTrackbar(&quot;最小质量因子&quot;,&quot;image&quot;,  //  设置质量滑动条
+		&amp;qualityLevel,100,re_find_corners);
+
+	re_find_corners(0);//  角点检测
+
+	cvSetMouseCallback(&quot;image&quot;,on_mouse2,0);  //  设置鼠标响应函数
+
+	cvWaitKey(0);      //  等待键输入
+
+	cvDestroyWindow( &quot;image&quot; );      //  关闭窗口
+
+	cvReleaseImage(&amp;srcImage);//  释放图像存储单元
+	cvReleaseImage(&amp;grayImage);
+	cvReleaseImage(&amp;corners1);
+	cvReleaseImage(&amp;corners2);
+
+	cvFlip(ImageShow);
+	m_dibFlag=imageReplace(ImageShow,&amp;workImg);  //  输出检测结果
+
+	m_ImageType=-2;
+	Invalidate();
+}

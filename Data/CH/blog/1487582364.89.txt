@@ -1,0 +1,109 @@
+Matlab 到 OpenCv 的常见函数转换1、 matlab中的imread相当于OpenCV中的cvLoadImage(imageName, CV_LOAD_IAMGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR)：读出的图像信息保持了原有图像的信息(包括通道信息和位深信息)；
+
+
+
+
+
+rgb2gray相当于cvLoadImage(imageName, CV_LOAD_IMAGE_GRAYSCALE)：单通道灰度图；
+
+
+
+
+
+或用cvCreateImage、cvCvtColor两函数实现图像的灰度化。
+
+
+
+
+
+2、matlab中的zeros函数相当于OpenCV中的cvSetZero函数。
+
+
+
+
+
+3、matlab中的两矩阵点乘 .* 相当于OpenCV中的cvMul函数。
+
+
+
+
+
+4、matlab中的两矩阵点除 ./ 相当于OpenCV中的cvDiv函数。
+
+
+
+
+
+5、matlab中的两矩阵相加 &#43; 相当于OpenCV中的cvAdd函数。
+
+
+
+
+
+6、matlab中的两矩阵相减 - 相当于OpenCV中的cvSub函数。
+
+
+
+
+
+7、matlab中的矩阵和一个常量相加 A &#43; a 相当于OpenCV中的cvAddS函数 cvAdds(matA, cvScalar(a), matB)。
+
+
+
+
+
+8、matlab中的矩阵和一个常量相减 A - a 相当于OpenCV中的cvSubS函数 cvSubS(matA, cvScalar(a), matB)。
+
+
+
+
+
+9、matlab中的给矩阵赋一初&#20540; A(:, :) = a 相当于OpenCV中的cvSet函数 cvSet(matA, cvScalar(a))。
+
+
+
+
+
+10、matlab中取矩阵某一部分赋给另一矩阵 A = B(i : j, m : n) 相当于OpenCV中的cvGetSubRect 函数，cvGetSubRect(mat1, mat2, rect)。
+
+
+
+
+
+11、matlab中取矩阵最大&#20540;、最小&#20540; max(max(A))、min(min(A)) 相当于OpenCV中的cvMinMaxLoc函数 cvMinMaxLoc(A, minloc, maxloc)。
+
+
+
+
+
+12、matlab中两矩阵相乘 A * B 相当于OpenCV中的cvMatMul函数，cvMatMul(A, B, C)。
+
+
+
+
+
+13、matlab中计算两个三维向量的叉积 C = cross(A, B) 相当于OpenCV中的cvCrossProduct函数，cvCrossProduct(A, B, C)。
+
+
+
+
+
+14、matlab中计算向量的范数 c = norm(A) 相当于OpenCV中的cvNorm函数，c = cvNorm(A)。
+
+
+
+
+
+15、matlab中求二维矩阵的奇异&#20540;分解 [u s v] = svd(A, 0) 相当于OpenCV中的cvSVD函数 cvSVD(A, s, u, v)。
+
+
+
+
+
+16、matlab中两矩阵左除 c = a / b 相当于OpenCV中的cvInvert、cvMatMul两函数即：cvInvert(a, d); cvMatMul(d, b, c)。
+
+
+
+
+
+17、matlab中的求矩阵的逆inv函数 A = inv(B) 相当于OpenCV中的cvInvert函数：cvInvert(B,A)。

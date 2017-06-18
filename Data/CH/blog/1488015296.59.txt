@@ -1,0 +1,152 @@
+（七）理解angular中的module和injector，即依赖注入依赖注入（DI）的好处不再赘言，使用过spring框架的都知道。angularjs作为前台js框架，也提供了对DI的支持，这是javascript/jquery不具备的特性。angularjs中与DI相关有angular.module()、angular.injector()、$injector、$provide。对于一个DI容器来说，必须具备3个要素：服务的注册、依赖关系的声明、对象的获取。比如spring中，服务的注册是通过xml配置文件的&lt;bean&gt;标签或是注解@Repository、@Service、@Controller、@Component实现的；对象的获取可以ApplicationContext.getBean()实现；依赖关系的声明，即可以在xml文件中配置，也可以使用@Resource等注解在java代码中声明。在angular中，module和$provide相当于是服务的注册；injector用来获取对象（angular会自动完成依赖的注入）；依赖关系的声明在angular中有3种方式。下面从这3个方面，介绍下angular的DI。
+
+
+   
+
+
+
+
+   1、angular.module()创建、获取、注册angular中的模块
+
+
+
+
+   Theangular.module()is
+ a global place for creating, registering and retrieving Angular modules.When passed two or more arguments, a new module is created. If passed only
+ one argument, an existing module (the name passed as the first argument tomodule)
+ is retrieved。
+
+
+   
+
+
+   // 传递参数不止一个,代表新建模块;空数组代表该模块不依赖其他模块
+var createModule = angular.module(&quot;myModule&quot;, []);
+
+// 只有一个参数(模块名),代表获取模块
+// 如果模块不存在,angular框架会抛异常
+var getModule = angular.module(&quot;myModule&quot;);
+
+// true,都是同一个模块
+alert(createModule == getModule);该函数既可以创建新的模块，也可以获取已有模块，是创建还是获取，通过参数的个数来区分。
+
+   
+
+
+   angular.module(name,[requires],[configFn]);
+
+
+   name：字符串类型，代表模块的名称；
+
+
+   requires：字符串的数组，代表该模块依赖的其他模块列表，如果不依赖其他模块，用空数组即可；
+
+
+   configFn：用来对该模块进行一些配置。
+
+
+
+
+
+
+   现在我们知道如何创建、获取模块了，那么模块究竟是什么呢？官方的Developer Guide上只有一句话：You can think of a module as a container for the different parts of your app – controllers, services, filters, directives, etc.现在我还不太理解，大致就是说模块是一些功能的集合，如控制器、服务、过滤器、指令等子元素组成的整体。现在解释不了，先遗留。
+
+
+   
+
+
+
+
+   2、$provide和模块的关系
+
+
+
+
+   The$provideservice
+ has a number of methods for registering components with the$injector.
+ Many of these functions are also exposed onangular.Module.
+
+
+   之前提到过：module和provide是用来注册服务到injector中的。查看官方的API，可以看到$provide提供了provide()、constant()、value()、factory()、service()来创建各种不同性质的服务；angular.Module中也提供了这5个服务注册方法。其实2者功能是完全一样的，就是用来向DI容器注册服务到injector中。
+
+
+   官方API下的auto有$provide和$injector，Implicit
+ module which gets automatically added to each $injector.按照字面意思是说，每一个injector都有这2个隐含的服务。但1.2.25版本中，感觉没有办法获取injector中的$provide。不知道这是为什么?一般来说也不需要显示使用这个服务，直接使用module中提供的API即可。
+
+
+   
+
+
+   var injector = angular.injector();
+alert(injector.has(&quot;$provide&quot;));//false
+alert(injector.has(&quot;$injector&quot;));//true
+
+3、angular.injector()
+
+   
+
+
+   使用angular.injector();也能获取到注入器，但是没有和模块绑定。这种做法是没有意义的，相当于是你创建了一个空的DI容器，里面都没有服务别人怎么用呢。正确的做法是，在创建注入器的时候，指定需要加载的模块。
+
+
+   
+
+
+   // 创建myModule模块、注册服务
+var myModule = angular.module(&#39;myModule&#39;, []);
+myModule.service(&#39;myService&#39;, function() {
+			this.my = 0;
+});
+
+// 创建herModule模块、注册服务
+var herModule = angular.module(&#39;herModule&#39;, []);
+herModule.service(&#39;herService&#39;, function() {
+			this.her = 1;
+});
+
+// 加载了2个模块中的服务
+var injector = angular.injector([&quot;myModule&quot;,&quot;herModule&quot;]);
+alert(injector.get(&quot;myService&quot;).my);
+alert(injector.get(&quot;herService&quot;).her);如果加载了多个模块，那么通过返回的injector可以获取到多个模块下的服务。这个例子中如果只加载了myMoudle，那么得到的injector就不能访问herMoudle下的服务。这里特别需要注意下：angular.injector()可以调用多次，每次都返回新建的injector对象。
+
+   
+
+
+   
+
+
+   var injector1 = angular.injector([&quot;myModule&quot;,&quot;herModule&quot;]);
+var injector2 = angular.injector([&quot;myModule&quot;,&quot;herModule&quot;]);
+
+alert(injector1 == injector2);//false
+
+4、angular中三种声明依赖的方式
+
+   
+
+
+   angular提供了3种获取依赖的方式：inference、annotation、inline方式。
+
+
+   
+
+
+   // 创建myModule模块、注册服务
+var myModule = angular.module(&#39;myModule&#39;, []);
+myModule.service(&#39;myService&#39;, function() {
+			this.my = 0;
+});
+
+// 获取injector
+var injector = angular.injector([&quot;myModule&quot;]);
+
+// 第一种inference
+injector.invoke(function(myService){alert(myService.my);});
+
+// 第二种annotation
+function explicit(serviceA) {alert(serviceA.my);};
+explicit.$inject = [&#39;myService&#39;];
+injector.invoke(explicit);
+
+// 第三种inline
+injector.invoke([&#39;myService&#39;, function(serviceA){alert(serviceA.my);}]);其中annotation和inline方式，对于函数参数名称没有要求，是推荐的做法；inference方式强制要求参数名称和服务名称一致，如果JS代码经过压缩或者混淆，那么功能会出问题，不建议使用这种方式。

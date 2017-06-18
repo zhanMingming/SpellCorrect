@@ -1,0 +1,33 @@
+OpenCv error ：unresolved external symbol（链接库没有加上）Error 如下：
+Linking...
+: error LNK2001: unresolved external symbol _cvDestroyWindow
+: error LNK2001: unresolved external symbol _cvLoadImage
+: error LNK2001: unresolved external symbol _cvReleaseCapture
+: error LNK2001: unresolved external symbol _cvReleaseImage
+: error LNK2001: unresolved external symbol _cvWaitKey
+: error LNK2001: unresolved external symbol _cvFlip
+: error LNK2001: unresolved external symbol _cvCopy
+: error LNK2001: unresolved external symbol _cvCreateImage
+: error LNK2001: unresolved external symbol _cvRetrieveFrame
+: error LNK2001: unresolved external symbol _cvGrabFrame
+: error LNK2001: unresolved external symbol _cvNamedWindow
+: error LNK2001: unresolved external symbol _cvCreateFileCapture
+: error LNK2001: unresolved external symbol _cvCreateCameraCapture
+: error LNK2001: unresolved external symbol _cvCreateMemStorage
+: error LNK2001: unresolved external symbol _cvLoad
+: error LNK2001: unresolved external symbol _cvShowImage
+: error LNK2001: unresolved external symbol _cvCircle
+: error LNK2001: unresolved external symbol _cvGetSeqElem
+: error LNK2001: unresolved external symbol _cvGetTickFrequency
+: error LNK2001: unresolved external symbol _cvHaarDetectObjects
+: error LNK2001: unresolved external symbol _cvGetTickCount
+: error LNK2001: unresolved external symbol _cvClearMemStorage
+: error LNK2001: unresolved external symbol _cvEqualizeHist
+: error LNK2001: unresolved external symbol _cvResize
+: error LNK2001: unresolved external symbol _cvCvtColor
+: fatal error LNK1120: 25 unresolved externals
+Error executing link.exe.
+- 26 error(s), 0 warning(s)
+
+Solution如下：
+Menu：Project-&gt;Settings，选择右边的link标签，在Object/library modules附加上 cxcore.lib cv.lib ml.lib cvaux.lib highgui.lib cvcam.lib，然后确定，重新编译、链接即可！

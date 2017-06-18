@@ -1,0 +1,174 @@
+加密算法之：对称加密与非对称加密扫盲贴对称加密：加密（encryption）与解密（decryption）使用的是同样的密钥（secret key）。加密和解密算法是公开的，秘钥必须严&#26684;保存，如果秘钥泄露，别人就能够用密文&#43;秘钥还原成你的明文。比如常见的DES/AES都是属于对称加密算法。优点：算法公开、计算量小、加密速度快、加密效率高。缺点：秘钥的管理和分发非常困难，不够安全。在数据传送前，发送方和接收方必须商定好秘钥，然后双方都必须要保存好秘钥，如果一方的秘钥被泄露，那么加密信息也就不安全了。另外，每对用户每次使用对称加密算法时，都需要使用其他人不知道的唯一秘钥，这会使得收、发双方所拥有的钥匙数量巨大，密钥管理成为双方的负担。
+
+
+   
+
+
+
+
+   下面的Utils类实现：字符串与UTF-8字节数组的相互转换，十六进制字符串与字节数组的相互转换。
+
+
+   import java.nio.charset.Charset;
+
+import javax.xml.bind.DatatypeConverter;
+
+public class Utils {
+
+	public static void main(String[] args) {
+		String input = &quot;abcdefghijklmnopqrstuvwxyz&quot;;
+		byte[] bytes = string2bytes(input);
+		System.out.println(input.equals(bytes2string(bytes)));
+
+		String hex = &quot;6162636465666768696A6B6C6D6E6F707172737475767778797A&quot;;
+		System.out.println(hex.equals(bytes2hex(bytes)));
+		
+		String decode = bytes2string(hex2bytes(hex));
+		System.out.println(decode.equals(input));
+	}
+
+	public static byte[] string2bytes(String str) {
+		return str.getBytes(Charset.forName(&quot;UTF-8&quot;));
+	}
+
+	public static String bytes2string(byte[] bytes) {
+		return new String(bytes, Charset.forName(&quot;UTF-8&quot;));
+	}
+
+	// Hexadecimal
+	public static String bytes2hex(byte[] encodedBytes) {
+		return DatatypeConverter.printHexBinary(encodedBytes);
+	}
+
+	public static byte[] hex2bytes(String hex) {
+		byte[] bytes = new byte[hex.length() / 2];
+		for (int i = 0; i &lt; bytes.length; i++) {
+			String oneByte = hex.charAt(i * 2) + &quot;&quot; + hex.charAt(i * 2 + 1);
+			bytes[i] = (byte) (Integer.parseInt(oneByte, 16) &amp; 0xff);
+		}
+		return bytes;
+	}
+}
+
+   
+
+
+   
+
+
+
+
+   下面是java平台AES算法的使用：
+
+
+   public class Test {
+	// AES比DES更安全
+	private static final String ALGORITHM = &quot;AES&quot;;
+	
+	// &quot;算法/工作模式/填充方式&quot;
+	private static final String TRANSFORMATION = &quot;AES/ECB/PKCS5Padding&quot;;
+
+	public static void main(String[] args) throws Exception {
+		String plainText = &quot;date with me.&quot;;
+		System.out.println(&quot;明文:&quot; + plainText);
+
+		byte[] plainBytes = Utils.string2bytes(plainText);
+
+		Key secretKey = generateSecretKey();
+		System.out.println(&quot;秘钥:&quot; + Utils.bytes2hex(secretKey.getEncoded()));
+
+		byte[] cipherBytes = encrypt(plainBytes, secretKey);
+		System.out.println(&quot;密文:&quot; + Utils.bytes2hex(cipherBytes));
+
+		System.out.println(&quot;解密:&quot; + Utils.bytes2string(decrypt(cipherBytes, secretKey)));
+	}
+
+	// 生成加密秘钥
+	public static Key generateSecretKey() throws Exception {
+		KeyGenerator kenGenerator = KeyGenerator.getInstance(ALGORITHM);
+		// 128位秘钥
+		kenGenerator.init(128);
+		SecretKey secretKey = kenGenerator.generateKey();
+		byte[] encodedBytes = secretKey.getEncoded();
+		return new SecretKeySpec(encodedBytes, ALGORITHM);
+	}
+
+	// 加密
+	public static byte[] encrypt(byte[] plainData, Key key) throws Exception {
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+		cipher.init(Cipher.ENCRYPT_MODE, key);
+		return cipher.doFinal(plainData);
+	}
+
+	// 解密
+	public static byte[] decrypt(byte[] cipherDate, Key key) throws Exception {
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+		cipher.init(Cipher.DECRYPT_MODE, key);
+		return cipher.doFinal(cipherDate);
+	}
+
+}
+
+
+
+
+
+   
+
+非对称加密算法需要两个密钥来进行加密和解密，这两个秘钥是公开密钥（简称公钥）和私有密钥（简称私钥），即常说的“公钥加密，私钥加密”或“私钥加密，公钥加密”。私钥只能由一方安全保管，不能外泄，而公钥则可以发给任何请求它的人。非对称加密使用这对密钥中的一个进行加密，而解密则需要另一个密钥。比如，你向银行请求公钥，银行将公钥发给你，你使用公钥对消息加密，那么只有私钥的持有人--银行才能对你的消息解密。与对称加密不同的是，银行不需要将私钥通过网络发送出去，因此安全性大大提高。优点：安全性更高，公钥是公开的，秘钥是自己保存的，不需要将私钥给别人。缺点：加密和解密花费时间长、速度慢，只适合对少量数据进行加密。比如RSA就是最常用的非对称加密算法。
+
+   
+
+
+
+
+   java平台使用RSA的方式如下，运行下面程序可以明显感觉到RSA挺慢的。
+
+
+   import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+
+import javax.crypto.Cipher;
+
+public class Test {
+	private static final String ALGORITHM = &quot;RSA&quot;;
+	private static final String TRANSFORMATION = &quot;RSA/ECB/PKCS1Padding&quot;;
+
+	public static void main(String[] args) throws Exception {
+		String plainText = &quot;date with me.&quot;;
+		KeyPair keyPair = generateKeyPair();
+		
+		byte[] bytesUsePublicKey = encrypt(Utils.string2bytes(plainText), keyPair.getPublic());
+		System.out.println(Utils.bytes2string(decrypt(bytesUsePublicKey, keyPair.getPrivate())));
+		
+		byte[] bytesUsePrivateKey = encrypt(Utils.string2bytes(plainText), keyPair.getPrivate());
+		System.out.println(Utils.bytes2string(decrypt(bytesUsePrivateKey, keyPair.getPublic())));
+	}
+	
+	public static KeyPair generateKeyPair() throws Exception
+	{
+		// 产生一个RSA密钥生成器KeyPairGenerator
+		KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ALGORITHM);
+		keyGen.initialize(1024);
+		KeyPair keyPair = keyGen.generateKeyPair();
+		return keyPair;
+	}
+
+	private static byte[] encrypt(byte[] originalBytes, Key publicOrPrivateKey) throws Exception
+	{
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+		cipher.init(Cipher.ENCRYPT_MODE, publicOrPrivateKey);
+		byte[] cipherBytes = cipher.doFinal(originalBytes);
+		return cipherBytes;
+	}
+
+	private static byte[] decrypt(byte[] cipherBytes, Key publicOrPrivateKey) throws Exception 
+	{
+		Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+		cipher.init(Cipher.DECRYPT_MODE, publicOrPrivateKey);
+		byte[] originalBytes = cipher.doFinal(cipherBytes);
+		return originalBytes;
+	}
+
+}

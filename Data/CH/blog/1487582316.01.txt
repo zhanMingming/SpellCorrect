@@ -1,0 +1,186 @@
+中国压缩传感资源（China Compressive Sensing Resources）一、引论与综述
+
+   1 石光明，刘丹华，高大化，刘哲，林杰，王良君，压缩感知理论及其研究进展，http://www.cqvip.com/qk/90131x/200905/30412489.html
+
+   2 李树涛，魏丹，压缩传感综述，http://www.aas.net.cn/qikan/manage/wenzhang/2008-0751.pdf
+
+   3 喻玲娟，谢晓春，压缩感知理论简介，http://d.wanfangdata.com.cn/Periodical_dsjs200812005.aspx
+
+   4 沙威，压缩传感引论，http://www.eee.hku.hk/~wsha/Freecode/Files/Compressive_Sensing.pdf
+
+   5 Dai Qi and Wei E.I. Sha, The Physics of Compressive Sensing and the Gradient-Based Recovery Algorithms,http://arxiv.org/abs/0906.1487
+
+   理论分析与观测矩阵二、理论分析与观测矩阵
+
+   1 方红，章权兵，韦穗，基于非常稀疏随机投影的图像重建方法，http://d.wanfangdata.com.cn/Periodical_jsjgcyyy200722008.aspx
+
+   2 方红，章权兵，韦穗，基于亚高斯随机投影的图像重建方法，http://d.wanfangdata.com.cn/Periodical_jsjyjyfz200808016.aspx
+
+   3 Lianlin Li, Yin Xiang, and Fang Li, Theoretical Analysis of Compressive Sensing via Random Filter,http://arxiv.org/abs/0811.0152
+
+   4 Xiao Z. Wang and Wei E.I. Sha, Random Sampling Using Shannon Interpolation and Poisson Summation Formulae,http://arxiv.org/abs/0909.2292
+
+   三、恢复算法
+
+   1 方红，章权兵，韦穗，改进的后退型最优正交匹配追踪图像重建方法，http://d.wanfangdata.com.cn/Periodical_hnlgdxxb200808005.aspx
+
+   2 傅迎华，可压缩传感重构算法与近似QR分解，http://epub.cnki.net/grid2008/detail.aspx?filename=JSJY200809033&amp;dbname=CJFQ2008
+
+   3 Lianlin Li and Fang Li, Novel Algorithm for Sparse Solutions to Linear Inverse Problems with Multiple Measurements,http://arxiv.org/abs/0905.3245
+
+   4 Lianlin Li and Fang Li, A Novel Algorithm for Compressive Sensing: Iteratively Reweighed Operator Algorithm (IROA) ,http://arxiv.org/abs/0903.4939
+
+   5 Yin Xiang, Lianlin Li, Fang Li, Compressive sensing by white random convolution,http://arxiv.org/abs/0909.2737v1
+
+   6 范晓维，刘哲，刘灿，分块可压缩传感的图像重构模型，http://dlib.cnki.net/kns50/detail.aspx?QueryID=17&amp;CurRec=1
+
+   7 谢志鹏，迭代式正交匹配追踪及稀疏解，http://epub.cnki.net/grid2008/detail.aspx?filename=WXYJ200910015&amp;dbname=CJFD2009
+
+   8 张慧，成礼智，A~-线性Bregman迭代算法，http://epub.cnki.net/grid2008/detail.aspx?filename=JSSX201001010&amp;dbname=CJFDTEMP
+
+   四、信号与图像处理
+
+   1 李波，谢杰镇，王博亮，基于压缩传感理论的数据重建，http://epub.cnki.net/grid2008/detail.aspx?filename=WJFZ200905006&amp;dbname=CJFQTEMP
+
+   2 宋琳，曹吉海，基于随机滤波的雷达信号采样和目标重建方法，http://d.wanfangdata.com.cn/Periodical_kjdb200813014.aspx
+
+   3 Jianwei Ma, Compressed sensing by inverse scale space and curvelet thresholding,http://dsp.rice.edu/files/cs/Iss_Curvelet.pdf
+
+   4 Wen Tang, Jianwei Ma, and Felix J. Herrmann, Optimized compressed sensing for curvelet-based seismic data reconstruction,http://dsp.rice.edu/files/cs/OPCRSI3.pdf
+
+   5 Jianwei Ma, Improved iterative curvelet thresholding for compressed sensing,http://dsp.rice.edu/files/cs/ISTcs2.pdf
+
+   6 Gerlind Plonka and Jianwei Ma, Curvelet-wavelet regularized split bregman iteration for compressed sensing,http://www.uni-due.de/~hm0029/pdfs/SPB_IST7.pdf
+
+   7 练秋生，郝鹏鹏，基于压缩传感和代数重建法的CT图像重建，http://epub.cnki.net/grid2008/detail.aspx?filename=GXJS200903029&amp;dbname=CJFQ2009
+
+   8 方红，王年，章权兵，韦穗，基于稀疏贝叶斯学习的图像重建方法，http://d.wanfangdata.com.cn/Periodical_zgtxtxxb-a200906009.aspx
+
+   9 刘丹华，石光明，周佳社，高大化，吴家骥，基于Compressed Sensing框架的图像多描述编码方法，http://epub.cnki.net/grid2008/detail.aspx?filename=HWYH200904013&amp;dbname=CJFDTEMP
+
+   10 刘长红，杨扬，陈勇，基于压缩传感的手写字符识别方法，http://epub.cnki.net/grid2008/detail.aspx?filename=JSJY200908017&amp;dbname=CJFDTEMP
+
+   11 练秋生，高彦彦，陈书贞，基于两步迭代收缩法和复数小波的压缩传感图像重构，http://d.wanfangdata.com.cn/Periodical_yqyb200907017.aspx
+
+   12 刘兆霆，何劲，刘中，基于压缩感知的高分辨频率估计，http://dlib.cnki.net/kns50/detail.aspx?QueryID=90&amp;CurRec=1
+
+   13 侯颖妮，李道京，洪文，基于稀疏阵列和压缩感知理论的艇载雷达运动目标成像研究，http://dlib.cnki.net/kns50/detail.aspx?QueryID=90&amp;CurRec=2
+
+   14 李林，孔令富，练秋生，基于轮廓波维纳滤波的图像压缩传感重构，http://epub.cnki.net/grid2008/detail.aspx?filename=YQXB200910008&amp;dbname=CJFD2009
+
+   15 李鹏飞，刘红，程鸿，一种单检测器图像信号检测系统的设计，http://epub.cnki.net/grid2008/detail.aspx?filename=ZDYB200908023&amp;dbname=CJFD2009
+
+   16 李昌利，欠定盲源分离的稀疏分量分析方法，http://epub.cnki.net/grid2008/detail.aspx?filename=SHDX200904017&amp;dbname=CJFD2009
+
+   17 X. Qu, X. Cao, D. Guo, C. Hu, and Z. Chen, Combined sparsifying transforms for compressed sensing MRI,http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&amp;id=ELLEAK000046000002000121000001&amp;idtype=cvips&amp;gifs=Yes&amp;ref=no
+
+   18 郭海燕，杨震，基于近似KLT域的语音信号压缩感知，http://epub.cnki.net/grid2008/detail.aspx?filename=DZYX200912032&amp;dbname=CJFDTEMP
+
+   19 Jianwei Ma, Compressed sensing for surface characterization and metrology, IEEE Transactions on Instrumentation and Measurement, 2009, to appear.http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5272200&amp;tag=1
+
+   20 Gang Tang, R. Shahidi, Jianwei Ma, Felix Herrmann, Two dimensional stochastic sampling schemes for curvelet based seismic data recovery, Geophysical Prospecting, revised submitted, 2009.http://slim.eos.ubc.ca/index.php?module=articles&amp;func=display&amp;catid=18&amp;aid=296
+
+   21 Jianwei Ma, Compressed sensing by iterative thresholding of geometric wavelets: a comparing study, Int. J. Wavelet, Multiresolution and Information Process., 2009, to appear.
+
+   22 郭军伟，应用CS理论实现同步采样压缩成像，http://chineseoptics.net.cn/qikan/manage/wenzhang/1674-2915(2009)06-0525-06.pdf
+
+   23 李杰，程旺宗，基于压缩传感的背景差分方法研究，http://epub.cnki.net/grid2008/detail.aspx?filename=DNZS201002068&amp;dbname=CJFDTEMP
+
+   24 苏晓园，练秋生，基于迭代收缩法和三维复数小波的视频压缩传感重构，http://epub.cnki.net/grid2008/detail.aspx?filename=GDGC201002023&amp;dbname=CJFDTEMP
+
+   25 赵瑞珍，刘晓宇，LI ChingChung，SCLABASSI Robert J，孙民贵，基于稀疏表示的小波去噪，http://epub.cnki.net/grid2008/detail.aspx?filename=PZKX201001005&amp;dbname=CJFDTEMP
+
+   物理、化学、与其它
+
+   
+
+   五、物理、化学、与其它
+
+   1 Lianlin Li, Wenji Zhang, and Fang Li, Compressive Diffraction Tomography for Weakly Scattering,http://arxiv.org/abs/0904.2695
+
+   2 Lianlin Li, Wenji Zhang, Yin Xiang, and Fang Li, The Design of Compressive Sensing Filter,http://arxiv.org/abs/0811.2637
+
+   3 Lianlin Li, Wenji Zhang, and Yin Xiang, The Design of Sparse Antenna Array,http://arxiv.org/abs/0811.0705
+
+   4 Jianwei Ma and Francois-Xavier Le Dimet, Deblurring from highly incomplete measurements for remote sensing,http://dsp.rice.edu/files/cs/CS_Deblurring.pdf
+
+   5 Jianwei Ma, Single-pixel remote sensing,http://dsp.rice.edu/files/cs/GRSL.pdf
+
+   6 肖龙帅，黄华，夏建刚，李灵，压缩传感方位估计，http://epub.cnki.net/grid2008/detail.aspx?filename=TXJS200911070&amp;dbname=CJFD2009
+
+   7 杨璋，程旺宗，基于CS理论的LFM信号DOA估计，http://epub.cnki.net/grid2008/detail.aspx?filename=JSYJ200912066&amp;dbname=CJFDTEMP
+
+   8 汪振兴，杨涛，胡波，基于互信息的分布式贝叶斯压缩感知，http://epub.cnki.net/grid2008/detail.aspx?filename=ZKJD200910009&amp;dbname=CJFD2009
+
+   9 Jianwei Ma, A single-pixel imaging system for remote sensing using two-step iterative curvelet thresholding, IEEE Geoscience and Remote Sensing Letters, 2009, 6 (4), 676-680http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5159504&amp;tag=1
+
+   10 程旺宗，王建英，尹忠科，谭亲林，一种DOA估计新方法，http://d.wanfangdata.com.cn/Periodical_jsjyyyj200910101.aspx
+
+   11 陈书贞，张亚静，练秋生，OFDM系统中基于压缩传感理论的信道估计算法，http://epub.cnki.net/grid2008/detail.aspx?filename=XXCN201001031&amp;dbname=CJFDTEMP
+
+   12 余慧敏，方广有，压缩感知理论在探地雷达三维成像中的应用，http://epub.cnki.net/grid2008/detail.aspx?filename=DZYX201001005&amp;dbname=CJFDTEMP
+
+   13 胡海峰，杨震，无线传感器网络中基于空间相关性的分布式压缩感知，http://epub.cnki.net/grid2008/detail.aspx?filename=NJYD200906002&amp;dbname=CJFD2009
+
+   14 张先玉，刘郁林，王开，超宽带通信压缩感知信道估计与信号检测方法，http://epub.cnki.net/grid2008/detail.aspx?filename=XAJT201002017&amp;dbname=CJFDTEMP
+
+   15 屈乐乐，黄琼，方广有，基于压缩感知的频率步进探地雷达成像算法，http://epub.cnki.net/grid2008/detail.aspx?filename=XTYD201002020&amp;dbname=CJFDTEMP
+
+   
+
+   六、博客分享
+
+   1 李廉林，http://to-cs.blog.sohu.com/
+
+   2 马坚伟，http://www.dynamics.tsinghua.edu.cn/dynctr/faculty/teacher.asp?id=36
+
+   3 桂冠，http://guiuestc.blog.sohu.com/
+
+   4 刘翼鹏，http://hi.baidu.com/yipengliu/blog
+
+   5 沙威，http://spaces.msn.com/waveletlegend
+
+   
+
+   程序与软件包
+
+   七、程序与软件包
+
+   1 正交匹配算法为信号重建，沙威，http://www.eee.hku.hk/~wsha/Freecode/Files/CS_OMP.rar
+
+   2 图像压缩传感通过正交匹配追踪和正交小波变换，沙威，http://www.eee.hku.hk/~wsha/Freecode/Files/Wavelet_OMP.zip
+
+   
+
+   中国压缩传感资源（China Compressive Sensing Resources）http://bbs.matwav.com/viewthread.php?tid=861902Compressed Sensing Theory
+
+   http://home.ustc.edu.cn/~zhanghan/cs/cs.html杨俊锋：http://math.nju.edu.cn/~jfyang/研学论坛http://bbs.matwav.com/index.php
+
+   
+
+
+======================================
+稀疏性与L1范数
+   
+
+   
+
+   Sparse大家并不陌生，是个经典话题了。而此时sparse已经卷土重来，虽然还是那一锅汤，但是药已经换了。以L1-minimization为核心的算法，近几年飞速进展，Compressive Sensing(Compressive Sampling)已然成为数学领域和信号处理最前沿最热门的方向。最近一年多这种新形式的算法快速蔓延到模式识别界应用，论文质量高、算法效果好、而且算法一般都非常简单。而这仅仅是个开始，所以我一直有这个想法专开一贴，供大家一起讨论、共同进步，今天付诸与行动，希望大家支持。在这个地方（第一个帖），我会陆续更新提供一些这方面的材料，供大家了解。如果大家提供了有趣的材料，我也尽量加进来。当然，此贴重点还是放在理论应用和模式识别上。大家踊跃发言啊！Compressive Sensing资源主页：Compressive Sensing Resources（最权威最全面的Compressive Sensing资源主页，几乎什么都能找的到）；Compressive Sensing（和上面的差不多）；Compressive Sensing Listing；马毅的课程主页Compressive Sensing Videos；Compressed Sensing Codes（还有Compressive Sensing Resources的Software一栏中）；Nuit Blanche；Compressive Sensing: The Big Picture；Terence Tao'sWhat's new;
+
+   Bayesian Compressive Sensing;
+
+   Richard Baraniuk
+
+   理论方面的代表人物：David Donoho;Emmanuel Candes;Terence TaoTutorialsDavid Donoho,Compressed Sensing. (Technical Report)
+
+   Emmanuel Candès,Compressive sampling. (Int. Congress of Mathematics, 3, pp. 1433-1452, Madrid, Spain, 2006)Richard Baraniuk,Compressive sensing. (IEEE Signal Processing Magazine, 24(4), pp. 118-121, July 2007)Emmanuel Candès and Michael Wakin,An introduction to compressive sampling. (IEEE Signal Processing Magazine, 25(2), pp. 21 - 30, March 2008)Justin Romberg,Imaging via compressive sampling. (IEEE Signal Processing Magazine, 25(2), pp. 14 - 20, March 2008)Conferences and SymposiumsShort Course:Sparse Representations and High Dimensional Geometry, May 30 - June 1, 2007New Directions Short Course:Compressive Sampling and Frontiers in Signal Processing, June 4 - 15, 2007（介绍性的资料和视频）理论方面的代表文献：Donoho和Candes的文章几乎都是经典，Terence Tao也值得关注，华裔数学新星模式识别领域的应用（包括机器视觉）：大家可以去Compressive Sensing Resources看Statistical Signal Processing, Machine Learning, Bayesian Methods, Applications of Compressive Sensing等栏目马毅的一系列论文John Wright, Allen Yang, Arvind Ganesh, Shankar Shastry, and Yi Ma,Robust face recognition via sparse representation. (To appear in IEEE Trans. on Pattern Analysis and Machine Intelligence) , 2008Allen Yang, John Wright, Yi Ma, and Shankar Sastry,Feature selection in face recognition: A sparse representation perspective. (Preprint, 2007)Kwak, N.,Principal Component Analysis Based on L1-Norm Maximization, IEEE Transactions on Pattern Analysis and Machine Intelligence, 2008.Bhusnurmath, Arvind; Taylor, Camillo J.,Graph Cuts via $ell_1$ Norm Minimization, IEEE Transactions on Pattern Analysis and Machine Intelligence, 2008.Jianchao Yang, John Wright, Thomas Huang, and Yi Ma,Image Super-Resolution as Sparse Representation of Raw Image Patches, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), June 2008.Arvind Ganesh, Zihan Zhou, and Yi Ma, Separation of A Subspace-Sparse Signal: Algorithms and Conditions, ICASSP 2009.
+
+   
+
+   
+
+   Rice大学的的压缩感知资源：http://dsp.rice.edu/cs
+
+   
+
+   压缩感知相关问题讨论交流，请加新浪微博Sophia_qing

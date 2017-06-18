@@ -1,0 +1,28 @@
+Ubuntu vpn pptp客户端搭建过程中错误解决需要翻墙下载webrtc代码编译，虽然在自己的digitalocean VPS上编译通过了，但是本地没有完整的环境始终没有安全感。于是安装一个Ubuntu64位虚拟机（一定要64位，否则webrtc编译过程会失败），VPS上搭建一个pptp服务器，Ubuntu通过vpn下载代码来编译。过程遇到一些问题，简单记录一下。
+
+vpn服务端的搭建没有难度，搭建完成后在mac和windows上马上可以使用。虚拟机上搭建vpn客户端就碰到了很多的问题。
+
+VPN搭建过程：
+
+   安装pptp客户端软件
+apt-getinstallpptp-linux
+
+创建vpn连接通道：
+pptpsetup--createmyvpn--serverxxx.xxx.xxx.xxx--usernamexx1--passwordxx2--encrypt--start
+
+遇到第一个问题：连接一直无法成功，提示modem hangup。后来查看日志是客户端发送请求一直没有收到响应。查找原因发现是我的虚拟机设置的是nat模式连接网络。改成桥接就好了。
+
+开启vpn客户端：
+pon myvpn
+
+
+修改路由设置：
+~sudoiproutedeldefault~sudoiprouteadddefaultdevppp0
+
+
+然后发现，ping外网ip都可以ping通，但是ping网址就是失败，应该是DNS的问题。服务端应该没有问题的，因为用mac是可以访问的。问题出在客户端。查看本地dns配置，找到原因，本地dns配置的本地的内部ip地址做DNS。修改为一个可用dns即可：
+修改 /etc/resolv.conf 为nameserver127.0.0.1nameserver8.8.8.8
+
+
+
+最终OK.

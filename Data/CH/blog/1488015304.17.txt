@@ -1,0 +1,133 @@
+guava-retrying重试工具库: 什么时候终止当我们重试到一定阶段的时候，需要终止重试过程，比如重试了n次或者重试了n秒等。
+
+
+   
+
+
+
+
+   StopStrategies.stopAfterAttempt(n)：在重试了n次后终止，这个实际中最常用。
+
+
+   import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+public class TestStop {
+
+    private static final SimpleDateFormat df = new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss,SSS&quot;);
+
+    private static Callable&lt;Void&gt; task = new Callable&lt;Void&gt;() {
+ @Override
+ public Void call() throws Exception {
+     System.out.println(df.format(new Date()));
+     throw new RuntimeException();
+ }
+    };
+
+    public static void main(String[] args) throws Exception {
+ // 每次间隔1s后重试
+ Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+  .retryIfException()
+  .withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+  .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+  //.withStopStrategy(StopStrategies.neverStop())
+  //.withStopStrategy(StopStrategies.stopAfterDelay(10, TimeUnit.SECONDS))
+  .build();
+
+ System.out.println(&quot;begin...&quot; + df.format(new Date()));
+
+ try {
+     retryer.call(task);
+ } catch (Exception e) {
+     System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+ }
+
+ System.out.println(&quot;end...&quot; + df.format(new Date()));
+    }
+}
+
+   
+
+
+   
+
+
+
+
+   StopStrategies.neverStop()：从不终止，一直重试，没有什么实际用处。
+
+
+   
+
+
+
+
+   StopStrategies.stopAfterDelay(10, TimeUnit.SECONDS)：一直重试，指定时间过后终止。
+
+
+
+
+   
+
+
+
+
+   guava-retrying提供了StopStrategy接口，我们可以实现自己想要的终止逻辑。
+
+
+
+
+   
+
+
+
+
+   
+
+
+   import com.github.rholder.retry.Attempt;
+import com.github.rholder.retry.StopStrategy;
+
+public class MyStopStrategy implements StopStrategy {
+
+    private int attemptCount;
+
+    public MyStopStrategy() {
+ this.attemptCount = (int) Math.floor(Math.random() * 10) + 1;
+ System.out.println(&quot;重试&quot; + attemptCount + &quot;后终止&quot;);
+    }
+
+
+    @Override
+    public boolean shouldStop(Attempt failedAttempt) {
+ return failedAttempt.getAttemptNumber() == attemptCount;
+    }
+}
+
+   
+
+
+   
+
+
+
+下面我们使用自己实现的终止策略，重试1~11间的随机次数后终止。
+
+
+   Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+		.retryIfException()
+		.withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+		.withStopStrategy(new MyStopStrategy())
+		.build();
+try {
+	retryer.call(task);
+} catch (Exception e) {
+	System.err.println(&quot;still failed after retry.&quot; + e.getCause().toString());
+}

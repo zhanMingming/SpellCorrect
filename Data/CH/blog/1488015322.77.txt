@@ -1,0 +1,100 @@
+maven hello world: 使用maven前的一些配置和命令行创建一个webapp项目maven的下载和安装就不多说了，很容易也不会遇到什么问题，我使用的是maven3.3.3版本。本文主要介绍下，我在使用maven遇到的一些问题。
+
+
+   maven安装成功后，我们可以通过命令行来创建第一个webapp项目：
+
+
+   mvn archetype:create -DgroupId=net.aty.springmvc -DartifactId=SpringMvcDemo -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+
+   
+
+
+   
+
+
+
+结果发现命令行一直处在下面这种状态，webapp不能创建成功：
+
+   
+
+
+
+
+   这是因为，我们安装完maven后并没有配置setting.xml，那么maven默认使用的是中央仓库，在中国访问中央仓库显然不明智，网速极慢近乎不可用。所以我们必须配置一个镜像：
+
+
+   &lt;mirror&gt;    
+	&lt;id&gt;aliyun&lt;/id&gt;    
+	&lt;mirrorOf&gt;central&lt;/mirrorOf&gt;    
+	&lt;name&gt;a mirror of maven default center repository&lt;/name&gt;    
+	&lt;url&gt;http://maven.aliyun.com/nexus/content/groups/public/&lt;/url&gt;    
+&lt;/mirror&gt;
+
+   
+
+
+
+我试过这个镜像地址，速度也挺快，最重要的是上面的jar比较全而且更新很快，有些镜像地址上面的jar版本太老，挑选镜像的时候，这个要注意些。
+
+   
+
+
+
+
+   配置完镜像后，执行上述命令，发现可以还是失败，这不是因为网络问题。
+
+
+   
+
+
+
+
+
+
+   在网上找到了答案：maven3后，我们创建项目要使用generate，而是create，所以改成下面的命令：
+
+
+   mvn archetype:generate -DgroupId=net.aty.springmvc -DartifactId=SpringMvcDemo -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+
+
+
+
+   
+
+
+   这部比较慢，等等一段时间可以发现：能够成功创建webapp。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   创建成功我们在SpringMvcDemo项目根目录下执行：mvn eclipse:eclipse后就可以用eclipse导入项目了。但是有一个问题：项目使用的竟然是JDK1.5，而我本机上装的是JDK7。
+
+
+   
+
+
+
+
+   所以我们需要再次修改setting.xml，让maven默认使用比较新的JDK7：
+
+
+   &lt;profile&gt;  
+	&lt;id&gt;jdk-1.7&lt;/id&gt;  
+	&lt;activation&gt;  
+		  &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;  
+		  &lt;jdk&gt;1.7&lt;/jdk&gt;  
+	&lt;/activation&gt;  
+	&lt;properties&gt;  
+		&lt;maven.compiler.source&gt;1.7&lt;/maven.compiler.source&gt;  
+		&lt;maven.compiler.target&gt;1.7&lt;/maven.compiler.target&gt;  
+		&lt;maven.compiler.compilerVersion&gt;1.7&lt;/maven.compiler.compilerVersion&gt;  
+	&lt;/properties&gt;  
+&lt;/profile&gt;

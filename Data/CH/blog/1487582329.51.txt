@@ -1,0 +1,26 @@
+LDA -Gibbs抽样LDA的训练有两种，一个是variational inference，一个是Gibbs抽样。
+Dirichlet先验，反映到Gibbs抽样方式的训练过程上，可以认为是给隐含主题和词的同现计数加上一个简单的Laplacian平滑(Laplacian平滑就是把所有&#20540;都加上一个比较小的数字然后再重新归一化)。而GibbsSampling有一个问题，就是每次采样都需要更新全局信息，基本没有机会做真正意义上的并行化，只能做一个GibbsSampling的近&#20284;。
+那么若利用MapReduce实现，怎样的近&#20284;方法好呢？
+
+   
+斯坦福的ScalaNLP项目&#20540;得一看：
+
+
+   
+http://nlp.stanford.edu/javanlp/scala/scaladoc/scalanlp/cluster/DistributedGibbsLDA$object.html
+
+
+   
+另外还有NIPS2007的论文：
+
+
+   
+Distributed Inference for Latent DirichletAllocation http://books.nips.cc/papers/files/nips20/NIPS2007_0672
+
+
+   
+ICML2008的论文：
+
+
+   
+Fully Distributed EM for Very Large Datasetshttp://www.cs.berkeley.edu/~jawolfe/pubs/08-icml-em

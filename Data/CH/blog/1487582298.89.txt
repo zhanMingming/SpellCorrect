@@ -1,0 +1,249 @@
+C++ call matlab on &lt;mac + xcode &gt;本文讲解如何在mac+xcode上用C/C++调用matlab，并给出一个极简单的应用，kmeans.
+--------------------------------------------
+Catelog
+env：matlab 2013+Xcode 4.6+Mac 10.8 （x86-64）
+1. 终端下跑matlab例程
+2. xcode下跑例程
+3. kmeans of matlab under C
+4. 利用XCode进行Exception精确定位
+
+   
+
+   
+
+--------------------------------------------
+1. 终端下跑matlab例程：
+
+   
+
+   
+
+
+   
+
+   我们的目标是：跑通/Applications/MATLAB_R2013a.app/extern/examples/eng_mat/engdemo.cpp
+
+   1）修改mac环境变量$PATH &amp; $DYLD_LIBRARY_PATH
+
+   终端下：
+
+   
+
+   export PATH='/Applications/MATLAB_R2013a.app/bin':$PATH
+echo $PATH
+
+export DYLD_LIBRARY_PATH='/Applications/MATLAB_R2013a.app/bin/maci64:/Applications/MATLAB_R2013a.app/sys/os/maci64':$DYLD_LIBRARY_PATH
+echo $DYLD_LIBRARY_PATH其中echo命令用来查看$PATH &amp; $DYLD_LIBRARY_PATH的修改值。这样可以在该终端下修改$PATH &amp; $DYLD_LIBRARY_PATH，但是永久性修改还需要把你要添加的环境变量添加到你主目录下面的.profile或者.bash_profile，如果存在添加进去即可，如果没有生成一个。PS:mac和linux终端一般用bash来进行解析。当bash在读完了整体环境变量的/etc/profile并借此调用其他配置文件后，接下来则是会读取用户自定义的个人配置文件。bash读取的文件总共有三种：
+   
+
+   　　~/.bash_profile　　~/.bash_login 　　~/.profile
+
+   　　其实bash再启动是只读上面文件的一个，而读取的顺序则是依照上面的顺序。也就是说读到bash_profile就不读后面的了，如果bash_profile不存在，后面的才能有机会。
+
+   ok，修改过profile之后，注销，重新login就会修改$PATH 和 $DYLD_LIBRARY_PATH了。
+
+   2） 跑demo
+
+   
+
+   cd /Applications/MATLAB_R2013a.app/extern/examples/eng_mat
+g++ -o engdemo_terminal engdemo.cpp -I/Applications/MATLAB_R2013a.app/extern/include/ -L/Applications/MATLAB_R2013a.app/bin/maci64 -leng -lmx -lm -lmat -lut -lstdc++
+matlab不同版本的要去修改include和link的目录。
+   
+
+   可以看到link的几个动态链接库（mac下为.dylib,相当于windows下的dll），eng (libeng.dylib)，mx（libmx.dylib），m（libm.dylib），mat（libmat.dylib），ut（libut.dylib），stdc++(标准链接库)分别在/usr/lib/ 和/Applications/MATLAB_R2013a.app/bin/maci64下。
+
+   编译完成，运行：
+
+   
+
+   ./engdemo_terminal
+结果：
+   
+
+   
+
+   运行shell code和在一起就是这样：
+
+   
+
+   cd /Applications/MATLAB_R2013a.app/extern/examples/eng_mat
+
+export PATH='/Applications/MATLAB_R2013a.app/bin':$PATH
+echo $PATH
+
+export DYLD_LIBRARY_PATH='/Applications/MATLAB_R2013a.app/bin/maci64:/Applications/MATLAB_R2013a.app/sys/os/maci64':$DYLD_LIBRARY_PATH
+echo $DYLD_LIBRARY_PATH
+
+g++ -o engdemo_terminal engdemo.cpp -I/Applications/MATLAB_R2013a.app/extern/include/ -L/Applications/MATLAB_R2013a.app/bin/maci64 -leng -lmx -lm -lmat -lut -lstdc++
+./engdemo_terminal
+
+
+
+--------------------------------------------
+2. xcode下跑例程
+
+
+
+
+   
+
+   
+
+   1）配置项目属性如下：（项目名没改，本来是测试mysql的，不要怀疑我是脑残贴错图……囧）
+
+   include:
+
+   
+
+   library:
+
+   
+
+   link:(符号链接)
+
+   
+
+   动态链接库：
+
+   
+
+   
+
+   这里注意要将/Applications/MATLAB_R2013a.app/bin/maci64下的.dyilb文件都copy到目标文件夹下，不然会报错诸如
+
+   
+
+   
+
+   dyld: Library not loaded: @rpath/libeng.dylib
+  Referenced from: /Users/mba/Library/Developer/Xcode/DerivedData/mysqlTest-enzwyvjtfdmbfnebxteublhyjhrd/Build/Products/Release/mysqlTest
+  Reason: image not found
+   
+
+   或者
+
+   
+
+   dyld: Library not loaded: @rpath/libut.dylib
+  Referenced from: /Users/mba/Library/Developer/Xcode/DerivedData/mysqlTest-enzwyvjtfdmbfnebxteublhyjhrd/Build/Products/Release/mysqlTest
+  Reason: image not found
+   
+
+   另外注意，/Applications/MATLAB_R2013a.app/extern/lib/maci64下的fexport.map,mexFunction.map和mexLibrary.map三个map文件是用不到的。
+
+   
+
+   2）更改Debug模式为Release
+
+   因为matlab给出的接口是release的，所以我们的项目也要相应改成release的。
+
+   
+
+   
+
+   
+
+   
+
+
+
+--------------------------------------------
+3. kmeans of matlab under C
+
+
+
+
+   
+
+   
+
+   代码涉及matlab engine的创建，mex类型的创建，C基本数据类型（double）与matlab mx类型的相互转换，以及如何利用kmeans进行聚类。
+
+   
+
+   //
+//  main.cpp
+//  mysqlTest
+//
+//  Created by Rachel on 13-12-6.
+//  Copyright (c) 2013年 ZJU. All rights reserved.
+//
+
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &quot;engine.h&quot;
+#define  BUFSIZE 256
+
+int main()
+
+{
+    printf(&quot;test\n&quot;);
+	Engine *ep;//matlab engine
+	mxArray *T = NULL, *result = NULL;
+	char buffer[BUFSIZE+1];
+	double time[10] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+    
+	/*
+	 * Call engOpen with a NULL string. This starts a MATLAB process
+     * on the current host using the command &quot;matlab&quot;.
+	 */
+	if (!(ep = engOpen(&quot;&quot;))) {
+		fprintf(stderr, &quot;\nCan't start MATLAB engine\n&quot;);
+		return EXIT_FAILURE;
+	}
+    
+    T = mxCreateDoubleMatrix(1, 10,mxREAL);
+    
+    //transform double to mxArray（double of C++转mxArray）
+	memcpy((void *)mxGetPr(T), (void *)time, sizeof(time));
+    engPutVariable(ep, &quot;T&quot;, T);//传入matlab
+    
+    //transform mxArray to double(mxArray转double)
+    memcpy((void*)time, (void*)mxGetPr(T), sizeof(mxGetPr(T))*10);//注意要乘以time的长度
+    buffer[BUFSIZE] = '\0';
+	engOutputBuffer(ep, buffer, BUFSIZE);
+    engEvalString(ep, &quot;D = kmeans(T,3)&quot;);
+    mxDestroyArray(T);
+    mxDestroyArray(result);
+    
+	return EXIT_SUCCESS;
+}
+
+   
+
+   
+
+--------------------------------------------
+4. 利用XCode进行Exception精确定位
+
+
+
+
+最后再说一个xcode调试的小技巧，如何更精确定位错误。调试的时候有时会报出很多奇葩的错误，看了也不知道哪里出错，这时xcode可以定断点为出错位置：
+   
+
+   
+
+   
+
+   
+
+   
+
+   参考：
+
+   1. http://www.cnblogs.com/xitang/archive/2011/09/15/2177924.html
+
+   2. stackoverflow
+
+   
+
+   欢迎关注本博客和新浪微博Rachel____Zhang
+
+   
+
+
+
+--------------------------------------------

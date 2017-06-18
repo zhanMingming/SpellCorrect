@@ -1,0 +1,29 @@
+边缘检测：Canny边缘检测和sobel边缘检测比较Canny算子和Sobel算子用于图像边缘检测，代码如下：
+
+
+   
+
+
+   clear all
+close all
+SourcePic=imread('D:\毕业设计\Images\pic_loc\1870358530205041511.jpg');
+subplot(131);
+imshow(SourcePic);title('SourcePic');
+
+f=rgb2gray(SourcePic);
+thresh=[0.01,0.17];
+sigma=2;%定义高斯参数
+BW = edge(double(f),'canny',thresh,sigma);
+subplot(132);
+imshow(BW);
+title('canny 边缘检测');
+
+[Horizontal Threshold]=edge(f,'sobel','horizontal');%edge detect
+H_V=edge(f,'sobel',Threshold);
+subplot(133);
+imshow(H_V),title('sobel边缘检测');
+
+
+
+
+   实验结果：

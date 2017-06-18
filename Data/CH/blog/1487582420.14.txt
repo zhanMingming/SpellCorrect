@@ -1,0 +1,10 @@
+MFC 获取系统时间SYSTEMTIME st;
+	CString strDate,strTime;
+	GetLocalTime(&amp;st);
+	strDate.Format(_T("%4d-%2d-%2d"),st.wYear,st.wMonth,st.wDay);
+	strTime.Format(_T("%02d:%02d:%02d"),st.wHour,st.wMinute,st.wSecond);
+
+	Rights="/r/n      本软件中地图来自google卫星地图，但路径长度为经验值，未用测长工具进行测量，如无误差纯属巧合！/r/n/r/n/r/n  &lt;--NBU-张睿卿 出品--&gt;/r/n/r/n ";
+	Rights+="System Time:";
+	Rights+=strTime;
+	UpdateData(false);

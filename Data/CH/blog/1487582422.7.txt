@@ -1,0 +1,350 @@
+字典树 模板http://acm.hdu.edu.cn/showproblem.php?pid=1251
+
+
+   建立字典树，求以&hellip;&hellip;为前缀的单词个数
+
+
+   
+
+统计难题
+
+   Time Limit: 4000/2000 MS (Java/Others)Memory Limit: 131070/65535 K (Java/Others)Total Submission(s): 3656Accepted Submission(s): 1295
+
+Problem Description
+
+Ignatius最近遇到一个难题,老师交给他很多单词(只有小写字母组成,不会有重复的单词出现),现在老师要他统计出以某个字符串为前缀的单词数量(单词本身也是自己的前缀).
+
+
+
+
+   
+
+Input
+
+输入数据的第一部分是一张单词表,每行一个单词,单词的长度不超过10,它们代表的是老师交给Ignatius统计的单词,一个空行代表单词表的结束.第二部分是一连串的提问,每行一个提问,每个提问都是一个字符串.注意:本题只有一组测试数据,处理到文件结束.
+
+
+
+
+   
+
+Output
+
+对于每个提问,给出以该字符串为前缀的单词的数量.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   banana
+band
+bee
+absolute
+acm
+
+ba
+b
+band
+abc
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   2
+3
+1
+0
+
+
+
+
+   #include&lt;cstdio&gt;   
+#include&lt;cstring&gt;   
+using namespace std;   
+int n,m,ans;   
+char str[10];   
+struct dic_tree//构造字典树，26叉树，根结点为空   
+{   
+	dic_tree *node[26];//26个结点 
+	int num;//record the num of  child
+	bool terminal;//表示该结点位置是否是单词的结束位   
+	dic_tree()//构造函数,初始化终点情况和结点   
+	{   
+		for(int i = 0;i &lt; 26;++i)   
+		{   
+			node[i] = NULL;//初始化空结点,node[0]表示'a'在该单词中   
+			terminal = 0;   
+			num=0;
+		}   
+	}   
+}*root;//树是通过指针形式来表达的   
+void build(dic_tree *p,char str[],int end)//生成字典树的函数   
+{   
+	int ix = 0;   
+	p-&gt;num++;
+	while(ix &lt; end)//循环直到读完单词最后一个字母   
+	{   
+		int c = str[ix] - 'a';   
+		if(p-&gt;node[c])//如果到node[c]连通   
+		{   
+			p = p-&gt;node[c];   
+			if(ix == end - 1)   
+				p-&gt;terminal = 1;   
+			++ix;   
+		}   
+		else
+		{   
+			p-&gt;node[c] = new dic_tree; //如果不连通，则在该结点生成一个26叉树   
+			p = p-&gt;node[c];   
+			if(ix == end - 1)   
+				p-&gt;terminal = 1;   
+			++ix;   
+		}   
+		p-&gt;num++;
+	}   
+}   
+int search(dic_tree *p,char str[],int end)   
+{   
+	int ix = 0;
+	while(ix &lt; end)   
+	{
+		int c = str[ix] - 'a';   
+		if(p-&gt;node[c])   
+		{
+			p = p-&gt;node[c];   
+			if(ix==end-1)   
+			{   
+				p-&gt;terminal = 0;   
+				return p-&gt;num;   
+			}   
+			++ix;   
+		}   
+		else return 0;   
+	}   
+}   
+
+int main()   
+{   
+	//freopen("in.txt","r",stdin);   
+	root=new dic_tree;
+	while(gets(str)&amp;&amp;str[0]!='/0')
+	{
+		build(root,str,strlen(str));//生成字典树  
+	}
+	while(scanf("%s",str)!=EOF) 
+		printf("%d/n",search(root,str,strlen(str)));//搜索字典树 
+	return 0;   
+}   
+
+
+   
+
+
+   
+
+
+   当然，这道题还可以用map，只是时间较长：(*^__^*) 
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;map&gt;
+#include&lt;string&gt;
+using namespace std;
+int main()
+{
+    int i,j,k,len;
+    string str;char temp[15],temp1[15];
+    map &lt;string,int&gt; mymap;
+    while(gets(temp))
+    {
+ if(temp[0]=='/n') break;
+ len=strlen(temp);
+ if(len==0) break;
+ for(i=0;i&lt;len;i++)//求出某个字符串的所有前缀,并用MAP存起来
+ {
+     for(j=0;j&lt;=i;j++) temp1[j]=temp[j];temp1[j]='/0';
+     str.assign(temp1);
+     mymap[str]++;
+ }
+    }
+    while(scanf("%s",&amp;temp)!=EOF)
+ cout&lt;&lt;mymap[temp]&lt;&lt;endl;//此时直接输出结果即可
+    return 0;
+}
+ 
+
+
+   
+
+
+   http://acm.njupt.edu.cn/problemdetail.do?method=showdetail&amp;id=1121
+
+
+   
+
+Message Flood
+
+时间限制(普通/Java):2000MS/6000MS     运行内存限制:65536KByte总提交:139      测试通过:27
+
+
+
+   描述
+
+
+   Well, how do you feel about mobile phone? Your answer would probably be something like that &ldquo;It&rsquo;s so convenient and benefits people a lot&rdquo;. However , if you ask Merlin this question on the New Year&rsquo;s Eve , he will definitely answer &ldquo; What a trouble! I have to keep my fingers moving on the phone the whole night , because I have so many greeting messages to send !&rdquo; . Yes , Merlin has such a long name list of his friends , and he would like to send a greeting message to each of them . What&rsquo;s worse , Merlin has another long name list of senders that have sent message to him , and he doesn&rsquo;t want to send another message to bother them ( Merlin is so polite that he always replies each message he receives immediately ). So , before he begins to send messages , he needs to figure to how many friends are left to be sent . Please write a program to help him.Here is something that you should note. First , Merlin&rsquo;s friend list is not ordered , and each name is alphabetic strings and case insensitive . These names are guaranteed to be not duplicated . Second, some senders may send more than one message to Merlin , therefore the sender list may be duplicated . Third , Merlin is known by so many people , that&rsquo;s why some message senders are even not included in his friend list.
+
+
+   输入
+
+
+   
+
+   There are multiple test cases . In each case , at the first line there are two numbers n and m ( 1&lt;=n , m&lt;=20000) , which is the number of friends and the number of messages he has received . And then there are n lines of alphabetic strings ( the length of each will be less than 10 ) , indicating the names of Merlin&rsquo;s friends , one pre line . After that there are m lines of alphabetic string s ,which are the names of message senders .The input is terminated by n=0.
+
+
+
+
+   
+
+
+   输出
+
+
+   For each case , print one integer in one line which indicates the number of left friends he must send .
+
+
+   样例输入
+
+
+   53InkfishHenryCarpMaxJerichoCarpMaxCarp0
+
+
+   样例输出
+
+
+   3
+
+
+   //搜索+字典树(Trie)
+//维基百科关于字典树的介绍
+//Trie，又称单词查找树，是一种树形结构，是一种哈希树的变种。
+//典型应用是用于统计和排序大量的字符串（但不仅限于字符串），所以经常被搜索引擎系统用于文本词频统计。
+//它的优点是：最大限度地减少无谓的字符串比较，查询效率比哈希表高。
+#include&lt;cstdio&gt;
+#include&lt;cstring&gt;
+using namespace std;
+int n,m,ans;
+char str[10];
+struct dic_tree//构造字典树，26叉树，根结点为空
+{
+	dic_tree *node[26];//26个结点
+	bool terminal;//表示该结点位置是否是单词的结束位
+	dic_tree()//构造函数,初始化终点情况和结点
+	{
+		for(int i = 0;i &lt; 26;++i)
+		{
+			node[i] = NULL;//初始化空结点,node[0]表示'a'在该单词中
+			terminal = 0;
+		}
+	}
+}*root;//树是通过指针形式来表达的
+void build(dic_tree *p,char str[],int end)//生成字典树的函数
+{
+	int ix = 0;
+	while(ix &lt; end)//循环直到读完单词最后一个字母
+	{
+		int c = str[ix] - 'a';
+		if(p-&gt;node[c])//如果到node[c]连通
+		{
+			p = p-&gt;node[c];
+			if(ix == end - 1)
+				p-&gt;terminal = 1;
+			++ix;
+		}
+		else
+		{
+			p-&gt;node[c] = new dic_tree; //如果不连通，则在该结点生成一个26叉树
+			p = p-&gt;node[c];
+			if(ix == end - 1)
+				p-&gt;terminal = 1;
+			++ix;
+		}
+	}
+}
+void search(dic_tree *p,char str[],int end)
+{
+	int ix = 0;
+	while(ix &lt; end)
+	{
+		int c = str[ix] - 'a';
+		if(p-&gt;node[c])
+		{
+			p = p-&gt;node[c];
+			if(ix == end - 1 &amp;&amp; p-&gt;terminal == 1)
+			{
+				--ans;
+				p-&gt;terminal = 0;
+				return;
+			}
+			++ix;
+		}
+		else return;
+	}
+}
+void release(dic_tree *p)//必须递归释放结点空间
+{
+	 for(int i = 0;i &lt; 26; i++)
+  if(p-&gt;node[i])
+release(p-&gt;node[i]);      
+	 delete p;     
+}
+void transcase(char str[])
+{
+	for(int i = 0;i &lt; strlen(str);++i)
+	{
+		if(str[i] &gt;= 'A' &amp;&amp; str[i] &lt;= 'Z')
+			str[i] = str[i] - 'A' + 'a';
+	}
+}//转化大小写
+int main()
+{
+	//freopen("in.txt","r",stdin);
+	while(scanf("%d",&amp;n))
+	{
+		if(n == 0)	break;
+		scanf("%d",&amp;m);
+		root = new dic_tree;
+		ans = n;
+		for(int i = 0;i &lt; n;++i)
+		{
+			scanf("%s",str);
+			transcase(str);//转换大小写
+			build(root,str,strlen(str));//生成字典树
+		}
+		for(int i = 0;i &lt; m;++i)
+		{
+			scanf("%s",str);
+			transcase(str);//转换大小写
+			search(root,str,strlen(str));//搜索字典树
+		}
+		printf("%d/n",ans);
+		release(root);//记住构造树后一定要释放结点空间，否则会内存溢出
+	}
+    return 0;
+}

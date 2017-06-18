@@ -1,0 +1,132 @@
+慎用subList：ArrayList$SubList.add导致的java.lang.StackOverflowError最近定位项目实际上线后遇到的1个StackOverflowError问题，这里做个分析。通过日志文件可以看到：
+
+
+   java.lang.StackOverflowError
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+	at java.util.ArrayList$SubList.add(ArrayList.java:1047)
+
+   
+
+
+   
+
+
+
+
+   可以看出：ArrayList$SubList.add()这个方法出现了递归调用，导致栈爆了。项目中代码如下：
+
+
+   private static List&lt;Long&gt; failCount = new ArrayList&lt;Long&gt;();
+
+public static void saveFailRecord(boolean beSuccess)
+{
+	long currentTimeMillis = System.currentTimeMillis();
+	long fiveMinuteAgo = currentTimeMillis - FIVE_MINUTE;
+	if (!beSuccess)
+	{
+		int index = binSearch(failCount, fiveMinuteAgo);
+		if (index &gt;= 0)
+		{
+			failCount = failCount.subList(index + 1, failCount.size());
+		}
+		failCount.add(Long.valueOf(currentTimeMillis));
+	}
+}代码目的是：让failCount这个列表只保留最近5分钟内的失败数据，通过subList()来截取原来的列表。
+
+   
+
+
+   
+
+
+
+
+   下面这段代码和上面我们项目的实际代码类&#20284;：也会出现StackOverflowError。
+
+
+   public static void main(String[] args) {
+	List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+	list.add(&quot;&quot;);  
+	for (int i = 0; i &lt; 50000; i++) {
+		list = list.subList(0, 1);
+	}
+	list.add(&quot;test&quot;); 
+}
+
+
+
+看一段英文的解释：
+   Unfortunately subList returns a view on the original list (this is documented) 
+which is implemented in AbstractList by use of a pointer to the parent list (this is not documented). 
+When calling certain operations on such a view, the operations are called recursively on the parent list 
+(this is absolutely not documented).If you call subList on a view you get a view on a view, 
+meaning you now have a parent hierarchy two levels deep. 
+
+   
+
+
+   
+
+
+
+也就是说：每次调用subList()得到一个child list，这个child list会维护这一个指向parent list的引用。
+
+   
+
+
+
+
+   
+
+也就是说：调用A的subList()得到B，调用B的subList()得到C，.....调用n的subList()得到n&#43;1。
+
+
+   这样就会得到一个庞大的应用链:n&#43;1 指向n，.....C指向B，B指向A。
+
+
+   当调用n&#43;1这个list的add()方法时候，会一直递归调用到A的add()方法，当数据很多的时候自然就栈溢出了。
+
+
+
+
+
+
+   下面代码展示了这个递归调用的过程：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   怎么解决这个问题呢？不要循环地调用subList()，并覆盖原来的list。直接new一个新的list就可以了。
+
+
+   public static void main(String[] args) {
+	List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+	list.add(&quot;&quot;);  
+	for (int i = 0; i &lt; 50000; i++) {
+		list = new ArrayList&lt;String&gt;(list.subList(0, 1));
+	}
+	list.add(&quot;test&quot;); 
+}

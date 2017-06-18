@@ -1,0 +1,79 @@
+改进索引压缩（网页重排）-Document Reordering在任意一个索引节点需要做索引的时候，都需要给每个网页分配一个唯一的ID号，简称docid。
+
+
+   DOCID的分配可以是随机的，或者按照爬虫自然的抓取顺序（这样在做索引时比较简便）。
+
+
+   然而，为了更好的支持early termination，使得在求交过程中尽快的结算，需要将docid按照PR(PageRank）值进行排序。
+
+
+   同时，为了获得更好的压缩效果，需要将相似的文档的文档号尽可能靠近，以获得更小的d-gap(Document Gap)。
+
+
+   
+
+
+   因此这就引出了在做索引前进行重排（Document Reordering）的需求，Reordering最早的提法可能来自于【2】。但是目前的论文主要讨论关于压缩比的问题，而没有关于按PR排序的介绍。
+
+
+   
+
+
+   本文就网页重排进行一些深入的探讨。
+
+
+   
+
+
+   在爬虫抓取完网页后，我们可以得到一个网页库，简单来说我们可以认为存在这样两个结构。
+
+
+   key file和data file
+
+
+   其中keyfile存放[Docid,PageRank,URL,CategoryID，Others，Location_of_datafile]，其中PageRank数值由计算PR的系统进行重填(refill)。
+
+
+   其中data file按抓取顺序存放每个网页，这些网页进行了结构化的加工（并不是HTML格式）。
+
+
+   
+
+
+   对于keyfile第一轮可以对URL进行排序。
+
+
+   第二轮，第三轮采用稳定的排序方法（类似基数排序）对CategoryID和PageRank进行排序（先CID，再PR，注意排序的顺序），由于Pagerank和CategoryID均为1-N整数（google PageRank为0-10），CategoryID可以采用一些线性分类的方法计算并事先refill进这个结构。
+
+
+   
+
+
+   排序后，按照Location_of_datafile的指引读取网页数据，按顺序进行后续的分词索引工作，排序第一的文档序号为1，以下依次按序分配DOCID。虽然，这样处理对于datafile的访问无法做到随机访问，但如果在文件数量较小，文件读取，缓存，内核等参数调整比较好的情况下，可以获得较好的随机读取效率。
+
+
+   
+
+
+   通过以上处理，可以将高PageRan的docid，且相似的文档致密的排放到一起，在query和压缩比上都获得满意的提升。
+
+
+   
+
+
+   关于DOCUMENT REORDERING，论文【3】包含了目前最新的研究成果，相关数据可以参考。
+
+
+   
+
+
+   推荐阅读：
+
+
+   【1】Sorting Out the Document Identifier Assignment Problem
+
+
+   【2】Index Compression through Document Reordering
+
+
+   【3】http://www2009.org/proceedings/pdf/p401.pdf

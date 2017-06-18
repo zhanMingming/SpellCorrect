@@ -1,0 +1,225 @@
+CF协作过滤简介,搜索引擎算法推荐系统是用来提供对于某个item进行针对性的预测和推荐。一般采用三种方式
+
+1）基于规则的推荐，例如推荐当前销量高的商品。（非个性化），针对某个节日的特殊推荐。人工给与推荐规则。
+
+2）经典的协作过滤方法，利用user,item的关系作为推荐的基础，基本内涵就是利用user的相似性，利用item的相似性，如果某个用户消费了某些item,那么和这个用户有类似消费特征的很有可能也需要消费该item，那么item就需要推荐给该用户，消费一次在这里可以理解成一次&ldquo;阅读&rdquo;，或者&rdquo;购买&rdquo;,该行为发生在推荐以后的，对item的某种行为。
+
+3）聚类方法方法进行推荐，例如某个item和另外一个item,在消费行为上很类似，那么消费了该item的很有可能会消费，另外一个item。
+
+4）很多时候一个系统可能是一个hybrid的系统，同时包含以上三个不同的规则。
+
+
+
+
+
+协作过滤的方法
+
+
+
+
+
+定义
+
+
+令存在一个矩阵A,A为一个m*n的矩阵，m表示用户数，n表示项目数
+
+
+A[i][j]=1，如果i用户消费了j项目(item),
+
+
+A[i][[j]=0,如果i和j没有任何消费关系。
+
+
+
+
+
+定理1
+
+
+令a[i]是A的第i行,a[j]是A的第j行
+
+
+则a[i] * a[j] = K, K表示用户i，j都消费过的项目，向量点乘。很明显a[i]*a[i]表示用户a消费的项目总数。
+
+
+
+
+
+推论
+
+
+AAT 的每一个项(i,j)表示i,j共同消费了的项。
+
+
+令Row(i)表示AAT 的第i行，则该行的每一个项j,表是用户i和用户j的共同消费的项目总数。表示i用户和每个用户的相似度。
+
+
+
+
+
+定理2
+
+
+另Row(i) * A 为B,则B[j], 表示项目j的投票值。
+
+
+
+
+
+解释一下，A可以表示成 {item1,item2,&hellip;..itemn},则Row(i) * item j,相当于利用Row(i)中包含的和每个用户相似的信息，结合每个用户对item j的消费情况，进行打分。举例。
+
+
+假定row(2) = (0,6,3,2,5),用户2和用户1，没有消费过相同项目，用户2和用户2消费过6条项目。不难看出用户2和自己相似度最大，而且最大值也只可能这么大。Row(2)*A。假定Row(2)* item3, item3={0，0，1，1，1}T，表示项目3被用户3, 4,5看过，Row(2)*item3=
+
+
+10,不难看出,3,4,5用户均看过项目3，再利用3,4,5和用户3的相似度作权重得到用户2和项目3的关系，依次可以得到用户2和每个项目的关系（一个值），选取最大的做推荐。
+
+
+
+
+
+协作过滤的主要优化方向
+
+1）该矩阵为压缩的邻接表
+
+2）对row（i）中的项设定阈值，对于那些相似度低的设定为0减弱计算强度，换句话说仅仅通过和自己最相似的用户信息来进行推荐。
+
+3）如果某个用户看过消费过所有的项，那么他的信息将会用来计算所有的推荐，也就是row(i),考虑用户i和每个用户的相关性的时候，还需要考虑用户所看过的文档个数，比较合理的计算应该是(Ui * Uj )/ (|Ui| *| Uj|),夹角余玄来作为相似程度的量化值。
+
+
+
+
+
+GroupLens Collaborative Filtering Scheme
+
+
+   
+
+    
+ 
+
+     	
+ 
+    
+
+
+
+
+
+
+
+
+
+
+   
+
+    
+ 
+
+     	
+ 
+    
+
+
+
+
+
+
+
+
+
+
+   
+
+    
+ 
+
+     	
+ 
+    
+
+
+
+
+
+
+
+   
+
+    
+ 
+
+     	
+ 
+    
+
+
+
+
+
+ 
+
+
+Z矩阵就是本文的A
+
+
+Wai，就是本文AAT 的 （i，j）项，表示用户a和用户j的共同消费项目的个数
+
+
+Viq,表示用户i对项目q的评分
+
+
+Ziq,表示z-scores for item q
+
+
+P&rsquo;aq表示用户a对用户q的一个兴趣值
+
+
+Va平表示用户a对所有项目的一个平均兴趣。
+
+
+Paq表示估计的用户a对项目q的兴趣 ,
+
+
+
+
+
+参考文献
+
+n GroupLens
+
+n http://citeseer.nj.nec.com/resnick94grouplens.html
+
+n http://www.grouplens.org
+
+n Has available data sets, including MovieLens
+
+n Greening, Dan R. Building Consumer Trustwith Accurate Product Recommendations: A White Paper on LikeMinds WebSell 2.1
+
+n http://dan.greening.name/profession/manuscripts/consumertrust/
+
+n Shardanand/Maes
+
+n http://citeseer.ist.psu.edu/shardanand95social.html
+
+n Sarwar et al.
+
+n http://citeseer.nj.nec.com/sarwar01itembased.html
+
+n McLaughlin and Herlocker, SIGIR 2004
+
+n http://portal.acm.org/citation.cfm?doid=1009050
+
+n CoFE CoFE &ldquo;Collaborative Filtering Engine&rdquo; 
+
+n Open source Java
+
+n Reference implementations of many popular CF algorithms
+
+n http://eecs.oregonstate.edu/iis/CoFE
+
+
+思考
+
+
+ATA表示的是文档间的相似关系，如果一个文档被推荐了，与其相似的文档更有被推荐的可能。

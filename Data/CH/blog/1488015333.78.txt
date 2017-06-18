@@ -1,0 +1,148 @@
+软件设计度量工具structure101学习(三)：Slices视图上一篇博客介绍了structure101的Collaboration、Class Hierarchy、Call Graph视图，这3个视图很好理解、很容易使用，在eclipse等IDE中也有类&#20284;的功能。本文主要介绍Slices视图，显示效果大致如下。
+
+
+   
+
+
+
+
+   
+
+
+
+1.Scope(其实就是java的包)
+
+   一般java项目的包都非常多，如果直接显示整个项目包(项目最顶级的包)的slice视图，那么会非常庞大，各个显示面板看起来很不方便。一般在大型项目，每个人都有自己负责的模块，首先需要保证自己模块内部的质量。Scope其实就是包，我们可以选中任何一个想要分析的包。比如我选择的是cache包，而不是整个项目的包。一句话：想看哪儿个包，scope就设置成那个包。
+
+2.Level Table
+
+level table显示效果图大致如下：
+
+
+
+
+
+
+
+   
+
+
+
+
+   官方的解释是：
+
+
+   Each row in the table represents a compositional layer of your code. The lowest layer is the set of all 
+the outer classes in your code, considered as a single dependency graph. The next lowest is all the leaf 
+packages (i.e. packages that contain classes) as a single graph. Above the leaf package level are the 
+design levels. The number of these depends on the &quot;depth&quot; of your composition hierarchy. The lower design 
+levels typically contain bigger slices; the highest level typically contains the same items as the root 
+node of the project.Outer class：上面我们选中的scope包自身以及scope下所有子包中的类个数。(allthe outer classes)。
+
+   Leaf package：scope下(包括scope包自身)，含有class的包个数。(packages that contain classes)。我们知道eclipse下包有2种呈现方式：Flat和Hierarchical。Flat视图呈现的就是leaf package。
+
+
+   
+
+
+
+
+   design level 1~n：本人暂时还理解不动，不知道structure101怎么计算的。反正就是用来看包、子包等的依赖关系，用起来还是没啥问题的。
+
+
+   
+
+
+
+
+   #：对应level的个节点个数。
+
+
+   C：is the degree of Cohesion of the dependency graph at that level. This is 100% if all the items on the graph are connected (or, there are no unconnected &quot;orphans&quot;)。这个&#20540;越大意味着内聚性越强。不过C=0的情况也是有的，比如我们有一个utils包，里面放StringUtils、CollectionUtils类。StringUtils和CollectionUtils本身没有依赖关系，也就是说在utils包下，它们2个都是孤儿节点。这种组织包的形式，虽然内聚性差，但是问题不大。虽然代码层面两者并没有关系，但是逻辑层面它们是有关系的(都属于工具类)。所以C的&#20540;仅仅是一个参考，能反映无论层面的内聚性，但是不能反映逻辑上的内聚性。C的计算公式，暂时还没有找到。
+
+
+
+
+   
+
+
+
+
+   T：is the degree to which the dependency graph is Tangled. This will be 0% if there are no tangles; 100% if all of the items in the graph form a single tangle。Tangle其实就是我们熟知的循环依赖，它可能存在于类与类之间，包与包之间。我们设计类和包的一个目标就是让T=0，避免循环依赖。
+
+
+
+
+   T的计算我们看下面3个例子，相信你可以从中看出规律。
+
+
+   design level 3的T = sqrt(13 * 13) / 15 ，近&#20284;等于87%。
+
+
+   
+
+
+
+
+   design level 1的T = sqrt(20*20 &#43; 9 *9) / 37，近&#20284;等于59%。
+
+
+   
+
+
+
+
+   Outer class的T = sqrt(63*63&#43;8*8&#43;7*7&#43;6*6&#43;5*5&#43;4*4&#43;2*2&#43;2*2) / 339，近&#20284;等于19%。
+
+
+
+
+   
+
+
+
+
+   具体的计算规则不重要，我们只需要知道：C越大越好，越大意味着内聚性越高；T越小越好，越小意外着依赖越清晰。
+
+
+   
+
+
+
+3.Groups和Tangles
+
+   选中level table中的某一行数据，会显示它的Groups和Tangles。
+
+
+   
+
+
+
+
+   Groups的作用：让我们关注那些orphans或者orphan groups。orphan孤儿的意思，structure101认为这些节点可能是unreachable的。比如utils包下有10个类，其中8个类存在依赖关系，2个类是孤儿。意思是这2个类，没有在utils包中使用，有可能是unreachable的。我们自己检查确定下即可，比如某些工具包就是这样的，存在孤儿类，但是这些类会被外部使用，这种情况下并不是问题。orphan group的意思和orphan差不多，比如A、B、C这3个类之间有依赖关系，也就是说着3个类不是orphan，但是并没有别的类使用(A、B、C)，那么A、B、C就形成了一个orphan
+ group。
+
+
+   
+
+
+
+
+   Tangles的作用：判断是否存在循环依赖。
+
+
+   
+
+
+
+
+   现在基本掌握了slices视图的使用，但是还遗留几个问题：
+
+
+   1.design level 1~n到底是啥，有什么指导意义，数量又是怎么计算的？
+
+
+   2.C的计算公式是啥？
+
+
+   3.Groups 和Tangles页签的#Parents是怎么计算的，有什么意义？

@@ -1,0 +1,17 @@
+VC如何让窗口半透明VC让窗口半透明的方法，自己已经使用过。
+
+
+   
+
+
+
+
+   //修改窗口的风&#26684;
+
+
+   ModifyStyleEx(0, WS_EX_LAYERED);
+
+
+   //设置透明度，第二个参数，取&#20540;从0-255
+
+SetLayeredWindowAttributes(0, 100, LWA_ALPHA);

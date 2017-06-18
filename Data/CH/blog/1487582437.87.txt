@@ -1,0 +1,102 @@
+ZOJ Special AC StringSince today is so special, ZOJ would only accept a special kind of strings to pass its tests. The AC rules are given as the following: 
+
+
+   
+
+
+1. there are only three distinct capital letters of the strings: Z, O, and J; 
+2. any string that is in the form xZOJxO is acceptable, where x is a string either empty or composed of O's only; 
+3. if aZbJc is acceptable, then aZbOJcO is acceptable, where a, b and c are all strings either empty or composed of O's only. 
+
+
+   
+
+
+   Now it is your job to write a special judge program to tell if an input string is an AC string. 
+
+
+   Input
+
+
+   The input consists of multiple test cases, each occupies a line containing the input string with length greater than 1 and less than 100. The string consists of only 'Z', 'O', and 'J'. Proceed until the end of file. 
+
+
+   Output
+
+
+   For each test case, print in a line "Accepted" if the string is acceptable, or "Wrong Answer" if not. 
+
+
+   Sample Input
+
+
+   ZOJO
+OZOJOO
+OZOOJOOO
+OZOZOJOO
+OOZOOJO
+
+
+   Sample Output
+
+
+   Accepted
+Accepted
+Accepted
+Wrong Answer
+Wrong Answer
+
+   
+
+
+   理解题（找规律）
+
+
+   
+
+
+   #include &lt;iostream&gt;
+using namespace std;
+char str[201];
+
+int start, end;
+
+bool solve(char *str)
+{
+	start = -1, end = -1;
+	int len = strlen(str);
+	for (int i=0; i&lt;len; i++)
+	{
+		if (str[i]=='Z')
+		{
+			if (start!=-1) 
+				return false;
+			start = i;
+		} 
+		else if (str[i]=='J')
+		{
+			if (end!=-1) 
+				return false;
+			end = i;
+		} 
+		else if (str[i]!='O')
+			return false;
+	}
+	if (start == -1 || end == -1)
+		return false;
+	if (start&gt;=end || end-start==1) 
+		return false;
+	if (end-start &gt; len-end) 
+		return false;
+	return true;
+}
+
+int main()
+{
+	while (scanf("%s", str)!=EOF)
+	{
+		if (solve(str)) printf("Accepted/n");
+		else printf("Wrong Answer/n");
+	}
+	return 0;
+}

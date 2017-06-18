@@ -1,0 +1,388 @@
+c++操作mysql - 连接c++连接mysql的主要是通过mysql的c API来实现 。
+
+
+   连接的API有两个，下面会分别描述：
+
+
+   
+
+
+   1.mysql_connect()
+
+
+   
+
+
+   (原型)ProtoType: MYSQL *mysql_connect(MYSQL *mysql, const char *host, const char *user, 
+const char *passwd)
+
+
+   描述:
+
+
+   该函数已过时。最好使用mysql_real_connect()取而代之。
+
+
+   
+
+
+   mysql_connect()试图建立与运行在主机(远程主机也可以)上的MySQL数据库引擎的连接。在能够执行任何其他API函数之前，必须先调用mysql_connect()，而且返回成功。但mysql_get_client_info()例外。
+
+
+   
+
+
+   这些参数的意义与mysql_real_connect()的对应参数的意义相同，差别在于连接句柄可以为NULL。在这种情况下，C 
+API将自动为连接结构分配内存，并当调用mysql_close()时释放分配的内存。该方法的缺点是，如果连接失败，你无法检索错误消息。要想从mysql_errno()或mysql_error()获得错误消息，必须提供有效的MYSQL指针。
+
+
+   
+
+
+   返回值： NULL表示失败。反之成功。
+
+
+   
+
+
+   2.mysql_real_connect()
+
+
+
+
+
+
+
+
+   原型:
+
+
+
+
+
+
+
+
+
+   MYSQL *mysql_real_connect(MYSQL *mysql, const char *host, const char 
+*user, const char *passwd, const char *db, unsigned int port, const char 
+*unix_socket, unsigned long client_flag) 
+
+
+   描述
+
+
+   mysql_real_connect()尝试与运行在主机上的MySQL数据库引擎建立连接。在你能够执行需要有效MySQL连接句柄结构的任何其他API函数之前，mysql_real_connect()必须被调用并返回成功。
+
+
+   参数说明：
+
+
+   &middot; 
+第1个参数应是已有MYSQL结构的地址。调用mysql_real_connect()之前，必须调用mysql_init()来初始化MYSQL结构。
+
+
+   通过mysql_options()调用，可更改多种连接选项。
+
+
+   &middot;
+
+
+   host的值必须是主机名或IP地址。如果host是NULL或字符串"localhost"，连接将被视为与本地主机的连接。如果操作系统支持套接字（Unix）或命名管道（Windows），将使用它们而不是TCP/IP连接到服务器。
+
+
+   &middot; 
+
+
+    user参数包含用户的MySQL登录ID。如果user是NULL或空字符串""，用户将被视为当前用户。在UNIX环境下，它是当前的登录名。在Windows 
+ODBC下，必须明确指定当前用户名。请参见26.1.9.2节，&ldquo;在Windows上配置MyODBC DSN&rdquo;。
+
+
+   &middot;
+
+
+   passwd参数包含用户的密码。如果passwd是NULL，仅会对该用户的（拥有1个空密码字段的）用户表中的条目进行匹配检查。这样，数据库管理员就能按特定的方式设置MySQL权限系统，根据用户是否拥有指定的密码，用户将获得不同的权限。
+
+
+   注释：调用mysql_real_connect()之前，不要尝试加密密码，密码加密将由客户端API自动处理。
+
+
+   &middot;
+
+
+   db是数据库名称。如果db为NULL，连接会将默认的数据库设为该值。当你不想连接特定数据库时，可以指定db为NULL
+
+
+   &middot;
+
+
+    
+如果&ldquo;port&rdquo;不是0，其值将用作TCP/IP连接的端口号。注意，&ldquo;host&rdquo;参数决定了连接的类型。port为0的话，使用mysql的默认tcp/ip端口3306.
+
+
+   &middot;
+
+
+   如果unix_socket不是NULL，该字符串描述了应使用的套接字或命名管道。注意，&ldquo;host&rdquo;参数决定了连接的类型。
+
+
+   
+
+
+   &middot;client_flag的值通常为0，但是，也能将其设置为下述标志的组合，以允许特定功能：
+
+
+   
+
+
+
+
+
+	
+
+   标志名称
+
+
+	
+
+   标志描述
+
+
+
+
+
+	
+
+   CLIENT_COMPRESS
+
+
+	
+
+   使用压缩协议。
+
+
+
+
+
+	
+
+   CLIENT_FOUND_ROWS
+
+
+	
+
+   返回发现的行数（匹配的），而不是受影响的行数。
+
+
+
+
+
+	
+
+   CLIENT_IGNORE_SPACE
+
+
+	
+
+   允许在函数名后使用空格。使所有的函数名成为保留字。
+
+
+
+
+
+	
+
+   CLIENT_INTERACTIVE
+
+
+	
+
+   关闭连接之前，允许interactive_timeout（取代了wait_timeout）秒的不活动时间。客户端的会话wait_timeout变量被设为会话interactive_timeout变量的值。
+
+
+
+
+
+	
+
+   CLIENT_LOCAL_FILES
+
+
+	
+
+   允许LOAD DATA LOCAL处理功能。
+
+
+
+
+
+	
+
+   CLIENT_MULTI_STATEMENTS
+
+
+	
+
+   通知服务器，客户端可能在单个字符串内发送多条语句（由&lsquo;;&rsquo;隔开）。如果未设置该标志，将禁止多语句执行。
+
+
+
+
+
+	
+
+   CLIENT_MULTI_RESULTS
+
+
+	
+
+   通知服务器，客户端能够处理来自多语句执行或存储程序的多个结果集。如果设置了CLIENT_MULTI_STATEMENTS，将自动设置它。
+
+
+
+
+
+	
+
+   CLIENT_NO_SCHEMA
+
+
+	
+
+   禁止db_name.tbl_name.col_name语法。它用于ODBC。如果使用了该语法，它会使分析程序生成错误，在捕获某些ODBC程序中的缺陷时，它很有用。
+
+
+
+
+
+	
+
+   CLIENT_ODBC
+
+
+	
+
+   客户端是ODBC客户端。它将mysqld变得更为ODBC友好。
+
+
+
+
+
+	
+
+   CLIENT_SSL
+
+
+	
+
+   使用SSL（加密协议）。该选项不应由应用程序设置，它是在客户端库内部设置的。
+
+
+
+
+
+
+
+
+
+示例代码：
+
+
+
+mysql_init(&amp;mysql);
+
+
+
+if (!mysql_real_connect(&amp;mysql, "host", "user", "passwd", "database", 0, NULL, 0))
+
+
+
+   {//判断连接是否失败。 
+
+    printf("Failed to connect to database: Error: %s/n",mysql_error(&amp;mysql));
+
+   }
+
+
+连接成功后，你就可以执行其他操作了。
+
+
+
+mysql_connect和mysql_real_connect的区别：
+
+1. mysql_connect不需要调用mysql_init来初始化连接句柄.但是mysql_real_connect需要。
+
+2. mysql_connect只能指定host，user,password, database四个参数，无法指定特定端口，使用命名管道。只能使用默认的TCP/IP连接。默认端口只能是3306
+
+3. mysql_connect在实现里调用了mysql_real_connect.是对其的封装。
+
+
+
+我们可以从库的实现文件libmysql.c看到mysql_connect()函数的实现：
+
+
+MYSQL * STDCALL
+
+mysql_connect(MYSQL *mysql,const char *host,const char *user, const char *passwd)
+
+{
+
+MYSQL *res;
+
+mysql=mysql_init(mysql);			/* Make it thread safe */
+
+{
+
+ DBUG_ENTER("mysql_connect");
+
+
+
+ if (!(res = mysql_real_connect(mysql, host, user, passwd, null, 0, null, 0)))
+
+ {
+
+  if (mysql-&gt;free_me)
+
+		my_free((gptr) mysql,MYF(0));
+
+ }
+
+
+
+ DBUG_RETURN(res);
+
+}
+
+}
+
+
+
+
+
+mysql_real_connect的实现就很长很复杂了。在此不贴出，有需要的同学可通过向我索取。
+
+
+
+
+
+
+
+通过这两个函数，大家想必对mysql的连接都更多的了解了。在实际运用过程中，这两个函数已经够用了。还有需要用到的是
+
+
+mysql_options来通过更改连接选项。
+
+
+
+
+
+备注：
+
+
+本文函数说明来自mysql5.1官方文档。
+
+
+所需资料均来自mysql。
+
+
+如有不对的地方，欢迎批评指正。作者联系方式：bicheng.gui@gmail.com

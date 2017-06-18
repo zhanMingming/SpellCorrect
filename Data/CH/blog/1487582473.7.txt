@@ -1,0 +1,52 @@
+Invalidate与UpdateWindownvalidateRect只是增加重绘区域，在下次WM_PAINT的时候才生效
+
+
+   
+
+
+   InvalidateRect函数中的参数TRUE表示系统会在你画之前用背景色将所选区域覆盖一次，默认背景色为白色，可以通过设置BRUSH来改变背景色。
+
+
+   用true的时候，容易造成画面闪烁。
+
+
+   
+
+
+   Invalidate()之后：（MFC的，顺便了）OnPaint()-&gt;OnPrepareDC()-&gt;OnDraw()
+
+
+   
+
+
+   所以只是刷新在OnPaint()和OnDraw()函数中的绘图语句。其它地方没有影响。
+
+
+   Invalidate标记一个需要重绘的无效区域，并不意味着调用该函数后就立刻进行重绘。类似于PostMessage(WM_PAINT)，
+
+
+   需要处理到WM_PAINT消息时才真正重绘。以为您Invalidate之后还有其他的语句正在执行，程序没有机会去处理WM_PAINT消息，
+
+
+   但当函数执行完毕后，消息处理才得以进行。
+
+
+   
+
+
+   Invalidate只是放一个WM_PAINT消息在队列里，不做别的，所以只有当当前函数返回后，进入消息循环，取出WM_PAINT，才执行PAINT，所以不管Invalidate放哪里，都是最后的。
+
+
+   InvalidateRect(hWnd,&amp;rect,TRUE);向hWnd窗体发出WM_PAINT的消息，强制客户区域重绘制，rect是你指定要刷新的区域，此区域外的客户区域不被重绘，这样防止客户区域的一个局部的改动，而导致整个客户区域重绘而导致闪烁，如果最后的参数为TRUE，则还向窗体发送WM_ERASEBKGND消息，使背景重绘，当然在客户区域重绘之前。
+
+
+   UpdateWindow()只向窗体发送WM_PAINT消息，在发送之前判断GetUpdateRect(hWnd,NULL,TRUE)看有无可绘制的客户区域，如果没有，则不发送WM_PAINT
+
+
+   如果希望立即刷新无效区域，可以在调用InvalidateRect之后调用UpdateWindow，如果客户区的任一部分无效，则UpdateWindow将导致Windows用WM_PAINT消息调用窗口过程（如果整个客户区有效，则不调用窗口过程）。这一WM_PAINT消息不进入消息队列，直接由WINDOWS调用窗口过程。窗口过程完成刷新以后立刻退出，WINDOWS将控制返回给程序中UpdateWindow调用之后的语句。
+
+
+   
+
+
+   UpdateData()顺便说下，这个函数不是刷新界面用的。UpdateData();参数为FALSE时，将界面上控件绑定的变量的数据导到控件内，参数为TRUE时，导入方向则相反。

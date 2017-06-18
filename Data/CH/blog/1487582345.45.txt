@@ -1,0 +1,150 @@
+应用Sift算子的模式识别方法 内核篇总的来说，模式识别方法分两步：train&amp;predict.
+
+经过谭敏师姐细心讲解和细读 siftdemov4 code，将这两部的理解解释如下:
+
+(以下提到的feature都是指sift feature)
+
+
+
+
+
+一、train
+
+
+
+   1.提取&#43;/- sample的feature，每幅图提取出的sift特征个数不定（假设每个feature有128维）
+
+
+   2.利用聚类方法（e.g K-means）将不定数量的feature聚类为固定数量的(比如10个)words即BOW（bag of word）
+
+
+   3.normalize，并作这10个类的直方图e.g [0.1，0.2，0.7，0...0];
+
+
+   4.将each image的这10个word作为feature_instance 和 (手工标记的) label（&#43;/-）进入SVM训练
+
+
+
+
+
+二、predict
+
+
+
+   1. 提取test_img的feature（如137个）
+
+
+   2. 分别求each feature与10个类的距离(e.g. 128维欧氏距离)，确定该feature属于哪个类
+
+3. normalize，并作这10个类的直方图e.g [0，0.2，0.2，0.6，0...0];
+
+
+
+   4. 应用SVM_predict进行结果预测
+
+
+                                                                                      
+
+
+   
+
+
+
+
+   另外，讲一下有关两个img的sift特征match：
+
+
+   
+
+
+   des2t = des2';     % Precompute matrix transpose转置
+for i = 1 : size(des1,1)
+   dotprods = des1(i,:) * des2t; % Computes vector of dot products两幅图像的keypoints的128个维度做点积
+   [vals,indx] = sort(acos(dotprods));  % Take inverse cosine and sort results，将点积的逆余弦排序
+
+   % Check if nearest neighbor has angle less than distRatio times 2nd.
+   if (vals(1) &lt; distRatio * vals(2))
+      match(i) = indx(1);%match(i)表示图1中i-th keypoint的匹配点是图2中的第几个keypoint
+   else
+      match(i) = 0;
+   end
+end
+
+
+这里，两个matrix做点积（转置后）dotprods = des1(i,:) * des2t; 可以得出img1中的一个feature点与img2中所有点的点乘
+
+   
+
+
+   这样做的目的：因为for向量a,b,
+
+
+   a·b=|a|*|b|*cos&lt;a,b&gt;
+
+
+   那么arccos(dotprods)就是夹角。对夹角排序，vals(1),vals(2)分别是所夹最小角和次小角
+
+
+   
+
+
+   vals(1) &lt; distRatio * vals(2)
+
+是match的条件，即最小角小于distRatio(const value)乘以次小角。
+
+   
+
+
+   满足该条件即可将图1中的第i个feature和图2中的第indx(1)个feature进行匹配。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   关于sift的其他讲解:
+
+
+   
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7639681
+
+
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7372880
+
+
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7365882
+
+
+   
+
+
+
+
+   
+
+
+
+
+   关于computer vision的更多讨论与交流，敬请关注本博客和新浪微博Sophia_qing。

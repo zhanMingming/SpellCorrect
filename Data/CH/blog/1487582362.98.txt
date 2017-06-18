@@ -1,0 +1,168 @@
+简单计算器（hdu 1237）题目描述：
+ 读入一个只包含 &#43;, -, *, / 的非负整数计算表达式，计算该表达式的&#20540;。
+
+
+
+
+输入：
+ 测试输入包含若干测试用例，每个测试用例占一行，每行不超过200个字符，整数和运算符之间用一个空&#26684;分隔。没有非法表达式。当一行中只有0时输入结束，相应的结果不要输出。
+
+
+
+
+输出：
+ 对每个测试用例输出1行，即该表达式的&#20540;，精确到小数点后2位。
+
+
+
+
+样例输入：
+
+   1 &#43; 2
+4 &#43; 2 * 5 - 7 / 11
+0
+
+
+
+样例输出：
+
+   3.00
+13.36
+
+
+   
+
+
+   思路：
+
+
+   栈，后缀表达式。
+
+
+   中缀表达式-&gt;后缀表达式：栈中的操作符从栈顶到栈底 严&#26684;递减（即保证push到符号栈的符号必然比栈顶符号优先级高，否则pop）
+
+
+   错误提示：
+
+
+   改到要崩溃才想到float精度不够，要用double
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;stack&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+
+char e[250],post[250];
+stack&lt;char&gt;Op;
+
+bool Isnum(char c)
+{
+	if(c&gt;='0'&amp;&amp;c&lt;='9')
+		return true;
+	return false;
+}
+
+int OPMode(char c)
+{
+	if(c=='+')		return 1;
+	if(c=='-')		return 2;
+	if(c=='*')		return 3;
+	if(c=='/')		return 4;
+	return -1;
+}
+
+void SplitExp(char* s)
+{
+	int i,j=0;
+	memset(post,'\0',sizeof(post));
+	for(i=0;i&lt;strlen(s);i++)
+	{
+		if(s[i]==' ')
+			continue;
+		post[j++]=' ';
+		while(Isnum(s[i]))
+			post[j++]=s[i++];
+		int curop=OPMode(s[i]);
+		if(curop!=-1)
+		{
+			if(curop&lt;=2)
+				while(!Op.empty())
+				{
+					post[j++]=Op.top();
+					Op.pop();
+				}
+			else
+			{
+				while(!Op.empty()&amp;&amp;OPMode(Op.top())&gt;2)
+				{
+					post[j++]=Op.top();
+					Op.pop();
+				}
+			}
+			Op.push(s[i])	;
+		}
+	}
+	while(!Op.empty())
+	{
+		post[j++]=Op.top();
+		Op.pop();
+	}
+}
+
+stack&lt;double&gt;Num;
+double Cal()
+{
+	while(!Num.empty())
+		Num.pop();
+	int i=0,j;
+	int len=strlen(post);
+	while (i++&lt;len)
+	{
+		if(post[i]==' ')
+			continue;
+		double cur=0;
+		bool hasnum=false;
+		while (Isnum(post[i]))
+		{
+			cur*=10;
+			cur+=post[i++]-'0';
+			hasnum=true;
+		}
+		if(hasnum)
+			Num.push(cur);
+		if(OPMode(post[i])!=-1)
+		{
+			double num1=Num.top();
+			Num.pop();
+			double num2=Num.top();
+			Num.pop();
+			switch(post[i])
+			{
+			case '+':		Num.push(num2+num1);break;
+			case '-':		Num.push(num2-num1);break;
+			case '*':		Num.push(num2*num1);break;
+			case '/':		Num.push(num2/num1);break;
+			}
+		}
+	}
+	return Num.top();
+}
+
+int main()
+{
+	while(gets(e))
+	{
+		if(strcmp(e,&quot;0&quot;)==0)
+			break;
+		SplitExp(e);
+		printf(&quot;%.2f\n&quot;,Cal());
+	}
+}

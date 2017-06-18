@@ -1,0 +1,626 @@
+redis数据类型Hash的常用命令redis的文档写的还是比较详细的，中文版:http://doc.redisfans.com/ 英文版:http://redis.io/commands。这篇文章主要是自己亲自实践一下redis的基本操作，做个备忘，加深印象。
+
+HSET key field value
+
+将哈希表 key 中的域 field 的&#20540;设为 value。如果 key 不存在，一个新的哈希表被创建并进行 HSET 操作。如果域 field 已经存在于哈希表中，旧&#20540;将被覆盖。
+
+
+
+
+返回&#20540;：
+
+
+如果 field 是哈希表中的一个新建域，并且&#20540;设置成功，返回 1 。
+
+如果哈希表中域 field 已经存在且旧&#20540;已被新&#20540;覆盖，返回 0 。
+
+
+
+
+例子：
+
+
+
+
+
+   redis&gt; HSET website google &quot;www.g.cn&quot;# 设置一个新域
+(integer) 1
+
+redis&gt; HSET website google &quot;www.google.com&quot; # 覆盖一个旧域
+(integer) 0
+
+
+
+
+
+
+
+HSETNX key field value
+
+
+
+将哈希表 key 中的域 field 的&#20540;设置为 value ，当且仅当域 field 不存在。若域 field 已经存在，该操作无效。如果 key 不存在，一个新哈希表被创建并执行 HSETNX 命令。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+设置成功，返回 1 。
+
+如果给定域已经存在且没有操作被执行，返回 0 。
+
+
+
+
+
+
+
+
+
+例子：
+
+
+
+   redis&gt; HSETNX nosql key-value-store redis
+(integer) 1
+
+redis&gt; HSETNX nosql key-value-store redis# 操作无效，域 key-value-store 已存在
+(integer) 0
+
+
+
+HMSET key field value [field value ...]
+
+
+
+同时将多个 field-value (域-&#20540;)对设置到哈希表 key 中。此命令会覆盖哈希表中已存在的域。如果 key 不存在，一个空哈希表被创建并执行 HMSET 操作。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+如果命令执行成功，返回 OK 。
+
+当 key 不是哈希表(hash)类型时，返回一个错误。
+
+
+
+
+
+
+
+
+
+例子：
+
+
+
+   redis&gt; HMSET website google &quot;www.google.com&quot; yahoo &quot;www.yahoo.com&quot;
+OK
+redis&gt; set name &quot;aty&quot;
+OK
+redis&gt; HMSET name key &quot;aty&quot;
+(error) WRONGTYPE Operation against a key holding the wrong kind of value  
+
+
+
+
+
+HGET key field
+
+
+
+返回哈希表 key 中给定域 field 的&#20540;。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+
+
+给定域的&#20540;。
+
+当给定域不存在或是给定 key 不存在时，返回 nil 。
+
+
+
+
+
+
+
+
+
+例子：
+
+
+
+   # 域存在
+redis&gt; HSET site redis redis.com
+(integer) 1
+
+redis&gt; HGET site redis
+&quot;redis.com&quot;
+
+# 域不存在
+redis&gt; HGET site mysql
+(nil)
+
+
+
+HMGET key field [field ...]
+
+
+返回哈希表 key 中，一个或多个给定域的&#20540;。如果给定的域不存在于哈希表，那么返回一个 nil &#20540;。因为不存在的 key 被当作一个空哈希表来处理，所以对一个不存在的 key 进行 HMGET 操作将返回一个只带有 nil &#20540;的表。
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+
+一个包含多个给定域的关联&#20540;的表，表&#20540;的排列顺序和给定域参数的请求顺序一样。
+
+
+
+
+
+
+
+
+
+例子：
+
+
+
+
+   redis&gt; HMSET pet dog &quot;doudou&quot; cat &quot;nounou&quot;    # 一次设置多个域
+OK
+
+redis&gt; HMGET pet dog cat fake_pet      # 返回值的顺序和传入参数的顺序一样
+1) &quot;doudou&quot;
+2) &quot;nounou&quot;
+3) (nil)  
+
+
+HGETALL key
+
+
+
+返回哈希表 key 中，所有的域和&#20540;。在返回&#20540;里，紧跟每个域名(field name)之后是域的&#20540;(value)，所以返回&#20540;的长度是哈希表大小的两倍。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+以列表形式返回哈希表的域和域的&#20540;。
+
+若 key 不存在，返回空列表。
+
+
+
+
+
+
+
+例子：
+
+
+   redis&gt; HGETALL people
+(empty list or set)
+
+redis&gt; HSET people jack &quot;Jack Sparrow&quot;
+(integer) 1
+
+redis&gt; HSET people gump &quot;Forrest Gump&quot;
+(integer) 1
+
+redis&gt; HGETALL people
+1) &quot;jack&quot;   # 域
+2) &quot;Jack Sparrow&quot;  # 值
+3) &quot;gump&quot;		   # 域
+4) &quot;Forrest Gump&quot;  # 值
+
+
+HKEYS key
+
+
+
+返回哈希表 key 中的所有域。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+一个包含哈希表中所有域的表。
+
+当 key 不存在时，返回一个空表。
+
+
+
+
+
+
+
+例子：
+
+
+   # 哈希表非空
+redis&gt; HMSET website google www.google.com yahoo www.yahoo.com
+OK
+
+redis&gt; HKEYS website
+1) &quot;google&quot;
+2) &quot;yahoo&quot;
+
+
+# 空哈希表/key不存在
+redis&gt; EXISTS fake_key
+(integer) 0
+
+redis&gt; HKEYS fake_key
+(empty list or set)
+
+
+HVALSkey
+
+
+
+返回哈希表 key 中所有域的&#20540;。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+一个包含哈希表中所有&#20540;的表。
+
+当 key 不存在时，返回一个空表。
+
+
+
+
+
+
+
+例子：
+
+
+   # 非空哈希表
+redis&gt; HMSET website google www.google.com yahoo www.yahoo.com
+OK
+
+redis&gt; HVALS website
+1) &quot;www.google.com&quot;
+2) &quot;www.yahoo.com&quot;
+
+
+# 空哈希表/不存在的key
+redis&gt; EXISTS not_exists
+(integer) 0
+
+redis&gt; HVALS not_exists
+(empty list or set)
+
+
+HLENkey
+
+
+
+返回哈希表 key 中域的数量。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+哈希表中域的数量。
+
+当 key 不存在时，返回 0 。
+
+
+
+
+
+
+
+例子：
+
+
+   redis&gt; HLEN db
+(integer) 0
+
+redis&gt; HSET db redis redis.com
+(integer) 1
+
+redis&gt; HSET db mysql mysql.com
+(integer) 1
+
+redis&gt; HLEN db
+(integer) 2
+
+redis&gt; HSET db mongodb mongodb.org
+(integer) 1
+
+redis&gt; HLEN db
+(integer) 3
+
+
+HEXISTS key field
+
+
+
+查看哈希表 key 中，给定域 field 是否存在。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+如果哈希表含有给定域，返回 1 。
+
+如果哈希表不含有给定域，或 key 不存在，返回 0 。
+
+
+
+
+
+
+
+例子：
+
+
+   redis&gt; HEXISTS phone myphone
+(integer) 0
+
+redis&gt; HSET phone myphone nokia-1110
+(integer) 1
+
+redis&gt; HEXISTS phone myphone
+(integer) 1
+
+
+HDEL key field [field ...]
+
+
+
+删除哈希表 key 中的一个或多个指定域，不存在的域将被忽略。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+被成功移除的域的数量，不包括被忽略的域。
+
+
+
+
+
+
+
+例子：
+
+
+   # 测试数据
+redis&gt; HGETALL abbr
+1) &quot;a&quot;
+2) &quot;apple&quot;
+3) &quot;b&quot;
+4) &quot;banana&quot;
+5) &quot;c&quot;
+6) &quot;cat&quot;
+7) &quot;d&quot;
+8) &quot;dog&quot;
+
+# 删除单个域
+redis&gt; HDEL abbr a
+(integer) 1
+
+# 删除不存在的域
+redis&gt; HDEL abbr not-exists-field
+(integer) 0
+
+# 删除多个域
+redis&gt; HDEL abbr b c
+(integer) 2
+
+redis&gt; HGETALL abbr
+1) &quot;d&quot;
+2) &quot;dog&quot;
+
+
+HINCRBY key field increment
+
+
+
+为哈希表 key 中的域 field 的&#20540;加上增量 increment 。增量也可以为负数，相当于对给定域进行减法操作。如果 key 不存在，一个新的哈希表被创建并执行 HINCRBY 命令。如果域 field 不存在，那么在执行命令前，域的&#20540;被初始化为 0 。对一个储存字符串&#20540;的域 field 执行 HINCRBY 命令将造成一个错误。本操作的&#20540;被限制在 64 位(bit)有符号数字表示之内。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+执行 HINCRBY 命令之后，哈希表 key 中域 field 的&#20540;。
+
+
+
+
+
+
+
+例子：
+
+
+
+
+   # increment 为正数
+redis&gt; HEXISTS counter page_view    # 对空域进行设置
+(integer) 0
+
+redis&gt; HINCRBY counter page_view 200
+(integer) 200
+
+redis&gt; HGET counter page_view
+&quot;200&quot;
+
+
+# increment 为负数
+redis&gt; HGET counter page_view
+&quot;200&quot;
+
+redis&gt; HINCRBY counter page_view -50
+(integer) 150
+
+redis&gt; HGET counter page_view
+&quot;150&quot;
+
+# 尝试对字符串值的域执行HINCRBY命令
+redis&gt; HSET myhash string hello,world# 设定一个字符串值
+(integer) 1
+
+redis&gt; HGET myhash string
+&quot;hello,world&quot;
+
+redis&gt; HINCRBY myhash string 1# 命令执行失败，错误。
+(error) ERR hash value is not an integer
+
+redis&gt; HGET myhash string     # 原值不变
+&quot;hello,world&quot;
+
+
+HINCRBYFLOAT key field increment
+
+
+
+为哈希表 key 中的域 field 加上浮点数增量 increment 。如果哈希表中没有域 field ，那么 HINCRBYFLOAT 会先将域 field 的&#20540;设为 0 ，然后再执行加法操作。如果键 key 不存在，那么 HINCRBYFLOAT 会先创建一个哈希表，再创建域 field ，最后再执行加法操作。
+
+当以下任意一个条件发生时，返回一个错误：
+
+域 field 的&#20540;不能转换成数字类型(因为 redis 中的数字和浮点数都以字符串的形式保存，所以它们都属于字符串类型）
+
+域 field 当前的&#20540;或给定的增量 increment 不能解释(parse)为双精度浮点数(double precision floating point number)
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+执行加法操作之后 field 域的&#20540;。
+
+
+
+
+
+
+
+例子：
+
+
+   # 值和增量都是普通小数
+redis&gt; HSET mykey field 10.50
+(integer) 1
+redis&gt; HINCRBYFLOAT mykey field 0.1
+&quot;10.6&quot;
+
+# 值和增量都是指数符号
+redis&gt; HSET mykey field 5.0e3
+(integer) 0
+redis&gt; HINCRBYFLOAT mykey field 2.0e2
+&quot;5200&quot;
+
+# 对不存在的键执行 HINCRBYFLOAT
+redis&gt; EXISTS price
+(integer) 0
+redis&gt; HINCRBYFLOAT price milk 3.5
+&quot;3.5&quot;
+redis&gt; HGETALL price
+1) &quot;milk&quot;
+2) &quot;3.5&quot;
+
+
+# 对不存在的域进行 HINCRBYFLOAT
+redis&gt; HGETALL price
+1) &quot;milk&quot;
+2) &quot;3.5&quot;
+redis&gt; HINCRBYFLOAT price coffee 4.5   # 新增 coffee 域
+&quot;4.5&quot;
+redis&gt; HGETALL price
+1) &quot;milk&quot;
+2) &quot;3.5&quot;
+3) &quot;coffee&quot;
+4) &quot;4.5&quot;

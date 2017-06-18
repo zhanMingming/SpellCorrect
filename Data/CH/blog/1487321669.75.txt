@@ -1,0 +1,75 @@
+什么是social media？什么是社会化媒体，首先要从媒体的定义来看，媒体就是信息的载体或者平台。
+
+
+    周口店猿人之间的对话不算媒体，一个猿人把狩猎场面刻在了石头上，其他猿人和今人看到了，这个石头就是媒体，后来的猿人可以模仿上面刻画的狩猎技能，今天我们看到的所有文物都是媒体，这个意义上说媒体具有存在性，至少能存在一段时间，凡是不能存在的东西，必然不是媒体。
+
+
+    具有存在性不一定就是媒体，我在我自己的杯子上写了一首诗，杯子就不是媒体，因为不具有发布性，没有受众，媒体一定需要有消费者。没有消费的信息，不是信息，其载体也不是媒体。因此媒体要具有发布性，要有一定规模的受众。
+
+
+    其次，为什么是社会化的？和工业媒体（industrial media）有什么区别呢？ WIKI做了很好的概括（参见推荐阅读）。
+
+    为什么social media会选择互联网作为载体？其实这是一个很深刻的问题，从PC机开始，信息复制的成本变得越来越便宜，复制本身的成本，复制载体(磁盘，U盘，光盘）的成本都越来越便宜。从互联网开始，信息传播的成本越来越便宜，连电话都是IP电话，可见互联网在传播上的巨大优势，因此正是因为复制和传播的成本降低到这样一个程度，Social Media，人人都做信息发布者，分享者，消费者成为了可能。
+
+
+    Social Media有哪些形式呢？wiki上也有丰富的交代，其中推特和脸谱最为突出，并且在刚刚突尼斯和埃及的历史进程中扮演了重要角色。国家是需要控制媒体的，大众的思想需要有效的维护，社会化网络，社会化媒体扩大了信息的传播性，透明性，必将成为媒体研究者新的重要课题。
+
+
+    
+
+
+    作为搜索引擎或者相关研究的人员，Social Media孕育着哪些机会呢？
+
+
+    （1）信息的分享，产生可以由每个网民发起，因此可以收集大量的体验性，评价性的观点类信息，这是非常有价值的。
+
+
+   （2）厌倦官方新闻的人们更喜欢一些来自&ldquo;民间&rdquo;的新闻，生活化的，百姓自选的新闻，Reddit这类社会化新闻，或者一些新闻热点类聚合新闻，这种在普通新闻上，增加了若干处理的新闻获得了多的关注。
+
+
+    （3）统计性信息，我们不可能看所有新闻，和领导一样喜欢看简报，如何将信息处理得更简洁，更有效，更有数据性，真实性必将是一大趋势。
+
+
+    
+
+
+   
+
+
+   
+
+
+   参考阅读
+
+
+    http://wenku.baidu.com/view/f631b4daa58da0116c17491b.html
+
+
+    http://en.wikipedia.org/wiki/Social_media
+
+
+   
+
+
+   社会化媒体的定义 
+
+
+    Social media are media for social interaction, using highly accessible and scalable communication techniques. Social media is the use of web-based and mobile technologies to turn communication into interactive dialogue. Andreas Kaplan and Michael Haenlein also define social media as "a group of Internet-based applications that build on the ideological and technological foundations of Web 2.0, which allows the creation and exchange of user-generated content."[1] Businesses also refer to social media as consumer-generated media (CGM). A common thread running through all definitions of social media is a blending of technology and social interaction for the co-creation of value.
+
+
+    --http://en.wikipedia.org/wiki/Social_media
+
+
+   
+
+
+    社会化媒体和工业媒体的区别：
+
+
+
+
+Reach - both industrial and social media technologies provide scale and enable anyone to reach a global audience.
+Accessibility - the means of production for industrial media are typically owned privately or by government; social media tools are generally available to anyone at little or no cost.
+Usability - industrial media production typically requires specialized skills and training. Most social media does not, or in some cases reinvent skills, so anyone can operate the means of production.
+Recency - the time lag between communications produced by industrial media can be long (days, weeks, or even months) compared to social media (which can be capable of virtually instantaneous responses; only the participants determine any delay in response). As industrial media are currently adopting social media tools, this feature may well not be distinctive anymore in some time.
+Permanence - industrial media, once created, cannot be altered (once a magazine article is printed and distributed changes cannot be made to that same article) whereas social media can be altered almost instantaneously by comments or editing.

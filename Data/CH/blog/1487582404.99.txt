@@ -1,0 +1,159 @@
+Catch hdu 3478Catch
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 466Accepted Submission(s): 228
+
+Problem Description
+
+A thief is running away!We can consider the city where he locates as an undirected graph in which nodes stand for crosses and edges stand for streets. The crosses are labeled from 0 to N&ndash;1. The tricky thief starts his escaping from cross S. Each moment he moves to an adjacent cross. More exactly, assume he is at cross u at the moment t. He may appear at cross v at moment t + 1 if and only if there is a street between cross u and cross v. Notice that he may not stay at the same cross in two consecutive moment.The cops want to know if there&rsquo;s some moment at which it&rsquo;s possible for the thief to appear at any cross in the city.
+
+
+
+
+   
+
+Input
+
+The input contains multiple test cases:In the first line of the input there&rsquo;s an integer T which is the number of test cases. Then the description of T test cases will be given. For any test case, the first line contains three integers N (&le; 100 000), M (&le; 500 000), and S. N is the number of crosses. M is the number of streets and S is the index of the cross where the thief starts his escaping.For the next M lines, there will be 2 integers u and v in each line (0 &le; u, v &lt; N). It means there&rsquo;s an undirected street between cross u and cross v.
+
+
+
+
+   
+
+Output
+
+For each test case, output one line to tell if there&rsquo;s a moment that it&rsquo;s possible for the thief to appear at any cross. Look at the sample output for output format.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2
+3 3 0
+0 1
+0 2
+1 2
+2 1 0
+0 1
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   Case 1: YES
+Case 2: NO
+
+
+Hint
+For the first case, just look at the table below. (YES means the thief may appear at the cross at that moment)
+ 
+For the second input, at any moment, there&rsquo;s at least one cross that the thief can&rsquo;t reach.
+ 
+
+
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（5）&mdash;&mdash;Host by BJTU 
+
+Thinking:
+
+用dp[N][2]这样一个数组标示某一点是否能在奇数步和偶数步到达。然后以bfs为遍历载体遍历图中的所有节点。最后数是不是能用奇数步或者偶数步到达所有点。如果可以则输出YES，否则输出NO。
+
+#include&lt;iostream&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define N 100005
+vector&lt;int&gt;g[N];
+int n,m,s;
+struct NODE
+{
+	int id,time;
+};
+
+int dp[N][2];
+int visited[N][2];
+
+void bfs(int n,int m,int s)
+{
+	int i,j,x,y;
+	queue&lt;NODE&gt;q;
+	NODE p;
+	p.id=s;
+	p.time=0;
+	q.push(p);
+	dp[s][0]=visited[s][0]=1;
+	while(!q.empty())
+	{
+		NODE t;
+		p=q.front();
+		q.pop();
+		int k=g[p.id].size();
+		for(i=0;i&lt;k;i++)
+		{
+			t.id=g[p.id][i];
+			t.time=(p.time+1)%2;
+			if(dp[p.id][p.time]==1)
+				dp[t.id][t.time]=1;
+			if(visited[t.id][t.time]==0)
+			{
+				q.push(t);
+				visited[t.id][t.time]=1;
+			}
+		}
+	}
+	x=y=0;
+	for(i=0;i&lt;n;i++)
+	{
+		x+=dp[i][0];
+		y+=dp[i][1];
+	}
+	if(x==n||y==n)
+		cout&lt;&lt;"YES"&lt;&lt;endl;
+	else
+		cout&lt;&lt;"NO"&lt;&lt;endl;
+}
+
+int main()
+{
+	int T,i;
+	cin&gt;&gt;T;
+	int r=1;
+	while(T--)
+	{
+		scanf("%d%d%d",&amp;n,&amp;m,&amp;s);
+		for(int j=0;j&lt;n;j++)
+		{
+			dp[j][0]=dp[j][1]=0;
+			visited[j][0]=visited[j][1]=0;
+			g[j].clear();
+		}
+		for(i=0; i&lt;m; i++)
+		{
+			int a,b;
+			scanf("%d%d",&amp;a,&amp;b);
+			g[a].push_back(b);
+			g[b].push_back(a);
+		}
+		printf("Case %d: ",r++);
+		bfs(n,m,s);
+	}
+	return 0;
+}

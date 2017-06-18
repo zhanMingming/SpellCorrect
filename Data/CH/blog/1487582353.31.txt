@@ -1,0 +1,204 @@
+Dijkstra最短路径模板2Dijkstra最短路径模板1：http://blog.csdn.net/abcjennifer/article/details/7243297
+
+   problem:HDU 1874
+畅通工程续Time Limit: 3000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 9321Accepted Submission(s): 3108Problem Description
+某省自从实行了很多年的畅通工程计划后，终于修建了很多路。不过路多了也不好，每次要从一个城镇到另一个城镇时，都有许多种道路方案可以选择，而某些方案要比另一些方案行走的距离要短很多。这让行人很困扰。现在，已知起点和终点，请你计算出要从起点到终点，最短需要行走多少距离。
+
+Input
+本题目包含多组数据，请处理到文件结束。每组数据第一行包含两个正整数N和M(0&lt;N&lt;200,0&lt;M&lt;1000)，分别代表现有城镇的数目和已修建的道路的数目。城镇分别以0～N-1编号。接下来是M行道路信息。每一行有三个整数A,B,X(0&lt;=A,B&lt;N,A!=B,0&lt;X&lt;10000),表示城镇A和城镇B之间有一条长度为X的双向道路。再接下一行有两个整数S,T(0&lt;=S,T&lt;N)，分别代表起点和终点。
+
+Output
+对于每组数据，请在一行里输出最短需要行走的距离。如果不存在从S到T的路线，就输出-1.
+
+Sample Input
+
+   3 3
+0 1 1
+0 2 3
+1 2 1
+0 2
+3 1
+0 1 1
+1 2
+
+
+Sample Output
+
+   2
+-1
+
+
+Author
+linle
+
+Source
+2008浙大研究生复试热身赛（2）——全真模拟
+
+
+   //
+//  Dijkstra
+//  ACM
+//  Find the k biggest number in an array
+//
+//  Created by Rachel on 12-2-23.
+//  Copyright (c) 2014年 ZJU. All rights reserved.
+//
+
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;stdio.h&gt;
+#include &lt;functional&gt;
+#include &lt;utility&gt;
+using namespace std;
+#define N 505
+#define INF 100000000
+#define min(a,b) a&lt;b?a:b
+
+int map[N][N];
+int minres[N]; //min distance from source to point_i
+bool visited[N];
+
+void init(int n)
+{
+    int i,j;
+    for (i=0; i&lt;n; i++) {
+ for (j=0; j&lt;n; j++) {
+     map[i][j] = INF;
+ }
+ minres[i] = INF;
+    }
+    memset(visited, false, sizeof(visited));
+}
+
+void dijkstra(int source, int dest, int n)
+{
+    int i,j;
+    for(i=0;i&lt;n;i++)
+ minres[i]=map[source][i];
+    visited[source]=true;
+    
+    // (n-1) times, each time select one point into the start point set
+    for (j=0; j&lt;n-1; j++) {
+ //select a point to add into the start point set
+ int minn = INF, point=-1;
+ for(i=0;i&lt;n;i++)
+     if (!visited[i]&amp;&amp;minres[i]&lt;minn) {
+  minn = minres[i];
+  point = i;
+     }
+ if(point==-1 || point==dest)
+     break;
+ visited[point] = true;
+ 
+ //update the min distance of other points
+ for (i=0; i&lt;n; i++) {
+     if (!visited[i]&amp;&amp;minres[i]&gt;minres[point]+map[point][i]) {
+  minres[i] = minres[point]+map[point][i];
+     }
+ }
+    }
+}
+
+int main()
+{
+    int i,m,n,a,b,t,source,dest;
+    while (cin&gt;&gt;n&gt;&gt;m) {
+ init(n);
+ for(i=0;i&lt;m;i++)
+ {
+     scanf(&quot;%d%d%d&quot;,&amp;a,&amp;b,&amp;t);
+     map[b][a] = map[a][b]= min(map[a][b],t);
+ }
+ cin&gt;&gt;source&gt;&gt;dest;
+ if (source==dest) {
+     cout&lt;&lt;0&lt;&lt;endl;
+     continue;
+ }
+ dijkstra(source,dest,n);
+ if (minres[dest]==INF) {
+     minres[dest] = -1;
+ }
+ cout&lt;&lt;minres[dest]&lt;&lt;endl;
+    }
+}
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;map&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 205
+#define INF 1&lt;&lt;29
+
+struct MAP
+{
+    int node;
+    int dis;
+    MAP(int a,int b)
+    {
+ node=a;
+ dis=b;
+    }
+};
+
+vector&lt;MAP&gt; path[N];
+int minres[N];
+int n,m;
+
+void spfa(int s,int e)
+{
+    queue&lt;int&gt;Q;
+    bool used[N]={false};
+    Q.push(s);
+    used[s]=true;
+    
+    int i;
+    for(i=0;i&lt;n;i++)
+ minres[i]=INF;
+    minres[s]=0;
+    while(!Q.empty())
+    {
+ int now=Q.front();
+ Q.pop();
+ used[now]=false;
+ for(i=0;i&lt;path[now].size();i++)
+ {
+     int tmpend=path[now][i].node;
+     int dis=path[now][i].dis;
+     
+     if(minres[tmpend]&gt;minres[now]+dis)
+     {
+  minres[tmpend]=minres[now]+dis;
+  if(!used[tmpend])
+      Q.push(tmpend);
+  used[tmpend]=true;
+     }
+ }
+    }
+}
+
+int main()
+{
+    while(cin&gt;&gt;n&gt;&gt;m)
+    {
+ int i,j,a,b,c;
+ for(i=0;i&lt;n;i++)
+     path[i].clear();
+ while(m--)
+ {
+     cin&gt;&gt;a&gt;&gt;b&gt;&gt;c;
+     path[a].push_back(MAP(b,c));
+     path[b].push_back(MAP(a,c));
+ }
+ cin&gt;&gt;a&gt;&gt;b;
+ spfa(a,b);
+ int ans=minres[b]&gt;=INF?-1:minres[b];
+ cout&lt;&lt;ans&lt;&lt;endl;
+    }
+}

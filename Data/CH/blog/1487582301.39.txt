@@ -1,0 +1,177 @@
+真实感球绘制真实感球的绘制关键函数：
+
+   	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_shininess);//设置材料反射指数
+
+   	glLightfv(GL_LIGHT0, GL_POSITION, light_position);//光源位置
+
+   	glShadeModel ( GL_SMOOTH ); //设置阴影模型
+
+   	glViewport (0, 0, (GLsizei) w, (GLsizei) h); 视点设计
+
+   	glOrtho (x1,x2,y1,y2,z1,z2); //创建平行视景体
+
+   
+
+   
+
+   # include &lt; GL/glut.h &gt; 
+/* 初始化材料属性、光源属性、光照模型，打开深度缓冲区等 */ 
+void init(void) 
+{ 
+	GLfloat light_position [ ] = { 1.0, 1.0, 1.0, 0.0 }; 
+	GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+	glClearColor ( 0.0, 0.0, 1.0, 0.0 ); //设置背景色为蓝色
+	glShadeModel ( GL_SMOOTH ); 
+	//glMaterialfv(GL_FRONT,GL_AMBIENT,mat_specular);
+	 glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glLightfv ( GL_LIGHT0, GL_POSITION, light_position); 
+	glEnable (GL_LIGHTING); 
+	glEnable (GL_LIGHT0); 
+	glEnable (GL_DEPTH_TEST); 
+} 
+/*调用 GLUT 函数,绘制一个球*/ 
+void display ( void ) 
+{ 
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	glutSolidSphere (1.0, 40, 50);    //半径为 1,40 条纬线,50 条经线
+	glFlush (); 
+} 
+/* 定义 GLUT 的 reshape 函数，w、h 分别是输出图形的窗口的宽和高*/ 
+void reshape (int w, int h) 
+{ 
+	glViewport (0, 0, (GLsizei) w, (GLsizei) h); 
+	glMatrixMode (GL_PROJECTION); 
+	glLoadIdentity ( ); 
+	if (w &lt;= h) 
+		glOrtho (-1.5, 1.5, -1.5 * ( GLfloat ) h / ( GLfloat ) w, 
+		1.5* ( GLfloat ) h / ( GLfloat ) w, -10.0, 10.0 ); //创建平行视景体
+	else 
+		glOrtho (-1.5 * ( GLfloat ) w / ( GLfloat ) h,1.5 * ( GLfloat ) 
+		w/( GLfloat ) h, -1.5, 1.5, -10.0, 10.0); 
+	glMatrixMode ( GL_MODELVIEW ); 
+	glLoadIdentity ( ) ; 
+} 
+int main(int argc, char** argv) 
+{ 
+	glutInit (&amp;argc, argv);     // GLUT 环境初始化
+	glutInitDisplayMode (GLUT_SINGLE |GLUT_RGB |GLUT_DEPTH); // 显示模式初始化
+	glutInitWindowSize (300, 300);// 定义窗口大小
+	glutInitWindowPosition (100, 100);   // 定义窗口位置  
+	glutCreateWindow ( argv [ 0 ] );   // 显示窗口,窗口标题为执行函数名
+	init( );
+	glutDisplayFunc ( display ); 	// 注册 OpenGL 绘图函数(一种特殊的调用方式,下同) 
+	glutReshapeFunc ( reshape );   // 注册窗口大小改变时的响应函数
+	glutMainLoop( );      // 进入 GLUT 消息循环，开始执行程序
+	return 0; 
+} 
+   效果图：
+
+   
+
+   
+
+   将init( )中的
+
+   
+
+   GLfloat light_position [ ] = { 1.0, 1.0, 1.0, 0.0 }; 
+	GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+	glClearColor ( 0.0, 0.0, 1.0, 0.0 ); //设置背景色为蓝色
+	glShadeModel ( GL_SMOOTH ); 
+	//glMaterialfv(GL_FRONT,GL_AMBIENT,mat_specular);
+	 glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+   
+
+   改为
+
+   
+
+   GLfloat light_position [ ] = { 1.0, 1.0, 1.0, 0.0 }; 
+	GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat mat_shininess[] = { 50.0 };
+	glClearColor ( 0.0, 0.0, 1.0, 0.0 ); //设置背景色为蓝色
+	glShadeModel ( GL_SMOOTH ); 
+	//glMaterialfv(GL_FRONT,GL_AMBIENT,mat_specular);
+	 glMaterialfv(GL_FRONT, GL_SPECULAR, mat_diffuse);
+	 glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);//设置材料反射指数即将漫射光GL_DIFFUSE改为镜面光GL_SPECULAR，可得效果
+   
+
+   
+
+   
+
+   相应的还有环境光GL_AMBIENT，读者可执行尝试。
+
+   -----------------------------------------------------------
+
+   
+
+   
+
+   
+
+   上面的代码是用glut，即openGL utilizing tool做的，还有一种做法是用OpenGL的AUX，要下载glaux.lib和glaux.h, 代码如下：
+
+   
+
+   #include&lt;GL/glut.h&gt;
+#include &lt;gl/GLAUX.H&gt;
+#pragma comment(lib, &quot;glaux&quot;)
+
+void myinit(void)
+{
+	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat mat_shininess[] = { 50.0 };
+	GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);//set material 镜面光反射
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);//设置材料反射指数
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);//光源位置
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_DEPTH_TEST);
+}
+
+void display(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	auxSolidSphere(1.0);
+	glFlush();
+}
+
+void myReshape(GLsizei w, GLsizei h)
+{
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	if (w &lt;= h) 
+		glOrtho (-1.5, 1.5, -1.5*(GLfloat)h/(GLfloat)w, 
+		1.5*(GLfloat)h/(GLfloat)w, -10.0, 10.0);
+	else 
+		glOrtho (-1.5*(GLfloat)w/(GLfloat)h, 
+		1.5*(GLfloat)w/(GLfloat)h, -1.5, 1.5, -10.0, 10.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+
+int main(int argc, char** argv)
+{
+	auxInitDisplayMode (AUX_SINGLE | AUX_RGBA | AUX_DEPTH);
+	auxInitPosition (0, 0, 500, 500);
+	auxInitWindow ((LPCWSTR)&quot;Lighting Sphere&quot;);
+	myinit();
+	auxReshapeFunc ((AUXRESHAPEPROC)myReshape);
+	auxMainLoop((AUXMAINPROC)display);
+}效果如下：
+   
+
+   
+
+   
+
+   最后还看到一组超全的光亮度模型结果，代码在这里。
+
+   结果如图：

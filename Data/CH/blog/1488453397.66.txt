@@ -1,0 +1,207 @@
+使用swig为python添加c扩展总结1、 可以使用swig来创建c 的扩展程序，非常方便。目前没有时间研究内部机制，先暂时使用，后面在研究吧。
+
+   2、 swig使用步骤：为库的头文件建立.i文件：
+
+   %{
+
+   /* Includes theheader in the wrapper code */
+
+   #include&quot;code.h&quot;
+
+   #include&quot;sip.h&quot;
+
+   %}
+
+   /* Parse theheader file to generate wrappers */
+
+   %include&quot;code.h&quot;
+
+   %include&quot;sip.h&quot;
+
+   3、 使用swig命令生成py脚本及对应的C文件：swig –python sip.i。
+
+   4、 将生成的c源文件放到c扩展库中进行编译。
+
+   5、 这里有一个要注意：生成的动态链接库，必须是_sip.so，否则无法调用。swig是写死的。_sip.so需要拷贝到：/usr/local/lib/python2.7/site-packages/路径下。
+
+   6、 Makefile文件中，对于库引用的其他的库，必须显示的指出，否则Python无法找到对应的库。
+
+   7、 如何在c的扩展库中调用Python的函数——将c扩展库的回调函数设置为python函数：
+
+   swig是不支持直接在c的扩展库中调用Python函数的。它只支持将C的接口作为回调函数设置给c的库。
+
+   实现这个功能需要利用Python的c API和ctypes来实现。
+
+   Python c 的api包含一系列的函数：
+
+   PyCallable_Check：检查对象是否可调用；
+
+   PyArg_ParseTuple：解析参数列表，将Python参数解析为c；
+
+   PyEval_CallObject：调用对象；
+
+   Py_BuildValue：将c变量打包为Python的参数对象。
+
+   好了，有这些就足够了。
+
+   假设c库中有一个设置回调函数接口：
+
+   void set_callback_fun(void(*fun)(int, int , int))
+
+   {
+
+   }
+
+   下面是c扩展库中要添加的代码：
+
+   //全局变量，保存Python中要回调的可调用对象。
+
+   static PyObject*gCallbackFun = NULL;
+
+   //调用上面函数设置的python脚本函数
+
+   //Python可调用对象的转换函数，转化为C的调用方式
+
+   static voidcallbacfun(int type,int chn,int dataType)
+
+   {
+
+    PyObject* pArgs = NULL;
+
+    PyObject* pRetVal = NULL;
+
+    intnRetVal = 0;
+
+     pArgs = Py_BuildValue(&quot;(i, i,i)&quot;, type, chn, dataType);//将c的参数转化为Python的参数对象
+
+    pRetVal = PyEval_CallObject(gCallbackFun,pArgs);//调用Python的可调用对象。
+
+    Py_DECREF(pArgs);
+
+    Py_DECREF(pRetVal);
+
+   }
+
+   /// set_callback_fun函数的包装函数
+
+   static PyObject*wrap_set_callback_fun(PyObject *dummy, PyObject *args)
+
+   {
+
+    PyObject *temp = NULL;
+
+     if (PyArg_ParseTuple(args, &quot;O:set_callback_fun&quot;,&amp;temp)) {//获取Python对象
+
+    if (!PyCallable_Check(temp)) {//检查对象是否可以调用
+
+    PyErr_SetString(PyExc_TypeError,&quot;parameter must be callable&quot;);
+
+    }
+
+    Py_XINCREF(temp); /* Add a reference to new callback */
+
+    Py_XDECREF(gCallbackFun); /* Dispose ofprevious callback */
+
+    gCallbackFun = temp; /* 保存回调对象 */
+
+    }
+
+     set_callback_fun(callbacfun);//注意，这里掉一下包，用一个C的函数注册到c库中。
+
+      return Py_BuildValue(&quot;i&quot;,(gCallbackFun == NULL) ? 0 : 1);
+
+   }
+
+   注意：如果对象不可调用，会段错误。后面要解决一下。
+
+   Python代码：
+
+    CBFUNC =CFUNCTYPE(c_int, c_int, c_int, c_int)//创建一个c函数类型的对象工厂，该函数返回值为int，有三个入参，都为int。
+
+   callbakFunc = CBFUNC(pyFun)//根据Python可调用对象生成函数。
+
+   set_callback_fun(callbakFunc)//设置回调函数
+
+   注意：pyFun必须要有返回值。否则会报异常。
+
+   另外，我发现，不用CFUNCTYPE来生产c回调函数，直接用pyFun，也是可以的。至于区别，后面在研究一下吧，要写代码了。
+
+     几个异常问题：1、一个可以使用CFUNCTYPE，但是一个一使用它就段错误。2、回调函数可以不返回值，也是可以的。但是一个不返回就不可以。
+
+   在Python中使用c扩展时向C传递数组：
+
+   
+
+   8、 如果一个函数的参数是一个数组（指针），Python如何传递？下面的方法是可以直接传递列表。把这个加到.i文件中。
+
+   %{
+
+   static intconvert_darray(PyObject *input, int *ptr, int size) {
+
+    int i;
+
+    if (!PySequence_Check(input)) {
+
+   PyErr_SetString(PyExc_TypeError,&quot;Expecting a sequence&quot;);
+
+    return 0;
+
+    }
+
+    if (PyObject_Length(input) != size) {
+
+    PyErr_SetString(PyExc_ValueError,&quot;Sequencesize mismatch&quot;);
+
+    return 0;
+
+    }
+
+    for (i =0; i &lt; size; i++) {
+
+    PyObject *o =PySequence_GetItem(input,i);
+
+    if (!PyFloat_Check(o)) {
+
+    Py_XDECREF(o);
+
+   PyErr_SetString(PyExc_ValueError,&quot;Expecting a sequence offloats&quot;);
+
+    return 0;
+
+    }
+
+    ptr[i] = PyFloat_AsDouble(o);
+
+    Py_DECREF(o);
+
+    }
+
+    return 1;
+
+   }
+
+   %}
+
+   %typemap(in) int[ANY](int temp[$1_dim0]) {
+
+    if (!convert_darray($input,temp,$1_dim0)) {
+
+    return NULL;
+
+    }
+
+    $1 = &amp;temp[0];
+
+   }
+
+   9、 如果一个结构体中有一个int类型数组，应该如何赋值？
+
+   在.i中增加下面代码：
+
+   %include&quot;carrays.i&quot;
+
+   %array_class(int,intArray);
+
+   在Python中申请数组：
+
+   a = intArray(10)，将A复制给数组成员即可。

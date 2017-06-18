@@ -1,0 +1,6 @@
+Hadoop 格式化namenode错误：FATAL namenode.NameNode: Exception innamenode joinERROR namenode.NameNode: java.io.IOException: Cannot create directory /export/home/dfs/name/currentERROR namenode.NameNode: java.io.IOException: Cannot remove current directory: /usr/local/hadoop/hdfsconf/name/current原因是 没有设置 /usr/hadoop/tmp 的权限没有设置， 将之改为：chown –R hadoop:hadoop /usr/hadoop/tmp
+   sudo chmod -R a+w /usr/local/hadoop
+
+   
+
+   经测试有效

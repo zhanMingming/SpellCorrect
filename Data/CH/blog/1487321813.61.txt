@@ -1,0 +1,1 @@
+数据结构的变长字段设计通常有这样两种方式struct ***{ ....... ...... size_t data_size; char pdata[0];};最后一个字段为变长字段。有一个好处最后一个字段直接使用不需要计算，不便之处，只能支持一个变长字段。const size_t FIELDCOUNT_T = 10;struct ***{ size_t fieldlen[FIELDCOUNT_];   char pdata[0];}可以支持多个变长字段,但是需要计算fieldlen,使用起来不方便,比如要读取最后一个字段,需要累计前9个字段的size,才能得到第十个变长字段的偏移量.

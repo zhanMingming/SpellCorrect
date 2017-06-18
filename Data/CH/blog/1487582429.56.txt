@@ -1,0 +1,68 @@
+C# 对话框比如我要在一个窗体里响应弹出一个对话框：
+
+
+   
+
+
+    private void button1_Click(object sender, EventArgs e)
+ {
+     Form2 sform = new Form2();
+     if (sform.ShowDialog() == DialogResult.OK)
+     {
+  string msg = string.Format("姓名:{0}/n性别:{1}/n年龄:{2}/n", sform.PersonName, sform.Sex, sform.Age);
+  MessageBox.Show(msg);
+     }
+     else
+  MessageBox.Show("Cancel");
+ } 
+
+
+   
+
+
+   在Form2.cs中：
+
+
+   
+
+
+    public string PersonName
+ {
+     get
+     {
+  return textBox1.Text;
+     }
+ }
+ public int Age
+ {
+     get
+     {
+  return int.Parse(comboBox1.Text);
+     }
+ }
+
+ public string Sex
+ {
+     get
+     {
+  return radioButton1.Checked ? "男" : "女";
+     }
+ }
+
+ private void button1_Click(object sender, EventArgs e)
+ {
+     if (textBox1.Text == "")
+     {
+  MessageBox.Show("名字不能为空！");
+  this.DialogResult = DialogResult.None;//停止关闭对话框
+  textBox1.Focus();//为控件设置初始焦点
+     }
+ }
+
+ private void button2_Click(object sender, EventArgs e)
+ {
+     if (MessageBox.Show("确定退出？", "采集信息系统", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+     {
+  Application.Exit();
+     }
+ }

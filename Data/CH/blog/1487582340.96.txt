@@ -1,0 +1,38 @@
+opencv 动态调节canny参数 边缘检测void on_trackbar3(int h)
+{
+	cvCanny( image, cedge, edge_thresh, edge_thresh*3, 3 );
+	cvShowImage(&quot;Adjust Canny Parameter&quot;,cedge);
+}
+
+void CCVMFCView::OnCannyAdjThres()
+{
+	cedge=cvCreateImage(cvGetSize(workImg),workImg-&gt;depth,1);
+	IplImage* color_dst = 0;
+	CvMemStorage* storage = cvCreateMemStorage(0);
+	CvSeq* lines = 0;
+	int i;
+
+	if (workImg-&gt;nChannels==3) {
+		image = cvCreateImage(cvGetSize(workImg), IPL_DEPTH_8U, 1);
+		cvCvtColor(workImg, image, CV_BGR2GRAY);
+	}
+	else {
+		image = cvCloneImage( workImg );
+	}
+	cvFlip(image);
+
+	dst = cvCreateImage( cvGetSize(image), 8 ,1 );
+	color_dst = cvCreateImage( cvGetSize(image), 8, 3 );
+	cvNamedWindow(&quot;Adjust Canny Parameter&quot;,CV_WINDOW_AUTOSIZE);
+	//cvShowImage(&quot;Adjust Canny Parameter&quot;,image);
+	cvCreateTrackbar(&quot;canny_thres&quot;,&quot;Adjust Canny Parameter&quot;,&amp;edge_thresh,100,on_trackbar3);
+	on_trackbar3(1);
+	
+	cvWaitKey(0);
+	cvDestroyWindow(&quot;Adjust Canny Parameter&quot;);
+	cvCvtColor( cedge, color_dst, CV_GRAY2BGR );
+	cvFlip(color_dst);
+	m_dibFlag=imageClone(color_dst,&amp;workImg);
+	m_ImageType=1;
+	Invalidate();
+}

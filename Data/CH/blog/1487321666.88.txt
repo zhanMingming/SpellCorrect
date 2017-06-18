@@ -1,0 +1,136 @@
+拿微软的英库做博士英语作业太爽了今天是博士英语作业的deadline，一大早爬起来做作业，发现好难，前不久周明博士来系里作报告推荐了英库，用了一把，作业20分钟就搞定了，英库真是天才。
+
+
+    作业如下，这里不表，先说说几个好用的功能。
+
+
+    （1）选择追加形容词搭配
+
+
+    比如第三题，我想知道option有哪些前缀形容词可以修饰，就用【adj. option】搜索，结果很满意。
+
+
+    （2）选择合适的名词
+
+
+    比如第七题，我想知道享受特权，这个特权怎么说，就用【enjoy 特权】搜索，结果依然很满意。
+
+
+   
+
+
+    不过还是有些不尽如人意的地方，当然人家做这个不是为了给我做作业，但还是有些功能挺实用的，比如
+
+
+    我想搜索The moon can be said to be like a large mirror中间be said to be like可以替换成什么，如果可以搜索
+
+
+    【The moon can{}a large mirror.】就好了，可以让检索引擎自动提供{}中可能出现的短语。
+
+
+    这个功能在写论文的时候，很实用。
+
+
+   
+
+
+    英库网址：<a style="zoom: 1;" onclick="function onclick()
+{
+stc(this, 22)
+}" href="http://www.engkoo.com/" target="_self">www.engkoo.com
+
+
+   
+
+
+    下面是通过英库完成的作业：
+
+
+   Exercise: Improve the underlined parts of the following sentences to be more acceptable in professional papers.
+
+
+   
+
+
+   The strength of wind can be harnessed to generate electricity.
+
+
+   2. Smoke particles and other air pollutants are often found in the atmosphere, thus forming smog.
+
+
+   Smoke particles and other air pollutants are often monitored in the atmosphere, thus forming smog.
+
+
+   3. Trash recycling is becoming an increasingly good option for waste disposal.
+
+
+   Trash recycling is becoming an increasingly right option for waste disposal.
+
+
+   
+
+
+   4. The moon can be said to be like a large mirror which throws back the sun&rsquo;s light to the earth.
+
+
+   The moon can be imagined to be a large mirror which reflects the sun&rsquo;s light to the earth.
+
+
+   
+
+
+   5. Fossils are the traces of plants and animals of past geological ages which have been stayed in the Earth&rsquo;s crust.
+
+
+   
+
+
+   Fossils are the traces of plants and animals of past geological ages which buried in the Earth&rsquo;s crust.
+
+
+   
+
+
+   6. In 1791, on President Washington&rsquo;s request, L&rsquo;Enfant put in plans for the capital city at Washington.
+
+
+   
+
+
+   In 1791, on President Washington&rsquo;s request, L&rsquo;Enfant layout plans for the capital city at Washington.
+
+
+   
+
+
+   7. Big businesses enjoy certain rights that smaller ones do not have.
+
+
+   Big businesses enjoy certain privileges that smaller ones do not have.
+
+
+   
+
+
+   8. The border incident has something to do with the territory dispute left over from the previous government.
+
+
+    The border incident is due to the territory dispute left over from the previous government.
+
+
+   
+
+
+   9. It is difficult to tell clearly which flower is artificial and which is natural.
+
+
+   It is difficult to distinguish between artificial flower and natural flower.
+
+
+   
+
+
+   10. No seats will be left over for the New Year&rsquo;s concert if one does not get ready for them a few months in advance.
+
+
+   No seats will be available for the New Year&rsquo;s concert if one does not book them a few months in advance.

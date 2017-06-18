@@ -1,0 +1,37 @@
+动态控制GridView的每一列的宽度if (GridView1 != null) { Unit a0 = new Unit(50, UnitType.Percentage); Unit a1 = new Unit(30, UnitType.Percentage); Unit a2 = new Unit(20, UnitType.Percentage); GridView1.Columns[0].ItemStyle.Width = a0; GridView1.Columns[1].ItemStyle.Width = a1; GridView1.Columns[2].ItemStyle.Width = a2;
+
+
+    }UnitType 枚举 
+
+
+   指定度量单位。 
+
+
+   命名空间:System.Web.UI.WebControls程序集:System.Web（在 system.web.dll 中） 
+
+
+   成员
+
+
+   成员名称说明Cm用厘米作为度量单位。 Em度量单位相对于父元素的字体高度。 Ex度量单位相对于父元素字体的小写字母 x 的高度。 Inch用英寸作为度量单位。 Mm用毫米作为度量单位。 Percentage度量单位为相对于父元素的百分比。 Pica用十二点活字作为度量单位。十二点活字表示 12 个点。 Pixel用像素作为度量单位。 Point用点作为度量单位。一点表示 1/72 英寸。 
+
+
+   备注
+
+
+   UnitType 枚举表示受支持的不同度量单位。度量单位可使用像素、点、十二点活字、英寸、毫米、厘米、百分比、em 或 ex 表示。
+
+
+   Point 是度量单位，表示 1/72 英寸。
+
+
+   Pica 是等于 12 点的单位。
+
+
+   Percentage 是相对于父元素的度量单位。例如，如果一个段落的字体大小为 10 像素，可以在此段落中放置一个将字体大小指定为 200% 的短语。该短语的字体大小将为段落字体大小的两倍，即 20 像素。
+
+
+   Em 是相对于父元素字体高度的度量单位。例如，如果段落的字体大小为 10 像素，可以在此段落中放置一个将字体大小指定为 2 em 的短语。该短语的字体大小将为段落字体大小的两倍，即 20 像素。
+
+
+   Ex 是相对于父元素字体的小写字母 x 的高度的度量单位。例如，如果段落的字体大小为 10 像素，可以在此段落中放置一个将字体大小指定为 2 ex 的短语。该短语的字体大小将为段落中小写字母 x 字体大小的两倍。

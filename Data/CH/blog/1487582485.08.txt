@@ -1,0 +1,68 @@
+windows vista的符号链接相信使用过UNIX的朋友都会对符号链接印象深刻，通过符号链接，可以方便地创建指向文件系统中其他文件的快捷方式，这在很多时候能够给操作带来极
+大的便利。不过，在Windows系统中，想要实现类似的功能则麻烦得多，虽然微软自Windows 
+2000开始，便为NTFS卷引入了对名为Junction Point的symbolic 
+link(符号链接)的支持，但是，在图形界面下往往工作不太正常，很多时候不得不使用插件以保证该功能能够使用。而且，Junction 
+Point还有一个致命的缺陷，无论在Windows 2000 还是后续的Windows XP和Server 2003中，NTFS 
+Junction Point只能被用于文件夹和卷，而不能用于文件。 
+
+
+   在Windows Vista中，微软终于让NTFS卷支持可以指向文件的符号链接 (symbolic 
+link)，至少从这个角度说，Windows Vista提供了接近于Unix的功能，相信这可以取悦部分Unix爱好者。 
+
+
+   在Windows Vista中创建符号链接 (symbolic link) 
+Windows 
+Vista中专门提供了一个创建符号链接的工具，MkLink ，不过，只可在命令行中运行，而不是图形界面。 
+
+
+   进入命令行 
+
+
+   要使用MkLink工具创建符号链接，必须首先进入到命令行窗口，并需提升至管理员权限。 
+
+
+   在开始菜单中右键单击命令提示符 (Command Prompt)图标，从dan出菜单中选择&ldquo;以管理员运行 (Run as 
+Administrator)&rdquo; 
+
+
+   MkLink命令的参数 
+
+
+   在命令提示符下输入如下命令将显示该工具的相应格式与参数。 
+
+
+   MkLink /? ,将得到以下帮助 
+
+
+   MKLINK [[/D] | [/H] | [/J]] Link Target 
+
+
+    /D 创建目录符号链接。黙认为文件   
+ 符号链接。    
+ /H
+ 创建硬链接，而不是符号链接。    
+ /J 创建目录联接。    
+ Link 
+指定新的符号链接名称。    
+ Target 指定新链接引用的路径    
+ (相对或绝对)。 
+
+
+   创建指向文件的符号链接 
+
+
+   要创建指向某个文件的符号链接，只需依循相应的命令，如下图所示，我们来创建一个指向MSPaint.exe，名为TestSymLink的符号链
+接。 
+
+
+   MKLINK TestSymLink %SystemRoot%/system32/mspaint.exe 
+
+
+   创建完成后，可以用Dir命令来查看一下： 
+
+
+   删除符号链接 
+
+
+   
+要删除该符号链接则更为简单，操作同删除文件类似，不过，需要注意的是，这里删除的只是符号链接，而非文件本身。

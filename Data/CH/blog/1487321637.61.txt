@@ -1,0 +1,246 @@
+【Machine Learning实验1】batch gradient descent（批量梯度下降） 和 stochastic gradient descent（随机梯度下降）批量梯度下降是一种对参数的update进行累积，然后批量更新的一种方式。用于在已知整个训练集时的一种训练方式，但对于大规模数据并不合适。
+
+
+   随机梯度下降是一种对参数随着样本训练，一个一个的及时update的方式。常用于大规模训练集，当往往容易收敛到局部最优解。
+
+
+   详细参见：Andrew Ng 的Machine Learning的课件（见参考1）
+
+
+   可能存在的改进
+
+
+
+
+   1）样本可靠度，特征完备性的验证
+
+
+      例如可能存在一些outlier，这种outlier可能是测量误差，也有可能是未考虑样本特征，例如有一件衣服色彩评分1分，料子1分，确可以卖到10000万元，原来是上面有一个姚明的签名，这个特征没有考虑，所以出现了训练的误差，识别样本中outlier产生的原因。
+
+
+   
+
+
+   2）批量梯度下降方法的改进
+
+
+   并行执行批量梯度下降
+
+
+
+
+   3）随机梯度下降方法的改进
+
+
+      找到一个合适的训练路径（学习顺序），去最大可能的找到全局最优解
+
+
+   
+
+
+
+
+   4）假设合理性的检验
+
+
+     H（X)是否合理的检验
+
+
+   
+
+
+
+
+   5）维度放大
+
+
+     维度放大和过拟合问题，维度过大对训练集拟合会改善，对测试集的适用性会变差，如果找到合理的方法？
+
+
+   
+
+
+   
+
+
+
+
+   下面是我做的一个实验
+
+
+   假定有这样一个对衣服估价的训练样本，代码中matrix表示，第一列表示色彩的评分，第二列表示对料子质地的评分，例如第一个样本1,4表示这件衣服色彩打1分，料子打4分。我们需要训练的是theta，其表示在衣服的估价中，色彩和料子的权重，这个权重是未知量，是需要训练的，训练的依据是这四个样本的真实价&#26684;已知，分别为19元，...20元。
+
+
+   通过批量梯度下降和随机梯度下降的方法均可得到theta_C={3,4}T
+
+
+   
+
+
+
+
+   /*
+
+Matrix_A
+
+1  4
+
+2  5
+
+5  1
+
+4  2
+
+theta_C
+
+
+   ?
+
+
+   ?
+
+Matrix_A*theta_C
+
+19
+
+26
+
+19
+
+20
+
+*/
+
+
+
+
+   批量梯度下降法：
+
+
+   
+
+
+   #include &quot;stdio.h&quot;
+
+int main(void)
+{
+    float matrix[4][2]={{1,4},{2,5},{5,1},{4,2}};
+    float result[4]={19,26,19,20};
+    float theta[2]={2,5};          //initialized theta {2,5}, we use the algorithm to get {3,4} to fit the model
+    float learning_rate = 0.01;
+    float loss = 1000.0;          //set a loss big enough
+
+    for(int i = 0;i&lt;100&amp;&amp;loss&gt;0.0001;++i)
+    {
+        float error_sum = 0.0;
+        for(int j = 0;j&lt;4;++j)
+        {
+            float h = 0.0;
+            for(int k=0;k&lt;2;++k)
+            {
+                h += matrix[j][k]*theta[k];
+            }
+            error_sum = result[j]-h;
+            for(int k=0;k&lt;2;++k)
+            {
+                theta[k] += learning_rate*(error_sum)*matrix[j][k];
+            }
+        }
+        printf(&quot;*************************************\n&quot;);
+        printf(&quot;theta now: %f,%f\n&quot;,theta[0],theta[1]);
+        loss = 0.0;
+        for(int j = 0;j&lt;4;++j)
+        {
+            float sum=0.0;
+            for(int k = 0;k&lt;2;++k)
+            {
+
+
+                sum += matrix[j][k]*theta[k];
+            }
+            loss += (sum-result[j])*(sum-result[j]);
+        }
+        printf(&quot;loss now: %f\n&quot;,loss);
+    }
+    return 0;
+}
+
+随机梯度下降法
+
+   
+
+
+   
+
+
+   int main(void)
+{
+ float matrix[4][2]={{1,4},{2,5},{5,1},{4,2}};
+ float result[4]={19,26,19,20};
+ float theta[2]={2,5};
+ float loss = 10.0;
+ for(int i =0 ;i&lt;100&amp;&amp;loss&gt;0.001;++i)
+ {
+  float error_sum=0.0;
+  int j=i%4;
+  {
+   float h = 0.0;
+   for(int k=0;k&lt;2;++k)
+   {
+    h += matrix[j][k]*theta[k];
+
+   }
+   error_sum = result[j]-h;
+   for(int k=0;k&lt;2;++k)
+   {
+    theta[k] = theta[k]+0.01*(error_sum)*matrix[j][k];
+   }
+  }
+  printf(&quot;%f,%f\n&quot;,theta[0],theta[1]);
+  float loss = 0.0;
+  for(int j = 0;j&lt;4;++j)
+  {
+   float sum=0.0;
+   for(int k = 0;k&lt;2;++k)
+   {
+
+    sum += matrix[j][k]*theta[k];
+   }
+   loss += (sum-result[j])*(sum-result[j]);
+  }
+  printf(&quot;%f\n&quot;,loss);
+ }
+ return 0;
+}
+
+
+
+
+   
+
+
+   
+
+
+
+
+   参考：
+
+
+   【1】http://www.stanford.edu/class/cs229/notes/cs229-notes1.pdf
+
+
+
+
+   【2】http://www.cnblogs.com/rocketfan/archive/2011/02/27/1966325.html
+
+
+
+
+   【3】http://www.dsplog.com/2011/10/29/batch-gradient-descent/
+
+
+
+
+
+   【4】http://ygc.name/2011/03/22/machine-learning-ex2-linear-regression/

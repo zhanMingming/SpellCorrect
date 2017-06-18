@@ -1,0 +1,134 @@
+ZOJ  1683 求平面上直线交点 &amp; 求任意四边形面积ZOJ Problem Set - 1683
+
+
+   题目大意：
+
+
+   在1*1的正方形&#26684;子上给出每边的两个点，按顺序连接对边的点，求这样形成的一系列四边形中最大的面积。
+
+
+
+
+   
+
+
+   思路：
+
+
+   1. 求交点
+
+
+    见函数GetCrossPoint (http://blog.csdn.net/abcjennifer/article/details/7584628)
+
+
+   2. 求面积
+
+
+    四边形面积可由两个三角形面积相加而得，这里使用叉积，因为三角形的两个向量边叉乘的结果为其所形成的平行四边形面积，所以三角形面积为1/2×向量边1 x 向量边2
+
+
+    见函数GetArea()
+
+
+   
+
+
+
+
+   Code:
+
+
+   
+   #include&quot;iostream&quot;
+#include&quot;stdio.h&quot;
+#include&quot;math.h&quot;
+using namespace std;
+
+#define N 40
+int n;
+
+struct Point {
+	double x;
+	double y;
+} pset[N + 1][N + 1];
+
+struct Line {
+	void L(Point pp1, Point pp2) {
+		p1 = pp1;
+		p2 = pp2;
+	}
+	Point p1, p2;
+	double a, b, c;
+} lineset[N][N];
+
+void GetLinePara(Line *l) {
+	l-&gt;a = l-&gt;p1.y - l-&gt;p2.y;
+	l-&gt;b = l-&gt;p2.x - l-&gt;p1.x;
+	l-&gt;c = l-&gt;p1.x * l-&gt;p2.y - l-&gt;p2.x * l-&gt;p1.y;
+}
+
+Point GetCrossPoint(Line *l1, Line *l2) {
+	GetLinePara(l1);
+	GetLinePara(l2);
+	double D = l1-&gt;a * l2-&gt;b - l2-&gt;a * l1-&gt;b;
+	Point p;
+	p.x = (l1-&gt;b * l2-&gt;c - l2-&gt;b * l1-&gt;c) / D;
+	p.y = (l1-&gt;c * l2-&gt;a - l2-&gt;c * l1-&gt;a) / D;
+	return p;
+}
+
+double Xmult(Point a, Point b, Point c)//get vector ac and bc
+{
+	return (c.x - a.x) * (c.y - b.y) - (c.y - a.y) * (c.x - b.x);
+}
+
+double GetArea(int i, int j) {
+	double area1 = Xmult(pset[i][j], pset[i + 1][j], pset[i + 1][j + 1]) / 2;
+	double area2 = Xmult(pset[i][j], pset[i][j + 1], pset[i + 1][j + 1]) / 2;
+	return fabs(area1) + fabs(area2);
+}
+
+void Init_Points() {
+	int i;
+	for (i = 1; i &lt;= n; i++)
+		scanf(&quot;%lf&quot;, &amp;pset[i][0].x), pset[i][0].y = 0;
+	for (i = 1; i &lt;= n; i++)
+		scanf(&quot;%lf&quot;, &amp;pset[i][n + 1].x), pset[i][n + 1].y = 1;
+	for (i = 1; i &lt;= n; i++)
+		scanf(&quot;%lf&quot;, &amp;pset[0][i].y), pset[0][i].x = 0;
+	for (i = 1; i &lt;= n; i++)
+		scanf(&quot;%lf&quot;, &amp;pset[n + 1][i].y), pset[n + 1][i].x = 1;
+
+	pset[0][0].x = pset[0][0].y = 0;
+	pset[n + 1][0].x = 1, pset[n + 1][0].y = 0;
+	pset[0][n + 1].x = 0, pset[0][n + 1].y = 1;
+	pset[n + 1][n + 1].x = pset[n + 1][n + 1].y = 1;
+}
+
+void Init_Lines() {
+	int i, j;
+	Line l1, l2;
+	for (i = 1; i &lt;= n; i++) {
+		for (j = 1; j &lt;= n; j++) {
+			l1.L(pset[i][0], pset[i][n + 1]);
+			l2.L(pset[0][j], pset[n + 1][j]);
+			pset[i][j] = GetCrossPoint(&amp;l1, &amp;l2);
+		}
+	}
+}
+
+int main() {
+	int i, j;
+	while (cin &gt;&gt; n&amp;&amp;n) {
+		Init_Points();
+		Init_Lines();
+		double maxarea = 0;
+		double area;
+		for (i = 0; i &lt; n + 1; i++)
+			for (j = 0; j &lt; n + 1; j++) {
+				area = GetArea(i, j);
+				maxarea = area &gt; maxarea ? area : maxarea;
+			}
+		printf(&quot;%lf\n&quot;, maxarea);
+	}
+}

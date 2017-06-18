@@ -1,0 +1,100 @@
+距离变换距离变换和线性滤波器，形态学变换处于平等位置，是图像处理的一种方法，通过使用两遍扫描光栅算法可以快速计算到曲线或点集的距离。
+
+
+   
+
+
+
+
+   应用：
+
+
+   水平集
+
+
+   快速斜切匹配
+
+
+   图像拼接
+
+
+   图像混合的羽化
+
+
+   临近点配准
+
+
+   
+
+
+
+
+   方法：
+
+
+   首先对图像进行二&#20540;化处理，然后给每个像素赋&#20540;为离它最近的背景像素点与其距离（Manhattan距离or欧氏距离），得到distance metric(距离矩阵)，那么离边界越远的点越亮。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   实现：
+
+
+   
+
+
+   Imgori=imread('test.jpg');
+I=rgb2gray(Imgori);
+subplot(2,3,1);imshow(I);title('origin');
+
+Threshold=100;
+F=I&gt;Threshold;%front
+%B=I&lt;=Threshold;%background
+subplot(2,3,4);imshow(F,[]);title('binary');
+
+T=bwdist(F,'chessboard');
+subplot(2,3,2);imshow(T,[]);title('chessboard distance transform')
+%the chessboard distance between (x1,y1) and (x2,y2) is max(│x1 – x2│,│y1 – y2│).
+
+T=bwdist(F,'cityblock');
+subplot(2,3,3);imshow(T,[]);title('chessboard distance transform')
+%the cityblock distance between (x1,y1) and (x2,y2) is │x1 – x2│ + │y1 – y2│.
+
+T=bwdist(F,'euclidean');
+subplot(2,3,5);imshow(T,[]);title('euclidean distance transform')
+%use Euclidean distance
+
+T=bwdist(F,'quasi-euclidean');
+subplot(2,3,6);imshow(T,[]);title('quasi-euclidean distance transform')
+%use quasi-Euclidean distance
+
+
+   或者单纯想看这几个距离函数的区别可以用以下code：
+
+
+   
+
+
+   bw = zeros(200,200); bw(50,50) = 1; bw(50,150) = 1;
+bw(150,100) = 1;
+D1 = bwdist(bw,'euclidean');
+D2 = bwdist(bw,'cityblock');
+D3 = bwdist(bw,'chessboard');
+D4 = bwdist(bw,'quasi-euclidean');
+figure
+subplot(2,2,1), subimage(mat2gray(D1)), title('Euclidean')
+hold on, imcontour(D1)
+subplot(2,2,2), subimage(mat2gray(D2)), title('City block')
+hold on, imcontour(D2)
+subplot(2,2,3), subimage(mat2gray(D3)), title('Chessboard')
+hold on, imcontour(D3)
+subplot(2,2,4), subimage(mat2gray(D4)), title('Quasi-Euclidean')
+hold on, imcontour(D4)

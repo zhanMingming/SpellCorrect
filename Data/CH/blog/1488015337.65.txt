@@ -1,0 +1,657 @@
+学习ECMAScript5规范中Object新增的APIObject在javascript编程中的重要性不言而喻，本文主要介绍下ECMAScript5规范Object新增的几个API。ECMAScript 5.1 (或ES5) 是ECMAScript(基于JavaScript的规范)标准最新修正。与HTML5规范进程本质类&#20284;，ES5通过对现有JavaScript方法添加语句和原生ECMAScript对象做合并实现标准化。这些新增的API还是很有意思的，给javascript增加了很多很有用的功能，比如不可变对象等。chrome浏览器对ECMAScript5规范的支持很好，我用的chrome
+ 46。
+
+
+   
+
+
+
+Object.create(proto, [propertiesObject])
+
+   这是ECMAScript5中新增的一种创建对象的方式，能够允许我们设置新建对象的原型。
+
+
+   // 创建对象(没有原型对象)
+var myObj = Object.create(null);
+
+myObj.name = &quot;aty&quot;;
+
+console.log(&quot;name=&quot;+myObj.name);//name=aty
+
+// Uncaught TypeError: myObj.toString is not a function
+myObj.toString();创建的myObj对象是没有原型的，这跟我们通过普通方式的创建对象(原型对象是Object.prototype)很不同。用Object.create的好处是原型链干净，网上有有给出了以下没有Object.create的浏览器的解决同样解决方案。以下代码不但说明了Object.create的技术内幕，同时可以支持低版本的IE同样可以实现干净的原型。
+   if (typeof Object.create !== &#39;function&#39;) {  
+    Object.create = function(o) {  
+ function F() { }  
+ F.prototype = o;  
+ return new F();  
+    };  
+}
+
+   
+
+
+
+Object.create的第二个参数，会在Object.defineProperties()中介绍。使用方式如下：
+   //创建一个可写的,可枚举的,可配置的属性p
+o2 = Object.create({}, { p: { 
+	value: 42, 
+	writable: true, 
+	enumerable: true, 
+	configurable: true } 
+});
+
+   
+
+
+   
+
+
+
+setter和getter
+
+   之前的javascript没有什么getter/setter概念，我们都是直接读取和修改某个对象的属性。这样直接暴露出了对象的属性，在OOP中是不建议这么做的，没有做到封装。
+
+
+   // 直接读取和修改对象的属性
+var obj = {name : &quot;aty&quot;};
+console.log(obj.name);
+obj.name = &quot;qun&quot;;
+console.log(obj.name);
+
+ES5中引入了getter和setter，比如下面这段代码：
+   var obj = {
+    get getName() {
+		console.log(&quot;getName is invoked.&quot;);
+		if(this.name === undefined)
+		{
+			return &quot;aty&quot;;//默认值
+		}
+		else
+		{
+			return this.name;
+		}
+ 
+    },
+	set setName(newName){
+		console.log(&quot;setName is invoked.&quot;);
+		this.name = newName;
+	}
+};
+
+console.log(&quot;name=&quot; + obj.getName);//aty
+
+obj.setName = &quot;qun&quot;;
+
+console.log(&quot;name=&quot; + obj.getName);//qun
+
+   使用了get和set关键字来定义某个属性的getter和setter。如果一个属性只有getter，那么就只能读取不能修改；如果只有setter，那么就只能修改不能读取。可以看到使用getter和setter能够像java一样封装我们的属性。
+
+
+   
+
+
+
+
+   Object.prototype中定义了__defineGetter__、__defineSetter__、__lookupGetter__、__lookupSetter__，这4个函数名字很奇怪，因为他们不是标准的API，以后很有可能被废弃，所以不要在生产环境中使用，不过平时测试用来玩玩还是可以的，至少chrome目前还支持这几个API。
+
+
+   
+
+
+   
+
+
+
+
+
+
+   
+
+
+   var obj = {
+    get foo() {
+ return Math.random() &gt; 0.5 ? &quot;foo&quot; : &quot;bar&quot;;
+    }
+};
+
+obj.__defineGetter__(&#39;gimmeFive&#39;, function() { return 5; });
+
+obj.__lookupGetter__(&quot;foo&quot;);
+// (function (){return Math.random() &gt; 0.5 ? &quot;foo&quot; : &quot;bar&quot;})
+
+
+
+
+   
+
+Object.defineProperty()和Object.defineProperties()
+
+   
+
+
+   Object.defineProperty() 方法直接在一个对象上定义一个新属性，或者修改一个已经存在的属性， 并返回这个对象。Object.defineProperties() 方法在一个对象上添加或修改一个或者多个自有属性，并返回该对象。
+
+
+   
+
+
+
+
+   之前的javascript中对象的属性并没有什么特别，可以直接读取和修改。但是ES5引入了&quot;属性描述符&quot;的概念。属性描述符有下面几个选项：
+
+1.value
+
+   设置属性的&#20540;。可以是任何有效的 JavaScript &#20540;（数&#20540;，对象，函数等）。默认为 undefined。
+
+
+   var o = {};
+Object.defineProperty(o, &quot;a&quot;, {});
+Object.defineProperty(o, &quot;b&quot;, {value:1  } );
+
+console.log(o.a);	//undefined		
+console.log(o.b);	//1		
+
+   
+
+
+   
+
+
+
+2.enumerable
+
+   enumerable定义了对象的属性是否可以在 for...in 循环和 Object.keys() 中被枚举。当且仅当该属性出现在相应的对象枚举属性中，&#20540;为true。默认为 false。
+
+
+   var o = {};
+Object.defineProperty(o, &quot;a&quot;, { value : 1, enumerable:true });
+Object.defineProperty(o, &quot;b&quot;, { value : 2, enumerable:false });
+Object.defineProperty(o, &quot;c&quot;, { value : 3 }); // enumerable defaults to false
+o.d = 4; // 如果使用直接赋值的方式创建对象的属性，则这个属性的enumerable为true
+
+for (var i in o) {    
+  console.log(i);  
+}
+// 打印 &#39;a&#39; 和 &#39;d&#39; (in undefined order)
+
+Object.keys(o); // [&quot;a&quot;, &quot;d&quot;]
+
+o.propertyIsEnumerable(&#39;a&#39;); // true
+o.propertyIsEnumerable(&#39;b&#39;); // false
+o.propertyIsEnumerable(&#39;c&#39;); // false
+
+
+   
+
+3.writable
+
+   
+
+
+   当writable设置为false时，表示non-writable，属性不能被修改，也不能被删除。
+
+
+   var o = {}; // 创建一个新对象
+
+Object.defineProperty(o, &quot;a&quot;, { value : 37,
+    writable : false });
+
+console.log(o.a); // 打印 37
+o.a = 25; // 没有错误抛出（在严格模式下会抛出，即使之前已经有相同的值）
+console.log(o.a); // 打印 37， 赋值不起作用。
+
+delete o.a;//没有错误抛出（在严格模式下会抛出:Cannot delete property &#39;a&#39;）
+console.log(o.a); // 37
+
+
+   
+
+4.configurable
+
+   
+
+
+   当且仅当这个属性描述符&#20540;为 true 时，该属性可能会改变，也可能会被从相应的对象删除。默认为 false。
+
+
+   var o = {};
+Object.defineProperty(o, &quot;a&quot;, { get : function(){return 1;}, 
+    configurable : false } );
+
+ // throws a TypeError								
+Object.defineProperty(o, &quot;a&quot;, {configurable : true}); 
+
+// throws a TypeError
+Object.defineProperty(o, &quot;a&quot;, {enumerable : true});
+
+// throws a TypeError (set was undefined previously)
+Object.defineProperty(o, &quot;a&quot;, {set : function(){}}); 
+
+// throws a TypeError (even though the new get does exactly the same thing)
+Object.defineProperty(o, &quot;a&quot;, {get : function(){return 1;}}); 
+
+// throws a TypeError
+Object.defineProperty(o, &quot;a&quot;, {value : 12}); 
+
+console.log(o.a); // logs 1
+delete o.a; // Nothing happens(在严格模式下会报错Cannot delete property &#39;a&#39; )
+console.log(o.a); // logs 1
+
+   如果刚开始o.a 的 configurable 设置为true，那上面代码么用错误了，并且属性会在最后被删除。这里需要特别注意：如果configurable为false，依然可以修改writable的&#20540;。
+
+
+   
+
+
+   &quot;use strict&quot;;
+
+var obj = {  };
+ 
+Object.defineProperty(obj, &quot;name&quot;, { configurable:false, writable:true}); 
+
+obj.name = &quot;aty&quot;;
+console.log(obj.name);//aty
+
+// 完全正常
+Object.defineProperty(obj, &quot;name&quot;, {writable: false});
+
+//  Cannot assign to read only property &#39;name&#39;
+obj.name = &quot;qun&quot;;
+console.log(obj.name);
+
+   
+
+
+   
+
+
+
+5.get
+
+   
+
+
+   一个给属性提供 getter 的方法，如果没有 getter 则为 undefined。方法将返回用作属性的&#20540;。默认为undefined。
+
+
+
+6.set
+
+   一个给属性提供 setter 的方法，如果没有 setter 则为 undefined。该方法将收到作为唯一参数的新&#20540;分配给属性。默认为undefined。
+
+
+
+
+   
+
+
+
+
+   看一段下面这段代码，了解下属性描述符的默认&#20540;问题，以及我们最常用的定义属性的方式。
+
+
+   var o = {};
+
+o.a = 1;
+// 等同于 :
+Object.defineProperty(o, &quot;a&quot;, {
+  value : 1,
+  writable : true,
+  configurable : true,
+  enumerable : true
+});
+
+
+// 另一方面，
+Object.defineProperty(o, &quot;a&quot;, { value : 1 });
+// 等同于 :
+Object.defineProperty(o, &quot;a&quot;, {
+  value : 1,
+  writable : false,
+  configurable : false,
+  enumerable : false
+});
+
+还有一个很重要的问题，&#20540;得注意，否则会导致下面这个错误。
+   Uncaught TypeError: 
+ Invalid property.  A property cannot both have accessors and be writable or have a value, #&lt;Object&gt;
+
+   
+
+
+   我们知道属性的get和set描述符，属于accessors，不能和value或者writable描述符混用。
+
+
+   var obj = {};
+
+// 报错
+Object.defineProperty(obj, &quot;x&quot; , {
+	writable:false,
+	get : function(){console.log(&quot;aty&quot;);},
+	set : function(){}
+});
+
+// 报错
+Object.defineProperty(obj, &quot;x&quot; , {
+	value:11,
+	get : function(){console.log(&quot;aty&quot;);},
+	set : function(){}
+});
+
+// 正确
+Object.defineProperty(obj, &quot;x&quot; , {
+	configurable : false,
+    enumerable : true
+	get : function(){console.log(&quot;aty&quot;);},
+	set : function(){}
+});
+
+了解了这些之后，Object.defineProperties()就很容易了，不过是个批量方法而已。
+   var obj = {};
+Object.defineProperties(obj, {
+  &quot;property1&quot;: {
+    value: true,
+    writable: true
+  },
+  &quot;property2&quot;: {
+    value: &quot;Hello&quot;,
+    writable: false
+  }
+});
+
+
+
+Object.freeze()/Object.isFrozen()
+
+   Object.freeze() 方法可以冻结一个对象。冻结对象是指那些不能添加新的属性，不能修改已有属性的&#20540;，不能删除已有属性，以及不能修改已有属性的可枚举性、可配置性、可写性、value、get、set的对象。也就是说，这个对象永远是不可变的。该方法返回被冻结的对象。冻结对象的所有自身属性都不可能以任何方式被修改。任何尝试修改该对象的操作都会失败，可能是静默失败，也可能会抛出异常（严&#26684;模式中）。
+
+
+   var obj = {
+  prop: function (){},
+  foo: &quot;bar&quot;
+};
+
+// 可以添加新的属性,已有的属性可以被修改或删除
+obj.foo = &quot;baz&quot;;
+obj.lumpy = &quot;woof&quot;;
+delete obj.prop;
+
+var o = Object.freeze(obj);
+
+assert(Object.isFrozen(obj) === true);
+
+// 现在任何修改操作都会失败
+obj.foo = &quot;quux&quot;; // 静默失败
+obj.quaxxor = &quot;the friendly duck&quot;; // 静默失败,并没有成功添加上新的属性
+
+// ...在严格模式中会抛出TypeError异常
+function fail(){
+  &quot;use strict&quot;;
+  obj.foo = &quot;sparky&quot;; // 抛出TypeError异常
+  delete obj.quaxxor; // 抛出TypeError异常
+  obj.sparky = &quot;arf&quot;; // 抛出TypeError异常
+}
+
+fail();
+
+// 使用Object.defineProperty方法同样会抛出TypeError异常
+Object.defineProperty(obj, &quot;ohai&quot;, { value: 17 }); // 抛出TypeError异常
+Object.defineProperty(obj, &quot;foo&quot;, { value: &quot;eit&quot; }); // 抛出TypeError异常
+
+   
+
+
+   
+
+
+
+
+   对象经过冻结之后，属性描述符就不能再变化了。依然可以调用defineProperty，如果不改变属性描述符的&#20540;，那么是不会报错。一旦试图修改成新的&#20540;，就会报错:cannot redefine。
+
+
+   &quot;use strict&quot;;
+
+var obj = {name:&quot;aty&quot;};
+ 
+Object.freeze(obj);
+
+// ok
+Object.defineProperty(obj, &quot;name&quot;, {writable: false});
+
+// ok
+Object.defineProperty(obj, &quot;name&quot;, {value: &quot;aty&quot;});
+
+// ok
+Object.defineProperty(obj, &quot;name&quot;, {configurable: false});
+
+// ok
+Object.defineProperty(obj, &quot;name&quot;, {enumerable: true});
+
+// Uncaught TypeError: Cannot redefine property: name
+Object.defineProperty(obj, &quot;name&quot;, {writable: true});
+
+// Uncaught TypeError: Cannot redefine property: name
+Object.defineProperty(obj, &quot;name&quot;, {enumerable: false});
+
+   
+
+
+   
+
+
+
+
+   下面这个例子演示了一个冻结对象中的非冻结对象是可以被修改的（浅冻结）。
+
+
+
+
+   var obj = {
+  internal : {}
+};
+
+Object.freeze(obj);
+obj.internal.a = &quot;aValue&quot;;
+
+obj.internal.a // &quot;aValue&quot;
+
+// 想让一个对象变的完全冻结,冻结所有对象中的对象,我们可以使用下面的函数.
+
+function deepFreeze (o) {
+  var prop, propKey;
+  Object.freeze(o); // 首先冻结第一层对象.
+  for (propKey in o) {
+    prop = o[propKey];
+    if (!o.hasOwnProperty(propKey) || !(typeof prop === &quot;object&quot;) || Object.isFrozen(prop)) {
+      // 跳过原型链上的属性和已冻结的对象.
+      continue;
+    }
+
+    deepFreeze(prop); //递归调用.
+  }
+}
+
+var obj2 = {
+  internal : {}
+};
+
+deepFreeze(obj2);
+obj2.internal.a = &quot;anotherValue&quot;;
+obj2.internal.a; // undefined
+
+
+
+Object.seal()/Object.isSealed()
+
+   Object.seal() 方法可以让一个对象密封，并返回被密封后的对象。密封对象是指那些不能添加新的属性，不能删除已有属性，以及不能修改已有属性的可枚举性、可配置性、get、set，但是可以修改已有属性的value和writable。
+
+
+   &quot;use strict&quot;;
+
+var obj = {name:&quot;aty&quot;};
+ 
+Object.seal(obj);
+
+obj.name = 11;
+console.log(obj.name);//11
+
+// ok
+Object.defineProperty(obj, &quot;name&quot;, {writable:false});
+
+// Uncaught TypeError: Cannot assign to read only property &#39;name&#39; of #&lt;Object&gt;
+obj.name = 22;
+
+
+   
+
+Object.preventExtensions()
+
+   
+
+
+   Object.preventExtensions() 方法让一个对象变的不可扩展，也就是永远不能再添加新的属性。但是仍然可以修改和删除已有属性。
+
+
+   &quot;use strict&quot;;
+
+var obj = {name:&quot;aty&quot;,age:26};
+Object.preventExtensions(obj);
+
+// ok
+Object.defineProperty(obj, &quot;name&quot;, {writable:false});
+Object.defineProperty(obj, &quot;name&quot;, {writable:true});
+delete obj.age;
+
+// Can&#39;t add property nonExist, object is not extensible
+obj.nonExist = 11;
+
+   
+
+
+   
+
+
+
+
+
+Object.isExtensible()
+
+   Object.isExtensible() 方法判断一个对象是否是可扩展的（是否可以在它上面添加新的属性）。默认情况下，对象是可扩展的：即可以为他们添加新的属性。Object.preventExtensions，Object.seal 或 Object.freeze 方法都可以标记一个对象为不可扩展（non-extensible）。
+
+
+   // 新对象默认是可扩展的.
+var empty = {};
+assert(Object.isExtensible(empty) === true);
+
+// ...可以变的不可扩展.
+Object.preventExtensions(empty);
+assert(Object.isExtensible(empty) === false);
+
+// 密封对象是不可扩展的.
+var sealed = Object.seal({});
+assert(Object.isExtensible(sealed) === false);
+
+// 冻结对象也是不可扩展.
+var frozen = Object.freeze({});
+assert(Object.isExtensible(frozen) === false);
+
+
+   
+
+Object.keys()
+
+   
+
+
+   Object.keys() 返回一个由给定对象的所有可枚举自身属性的属性名组成的数组。这与for...in不同，for...in会返回对象原型上的属性，而Object.keys()不会查找原型。
+
+
+   var obj = Object.create({&quot;base&quot;:12});
+Object.defineProperty(obj,&quot;x&quot;,{enumerable:false});
+Object.defineProperty(obj,&quot;y&quot;,{enumerable:true});
+
+console.log(Object.keys(obj));//[&quot;y&quot;]
+
+for(var key in obj)
+{
+	console.log(key);//base,y
+}
+
+   
+
+
+   
+
+
+
+Object.getOwnPropertyNames()
+
+   Object.getOwnPropertyNames()返回一个由指定对象的所有自身属性的属性名（包括不可枚举属性）组成的数组。
+
+
+   var obj = Object.create({&quot;base&quot;:12});
+Object.defineProperty(obj,&quot;x&quot;,{enumerable:false});
+Object.defineProperty(obj,&quot;y&quot;,{enumerable:true});
+
+console.log(Object.keys(obj));//[&quot;y&quot;]
+console.log(Object.getOwnPropertyNames(obj));//[&quot;x&quot;,&quot;y&quot;]
+
+
+
+
+   
+
+Object.getOwnPropertyDescriptor()
+
+   Object.getOwnPropertyDescriptor() 返回指定对象上一个自有属性对应的属性描述符。（自有属性指的是直接赋予该对象的属性，不需要从原型链上进行查找的属性）。如果指定的属性存在于对象上，则返回其属性描述符（property descriptor），否则返回 undefined。则个方法对于我们了解属性的性质，非常有用。
+
+
+   var o, d;
+
+o = { get foo() { return 17; } };
+d = Object.getOwnPropertyDescriptor(o, &quot;foo&quot;);
+// d is { configurable: true, enumerable: true, get: /*访问器函数*/, set: undefined }
+
+o = { bar: 42 };
+d = Object.getOwnPropertyDescriptor(o, &quot;bar&quot;);
+// d is { configurable: true, enumerable: true, value: 42, writable: true }
+
+o = {};
+Object.defineProperty(o, &quot;baz&quot;, { value: 8675309, writable: false, enumerable: false });
+d = Object.getOwnPropertyDescriptor(o, &quot;baz&quot;);
+// d is { value: 8675309, writable: false, enumerable: false, configurable: false }
+
+
+   
+
+Object.getPrototypeOf()
+
+   
+
+
+   以前的javascript中我们没有办法直接操作原型，这个方法对于我们研究js原型继承很有用。
+
+
+   var proto = {};
+var obj = Object.create(proto);
+Object.getPrototypeOf(obj) === proto; // true
+
+   
+
+
+
+
+   
+
+
+
+参考文章：
+
+   
+
+
+   ECMAScript5规范http://www.ecma-international.org/ecma-262/5.1/
+
+
+   MDN开发者帮助https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object

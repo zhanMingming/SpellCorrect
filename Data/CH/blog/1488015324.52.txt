@@ -1,0 +1,248 @@
+了解hibernate的Criteria查询hibernate提供的Criteria查询更加符合面向对象的做法，这里参考下hibernate的manual，了解下Criteria的使用。
+
+1.Creating a Criteria instance
+
+The interface org.hibernate.Criteria represents a query against a particular persistent class. The Session is a factory for Criteria instances.没有设置别名，默认别名是Criteria.ROOT_ALIAS。
+
+
+
+
+
+   Session session = sessionFactory.openSession();
+
+// 使用别名
+Criteria criteria1 = session.createCriteria(Student.class, &quot;t&quot;);
+
+// 不使用别名
+Criteria criteria2 = session.createCriteria(Student.class);
+
+
+
+
+2.使用Restrictions和Criterion添加查询条件
+
+An individual query criterion is an instance of the interface org.hibernate.criterion.Criterion.
+
+
+The class org.hibernate.criterion.Restrictionsdefines factory methods for obtaining certain built-in Criterion types.
+
+
+
+
+   criteria.add(Restrictions.like(&quot;t.name&quot;, &quot;%aty%&quot;)).add(
+				Restrictions.lt(&quot;t.id&quot;, 10));
+
+
+
+
+
+除了提供很多种类查询条件外，Restrictions还提供了and、or、conjunction、disjunction等进行条件的逻辑操作。
+
+
+
+   List cats = sess.createCriteria(Cat.class)
+    .add( Restrictions.like(&quot;name&quot;, &quot;Fritz%&quot;) )
+    .add( Restrictions.or(
+ Restrictions.eq( &quot;age&quot;, new Integer(0) ),
+ Restrictions.isNull(&quot;age&quot;)
+    ) ).list();
+   List cats = sess.createCriteria(Cat.class)
+    .add( Restrictions.in( &quot;name&quot;, new String[] { &quot;Fritz&quot;, &quot;Izi&quot;, &quot;Pk&quot; } ) )
+    .add( Restrictions.disjunction()
+ .add( Restrictions.isNull(&quot;age&quot;) )
+ .add( Restrictions.eq(&quot;age&quot;, new Integer(0) ) )
+ .add( Restrictions.eq(&quot;age&quot;, new Integer(1) ) )
+ .add( Restrictions.eq(&quot;age&quot;, new Integer(2) ) )
+    ) ).list();
+
+
+
+
+
+我们可以直接在Restrictions中使用原始的SQL查询条件：
+
+
+
+   Criteria criteria = session.createCriteria(Student.class);
+		criteria.add(Restrictions
+				.sqlRestriction(&quot;lower({alias}.name) like lower(?)&quot;, &quot;%update%&quot;,
+						StringType.INSTANCE));{alias}占位符会被hibernate替换成实体的别名，如果创建Criteria没有指定别名，也没有关系。
+
+
+
+
+
+
+
+You can also obtain a criterion from a Property instance. You can create a Property by calling Property.forName():
+
+
+
+   Criteria criteria = session.createCriteria(Student.class);
+
+criteria.add(Property.forName(&quot;name&quot;)
+		.like(&quot;update&quot;, MatchMode.ANYWHERE));
+
+
+3.Ordering the results
+
+
+
+You can order the results using org.hibernate.criterion.Order：
+
+
+
+
+
+   List cats = sess.createCriteria(Cat.class)
+    .add( Restrictions.like(&quot;name&quot;, &quot;F%&quot;)
+    .addOrder( Order.asc(&quot;name&quot;) )
+    .addOrder( Order.desc(&quot;age&quot;) )
+    .setMaxResults(50)
+    .list();
+
+4.关联查询
+
+
+
+以College和Student这2个实体的one-to-many关系为例，POJO和实体映射文件，参考这篇文章。我们可以使用：Criteria.createAlias()或者Criteria.createCriteria()进行实体间的关联查询。
+
+
+
+   @Test
+public void test1() {
+	Session session = sessionFactory.openSession();
+
+	Criteria rootCriteria = session.createCriteria(College.class);
+	rootCriteria.add(Restrictions.eq(&quot;id&quot;, 4));
+
+	// 添加关联实体的查询
+	// createAlias() does not create a new instance of Criteria, just return
+	// original Criteria for method chaining.
+	rootCriteria.createAlias(&quot;allStudents&quot;, &quot;s&quot;, JoinType.INNER_JOIN);
+
+	rootCriteria.add(Restrictions.eq(&quot;s.sname&quot;, &quot;aty2&quot;));
+
+	College college = (College) rootCriteria.uniqueResult();
+
+	System.out.println(&quot;college name is: &quot; + college.getName());
+
+	System.out.println(&quot;its students are: &quot; + college.getAllStudents());
+
+	session.close();
+}
+
+@Test
+public void test2() {
+	Session session = sessionFactory.openSession();
+
+	Criteria rootCriteria = session.createCriteria(College.class);
+	rootCriteria.add(Restrictions.eq(&quot;id&quot;, 4));
+
+	// createCriteria() returns a new &quot;sub criteria&quot;.
+	Criteria subCriteria = rootCriteria.createCriteria(&quot;allStudents&quot;, &quot;s&quot;,
+			JoinType.INNER_JOIN);
+
+	// way1
+	// subCriteria.add(Restrictions.eq(&quot;sname&quot;, &quot;aty2&quot;));
+
+	// way2 is equivalent to way1.
+	subCriteria.add(Restrictions.eq(&quot;s.sname&quot;, &quot;aty2&quot;));
+
+	// way3
+	// rootCriteria.add(Restrictions.eq(&quot;s.sname&quot;, &quot;aty2&quot;));
+
+	// wrong:because sname is not a property of College.
+	// rootCriteria.add(Restrictions.eq(&quot;sname&quot;, &quot;aty2&quot;));
+
+	// way1 use subCriteria to do query.
+	College college = (College) subCriteria.uniqueResult();
+
+	// way2 is equivalent to way1
+	// College college = (College) rootCriteria.uniqueResult();
+
+	System.out.println(&quot;college name is: &quot; + college.getName());
+
+	System.out.println(&quot;its students are: &quot; + college.getAllStudents());
+
+	session.close();
+}
+createAlias()不会创建新的Criteria对象，仅仅是为了链式调用返回原来的Criteria。createCriteria()则返回一个新的Criteria对象()，和原来的Criteria对象形成父子关系。但是test1和test2这2个方法有一个很严重的问题：关联对象并没有过滤。
+
+
+
+
+
+
+当访问college对象关联的studens时候，hibernate还是会发出一个查询语句，返回college下的所有student。如果要实现过滤功能，需要使用hibernate中的ResultTransformer。
+
+
+
+   @Test
+public void testResultTransformer1() {
+	Session session = sessionFactory.openSession();
+
+	Criteria collegeCriteria = session.createCriteria(College.class);
+	collegeCriteria.add(Restrictions.eq(&quot;id&quot;, 4));
+
+	Criteria studentCriteria = collegeCriteria.createCriteria(
+			&quot;allStudents&quot;, &quot;s&quot;);
+	studentCriteria.add(Restrictions.like(&quot;s.sname&quot;, &quot;%aty%&quot;));
+	studentCriteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+
+	List&lt;Map&gt; results = (List&lt;Map&gt;) collegeCriteria.list();
+
+	for (Map each : results) {
+		College college = (College) each.get(Criteria.ROOT_ALIAS);
+		Student student = (Student) each.get(&quot;s&quot;);
+
+		System.out.println(&quot;college name is: &quot; + college.getName());
+		System.out.println(&quot;student is: &quot; + student);
+	}
+
+	session.close();
+}但是仍然存在同样的问题，如果我们调用college.getAllStudents()，还是会关联查询所有的student。解决方法是：我们使用过滤后的student，自己去设置college对象的allStudents属性。
+
+
+
+   @Test
+public void testComposite() {
+
+	Session session = sessionFactory.openSession();
+
+	Criteria collegeCriteria = session.createCriteria(College.class);
+	collegeCriteria.add(Restrictions.eq(&quot;id&quot;, 2));
+
+	Criteria studentCriteria = collegeCriteria.createCriteria(
+			&quot;allStudents&quot;, &quot;s&quot;);
+	studentCriteria.add(Restrictions.like(&quot;s.sname&quot;, &quot;%qun%&quot;));
+	studentCriteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+
+	List&lt;Map&gt; results = (List&lt;Map&gt;) collegeCriteria.list();
+
+	College needCollege = buildNeedCollege(results);
+
+	System.out.println(needCollege);// 不会再关联查询
+
+	session.close();
+}
+
+private College buildNeedCollege(List&lt;Map&gt; results) {
+	College college = new College();
+	Set&lt;Student&gt; needStudents = new HashSet&lt;Student&gt;();
+
+	for (Map each : results) {
+		college = (College) each.get(Criteria.ROOT_ALIAS);
+		needStudents.add((Student) each.get(&quot;s&quot;));
+	}
+
+	college.setAllStudents(needStudents);
+
+	return college;
+}
+
+
+
+
+
+通过Criteria关联查询可以看出：一旦在实体映射文件中配置好关联关系后，当访问关联实体的时候，hibernate会发出查询语句再次查询关联的实体，除非我们自己去设置关联的实体对象。当然使用Criteria也可以进行Projections、aggregation、和grouping这里不再研究，用到的时候再查。

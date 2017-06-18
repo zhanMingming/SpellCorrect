@@ -1,0 +1,44 @@
+LDA实现的两种方法今天看到美帝一个实现LDA的法子，实现了一把，结果也对，参加方法2。可以对比方法1，计算量是降低了很多。
+
+
+      但无论如何，有一个显著的开销是很大的，这就是每个Wm,n 都需要记录一个类标签，也就是代码中doc那个三维矩阵，x表示文档编号{0-15}，y表示term编号{0-4}，z表示label{0-1}
+
+
+     假定文档有10M个（一千万），每篇文章1000个词，词典空间10K个，类标号100个，那这个矩阵的大小起码是 10M*1K*（3字节&#43;1字节）= 40GB ？
+
+
+     所以大规模计算肯定不能怎么表示，怎么搞呢？待续，我实现了一个，参见：http://weibo.com/1497035431/zoWcFqHt5
+
+
+     
+
+
+      我一直想把LDA彻底打通，但还是觉得差一些，这个周末两天，还是没有如愿
+
+
+    
+
+
+     
+
+
+   
+
+
+
+
+   例子来源：https://github.com/pennyliang/MachineLearning-C---code/blob/master/gibbs_sampling/SteyversGriffithsLSABookFormatted.pdf
+
+
+   方法1：https://github.com/pennyliang/MachineLearning-C---code/blob/master/gibbs_sampling/main.cpp
+
+
+   方法2：https://github.com/pennyliang/MachineLearning-C---code/blob/master/gibbs_sampling/main2.cpp
+
+
+   
+
+
+
+
+   方法2算法流程

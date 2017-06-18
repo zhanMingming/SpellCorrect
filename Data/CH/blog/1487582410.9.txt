@@ -1,0 +1,81 @@
+放苹果放苹果
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:30 Accepted:16 
+
+
+   Description 
+
+
+   把M个同样的苹果放在N个同样的盘子里，允许有的盘子空着不放，问共有多少种不同的分法？（用K表示）5，1，1和1，5，1 是同一种分法。
+
+
+   Input 
+
+
+   第一行是测试数据的数目t（0 &lt;= t &lt;= 20）。以下每行均包含二个整数M和N，以空格分开。1&lt;=M，N&lt;=10。
+
+
+   Output 
+
+
+   对输入的每组数据M和N，用一行输出相应的K
+
+
+   Sample Input 
+
+
+   
+
+   1
+7 3
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   8
+
+   思路：分两种情况：
+
+   1. 没有空篮子
+
+   2. 有空篮子
+
+   所以fun(m,n)=fun(m-n,n)+fun(m,n-1);
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define N 11
+
+int f[N][N];
+int fun(int m,int n)
+{
+	if(m==0||n==0)
+		return 1;
+	if(m&lt;0||n&lt;0)
+		return 0;
+	if(f[m][n]!=0)
+		return f[m][n];
+	return fun(m-n,n)+fun(m,n-1);
+}
+int main()
+{
+	int T,m,n;
+	scanf("%d",&amp;T);
+	for(int i=0;i&lt;N;i++)
+		f[i][1]=f[1][i]=1;
+	while(T--)
+	{
+		scanf("%d%d",&amp;m,&amp;n);
+		cout&lt;&lt;fun(m,n)&lt;&lt;endl;
+	}
+	return 0;
+}

@@ -1,0 +1,190 @@
+GdiplusStartup函数GdiplusStartup function
+
+3 out of 4 rated this helpfulRate
+ this topic
+
+
+
+
+
+
+
+
+   Applies to:desktop apps only
+
+
+   TheGdiplusStartupfunction initializes Windows GDI&#43;. CallGdiplusStartupbefore making any other GDI&#43; calls, and callGdiplusShutdownwhen
+ you have finished using GDI&#43;.
+
+
+   函数用来初始化windows gdi&#43;。在调用任何gdi&#43;的函数之前，要先调用GdiplusStartup
+
+
+   在用完之后，需要调用GdiplusShutdown。
+
+Syntax
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   Status GdiplusStartup(
+  __outULONG_PTR token *token,
+  __inconst GdiplusStartupInput *input,
+  __outGdiplusStartupOutput *output
+);
+
+
+
+
+
+
+
+
+
+Parameters
+token[out]
+
+   Type:ULONG_PTR token*
+
+
+   Pointer to aULONG_PTRthat receives a token. Pass the token toGdiplusShutdownwhen
+ you have finished using GDI&#43;.
+
+input[in]
+
+   Type:constGdiplusStartupInput*
+
+
+   Pointer to aGdiplusStartupInputstructure that contains the GDI&#43; version,
+ a pointer to a debug callback function, a Boolean value that specifies whether to suppress the background thread, and a Boolean value that specifies whether to suppress external image codecs.
+
+output[out]
+
+   Type:GdiplusStartupOutput*
+
+
+   Pointer to aGdiplusStartupOutputstructure that receives a pointer to
+ a notification hook function and a pointer to a notification unhook function. If theSuppressBackgroundThreaddata member of theinputparameter isFALSE, then this parameter can beNULL.
+
+
+Return value
+
+   Type:
+
+
+   Type:Status
+
+
+   
+
+
+   If the function succeeds, it returnsOk, which is an element of theStatusenumeration.
+
+
+   If the function fails, it returns one of the other elements of theStatusenumeration.
+
+Remarks
+
+   You must callGdiplusStartupbefore you create any GDI&#43; objects, and you must delete all of your GDI&#43; objects (or have them go out of scope) before you callGdiplusShutdown.
+
+
+   在调用gdiplusshutdown之前，一定要销毁gdi&#43;的对象。这里的先后顺序很重要!! 这点是比较容易犯错误的。
+
+
+   很多时候我们在析构函数里销毁对象，对于全局的对象，析构函数的调用时间是在程序退出点，如果你在这之前就调用了gdiplusshutdown，那么你的程序
+
+
+   很容易在析构函数退出的时候报内存错误。
+
+
+   原因是应为gdi&#43;的对象的内存是由他自己的堆来管理的。gdi对象的new和delete操作符都被重载过。
+
+
+   
+
+
+
+
+   解决方法：
+
+
+   You can callGdiplusStartupon one thread and callGdiplusShutdownon
+ another thread as long as you delete all of your GDI&#43; objects (or have them go out of scope) before you callGdiplusShutdown.
+
+
+   Do not callGdiplusStartuporGdiplusShutdowninDllMainor
+ in any function that is called by DllMain. If you want to create a DLL that uses GDI&#43;, you should use one of the following techniques to initialize GDI&#43;:
+
+
+Require your clients to callGdiplusStartupbefore they call the functions in your DLL and to callGdiplusShutdownwhen
+ they have finished using your DLL.Export your own startup function that callsGdiplusStartupand your own shutdown function that callsGdiplusShutdown.
+ Require your clients to call your startup function before they call other functions in your DLL and to call your shutdown function when they have finished using your DLL.CallGdiplusStartupandGdiplusShutdownin each of your functions that make GDI&#43;
+ calls.
+
+   WarningFor info about how to use dynamic data exchange (DDE) with GDI&#43;, seeSpecial CWinApp Services.
+
+
+
+
+Examples
+
+   
+
+
+   For an example of callingGdiplusStartupandGdiplusShutdownin
+ a Windows application, seeGetting Started.
+
+
+   The following console application uses a GDI&#43;Imageobject to retrieve the
+ width and height of a JPEG image. The code callsGdiplusStartupbefore creating theImageobject and callsGdiplusShutdownbefore
+ terminating. Note that theImageobject is deleted before the call toGdiplusShutdown.
+
+
+   In the following code, the variablegdiplusStartupInputis initialized by the default constructor of theGdiplusStartupInputstructure.
+ The default constructor sets the data members of the structure to the following values:
+
+
+GdiplusVersion= 1DebugEventCallback=NULLSuppressBackgroundThread=FALSESuppressExternalCodecs=FALSE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   #include &lt;windows.h&gt;
+#include &lt;gdiplus.h&gt;
+#include &lt;stdio.h&gt;
+using namespace Gdiplus;
+
+INT main()
+{
+   GdiplusStartupInput gdiplusStartupInput;
+   ULONG_PTR gdiplusToken;
+   GdiplusStartup(&amp;gdiplusToken, &amp;gdiplusStartupInput, NULL);
+
+   Image* image = new Image(L&quot;FakePhoto.jpg&quot;);
+   printf(&quot;The width of the image is %u.\n&quot;, image-&gt;GetWidth());
+   printf(&quot;The height of the image is %u.\n&quot;, image-&gt;GetHeight()); 
+
+   delete image;
+   GdiplusShutdown(gdiplusToken);
+   return 0;
+}

@@ -1,0 +1,103 @@
+LibSVM 在matlab中的使用搞了一天，看了很多资料，终于搞好了matlab中调用大牛写好的svm库，将结果告诉大家避免以后走弯路。
+
+   1. 参考网站：
+
+   libsvm库下载：http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+
+   视频：http://v.youku.com/v_showMini/id_XMjc2NTY3MzYw_ft_131.html（有小问题，等下会提到）
+
+   详解：http://www.matlabsky.com/thread-11925-1-1.html
+
+   
+
+   2. 操作流程：
+
+   请注意：详细操作流程请参考上面的“详解”网站，这里只说大框架和详解里没有提到的问题。
+
+   A.设置path
+
+   File-&gt;set path -&gt;add with subfolders-&gt;加入libsvm-3.11文件夹的路径
+
+   B. 在matlab中编译
+
+   目的：将libsvm-3.11\matlab 中libsvmwrite.c 等 C++文件编译成 libsvmread.mexw32 等matlab文件，这样就可以在command window中被直接调用了。
+
+   注意：在最外面的Readme中有提到已经有编译好的文件，比如在libsvm-3.11\windows中也会看到libsvmread.mexw32,但这里不要被误导！还是需要你自己再编译一遍的！（还有如果matlab版本太低，如matlab 7.0是不能用VS作为编译器的，只能用VC++ 6.0，这是我劝你给matlab升级吧！别装vc了~我就是这样，升级到Matlab 2011b就可以用VS2008做编译器了）
+
+   C.加载数据集
+
+   就是这里搞了我一下午！
+
+   加载数据集
+
+   load heart_scale
+   
+
+   有两个数据集，一个是C++的， 一个是matlab的。libsvm库中下载的是C++数据，
+
+   所以matlab加载我们下载的heart_scale是会报错的：&lt;这就是视频中遗漏的小问题&gt;
+
+   
+
+   ??? Error using ==&gt; load
+Number of columns on line 3 of ASCII file D:\ZJU projects\machine learning\libsvm-3.11\heart_scale must be the same as previous lines. 这时怎么办？
+   
+
+   法1、下载matlab数据集（http://download.csdn.net/detail/abcjennifer/4215779）
+
+   法2、用libsvmread而非load，就是这里
+
+   
+
+    libsvmread('heart_scale');这样就可以加载数据集了，完成该步骤后发现Workspace中出现了heart_scale_inst 和 heart_scale_label,说明正确。
+   
+
+   ok，下一步我们来测试svm的训练和predict
+
+   D.train &amp; predict
+
+   
+
+   model = svmtrain(heart_scale_label,heart_scale_inst);
+[predict_label,accuracy] = svmpredict(heart_scale_label,heart_scale_inst,model);可以看到结果：
+   
+
+   
+
+   Accuracy = 86.6667% (234/270) (classification)
+   
+
+   
+
+   =========================MAC 版如何在matlab中使用libsvm=========================
+
+   下面说下mac怎么用libsvm，这里的问题是mex -setup的问题，需要安装一个补丁。
+
+   1. mac中安装xcode
+
+   2. xcode的preference中装command line tools
+
+   3. 下载最新补丁http://www.mathworks.cn/support/solutions/en/data/1-FR6LXJ/
+
+   4. 在matlab命令行输入&gt;&gt;cd(matlabroot)
+
+   5.在matlab命令行输入这个打补丁
+
+   &gt;&gt;!unzip -o ~/Downloads/optsPatch_MACOSX8.patch
+
+   6. 可以运行mex -setup了，选择将原来的gcc覆盖掉
+
+   7. 到libsvm/matlab进行make
+
+   就搞定啦！
+
+   
+
+   
+
+   具体参考：http://bbs.weiphone.com/read-htm-tid-5787323.html
+
+   
+
+   
+就OK了。祝大家成功快速实现！

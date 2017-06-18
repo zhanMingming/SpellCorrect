@@ -1,0 +1,188 @@
+linux下使用JNI的Sample为了给THUIRDB做个java调用接口，学习了下JNI。从网上找了个例子【http://w393185765.blog.163.com/blog/static/5672230620112254213718/】，并做了些修改，详细如下：
+
+
+   1）
+
+
+   编写如下代码，并存为JniDemo.java
+
+
+   public class JniDemo{
+
+
+
+
+
+static {
+
+   System.loadLibrary(&quot;Demo&quot;);
+
+}
+
+
+
+
+
+public static native void print();
+
+public static native int add(int a,int b);
+
+
+
+
+
+public static void main(String[] args)
+
+{
+
+   System.out.println(add(4,5));
+
+}
+
+
+
+}
+
+
+
+
+   2）执行：javac JniDemo.java
+
+
+   该命令得到JniDemo.class
+
+
+   
+
+
+
+
+   3）执行：javah JniDemo
+
+
+   该命令得到JniDemo.h
+
+
+   
+
+
+
+
+   4）编写下面代码，并存为JniDemo.c
+
+
+   #include&lt;stdio.h&gt;
+
+#include &lt;jni.h&gt;
+
+#include &quot;JniDemo.h&quot;
+
+
+
+
+
+JNIEXPORT void JNICALL Java_JniDemo_print
+
+(JNIEnv *env, jobject obj){
+
+   printf(&quot;hello jni kkkkkkkkkkkkkkkkllllllllllllllllllll\n&quot;);
+
+}
+
+
+
+
+
+JNIEXPORT jint JNICALL Java_JniDemo_add
+
+(JNIEnv *env, jobject obj, jint a, jint b)
+
+{
+
+   return a&#43;b;
+
+}
+
+
+
+
+   5）编写下面文件，并存为Makefile （path根据不同机器上的安装情况需要调整）
+
+
+   LD:=ld
+
+
+
+
+
+CPP:=gcc
+
+
+
+
+
+CPPFLAGS:= -c -fPIC
+
+# the libfile name is libDemo.so
+
+LIB:=libDemo.so
+
+#the jni.h path
+
+pathlix:=-I/usr/java/jdk1.6.0_16/include/
+
+pathinclude:=-I/usr/java/jdk1.6.0_16/include/linux
+
+
+
+
+
+objects:=JniDemo.o
+
+
+
+
+
+edit:$(objects)
+
+   $(LD) -shared -o $(LIB) $(objects)
+
+
+
+
+
+JniDemo.o:JniDemo.c JniDemo.h
+
+   $(CPP) $(pathlix) $(pathinclude) $(CPPFLAGS) JniDemo.c
+
+
+
+
+
+clean:
+
+   rm -f $(objects)
+
+
+
+
+   
+
+
+
+
+   6）执行：make
+
+
+   得到libDemo.so
+
+
+   
+
+
+
+
+   7）运行如下命令，完成实验
+
+
+   java -Djava.library.path=./ JniDemo

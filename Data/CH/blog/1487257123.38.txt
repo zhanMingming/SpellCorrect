@@ -1,0 +1,128 @@
+今天try了下folly的small lock 很好#include &lt;stdint.h&gt;
+#include &lt;time.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+namespace detail {
+	class Sleeper {
+		static const uint32_t kMaxActiveSpin = 4000;
+
+		uint32_t spinCount;
+
+		public:
+		Sleeper() : spinCount(0) {}
+
+		void wait() {
+			if (spinCount &lt; kMaxActiveSpin) {
+				++spinCount;
+				asm volatile(&quot;pause&quot;);
+			} else {
+				struct timespec ts = { 0, 500000 };
+				nanosleep(&amp;ts, NULL);
+			}
+		}
+	};
+
+}
+
+
+struct MicroSpinLock {
+	enum { FREE = 0, LOCKED = 1 };
+	
+	uint8_t lock_;
+	
+	bool cas(uint8_t compare, uint8_t newVal) {
+		bool out;
+		asm volatile(&quot;lock; cmpxchgb %2, (%3);&quot;
+				&quot;setz %0;&quot;
+				: &quot;=r&quot; (out)
+				: &quot;a&quot; (compare), 
+				&quot;q&quot; (newVal),  
+				&quot;r&quot; (&amp;lock_)
+				: &quot;memory&quot;, &quot;flags&quot;);
+		return out;
+	}
+	/* try compare 8bit lock with 64bit lock
+	uint64_t lock_;
+	bool cas(uint64_t compare, uint64_t newVal) {
+		bool out;
+		asm volatile(&quot;lock; cmpxchgq %2, (%3);&quot;
+				&quot;setz %0;&quot;
+				: &quot;=r&quot; (out)
+				: &quot;a&quot; (compare), 
+				&quot;q&quot; (newVal),  
+				&quot;r&quot; (&amp;lock_)
+				: &quot;memory&quot;, &quot;flags&quot;);
+		return out;
+	}
+	*/
+   
+	void init() {
+		lock_ = FREE;
+	}
+
+	bool try_lock() {
+		return cas(FREE, LOCKED);
+	}
+
+	void lock() {
+		detail::Sleeper sleeper;
+		do {
+			while (lock_ != FREE) {
+				asm volatile(&quot;&quot; : : : &quot;memory&quot;);
+				sleeper.wait();
+			}
+		} while (!try_lock());
+	}
+
+	void unlock() {
+		asm volatile(&quot;&quot; : : : &quot;memory&quot;);
+		lock_ = FREE; // release barrier on x86
+	}
+};
+
+
+size_t __attribute__((aligned(64))) g_uCount = 0;
+MicroSpinLock __attribute__((aligned(64))) locker;
+void* sum(void*)
+{
+	#ifdef NO_LOCK
+
+	for(int i=0;i&lt;250000;++i)
+		g_uCount ++ ;
+
+	#endif	
+
+	#ifdef SMALL_LOCK
+ 	for(int i=0;i&lt;250000;++i)
+	{
+		locker.lock();
+			g_uCount++;
+		locker.unlock();
+
+	}
+	#endif
+
+};
+
+int main(void)
+{
+	locker.init();
+	pthread_t* thread = (pthread_t*) malloc(10*sizeof( pthread_t));
+ 	for(int i=0;i&lt;10;++i){
+  pthread_create(&amp;thread[i],NULL,sum,NULL);
+ 	}
+ 	for(int i=0;i&lt;10;++i){
+  pthread_join(thread[i],NULL);
+ 	}
+	free(thread);
+ 	//printf(&quot;g_uCount:%d\n&quot;,g_uCount);
+		
+}
+
+   
+
+
+   以上是实验代码，结果比较满意，不细说了，一个lock只需8个bit，不错，对比了4字节的lock没有明显问题。本博客留给自己和感兴趣的朋友们。

@@ -1,0 +1,137 @@
+hdu 3793 浙大计算机研究生保研复试上机考试-2011年Is It Symmetric
+Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)
+
+Total Submission(s): 391Accepted Submission(s): 159
+
+
+
+
+Problem Description
+
+
+It is easy to see that a string of digits like 1234321 is symmetric with 4 being the central digit. However it is less obvious if we consider the string as a circular one and shift it to the left as 2343211. Your task is to write a program to check if a circular
+ string is symmetric.
+
+
+
+
+
+
+Input
+
+
+Your program must read test cases from standard input.
+
+The input file consists of several test cases. Each case occupies a line which contains the string. Each string contains less than 100 digits.
+
+The input is finished by a &quot;#&quot;.
+
+
+
+
+
+
+Output
+
+
+For each test case, your program must output to standard output. If the string is not symmetric, output &quot;NO&quot; in a line; else output &quot;YES&quot;, followed by a space and the position of the center (the position index starts from 0). It is guaranteed that the length
+ of the string is an odd number and the center is unique.
+
+
+
+
+
+
+Sample Input
+
+
+
+   2112343
+798
+#
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   YES 5
+NO
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生保研复试上机考试-2011年
+
+
+   
+
+
+
+
+   
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 105
+char str[N];
+
+int Div(int s,int t)
+{
+    int center=-2;
+    if(s==t)
+center=-1;
+    bool flag=(t-s+1)%2;
+    while(t&gt;s&amp;&amp;str[s]==str[t])
+ s++,t--;
+    if(s&gt;t&amp;&amp;!flag)//even
+ center=-1;
+    else if(s==t&amp;&amp;flag)//odd
+ center=s;
+    return center;
+}
+
+int main()
+{
+    int center1,center2,center;
+    while(cin&gt;&gt;str&amp;&amp;strcmp(str,&quot;#&quot;)!=0)
+    {
+ int len=strlen(str);
+ bool flag=false;
+ for(int i=0;i&lt;len;i++)
+ {
+     center1=Div(0,i);
+     center2=Div(i+1,len-1);
+     if(center1!=-2&amp;&amp;center2!=-2)
+     {
+  center=center1==-1?center2:center1;
+  cout&lt;&lt;&quot;YES &quot;&lt;&lt;center&lt;&lt;endl;
+  flag=true;
+  break;
+     }
+ }
+ if(!flag)
+     printf(&quot;NO\n&quot;);
+    }
+}

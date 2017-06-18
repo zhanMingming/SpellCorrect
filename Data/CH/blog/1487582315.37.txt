@@ -1,0 +1,115 @@
+动态规划 求解 Minimum Edit Distance自然语言处理（NLP）中，有一个基本问题就是求两个字符串的minimal Edit Distance, 也称Levenshtein distance。受到一篇Edit Distance介绍文章的启发，本文用动态规划求取了两个字符串之间的minimal Edit Distance. 动态规划方程将在下文进行讲解。
+
+   
+
+   1. what is minimal edit distance?
+
+   简单地说，就是仅通过插入(insert)、删除(delete)和替换(substitute)个操作将一个字符串s1变换到另一个字符串s2的最少步骤数。熟悉算法的同学很容易知道这是个动态规划问题。
+
+   其实一个替换操作可以相当于一个delete+一个insert，所以我们将权值定义如下：
+
+   I (insert)：1
+
+   D (delete)：1
+
+   S (substitute)：2
+
+   2. example:
+
+   intention-&gt;execution
+
+   Minimal edit distance：
+
+   delete i ; n-&gt;e ; t-&gt;x ; insert c ; n-&gt;u 求和得cost=83.calculate minimal edit distance dynamically思路见注释，这里D[i,j]就是取s1前i个character和s2前j个character所得minimal edit distance
+
+   三个操作动态进行更新：
+
+   D(i,j)=min { D(i-1, j) +1, D(i, j-1) +1 , D(i-1, j-1) + s1[i]==s2[j] ? 0 : 2}；中的三项分别对应D，I，S。（详见我同学的博客）
+
+   
+
+   /*
+ * minEditDis.cpp
+ *
+ *  @Created on: Jul 10, 2012
+ *      @Author: sophia
+ *  @Discription: calculate the minimal edit distance between 2 strings
+ *
+ *  Method : DP (dynamic programming)
+ *  D[i,j]: the minimal edit distance for s1的前i个字符和 s2的前j个字符
+ *  DP Formulation: D[i,j]=min(D[i-1,j]+1,D[i,j-1]+1,D[i-1,j-1]+flag);//其中if(s1[i]!=s2[j])则flag=2,else flag=0;
+ *
+ */
+
+#include&quot;iostream&quot;
+#include&quot;stdio.h&quot;
+#include&quot;string.h&quot;
+using namespace std;
+
+#define N 100
+#define INF 100000000
+#define min(a,b) a&lt;b?a:b
+
+int dis[N][N];
+char s1[N],s2[N];
+int n,m;//length of the two string
+
+
+int main()
+{
+	int i,j,k;
+	while(scanf(&quot;%s%s&quot;,&amp;s1,&amp;s2)!=EOF)
+	{
+		n=strlen(s1);m=strlen(s2);
+		for(i=0;i&lt;=n+1;i++)
+			for(j=0;j&lt;=m+1;j++)
+				dis[i][j]=INF;
+		dis[0][0]=0;
+
+		for(i=0;i&lt;=n;i++)
+			for(j=0;j&lt;=m;j++)
+			{
+				if(i&gt;0) dis[i][j] = min(dis[i][j],dis[i-1][j]+1); //delete
+				if(j&gt;0) dis[i][j] = min(dis[i][j],dis[i][j-1]+1);//insert
+
+				//substitute
+				if(i&gt;0&amp;&amp;j&gt;0)
+				{
+					if(s1[i-1]!=s2[j-1])
+						dis[i][j] = min(dis[i][j],dis[i-1][j-1]+2);
+					else
+						dis[i][j] = min(dis[i][j],dis[i-1][j-1]);
+				}
+			}
+
+		printf(&quot;min edit distance is: %d\n&quot;,dis[n][m]);
+	}
+	return 0;
+}
+
+   
+
+   感谢FallingStar08的提醒，上面最小化的宏定义部分改为
+
+   
+
+   #ifndef min
+#define min(a,b) (((a) &lt; (b)) ? (a) : (b))
+#endif
+   
+
+   
+运行结果：
+   
+
+   intentionexecutionmin edit distance is: 8abcacbfbcdmin edit distance is: 4zrqsophiaaihposqrzmin edit distance is: 16
+
+   另外，xuhanqiu在下面的提示也很有意义：
+
+   coursera上老师讲substitute的cost=2默认了substitute = delete+insertion,而这样违反了三角不等式即dis(a,b)+dis(a,c)&gt;dis(b,c)，这样一来sustitute就失去了存在的意义，所以如果存在三个基本操作delete,insert和substitute，我们应当把substitute cost改为1，而上面的代码对应于基本操作仅有delete和insertion的情况。当然，实际中有很多变体，具体问题具体分析。
+
+   
+Reference:
+   1. https://www.coursera.org/course/nlp
+
+   2.http://blog.csdn.net/huaweidong2011/article/details/7727482

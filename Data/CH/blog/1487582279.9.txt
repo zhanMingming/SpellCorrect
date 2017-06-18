@@ -1,0 +1,8 @@
+Linux下批量删除空文件Linux下批量删除空文件（大小等于0的文件）的方法
+   find . -name &quot;*&quot; -type f -size 0c | xargs -n 1 rm -f用这个还可以删除指定大小的文件，只要修改对应的 -size 参数就行，例如：
+   find . -name &quot;*&quot; -type f -size 1024c | xargs -n 1 rm -f就是删除1k大小的文件。（但注意 不要用 -size 1k，这个得到的是占用空间1k，不是文件大小1k的）。
+   如果只要删除文件夹或者名字连接等，可以相应的改 -type 参数，具体细节见 man find
+
+   
+
+   转载自：http://blog.sina.com.cn/s/blog_63d675190100p4wb.html

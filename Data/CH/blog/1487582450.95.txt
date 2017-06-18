@@ -1,0 +1,200 @@
+Another kind of Fibonacci （个人赛19 hdu 3306)Another kind of Fibonacci
+
+   Time Limit: 3000/1000 MS (Java/Others)Memory Limit: 65536/65536 K (Java/Others)Total Submission(s): 115Accepted Submission(s): 50
+
+Problem Description
+
+As we all known , the Fibonacci series : F(0) = 1, F(1) = 1, F(N) = F(N - 1) + F(N - 2) (N &gt;= 2).Now we define another kind of Fibonacci : A(0) = 1 , A(1) = 1 , A(N) = X * A(N - 1) + Y * A(N - 2) (N &gt;= 2).And we want to Calculate S(N) , S(N) = A(0)2 +A(1)2+&hellip;&hellip;+A(n)2.
+
+
+
+
+   
+
+Input
+
+There are several test cases.Each test case will contain three integers , N, X , Y .N : 2&lt;= N &lt;= 231 &ndash; 1X : 2&lt;= X &lt;= 231&ndash; 1Y : 2&lt;= Y &lt;= 231 &ndash; 1
+
+
+
+
+   
+
+Output
+
+For each test case , output the answer of S(n).If the answer is too big , divide it by 10007 and give me the reminder.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2 1 1 
+3 2 3 
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   6
+196
+
+
+原来我们讲的斐波那契数列是： F(0) = 1, F(1) = 1, F(N) = F(N - 1) + F(N - 2)
+
+
+
+这道题规定了另一种斐波那契数列形式：A(0) = 1 , A(1) = 1 , A(N) = X * A(N - 1) + Y * A(N - 2)
+
+
+
+其实原理是一样的！
+
+我们以前快速求Fibonacci数列f[n]=f[n-1]+f[n-2],f[1]=f[2]=1第n项的方法是！！？？！！
+
+构造常系数矩阵！
+
+（一）Fibonacci数列f[n]=f[n-1]+f[n-2],f[1]=f[2]=1的第n项的快速求法（不考虑高精度）.
+
+解法：
+
+考虑1&times;2的矩阵【f[n-2],f[n-1]】。根据fibonacci数列的递推关系，我们希望通过乘以一个2&times;2的矩阵，得到矩阵【f[n-1],f[n]】=【f[n-1],f[n-1]+f[n-2]】
+
+很容易构造出这个2&times;2矩阵A，即：
+
+０ １ １ １ 
+
+所以，有【f[1],f[2]】&times;A＝【f[2],f[3]】
+
+又因为矩阵乘法满足结合律，故有：
+
+【f[1],f[2]】&times;A n-1=【f[n],f[n+1]】
+
+这个矩阵的第一个元素即为所求。
+
+至于如何快速求出A n-1，相信大家都会，即递归地：n为偶数时，An=(A n/2)2；n为奇数时，An=(A n/2)2*A。
+
+问题（一）解决。
+
+（二）数列f[n]=f[n-1]+f[n-2]+1,f[1]=f[2]=1的第n项的快速求法（不考虑高精度）.
+
+解法：
+
+仿照前例，考虑1&times;3的矩阵【f[n-2],f[n-1],1】，希望求得某3&times;3的矩阵A，使得此1&times;3的矩阵乘以A得到矩阵：【f[n-1],f[n],1】＝【f[n-1],f[n-1]+f[n-2]+1,1】
+
+容易构造出这个3&times;3的矩阵A，即：
+
+０ １ ０ １ １ ０ ０ １ １ 
+
+问题（二）解决。
+
+（三）数列f[n]=f[n-1]+f[n-2]+n+1,f[1]=f[2]=1的第n项的快速求法（不考虑高精度）.
+
+解法：
+
+仿照前例，考虑1&times;4的矩阵【f[n-2],f[n-1],n,1】，希望求得某4&times;4的矩阵A，使得此1&times;4的矩阵乘以A得到矩阵：
+
+【f[n-1],f[n],n+1,1】＝【f[n-1],f[n-1]+f[n-2]+n+1,n+1,1】
+
+容易构造出这个4&times;4的矩阵A，即：
+
+０ １ ０ ０ １ １ ０ ０ ０ １ １ ０ ０ １ １ １ 
+
+问题（三）解决&hellip;&hellip;
+
+（四）数列f[n]=f[n-1]+f[n-2],f[1]=f[2]=1的前n项和s[n]的快速求法（不考虑高精度）.
+
+解法：
+
+虽然我们有S[n]=F[n+2]-1，但本文不考虑此方法，我们想要得到更一般的方法。
+
+考虑（一）的矩阵A，容易发现我们要求【f[1],f[2]】&times;（A+A2+A3+&hellip;+AN-1）。很多人使用一种很数学的方法构造一个2r*2r（r是A的阶数，这里为2）的矩阵来计算，这种方法比较麻烦且很慢，这里不再介绍。下面考虑一种新方法。
+
+仿照之前的思路，考虑1&times;3的矩阵【f[n-2],f[n-1],s[n-2]】，我们希望通过乘以一个3&times;3的矩阵A，得到1&times;3的矩阵：
+
+【f[n-1],f[n],s[n-1]】=【f[n-1],f[n-1]+f[n-2],s[n-2]+f[n-1]】
+
+容易得到这个3&times;3的矩阵是：
+
+０ １ ０ １ １ １ ０ ０ １ 
+
+然后&hellip;&hellip;&hellip;&hellip;容易发现，这种方法的矩阵规模是(r+1)*(r+1)，比之前流行的方法好得多。
+
+（五）数列f[n]=f[n-1]+f[n-2]+n+1,f[1]=f[2]=1的前n项和s[n]的快速求法（不考虑高精度）.
+
+解法：
+
+结合（三）（四），容易想到&hellip;&hellip;
+
+考虑1&times;5的矩阵【f[n-2],f[n-1],s[n-2],n,1】,
+
+我们需要找到一个5&times;5的矩阵A，使得它乘以A得到如下1&times;5的矩阵：
+
+【f[n-1],f[n],s[n-1],n+1,1】
+
+=【f[n-1], f[n-1]+f[n-2]+n+1,s[n-2]+f[n-1],n+1,1】
+
+容易构造出A为：
+
+０ １ ０ ０ ０ １ １ １ ０ ０ ０ ０ １ ０ ０ ０ １ ０ １ ０ ０ １ ０ １ １ 
+
+然后&hellip;&hellip;问题解决。
+
+一般地，如果有f[n]=p*f[n-1]+q*f[n-2]+r*n+s
+
+可以构造矩阵A为：
+
+０ q 0 0 0 1 p 1 0 0 0 0 1 0 0 0 r 0 1 0 0 s 0 1 1 
+
+更一般的，对于f[n]=Sigma(a[n-i]*f[n-i])+Poly(n)，其中0&lt;i&lt;=某常数c, Poly (n)表示n的多项式，我们依然可以构造类似的矩阵A来解决问题。
+
+设Degree(Poly(n))=d, 并规定Poly(n)=0时，d=-1，此时对应于常系数线性齐次递推关系。则本方法求前n项和的复杂度为：
+
+((c+1)+(d+1))3*logns
+
+
+
+
+
+
+
+所以对于这道题，
+
+   我们可以根据(s[n-2], a[n-1]^2, a[n-1]*a[n-2], a[n-2]^2) * A = (s[n-1], a[n]^2, a[n]*a[n-1], a[n-1]^2)
+
+
+   能够求出关系矩阵
+
+
+     |1 0  0  0 |A =|1  x^2 x  1 |  |02*x*y y 0 | |0 y^2 0 0 |
+
+
+   这样就A了！
+
+
+   
+
+
+   
+
+
+   #include &lt;cstdio&gt;#include &lt;cstring&gt;#include&lt;iostream&gt;#include &lt;algorithm&gt;using namespace std;#define MOD 10007
+
+
+   struct Matrix { int numbers[4][4]; Matrix(int x = 0, int y = 0) { memset(numbers, 0, 4 * 4 * sizeof(int)); numbers[0][0] = numbers[0][1] = 1; numbers[1][1] = x * x % MOD; numbers[1][2] = y * y % MOD; numbers[1][3] = 2 * x * y % MOD; numbers[2][1] = 1; numbers[3][1] = x; numbers[3][3] = y; } Matrix(bool flag)  { memset(numbers, 0, 4 * 4 * sizeof(int)); numbers[0][0] = 1; numbers[1][1] = 1; numbers[2][2] = 1; numbers[3][3] = 1; }};
+
+
+   Matrix operator * (const Matrix&amp; lh, const Matrix&amp; rh) { Matrix temp; for (int i = 0; i &lt; 4; ++i) for (int j = 0; j &lt; 4; ++j)  { int sum = 0; for (int k = 0; k &lt; 4; ++k) sum = (sum + lh.numbers[i][k] * rh.numbers[k][j]) % MOD; temp.numbers[i][j] = sum; } return temp;}
+
+
+   int main() { int n, x, y; while (scanf("%u%u%u", &amp;n, &amp;x, &amp;y) != EOF) { Matrix mat(x % MOD, y % MOD), res(true); for (; n &gt; 0; n &gt;&gt;= 1)  { if (n &amp; 1) res = mat * res; mat = mat * mat; } int sum = 0; for (int i = 0; i &lt; 4; ++i) sum = (sum + res.numbers[0][i]) % MOD; printf("%u/n", sum); } return 0;}

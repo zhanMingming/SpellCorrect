@@ -1,0 +1,185 @@
+log4j框架logger的继承关系以及使用场景log4j日志框架logger是存在继承关系的，我们一般都会在log4j.properties文件中定义log4j.rootLogger。其他所有logger都继承自这个rootLooger。考虑下面这种场景：假如我们有2个类HelloLog4j和A。
+
+
+   package aty.log;
+
+import org.apache.log4j.Logger;
+
+import aty.log.service.A;
+
+public class HelloLog4j {
+
+	private static Logger logger = Logger.getLogger(HelloLog4j.class);
+
+	public static void main(String[] args) {
+		logger.debug(&quot;log in main.&quot;);
+		new A().run();
+	}
+}
+
+   package aty.log.service;
+
+import org.apache.log4j.Logger;
+
+public class A {
+
+	private static Logger logger = Logger.getLogger(A.class);
+
+	public void run() {
+		logger.error(&quot;log in A.java&quot;);
+	}
+}
+
+
+   
+
+
+
+log4j.properties文件配置如下：
+   #rootLogger can print DEBUG to console
+log4j.rootLogger=debug, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender  
+log4j.appender.console.Threshold=debug  
+log4j.appender.console.ImmediateFlush=true  
+log4j.appender.console.Target=System.err  
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+
+   
+
+
+
+运行HelloLog4j.java控制台日志如下：可以看到这2个类使用的logger都是rootLogger。
+
+   
+
+
+
+现在我们有这个需求：让A.java中日志的打印到单独的a.log日志文件中，而HelloLog4j中的日志还是打印到控制台。也就是说：我们想让A和HelloLog4j这2个类使用不同的logger。java代码不用修改，我们将log4j.properties修改如下：
+
+
+   #rootLogger can print DEBUG to console
+log4j.rootLogger=debug, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender  
+log4j.appender.console.Threshold=debug  
+log4j.appender.console.ImmediateFlush=true  
+log4j.appender.console.Target=System.err  
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss,SSS}]-[%t]-[%X{ip}]-[%l]-[%p] %m%n
+
+#A.java is special.we use a individual appender for it.
+#A class&#39;s full qulified qualified name is logger&#39;s name.
+log4j.logger.aty.log.service.A=DEBUG, testA
+log4j.appender.testA=org.apache.log4j.FileAppender
+log4j.appender.testA.Threshold=warn  
+log4j.appender.testA.ImmediateFlush=true  
+log4j.appender.testA.Append=true  
+log4j.appender.testA.File=c:/a.log
+log4j.appender.testA.layout=org.apache.log4j.PatternLayout
+log4j.appender.testA.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss,SSS}]-[%t]-[%X{ip}]-[%l]-[%p] %m%n
+
+#avoid print to parent logger.
+log4j.additivity.aty.log.service.A= false
+
+   
+
+
+
+再次运行HelloLog4j可以看到：A.java中的日志并没有打印到控制台上，而是打印到了a.log文件中。
+
+   
+
+
+
+我们来解释下上面的配置：
+
+
+   log4j.logger.aty.log.service.A=DEBUG, testA  我们用A的全类名定义了一个logger。
+
+
+
+
+   log4j.additivity.aty.log.service.A= false   避免日志打印到rootLogger中。如果这里设置成true，那么A.java中的日志既会打印到控制台上，也会打印到a.log文件中。
+
+
+
+
+   
+
+
+
+
+   现在我们可以介绍下logger的继承关系了，比如我们上面的类aty.log.service.A中使用了logger来写日志。那么log4j会先查找名称是&quot;aty.log.service.A&quot;的logger，如果没有找到，向上查找名称是&quot;aty.log.service&quot;的logger，如果还没有找到那么继续向上查找，查找的最顶层就是rootLogger。这就是log4j中logger的继承关系。rootLogger一定要在配置，其他特定类或者特定包的logger可以不用配置。知道了这个继承特性之后，如果我们要aty.log.dao包下所有的类都打印到同一个日志文件，那么可以进行如下配置。
+
+
+   # a package appender
+log4j.logger.aty.log.dao=DEBUG, daoAppender
+log4j.appender.daoAppender=org.apache.log4j.FileAppender
+log4j.appender.daoAppender.Threshold=warn  
+log4j.appender.daoAppender.ImmediateFlush=true  
+log4j.appender.daoAppender.Append=true  
+log4j.appender.daoAppender.File=c:/dao.log
+log4j.appender.daoAppender.layout=org.apache.log4j.PatternLayout
+log4j.appender.daoAppender.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss,SSS}]-[%t]-[%X{ip}]-[%l]-[%p] %m%n
+log4j.additivity.aty.log.dao= false
+
+   
+
+
+   
+
+
+
+可以看到：利用logger的继承特性，我们可以很容易将不同的日志打印到不同的文件中，这样可以避免各种日志混杂在一起。如果我们想将A.java中有的日志打印到a.log中，有的日志打印到控制台上也是可以的。
+   package aty.log.service;
+
+import org.apache.log4j.Logger;
+
+public class A {
+
+	private static Logger logger = Logger.getLogger(A.class);
+	
+	private static Logger rootLogger = Logger.getRootLogger();
+
+	public void run() {
+		logger.error(&quot;log in A.java&quot;);
+		rootLogger.error(&quot;a to console.&quot;);
+	}
+}
+
+
+
+
+
+
+   
+
+
+   最后提一下：log4j默认是使用类名或者包名来查找logger的。log4j允许我们自己定义logger的名称。
+
+
+   package aty.log.service;
+
+import org.apache.log4j.Logger;
+
+public class A {
+
+	private static Logger logger = Logger.getLogger(&quot;atyAlogger&quot;);
+	
+	public void run() {
+		logger.error(&quot;log in A.java&quot;);
+	}
+}
+   #use atyAlogger as appender name.
+log4j.logger.atyAlogger=DEBUG, testA
+log4j.appender.testA=org.apache.log4j.FileAppender
+log4j.appender.testA.Threshold=warn  
+log4j.appender.testA.ImmediateFlush=true  
+log4j.appender.testA.Append=true  
+log4j.appender.testA.File=c:/a.log
+log4j.appender.testA.layout=org.apache.log4j.PatternLayout
+log4j.appender.testA.layout.ConversionPattern=[%d{yyyy-MM-dd HH:mm:ss,SSS}]-[%t]-[%X{ip}]-[%l]-[%p] %m%n
+
+#avoid print to parent logger.
+log4j.additivity.atyAlogger= false
+
+一般来说，我们都是使用默认的名称，这样虽然将类名和包名在log4j.properties写死了。但是方便java类里面获取logger。因为各个类都是根据自己类的全限定名来查找logger的，具体日志到底打印到哪里去，由配置文件决定。

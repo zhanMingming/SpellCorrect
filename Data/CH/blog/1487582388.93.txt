@@ -1,0 +1,91 @@
+Divisors pku 2992Divisors
+
+
+
+
+
+
+	Time Limit: 1000MS
+
+	Memory Limit: 65536K
+
+
+
+	Total Submissions: 6789
+
+	Accepted: 1783
+
+
+
+
+
+
+   Description
+
+Your task in this problem is to determine the number of divisors of Cnk. Just for fun -- or do you need any special reason for such a useful computation? 
+
+
+   Input
+
+The input consists of several instances. Each instance consists of a single line containing two integers n and k (0 &le; k &le; n &le; 431), separated by a single space. 
+
+
+   Output
+
+For each instance, output a line containing exactly one integer -- the number of distinct divisors of Cnk. For the input instances, this number does not exceed 263 - 1. 
+
+
+   Sample Input
+
+
+   5 1
+6 3
+10 4
+
+   Sample Output
+
+
+   2
+6
+16
+
+   Source
+
+CTU Open 2005
+
+#include&lt;stdio.h&gt;
+int p[83]={2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431};
+int d[432][83]={0},m=0;
+void divisors(int n)
+{
+    int i=n,j;
+    for (j=0;n&gt;1;j++)
+    {
+   while (n%p[j]==0)
+   {
+  d[i][j]++;
+  n/=p[j];
+   }
+    }
+    if (j&gt;m)
+   m=j;
+}
+int main()
+{
+    int i,k,l,n;
+    __int64 j;
+    for (i=2;i&lt;432;i++)
+    {
+   for (j=0,k=i-1;j&lt;m;j++)
+  d[i][j]=d[k][j];
+   divisors(i);
+    }
+    while (scanf("%d%d",&amp;n,&amp;k)!=EOF)
+    {
+   l=n-k;
+   for (i=0,j=1;i&lt;83;i++)
+  j*=(d[n][i]-d[k][i]-d[l][i]+1);
+   printf("%I64d/n",j);
+    }
+    return 0;
+}

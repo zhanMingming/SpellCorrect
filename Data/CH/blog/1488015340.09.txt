@@ -1,0 +1,351 @@
+prototypejs库Function#wrap()的使用和源码解析之前的2篇文章在讨论prototypejs库的继承实现方式、$super和_super过程中，我看到了Function#wrap()这个很有意思的API。这篇文章学习下如何使用Function#wrap()，以及它的源码。
+
+
+   我们先看下官方对这个API的说明：也就是说wrap()可以用来实现类&#20284;AOP编程的效果。
+
+
+   [[Function#wrap]] distills(提炼) the essence of aspect-oriented programming(AOP) 
+into a single method, letting you easily build on existing functions by
+specifying before and after behavior, transforming the return value, or
+even preventing the original function from being called.
+
+   
+
+
+   
+
+
+
+先看下面这段代码和它的执行结果，是不是很像AOP呢？
+   function sayName(name)
+{
+	console.log(&quot;original method=&quot;+name);
+	return &quot;return=&quot;+name;
+}
+
+// prototypejs将wrap加入到了Function.prototype中
+var wrapper = sayName.wrap(function(callOriginal, before_or_after, msg, name){
+	if(before_or_after == &quot;before&quot;)
+	{
+		console.log(msg);
+		return callOriginal(name);
+	}
+	else if(before_or_after == &quot;after&quot;)
+	{
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+	else
+	{
+		console.log(msg);
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+});
+
+console.log(wrapper(&quot;before&quot;,&quot;morning&quot;, &quot;aty&quot;));
+console.log(wrapper(&quot;after&quot;,&quot;afternoon&quot;, &quot;qun&quot;));
+console.log(wrapper(&quot;both&quot;,&quot;welcome&quot;, &quot;xy&quot;));
+
+
+
+prototypejs库将wrap方法添加到了Function.prototype对象中，所以每一个函数对象都会获得wrap方法。Function#wrap()的入参是一个函数，返回&#20540;也是一个函数。入参的函数签名具有如下性质：
+   // callOriginal这个函数是原始函数(未经过包装处理)
+// arg1 arg2...是调用函数需要传递的参数
+function wrapper(callOriginal[, arg1[, arg2]...])
+{
+
+}
+
+   
+
+
+
+Function#wrap()的返回&#20540;时一个函数，我们需要调用这个函数并传递参数，包装函数wrapper中能够获取到这些参数。再看看下面这段代码和执行结果，应该学会怎么使用wrap()这个API了吧。
+
+
+   function Person(id)
+{
+	this.id = id;
+}
+
+Person.prototype.sayName = function(name){
+	console.log(&quot;[&quot;+this.id+&quot;]original method=&quot;+name);
+	return this.id+&quot;.&quot;+name;
+}
+
+
+Person.prototype.sayName = Person.prototype.sayName.wrap(function(callOriginal, before_or_after, msg, name){
+	if(before_or_after == &quot;before&quot;)
+	{
+		console.log(msg);
+		return callOriginal(name);
+	}
+	else if(before_or_after == &quot;after&quot;)
+	{
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+	else
+	{
+		console.log(msg);
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+});
+
+var po1 = new Person(&quot;1&quot;);
+console.log(po1.sayName(&quot;before&quot;,&quot;morning&quot;, &quot;aty&quot;));
+
+var po2 = new Person(&quot;2&quot;);
+console.log(po2.sayName(&quot;after&quot;,&quot;afternoon&quot;, &quot;qun&quot;));
+
+var po3 = new Person(&quot;3&quot;);
+console.log(po3.sayName(&quot;both&quot;,&quot;welcome&quot;, &quot;xy&quot;));
+
+
+
+学会了如何使用这个API之后，我们看看prototypejs源码是怎么实现的。很简单没有什么的特别的，就是用到了bind和apply这2个方法。
+   function wrap(wrapper) {
+    var __method = this;//原始函数
+    return function() {
+      var a = update([__method.bind(this)], arguments);
+      return wrapper.apply(this, a);
+    }
+}
+  
+// console.log(update([1,2],[4,5,6]));//[1, 2, 4, 5, 6]
+// 这个工具函数,其实就是将数组和函数参数对象arguments合并成一个数组
+function update(array, args)
+{
+	var arrayLength = array.length, length = args.length;
+	while (length--) array[arrayLength + length] = args[length];
+	return array;
+}
+
+现在我们着手自己实现一个wrap，上面的update()方法很简单了，我们直接使用它不做任何修改。prototypejs是将wrap挂在Function.prototype对象上，现在我们将自己的wrap作为全局函数。
+   function Person(id)
+{
+	this.id = id;
+}
+
+Person.prototype.sayName = function(name){
+	console.log(&quot;[&quot;+this.id+&quot;]original method=&quot;+name);
+	return this.id+&quot;.&quot;+name;
+}
+
+function hiWrapper(callOriginal, before_or_after, msg, name)
+{
+	if(before_or_after == &quot;before&quot;)
+	{
+		console.log(msg);
+		return callOriginal(name);
+	}
+	else if(before_or_after == &quot;after&quot;)
+	{
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+	else
+	{
+		console.log(msg);
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+}
+
+//模拟prototypejs,但是存放到全局的window对象上
+function atyWrap(wrapper, originalMethod, context) {
+	return function() {
+	  var a = update([originalMethod.bind(context)], arguments);
+	  return wrapper.apply(context, a);
+	}
+}
+     
+function update(array, args)
+{
+	var arrayLength = array.length, length = args.length;
+	while (length--) array[arrayLength + length] = args[length];
+	return array;
+}
+//模拟prototypejs
+ 
+var po1 = new Person(&quot;1&quot;);
+po1.sayName = atyWrap(hiWrapper, Person.prototype.sayName, po1);
+console.log(po1.sayName(&quot;before&quot;,&quot;morning&quot;, &quot;aty&quot;));
+console.log(&quot;---------------------&quot;);
+
+var po2 = new Person(&quot;2&quot;);
+po2.sayName = atyWrap(hiWrapper, Person.prototype.sayName, po2);
+console.log(po2.sayName(&quot;after&quot;,&quot;afternoon&quot;, &quot;qun&quot;));
+console.log(&quot;---------------------&quot;);
+
+var po3 = new Person(&quot;3&quot;);
+po3.sayName = atyWrap(hiWrapper, Person.prototype.sayName, po3);
+console.log(po3.sayName(&quot;both&quot;,&quot;welcome&quot;, &quot;xy&quot;));执行结果如下：
+
+   
+
+可以看到实现了跟prototypejs同样的效果，但是种方式有2个问题：调用atyWrap很麻烦必需自己传递原始方法和上下文，而且这种做法有性能问题(po1、po2和po3这3个对象都自己拷贝了一份Person.prototype.sayName)占用了3份空间。导致这2个问题的根源是：自定义的atyWrap挂在了全局对象window上，atyWrap中无法自己获取上下文。
+
+
+
+为了解决不知道上下文this的问题，这次我们将atyWrap挂在Object.prototype上。
+
+
+   function Person(id)
+{
+	this.id = id;
+}
+
+Person.prototype.sayName = function(name){
+	console.log(&quot;[&quot;+this.id+&quot;]original method=&quot;+name);
+	return this.id+&quot;.&quot;+name;
+}
+
+function hiWrapper(callOriginal, before_or_after, msg, name)
+{
+	if(before_or_after == &quot;before&quot;)
+	{
+		console.log(msg);
+		return callOriginal(name);
+	}
+	else if(before_or_after == &quot;after&quot;)
+	{
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+	else
+	{
+		console.log(msg);
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+}
+
+//模拟prototypejs,放在Object.prototype上
+Object.prototype.atyWrap = function(wrapper, originalMethod){
+	return function() {
+	  var a = update([originalMethod.bind(this)], arguments);
+	  return wrapper.apply(this, a);
+	}
+}
+     
+function update(array, args)
+{
+	var arrayLength = array.length, length = args.length;
+	while (length--) array[arrayLength + length] = args[length];
+	return array;
+}
+//模拟prototypejs
+
+// 不需要传递this了
+Person.prototype.sayName = Object.prototype.atyWrap(hiWrapper, Person.prototype.sayName);
+ 
+var po1 = new Person(&quot;1&quot;);
+console.log(po1.sayName(&quot;before&quot;,&quot;morning&quot;, &quot;aty&quot;));
+console.log(&quot;---------------------&quot;);
+
+var po2 = new Person(&quot;2&quot;);
+console.log(po2.sayName(&quot;after&quot;,&quot;afternoon&quot;, &quot;qun&quot;));
+console.log(&quot;---------------------&quot;);
+
+var po3 = new Person(&quot;3&quot;);
+console.log(po3.sayName(&quot;both&quot;,&quot;welcome&quot;, &quot;xy&quot;));执行结果如下：
+
+   
+
+
+
+
+
+
+   结果是完全正常的，函数签名和调用方法简单很多(不需要this了)。debug可以发现：性能问题也没有了，po1、po2和po3对象中都没有sayName方法的拷贝，这3个对象共享原型中的方法。
+
+
+   
+
+
+
+
+   
+
+虽然不用显示传递上下文对象了，但是还必需显示地传递原始方法。现在我们将atyWrap挂在Function.prototype对象上。
+
+
+   function Person(id)
+{
+	this.id = id;
+}
+
+Person.prototype.sayName = function(name){
+	console.log(&quot;[&quot;+this.id+&quot;]original method=&quot;+name);
+	return this.id+&quot;.&quot;+name;
+}
+
+function hiWrapper(callOriginal, before_or_after, msg, name)
+{
+	if(before_or_after == &quot;before&quot;)
+	{
+		console.log(msg);
+		return callOriginal(name);
+	}
+	else if(before_or_after == &quot;after&quot;)
+	{
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+	else
+	{
+		console.log(msg);
+		var result = callOriginal(name);
+		console.log(msg);
+		return result;
+	}
+}
+
+//模拟prototypejs,放在Function.prototype上
+Function.prototype.atyWrap = function(wrapper, originalMethod){
+	var method = this;//this代表方法对象
+	return function() {
+	  var a = update([method.bind(this)], arguments);//this代表的是对象Person
+	  return wrapper.apply(this, a);
+	}
+}
+     
+function update(array, args)
+{
+	var arrayLength = array.length, length = args.length;
+	while (length--) array[arrayLength + length] = args[length];
+	return array;
+}
+//模拟prototypejs
+
+// 不需要传递this了,也不需要传递方法了
+Person.prototype.sayName = Person.prototype.sayName.atyWrap(hiWrapper);
+ 
+var po1 = new Person(&quot;1&quot;);
+console.log(po1.sayName(&quot;before&quot;,&quot;morning&quot;, &quot;aty&quot;));
+console.log(&quot;---------------------&quot;);
+
+var po2 = new Person(&quot;2&quot;);
+console.log(po2.sayName(&quot;after&quot;,&quot;afternoon&quot;, &quot;qun&quot;));
+console.log(&quot;---------------------&quot;);
+
+var po3 = new Person(&quot;3&quot;);
+console.log(po3.sayName(&quot;both&quot;,&quot;welcome&quot;, &quot;xy&quot;));执行结果如下：
+
+   
+
+
+
+可以看到执行结果也是完全正常的，无论是调用方式，还是wrap函数签名， 都跟使用prototypejs一样的了。实际上这就说prototypejs的做法，可以看到将wrap挂在Function.prototype上是最简单、最合理的，虽然修改原型有一定的风险。

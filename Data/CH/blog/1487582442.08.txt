@@ -1,0 +1,102 @@
+Musical Chairs（约瑟夫问题高效算法）In the traditional game of Musical Chairs, N + 1 children run around N chairs (placed in a circle) as long as music is playing. The moment the music stops, children run and try to sit on an available chair. The child still standing leaves the game, a chair is removed, and the game continues with N children. The last child to sit is the winner.In an attempt to create a similar game on these days' game consoles, you modify the game in the following manner: N Children are seated on N chairs arranged around a circle. The chairs are numbered from 1 to N . Your program pre-selects a positive number D . The program starts going in circles counting the children starting with the first chair. Once the count reaches D , that child leaves the game, removing his/her chair. The program starts counting again, beginning with the next chair in the circle. The last child remaining in the circle is the winner.For example, consider the game illustrated in the figure above for N = 5 and D = 3 . In the figure, the dot indicates where counting starts and &times; indicates the child leaving. Starting off, child #3 leaves the game, and counting restarts with child #4. Child #1 is the second child to leave and counting restart with child #2 resulting in child #5 leaving. Child #2 is the last to leave, and child #4 is the winner. Write a program to determine the winning child given both N and D . 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('proinput')
+}">Input
+Your program will be tested on one or more test cases. Each test case specifies two positive integers N and D on a single line, separated by one or more spaces, where N, D &lt; 1, 000, 000 .The last line of the input file contains two 0's and is not part of the test cases. 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prooutput')
+}">Output
+For each test case, write the winner using the following format:N D WWhere N and D are as above, is a space character, and W is the winner of that game. 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosamplein')
+}">Sample Input
+
+
+   5 3
+7 4
+0 0
+
+
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosampleout')
+}">Sample Output
+
+
+   5 3 4
+7 4 2
+
+
+
+
+   约瑟夫问题高校算法：
+
+
+   #include&lt;stdio.h&gt;
+int f[1000000];
+int main()
+{
+	int n,d,i;
+	for (;scanf("%d%d",&amp;n,&amp;d);) 
+	{ 
+		if(n==0&amp;&amp;d==0) break; 
+		f[1]=0; 
+		for (i=2;i&lt;=n;i++) 
+		{  
+			f[i]=(f[i-1]+d)%i;
+		}  
+		printf("%d %d %d/n",n,d,f[n]+1); 
+	} 
+	return 0;
+}
+ 
+
+
+   
+
+
+   
+
+
+   如果需要求出每次被刷掉的人的序号：
+
+
+   //约瑟夫问题：n人坐一圈，每次选出第m个人，问被踢出的顺序
+#include&lt;iostream&gt;
+using namespace std;
+int a[60];
+
+int main()
+{
+	int i,j,k,n,m;
+	while(cin&gt;&gt;n&gt;&gt;m)
+	{
+		for(i=1;i&lt;=n;i++)
+			a[i]=i;
+		k=1;
+		i=0;
+		while(1)
+		{
+			for(j=1;j&lt;=m;)
+			{
+				i=i%n+1;
+				if(a[i]!=0)
+					j++;
+			}
+			cout&lt;&lt;a[i]&lt;&lt;" ";
+			a[i]=0;			
+			if(k==n)
+				break;
+			k++;
+		}
+		cout&lt;&lt;endl;
+	}
+	return 0;
+}

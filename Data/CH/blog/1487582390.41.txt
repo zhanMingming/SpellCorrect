@@ -1,0 +1,19 @@
+C# 屏蔽tab 、 用Enter实现Tab功能C#中如何用Enter实现tab的功能呢？
+
+
+   
+
+
+   C#如何是数据焦点跳到下一个输入位置，高亮选中所有文本：
+
+
+   //先按顺序设置每个控件的TabIndex属性，然后将每个控件的Key_Down事件指定到下面这个事件方法，可以实现按Enter跳到下一个控件 private void numericUpDown_radius_KeyDown(object sender, KeyEventArgs e) { //判断按下的键是不是Enter键 if (e.KeyCode == Keys.Enter) { //将发送的键改成TAB SendKeys.Send("{TAB}"); //选中文本 SendKeys.Send("^{A}"); //高亮可以通过背景色（这种方法不能选中文本） (sender as Control).BackColor = System.Drawing.Color.Yellow; } }
+
+
+   
+
+
+   
+
+
+   屏蔽某个输入框的Tab方法：设置其TabStop属性=false

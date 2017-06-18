@@ -1,0 +1,127 @@
+hdu 3667 TransportationTransportation
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 205Accepted Submission(s): 87
+
+Problem Description
+
+There are N cities, and M directed roads connecting them. Now you want to transport K units of goods from city 1 to city N. There are many robbers on the road, so you must be very careful. The more goods you carry, the more dangerous it is. To be more specific, for each road i, there is a coefficient ai. If you want to carry x units of goods along this road, you should pay ai * x2 dollars to hire guards to protect your goods. And what&rsquo;s worse, for each road i, there is an upper bound Ci, which means that you cannot transport more than Ci units of goods along this road. Please note you can only carry integral unit of goods along each road.You should find out the minimum cost to transport all the goods safely. 
+
+
+
+
+   
+
+Input
+
+There are several test cases. The first line of each case contains three integers, N, M and K. (1 &lt;= N &lt;= 100, 1 &lt;= M &lt;= 5000, 0 &lt;= K &lt;= 100). Then M lines followed, each contains four integers (ui, vi, ai, Ci), indicating there is a directed road from city ui to vi, whose coefficient is ai and upper bound is Ci. (1 &lt;= ui, vi &lt;= N, 0 &lt; ai &lt;= 100, Ci &lt;= 5) 
+
+
+
+
+   
+
+Output
+
+Output one line for each test case, indicating the minimum cost. If it is impossible to transport all the K units of goods, output -1.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   2 1 2
+1 2 1 2
+2 1 2
+1 2 1 1
+2 2 2
+1 2 1 2
+1 2 2 2
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   4
+-1
+3
+
+
+
+
+
+
+   
+
+Source
+
+2010 Asia Regional Harbin 
+
+
+这道题&hellip;&hellip;主要时间花在改模板上= =！
+
+构图方法：由于fee和unit flow不是线性对应关系，想到要把每两节点间的一条边拆成若干条容量为1的边，这样fee是什么呢？1？NO！
+
+fee是
+
+C(x^2)-C(X-1)^2=(2x-1)C
+
+所以建边时建fee为1,3,5,7&hellip;&hellip;的边
+
+
+
+
+
+Core Code：
+
+int minCostMaxFlow(int src,int dest,int require) 
+{
+	int minCost = 0,t,nowCost=0,sumflow=0; 
+	while(SPFA()) 
+	{
+		int flow = INF;
+		for(t = dest ; t != src ; t = pre[t] ) {
+			if(adj[road[t]].capacity &lt; flow)
+				flow = adj[road[t]].capacity;	
+		}
+		sumflow+=flow;
+		minCost+=flow*dist[dest];
+		for(t = dest ; t != src ; t = pre[t] )
+		{
+			adj[road[t]].capacity -= flow;
+			adj[road[t]^1].capacity += flow;
+		}
+	}
+	if(sumflow&lt;require)
+		return -1;
+	return minCost;	
+}
+int a[200];
+int main() 
+{
+	int n,m,v,i,v1,v2,w,c,K;
+	while(~scanf("%d%d%d",&amp;n,&amp;m,&amp;K))
+	{
+		init(n);
+ for(i=1;i&lt;=m;i++)
+		{
+			scanf("%d%d%d%d",&amp;v1,&amp;v2,&amp;c,&amp;w);
+			for(int j=1;j&lt;=w;j++)
+				addEdge(v1,v2,c*(2*j-1),1);
+			//addEdge(v2,v1,w,c);
+		}
+		addEdge(0,1,0,K);
+		printf("%d/n",minCostMaxFlow(0,n,K));
+	}
+	return 0;
+}

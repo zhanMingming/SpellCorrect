@@ -1,0 +1,241 @@
+KMeans和KMedoid 的Matlab实现KMeans和KMedoid算法是聚类算法中比较普遍的方法，本文讲了其原理和matlab中实现的代码。
+
+   
+
+   
+
+   1.目标：
+
+      找出一个分割，使得距离平方和最小
+
+   
+
+   2.K-Means算法：
+
+      1. 将数据分为k个非空子集
+
+      2. 计算每个类中心点（k-means中用所有点的平均值，K-medoid用离该平均值最近的一个点）center
+
+      3. 将每个object聚类到最近的center
+
+      4. 返回2，当聚类结果不再变化的时候stop
+
+   
+
+   
+
+    复杂度：
+
+      O（kndt）
+
+      -计算两点间距离：d
+
+      -指定类：O(kn)  ,k是类数
+
+      -迭代次数上限：t
+
+   
+
+   3.K-Medoids算法:
+
+   
+
+      1. 随机选择k个点作为初始medoid
+
+      2.将每个object聚类到最近的medoid
+
+      3. 更新每个类的medoid，计算objective function
+
+      4. 选择最佳参数
+
+      4. 返回2，当各类medoid不再变化的时候stop
+
+   
+
+     复杂度：
+
+      O（(n^2)d）
+
+      -计算各点间两两距离O（(n^2)d）
+
+      -指定类：O(kn)  ,k是类数
+
+   4.特点：
+
+      -聚类结果与初始点有关（因为是做steepest descent from a random initial starting oint）
+
+      -是局部最优解
+
+      -在实际做的时候，随机选择多组初始点，最后选择拥有最低TSD（Total Squared Distance）的那组
+
+   
+
+   
+
+   
+
+   Kmeans KMedoid Implementation with matlab:
+
+   ===================
+
+   下面是我用matlab上的实现：
+
+   说明：fea为训练样本数据，gnd为样本标号。算法中的思想和上面写的一模一样，在最后的判断accuracy方面，由于聚类和分类不同，只是得到一些 cluster ，而并不知道这些 cluster 应该被打上什么标签，或者说。由于我们的目的是衡量聚类算法的 performance ，因此直接假定这一步能实现最优的对应关系，将每个 cluster 对应到一类上去。一种办法是枚举所有可能的情况并选出最优解，另外，对于这样的问题，我们还可以用 Hungarian algorithm 来求解。具体的Hungarian代码我放在了资源里，调用方法已经写在下面函数中了。下面给出Kmeans&amp;Kmedoid主函数。
+
+   
+
+   Kmeans.m 函数：
+
+   
+
+   function [ accuracy,MIhat ] = KMeans( K,mode )
+
+% Artificial Intelligence &amp; Data Mining - KMeans &amp; K-Medoids Clustering
+% Author: Rachel Zhang @ ZJU
+% CreateTime: 2012-11-18
+% Function: Clustering
+%  -K: number of clusters
+%  -mode: 
+%   1: use kmeans cluster algorithm in matlab
+%   2: k_medroid algorithm: use data points as k centers
+%   3: k_means algorithm: use average as k centers
+
+global N_features;
+global N_samples;
+global fea;
+global gnd;
+
+switch (mode)
+    case 1 %call system function KMeans
+ label = kmeans(fea,K);
+ [label,accuracy] = cal_accuracy(gnd,label);
+ 
+    case 2%use kmedroid method
+ for testcase = 1:10% do 10 times to get rid of the influence from Initial_center
+     K_center = Initial_center(fea,K); %select initial points randomly
+     changed_label = N_samples;
+     label = zeros(1,N_samples);
+     iteration_times = 0;
+     while changed_label~=0
+  cls_label = cell(1,K);
+  for i = 1: N_samples
+      for j = 1 : K
+   D(j) = dis(fea(i,:),K_center(j,:));
+      end
+      [~,label(i)] = min(D);
+      cls_label{label(i)} = [cls_label{label(i)} i];
+  end
+  changed_label = 0;
+  cls_center = zeros(K,N_features);
+  for i = 1 : K
+      cls_center(i,:) = mean(fea(cls_label{i},:));
+      D1 = [];
+      for j = 1:size(cls_label{i},2)%number of samples clsutered in i-th class
+   D1(j) = dis(cls_center(i,:),fea(cls_label{i}(j),:));
+      end
+      [~,min_ind] = min(D1);
+      if ~isequal(K_center(i,:),fea(cls_label{i}(min_ind),:))
+   K_center(i,:) = fea(cls_label{i}(min_ind),:);
+   changed_label = changed_label+1;
+      end
+  end
+  iteration_times = iteration_times+1;
+     end
+     [label,acc(testcase)] = cal_accuracy(gnd,label);
+ end
+ accuracy = max(acc);
+ 
+    case 3%use k-means method
+ for testcase = 1:10% do 10 times to get rid of the influence from Initial_center
+     K_center = Initial_center(fea,K); %select initial points randomly
+     changed_label = N_samples;
+     label = zeros(1,N_samples);
+     label_new = zeros(1,N_samples);
+     while changed_label~=0
+  cls_label = cell(1,K);
+  changed_label = 0;
+  for i = 1: N_samples
+      for j = 1 : K
+   D(j) = dis(fea(i,:),K_center(j,:));
+      end
+      [~,label_new(i)] = min(D);
+      if(label_new(i)~=label(i))
+   changed_label = changed_label+1;
+      end;
+      cls_label{label_new(i)} = [cls_label{label_new(i)} i];
+  end
+  label = label_new;
+  
+  for i = 1 : K  %recalculate k centroid
+      K_center(i,:) = mean(fea(cls_label{i},:));
+  end
+     end
+      [label,acc(testcase)] = cal_accuracy(gnd,label);
+ end
+ accuracy = max(acc);
+end
+
+MIhat = MutualInfo(gnd,label);
+
+
+    function center = Initial_center(X,K)
+ rnd_Idx = randperm(N_samples,K);
+ center = X(rnd_Idx,:);
+    end
+
+    function res = dis(X1,X2)
+ res = norm(X1-X2);
+    end
+
+    function [res,acc] = cal_accuracy(gnd,estimate_label)
+ res = bestMap(gnd,estimate_label);
+ acc = length(find(gnd == res))/length(gnd);
+    end
+end
+
+   
+
+   
+
+   实验结果分析：
+
+   对上面得到的accuracy进行画图，横坐标为10个数据集，纵坐标为在其上进行聚类的准确率。
+
+   其中，auto为matlab内部kmeans函数。
+
+   画图：
+
+   
+
+   function [  ] = Plot( A,B,C )
+%PLOT Summary of this function goes here
+%   Detailed explanation goes here
+figure;
+k = 1:10;
+plot(k,A,'-r',k,B,'-b',k,C,'-g');
+legend('auto','medoid','means');
+
+
+end
+结果：
+   
+
+   
+
+   5类聚类：
+
+   
+
+   
+
+   7类聚类：
+
+   
+
+   
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料与相关讨论将继续更新，敬请关注本博客和新浪微博Sophia_qing。

@@ -1,0 +1,262 @@
+题目1004：Median（数组Merge）题目1004：Median
+
+
+
+   
+时间限制：1 秒
+
+
+   
+内存限制：32 兆
+
+
+   
+特殊判题：否
+
+
+   
+提交：1716
+
+
+   
+解决：432
+
+
+
+
+
+
+题目描述：
+
+   
+ Given an increasing sequence S of N integers, the median is the number at the middle position. For example, the median of S1={11, 12, 13, 14} is 12, and the median of S2={9, 10, 15, 16, 17} is 15. The median of two sequences
+ is defined to be the median of the non-decreasing sequence which contains all the elements of both sequences. For example, the median of S1 and S2 is 13.
+
+ Given two increasing sequences of integers, you are asked to find their median.
+
+
+
+
+输入：
+
+   
+ Each input file maycontain more thanone test case.
+
+ Each case occupies 2 lines, each gives the information of a sequence. For each sequence, the first positive integer N (≤1000000) is the size of that sequence. Then N integers follow, separated by a space.
+
+ It is guaranteed that all the integers are in the range of long int.
+
+
+
+
+输出：
+
+   
+ For each test case you should output the median of the two given sequences in a line.
+
+
+
+
+样例输入：
+
+   4 11 12 13 14
+5 9 10 15 16 17
+
+
+
+样例输出：
+
+   13
+
+
+   
+
+
+
+
+   解法一：
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;map&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 1000005
+#define INF 1&lt;&lt;29
+#define max(a,b) a&gt;b?a:b
+
+int a[N],b[N];
+int array3[N];
+
+int MergeArray(int la,int ha,int lb,int hb)
+{
+	int i,j,x;
+	i=la,j=lb,x=0;
+	while(i&lt;=ha&amp;&amp;j&lt;=hb)
+	{
+		if(a[i]&gt;b[j])   array3[x]=b[j++];
+		else    array3[x]=a[i++];
+		x++;
+	}
+	while(i&lt;=ha)	array3[x++]=a[i++];
+	while(j&lt;=hb)array3[x++]=b[j++];
+	x--;
+	return array3[x/2];
+}
+
+int main()
+{
+	int m,n,i,j;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF)
+	{
+		for(i=0;i&lt;n;i++) 
+			scanf(&quot;%d&quot;,&amp;a[i]);
+		cin&gt;&gt;m;
+		for(j=0;j&lt;m;j++)
+			scanf(&quot;%d&quot;,&amp;b[j]);
+		int la,lb,ha,hb,ma,mb;
+		la=lb=0;ha=n-1;hb=m-1;
+		int res;
+		int len=1;
+		while(len&gt;0)
+		{
+			ma=(la+ha)&gt;&gt;1;mb=(lb+hb)&gt;&gt;1;
+			if(a[ma]==b[mb])
+			{
+				res=a[ma];
+				break;
+			}
+			if(a[ma]&gt;b[mb])
+			{
+				len=min(ha-ma,mb-lb);
+				ha-=len;
+				lb+=len;
+			}
+			else if(a[ma]&lt;b[mb])
+			{
+				len=min(ma-la,hb-mb);
+				la+=len;
+				hb-=len;  
+			}
+		}
+		if(a[ma]==b[mb])
+		{
+			printf(&quot;%d\n&quot;,res);
+			continue;
+		}
+		res=MergeArray(la,ha,lb,hb);
+		printf(&quot;%d\n&quot;,res);
+	}
+}
+
+
+
+或者，其实这道题目不进行main中的那个优化也行的。
+
+
+
+
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;map&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 1000005
+#define INF 1&lt;&lt;29
+#define max(a,b) a&gt;b?a:b
+
+int a[N],b[N];
+int array3[N];
+
+int MergeArray(int la,int ha,int lb,int hb)
+{
+	int i,j,x;
+	i=la,j=lb,x=0;
+	while(i&lt;=ha&amp;&amp;j&lt;=hb)
+	{
+		if(a[i]&gt;b[j])   array3[x]=b[j++];
+		else    array3[x]=a[i++];
+		x++;
+	}
+	while(i&lt;=ha)	array3[x++]=a[i++];
+	while(j&lt;=hb)array3[x++]=b[j++];
+	x--;
+	return array3[x/2];
+}
+
+int main()
+{
+	int m,n,i,j;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF)
+	{
+		for(i=0;i&lt;n;i++) 
+			scanf(&quot;%d&quot;,&amp;a[i]);
+		cin&gt;&gt;m;
+		for(j=0;j&lt;m;j++)
+			scanf(&quot;%d&quot;,&amp;b[j]);
+		int la,lb,ha,hb,ma,mb;
+		la=lb=0;ha=n-1;hb=m-1;
+		int res;
+		
+		res=MergeArray(la,ha,lb,hb);
+		printf(&quot;%d\n&quot;,res);
+	}
+}
+
+
+
+
+
+   
+
+
+   解法2：（利用algorithm 中的nth_element()）
+
+
+   
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;map&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 1000005
+#define INF 1&lt;&lt;29
+#define max(a,b) a&gt;b?a:b
+ 
+long a[1000000];
+int main()
+{
+long n1,n2,i,mid;
+ while(cin&gt;&gt;n1)
+ {
+for(i=0;i&lt;n1;i++)
+     cin&gt;&gt;a[i];
+cin&gt;&gt;n2;
+for(;i&lt;n1+n2;i++)
+     cin&gt;&gt;a[i];
+mid=(i-1)/2;
+nth_element(a,a+mid,a+i);
+cout&lt;&lt;a[mid]&lt;&lt;endl;
+  }
+    return 0;
+}

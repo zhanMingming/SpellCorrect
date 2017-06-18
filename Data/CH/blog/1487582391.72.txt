@@ -1,0 +1,141 @@
+Schedule zoj 3348Schedule
+
+Time Limit: 1 Second  Memory Limit: 32768 KB 
+
+<!--
+ Problem text file for ZheJiang University Online Judge
+ Created by LiuYaoting
+-->
+
+   DD enters the top-level pingpong match! As the game going on, he wonders if there is possibility for him to get the champion(excluding joint champions). Now provide you the results of previous matches, and the details of rest matches. You have to judge it. 
+
+
+   Input
+
+
+   There are several test cases. You should process to the end of input. 
+
+
+   For each test case. the first line contain two integers n (1 &lt;= n &lt;= 50) and m(0 &lt;= m &lt;= 1000), n indicates the number of players. m indicates the matches have ended. 
+
+
+   Then for the following m lines, each line has the format: "Player1 Player2 Result". Player1 and Player2 are the names of the two players, and Result could only be "win" or "lose". 
+
+
+   In the next line there is another integer p (0 &lt;= p &lt;= 5000), indicates the matches that will start later. 
+
+
+   Then for the following p lines, each line has the format: "Player1 Player2", which means Player1 and Player2 will start a match. 
+
+
+   We ensure there is a player named "DD". The length of each player name is no longer than 10. 
+
+
+   Output
+
+
+   You should only output "Yes" or "No" for each case, which means if DD has the possibility to be the champion. 
+
+
+   Sample Input
+
+
+   3 2
+DD winsty win
+DD owen lose
+2
+winsty owen
+DD owen
+3 3
+DD winsty win
+DD owen lose
+winsty owen lose
+2
+owen winsty
+owen DD
+
+
+   Sample Output
+
+
+   Yes
+No
+
+
+   很经典的构图，最大流！
+
+   先统计每个人已经赢的次数和假设比赛他赢的次数，记c[i]
+
+   S连到每个赛手，流量为C[i]
+
+   &hellip;&hellip;
+
+   int Getid(string name)
+{
+	int i,j;
+	for(i=1;i&lt;=alr;i++)
+	{
+		if(name==person[i])
+			return i;
+	}
+	//cannot find such name
+	person[++alr]=name;
+	return alr;
+}
+
+void init()
+{
+	memset(p, -1, sizeof(p));
+	memset(champ,0,sizeof(champ));
+	memset(c,0,sizeof(c));
+	ans = indexx = 0;
+	int i,j,p1,p2,dd=0;
+	string na1,na2,status;
+	alr=0;
+	for(i=0;i&lt;temp;i++)
+	{
+		cin&gt;&gt;na1&gt;&gt;na2&gt;&gt;status;
+		if(status[0]=='w')
+		{
+			if(na1=="DD")
+				dd++;
+			else
+			{
+				p1=Getid(na1);
+				c[p1]++;
+				ans++;
+			}
+		}
+		else
+		{
+			if(na2=="DD")
+				dd++;
+			else
+			{
+				p2=Getid(na2);
+				c[p2]++;
+				ans++;
+			}
+		}
+	}
+	cin&gt;&gt;temp;
+	for(i=0;i&lt;temp;i++)
+	{
+		cin&gt;&gt;na1&gt;&gt;na2;
+		//suppose first people win
+		if(na1=="DD"||na2=="DD")
+		{dd++;continue;}
+		p1=Getid(na1);
+		p2=Getid(na2);
+		c[p1]++;
+		champ[p1][p2]++;
+		ans++;
+	}
+	for(i=1;i&lt;=n;i++)
+	{
+		add(0,i,c[i]);
+		add(i,n+1,dd-1);
+		for(j=1;j&lt;=n;j++)
+			add(i,j,champ[i][j]);
+	}
+}

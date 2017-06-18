@@ -1,0 +1,650 @@
+redis数据类型Set的常用命令redis的文档写的还是比较详细的，中文版: http://doc.redisfans.com/ 英文版:http://redis.io/commands。这篇文章主要是自己亲自实践一下redis的基本操作，做个备忘，加深印象。
+
+SADD key member [member ...]
+
+将一个或多个member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
+
+假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
+
+当 key 不是集合类型时，返回一个错误。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+被添加到集合中的新元素的数量，不包括被忽略的元素。
+
+
+
+
+
+
+
+
+
+例子：
+
+
+
+   # 添加单个元素
+redis&gt; SADD bbs &quot;discuz.net&quot;
+(integer) 1
+
+# 添加重复元素
+redis&gt; SADD bbs &quot;discuz.net&quot;
+(integer) 0
+
+# 添加多个元素
+redis&gt; SADD bbs &quot;tianya.cn&quot; &quot;groups.google.com&quot;
+(integer) 2
+
+redis&gt; SMEMBERS bbs
+1) &quot;discuz.net&quot;
+2) &quot;groups.google.com&quot;
+3) &quot;tianya.cn&quot;
+
+
+
+
+
+SREM key member [member ...]
+
+移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
+
+当 key 不是集合类型，返回一个错误。
+
+
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+被成功移除的元素的数量，不包括被忽略的元素。
+
+
+
+
+
+
+
+
+
+例子：
+
+
+
+   # 测试数据
+redis&gt; SMEMBERS languages
+1) &quot;c&quot;
+2) &quot;lisp&quot;
+3) &quot;python&quot;
+4) &quot;ruby&quot;
+
+# 移除单个元素
+redis&gt; SREM languages ruby
+(integer) 1
+
+# 移除不存在元素
+redis&gt; SREM languages non-exists-language
+(integer) 0
+
+# 移除多个元素
+redis&gt; SREM languages lisp python c
+(integer) 3
+
+redis&gt; SMEMBERS languages
+(empty list or set)
+
+
+
+SMEMBERS key
+返回集合 key 中的所有成员。不存在的 key 被视为空集合。
+
+
+
+
+
+
+
+返回&#20540;：
+
+集合中的所有成员。
+
+
+
+
+
+
+
+例子：
+
+
+   # key 不存在或集合为空
+redis&gt; EXISTS not_exists_key
+(integer) 0
+
+redis&gt; SMEMBERS not_exists_key
+(empty list or set)
+
+# 非空集合
+redis&gt; SADD language Ruby Python Clojure
+(integer) 3
+
+redis&gt; SMEMBERS language
+1) &quot;Python&quot;
+2) &quot;Ruby&quot;
+3) &quot;Clojure&quot;
+
+
+
+
+
+SISMEMBER key member
+判断 member 元素是否集合 key 的成员。
+
+
+
+
+
+
+
+返回&#20540;：
+
+如果 member 元素是集合的成员，返回 1 。
+
+
+
+如果 member 元素不是集合的成员，或 key 不存在，返回 0 。
+
+
+
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS movies
+1) &quot;hi, lady&quot;
+2) &quot;Fast Five&quot;
+3) &quot;2012&quot;
+
+redis&gt; SISMEMBER movies &quot;bet man&quot;
+(integer) 0
+
+redis&gt; SISMEMBER movies &quot;Fast Five&quot;
+(integer) 1
+
+
+
+
+
+SCARD key
+返回集合 key 中元素的数量。
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+
+集合中元素的数量。
+当 key 不存在时，返回 0 。
+
+
+
+
+
+
+
+例子：
+
+
+   redis&gt; SADD tool pc printer phone
+(integer) 3
+
+redis&gt; SCARD tool   # 非空集合
+(integer) 3
+
+redis&gt; SCARD tool_no_exist   # 空集合
+(integer) 0
+
+SMOVE source destination member
+将 member 元素从 source 集合移动到 destination 集合。
+
+SMOVE 是原子性操作。
+
+如果 source 集合不存在或不包含指定的 member 元素，则 SMOVE 命令不执行任何操作，仅返回 0 。
+
+否则， member 元素从 source 集合中被移除，并添加到 destination 集合中去。
+
+当 destination 集合已经包含 member 元素时， SMOVE 命令只是简单地将 source 集合中的 member 元素删除。
+
+当 source 或 destination 不是集合类型时，返回一个错误。
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+
+如果 member 元素被成功移除，返回 1 。
+
+如果 member 元素不是 source 集合的成员，并且没有任何操作对 destination 集合执行，那么返回 0 。
+
+
+
+
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS songs
+1) &quot;Billie Jean&quot;
+2) &quot;Believe Me&quot;
+
+redis&gt; SMEMBERS my_songs
+(empty list or set)
+
+redis&gt; SMOVE songs my_songs &quot;Believe Me&quot;
+(integer) 1
+
+redis&gt; SMEMBERS songs
+1) &quot;Billie Jean&quot;
+
+redis&gt; SMEMBERS my_songs
+1) &quot;Believe Me&quot;
+
+SRANDMEMBER key [count]
+如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
+
+如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。
+
+如果 count 大于等于集合基数，那么返回整个集合。
+
+如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对&#20540;。
+
+SRANDMEMBER 则仅仅返回随机元素，而不对集合进行任何改动。
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+
+只提供 key 参数时，返回一个元素；如果集合为空或者不存在，返回 nil。
+如果提供了 count 参数，那么返回一个数组；如果集合为空，返回空数组。
+
+
+
+
+
+
+
+
+例子：
+
+
+   # 添加元素
+redis&gt; SADD fruit apple banana cherry
+(integer) 3
+
+# 只给定 key 参数，返回一个随机元素
+redis&gt; SRANDMEMBER fruit
+&quot;cherry&quot;
+redis&gt; SRANDMEMBER fruit
+&quot;apple&quot;
+
+# 给定 2 为 count 参数，返回 2 个随机元素
+# 每个随机元素都不相同
+redis&gt; SRANDMEMBER fruit 3
+1) &quot;apple&quot;
+2) &quot;banana&quot;
+
+# 给定 -3 为 count 参数，返回 3 个随机元素
+# 元素可能会重复出现多次
+redis&gt; SRANDMEMBER fruit -3
+1) &quot;banana&quot;
+2) &quot;cherry&quot;
+3) &quot;apple&quot;
+
+redis&gt; SRANDMEMBER fruit -3
+1) &quot;apple&quot;
+2) &quot;apple&quot;
+3) &quot;cherry&quot;
+
+# 如果 count 是整数，且大于等于集合基数，那么返回整个集合
+redis&gt; SRANDMEMBER fruit 10
+1) &quot;apple&quot;
+2) &quot;banana&quot;
+3) &quot;cherry&quot;
+
+# 如果 count 是负数，且 count 的绝对值大于集合的基数
+# 那么返回的数组的长度为 count 的绝对值
+redis&gt; SRANDMEMBER fruit -10
+1) &quot;banana&quot;
+2) &quot;apple&quot;
+3) &quot;banana&quot;
+4) &quot;cherry&quot;
+5) &quot;apple&quot;
+6) &quot;apple&quot;
+7) &quot;cherry&quot;
+8) &quot;apple&quot;
+9) &quot;apple&quot;
+10) &quot;banana&quot;
+
+# SRANDMEMBER 并不会修改集合内容
+redis&gt; SMEMBERS fruit
+1) &quot;apple&quot;
+2) &quot;cherry&quot;
+3) &quot;banana&quot;
+
+# 集合为空时返回 nil 或者空数组
+redis&gt; SRANDMEMBER not-exists
+(nil)
+
+redis&gt; SRANDMEMBER not-eixsts 10
+(empty list or set)
+
+SPOP key
+移除并返回集合中的一个随机元素。
+
+如果只想获取一个随机元素，但不想该元素从集合中被移除的话，可以使用SRANDMEMBER 命令。
+
+
+
+
+
+
+
+返回&#20540;：
+
+
+
+被移除的随机元素。
+
+当 key 不存在或 key 是空集时，返回 nil 。
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS db
+1) &quot;MySQL&quot;
+2) &quot;MongoDB&quot;
+3) &quot;Redis&quot;
+
+redis&gt; SPOP db
+&quot;Redis&quot;
+
+redis&gt; SMEMBERS db
+1) &quot;MySQL&quot;
+2) &quot;MongoDB&quot;
+
+redis&gt; SPOP db
+&quot;MySQL&quot;
+
+redis&gt; SMEMBERS db
+1) &quot;MongoDB&quot;
+
+SDIFF srcKey [key ...]
+求集合srcKey与其他集合之间的差集。如果某个集合不存在，则被视为空集，对运算结果没有任何影响
+
+
+
+
+
+返回&#20540;：
+
+
+
+一个集合，集合中所有元素都会出现在srcKey中，但是不会在其他集合中出现。
+
+
+
+
+例子：
+
+
+   redis&gt; sadd aset 1 2 3 4
+(integer) 4
+redis&gt; sadd bset 1 5
+(integer) 2
+redis&gt; sadd cset 3 8
+(integer) 2
+
+#返回src集合的所有成员
+redis&gt; SDIFF aset
+1) &quot;1&quot;
+2) &quot;2&quot;
+3) &quot;3&quot;
+4) &quot;4&quot;
+
+redis&gt; SDIFF aset bset cset
+1) &quot;1&quot;
+4) &quot;4&quot;
+
+redis&gt; SDIFF cset aset bset
+1) &quot;8&quot;
+
+SDIFFSTORE destination srcKey [key ...]
+这个命令的作用和 SDIFF 类&#20284;，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+
+如果 destination 集合已经存在，则将其覆盖。
+
+destination 可以是 srcKey本身。
+
+
+
+
+
+返回&#20540;：
+
+
+
+结果集中的元素数量。
+
+
+
+
+例子：
+
+
+   redis&gt; sadd aset 1 2 3 4
+(integer) 4
+redis&gt; sadd bset 1 5
+(integer) 2
+redis&gt; sadd cset 3 8
+(integer) 2
+
+#返回src集合的所有成员
+redis&gt; SDIFFSTORE newset aset bset cset
+(integer) 2
+
+redis&gt; SMEMBERS newset
+1) &quot;2&quot;
+2) &quot;4&quot;
+
+redis&gt; SDIFFSTORE aset aset bset cset
+(integer) 2
+
+redis&gt; SMEMBERS aset
+1) &quot;2&quot;
+2) &quot;4&quot;
+
+
+
+SINTER key [key ...]
+返回一个集合的全部成员，该集合是所有给定集合的交集。
+
+不存在的 key 被视为空集。
+
+当给定集合当中有一个空集时，结果也为空集(根据集合运算定律)。
+
+
+
+
+
+返回&#20540;：
+
+
+
+交集成员的列表。
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS group_1
+1) &quot;LI LEI&quot;
+2) &quot;TOM&quot;
+3) &quot;JACK&quot;
+
+redis&gt; SMEMBERS group_2
+1) &quot;HAN MEIMEI&quot;
+2) &quot;JACK&quot;
+
+redis&gt; SINTER group_1 group_2
+1) &quot;JACK&quot;
+
+SINTERSTORE destination key [key ...]
+这个命令类&#20284;于 SINTER 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+
+如果 destination 集合已经存在，则将其覆盖。
+
+destination 可以是 key 本身。
+
+
+
+
+
+返回&#20540;：
+
+
+
+结果集中的成员数量
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS songs
+1) &quot;good bye joe&quot;
+2) &quot;hello,peter&quot;
+
+redis&gt; SMEMBERS my_songs
+1) &quot;good bye joe&quot;
+2) &quot;falling&quot;
+
+redis&gt; SINTERSTORE song_interset songs my_songs
+(integer) 1
+
+redis&gt; SMEMBERS song_interset
+1) &quot;good bye joe&quot;
+
+SUNION key [key ...]
+返回一个集合的全部成员，该集合是所有给定集合的并集。
+
+不存在的 key 被视为空集。
+
+
+
+
+
+返回&#20540;：
+
+
+
+并集成员的列表。
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS songs
+1) &quot;Billie Jean&quot;
+
+redis&gt; SMEMBERS my_songs
+1) &quot;Believe Me&quot;
+
+redis&gt; SUNION songs my_songs
+1) &quot;Billie Jean&quot;
+2) &quot;Believe Me&quot;
+
+
+
+SUNIONSTORE destination key [key ...]
+这个命令类&#20284;于 SUNION 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+
+如果 destination 已经存在，则将其覆盖。
+
+destination 可以是 key 本身。
+
+
+
+
+
+返回&#20540;：
+
+
+
+结果集中的元素数量。
+
+
+
+
+例子：
+
+
+   redis&gt; SMEMBERS NoSQL
+1) &quot;MongoDB&quot;
+2) &quot;Redis&quot;
+
+redis&gt; SMEMBERS SQL
+1) &quot;sqlite&quot;
+2) &quot;MySQL&quot;
+
+redis&gt; SUNIONSTORE db NoSQL SQL
+(integer) 4
+
+redis&gt; SMEMBERS db
+1) &quot;MySQL&quot;
+2) &quot;sqlite&quot;
+3) &quot;MongoDB&quot;
+4) &quot;Redis&quot;

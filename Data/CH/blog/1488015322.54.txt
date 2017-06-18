@@ -1,0 +1,250 @@
+使用maven构建XML风格的Spring4 MVC应用最近项目要使用websocket构建web端实时推送应用，必需要使用Spring4，Spring3是不支持websocket的。Spring websocket和Spring MVC结合还是紧密的，所以这篇文章先解决下如何配置Spring MVC，后续博客在给出websocket的配置。
+
+
+   
+
+
+
+
+   代码目录结构如下：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   pom.xml配置如下：
+
+
+   &lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;
+	&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+	&lt;groupId&gt;net.aty.springmvc&lt;/groupId&gt;
+	&lt;artifactId&gt;SpringMvcDemo&lt;/artifactId&gt;
+	&lt;packaging&gt;war&lt;/packaging&gt;
+	&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+	&lt;name&gt;SpringMvcDemo Maven Webapp&lt;/name&gt;
+	&lt;url&gt;http://maven.apache.org&lt;/url&gt;
+
+	&lt;properties&gt;
+		&lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+		&lt;spring.version&gt;4.2.4.RELEASE&lt;/spring.version&gt;
+	&lt;/properties&gt;
+
+	&lt;dependencies&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;org.springframework&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
+			&lt;version&gt;${spring.version}&lt;/version&gt;
+		&lt;/dependency&gt;
+	&lt;/dependencies&gt;
+
+	&lt;build&gt;
+		&lt;finalName&gt;SpringMvcDemo&lt;/finalName&gt;
+	&lt;/build&gt;
+&lt;/project&gt;
+
+
+   
+
+
+   
+
+
+
+
+   我们只配置了spring-webmvc模块，可以看到maven会自动帮我们下载它的依赖，使用maven避免了我们自己去寻找jar和依赖的麻烦。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   web.xml配置：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;web-app version=&quot;3.0&quot; xmlns=&quot;http://java.sun.com/xml/ns/javaee&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;&gt;
+
+	&lt;context-param&gt;
+		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+		&lt;param-value&gt;/WEB-INF/spring/root-context.xml&lt;/param-value&gt;
+	&lt;/context-param&gt;
+
+	&lt;listener&gt;
+		&lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+	&lt;/listener&gt;
+
+	&lt;servlet&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+		&lt;init-param&gt;
+			&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+			&lt;param-value&gt;/WEB-INF/spring/spring-dispatcher.xml&lt;/param-value&gt;
+		&lt;/init-param&gt;
+		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+	&lt;/servlet&gt;
+	&lt;servlet-mapping&gt;
+		&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+		&lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+	&lt;/servlet-mapping&gt;
+
+&lt;/web-app&gt;
+
+
+   
+
+
+   
+
+
+
+
+   我们有2个spring配置文件：root-context.xml和spring-dispatcher.xml。为什么要配置2个呢？这是因为：spring mvc是系统的边界，直接跟浏览器交互，里面用到的很多东西别的模块是不会使用的。所以spring采用如下架构：
+
+
+   
+
+
+
+
+   简单解释下：spring会创建2个ApplicationContext，一个是Servlet专用的，一个是公用的。servlet专用的context是可以访问root context的。
+
+
+   
+
+
+
+
+   root-context.xml配置如下：这个跟我们平时配置的spring.xml是一样的，和Spring MVC没有半点关系。
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; 
+	xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+	xsi:schemaLocation=&quot;
+ http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd
+ http://www.springframework.org/schema/context
+ http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;
+
+	&lt;context:component-scan base-package=&quot;net.aty.service&quot; /&gt;
+
+
+&lt;/beans&gt;
+
+spring-dispatcher.xml配置如下：
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+	xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot; xmlns:context=&quot;http://www.springframework.org/schema/context&quot;
+	xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+	xsi:schemaLocation=&quot;
+ http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd
+ http://www.springframework.org/schema/context
+ http://www.springframework.org/schema/context/spring-context.xsd
+ http://www.springframework.org/schema/mvc
+ http://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;
+
+	&lt;mvc:annotation-driven /&gt;
+	
+	&lt;context:component-scan base-package=&quot;net.aty.springmvc&quot; /&gt;
+
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.html&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.js&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.css&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.png&quot; /&gt;
+	&lt;mvc:resources location=&quot;/&quot; mapping=&quot;/**/*.gif&quot; /&gt;
+
+&lt;/beans&gt;
+
+   
+
+
+   
+
+
+
+这里需要特别注意：spring-dispatcher.xml和root-context.xml中都使用了&lt;context:component-scan base-package=&quot;&quot; /&gt;来扫描注解标记的bean。如果扫描路径有重叠，那么会导致bean初始化2次。
+
+   
+
+
+
+
+
+
+   
+
+
+
+
+   controller和service代码如下：
+
+
+   package net.aty.springmvc;
+
+import net.aty.service.MyService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+public class FirstController {
+
+	@Autowired
+	private MyService service;
+
+	@RequestMapping(&quot;/mvc/first/hello.do&quot;)
+	@ResponseBody
+	public String hello(@RequestParam(&quot;userName&quot;) String userName) {
+		return service.process(userName);
+	}
+
+}
+
+
+   package net.aty.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class MyService {
+
+	public MyService() {
+		System.out.println(&quot;bean MyService&quot;);
+	}
+
+	public String process(String name) {
+		return name.toLowerCase();
+	}
+}
+
+
+   
+
+
+   
+
+
+
+使用maven命令打包后部署到tomcat下，就可以通过浏览器访问了。

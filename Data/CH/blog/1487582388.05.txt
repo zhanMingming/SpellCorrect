@@ -1,0 +1,137 @@
+hdu 3400所谓三分
+
+
+   上次在不知情的情况下无缘无故的用上了个三分，还以为是二分，今天知道了三分做了一下，搞得精度wa死了&hellip;&hellip;
+
+
+   
+
+
+   估计标准答案是用点分的，我是用距离/速度=时间分的，所以可能会有误差！
+
+
+   
+
+
+   AC code:
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;cmath&gt;
+using namespace std;
+#define eps 1e-6
+
+struct POINT
+{
+	double x,y;
+}a,b,c,d;
+double p,q,r;
+
+double dis(POINT A,POINT B)
+{
+	return sqrt((A.x-B.x)*(A.x-B.x)+(A.y-B.y)*(A.y-B.y)+eps);
+}
+
+double ftime(POINT t,double distd)//time between t and D
+{
+	POINT temp;
+	temp.x=d.x+(c.x-d.x)*((q*distd)/dis(c,d));
+	temp.y=d.y+(c.y-d.y)*((q*distd)/dis(c,d));
+	return dis(t,temp)/r+distd;
+}
+
+double time(double posa)//posa-&gt;time between t and A
+{
+	POINT t;
+	t.x=a.x+(b.x-a.x)*((posa*p)/dis(a,b));
+	t.y=a.y+(b.y-a.y)*((posa*p)/dis(a,b));
+	//test distance on CD
+	double low=0,high=dis(c,d)/q,mid,m;
+	while(high-low&gt;eps)
+	{
+		m=(high+low)/2;
+		mid=(high+m)/2;
+		if(ftime(t,m)&lt;=ftime(t,mid))
+			high=mid;
+		else
+			low=m;
+	}
+	return ftime(t,low)+posa;
+}
+
+int main()
+{
+	freopen("1.txt","w",stdout);
+	int T;
+	cin&gt;&gt;T;
+	while(T--)
+	{
+		cin&gt;&gt;a.x&gt;&gt;a.y&gt;&gt;b.x&gt;&gt;b.y&gt;&gt;c.x&gt;&gt;c.y&gt;&gt;d.x&gt;&gt;d.y;
+		cin&gt;&gt;p&gt;&gt;q&gt;&gt;r;
+		double low=0,high=dis(a,b)/p,mid,m;
+		while(high-low&gt;eps)
+		{
+			m=(low+high)/2;
+			mid=(low+m)/2;
+			if(time(mid)&gt;=time(m))
+				low=mid;
+			else
+				high=m;
+		}
+		printf("%.2lf/n",time(low));
+	}
+} 
+
+
+   
+
+
+
+   
+
+
+   
+
+
+
+
+
+
+   8
+0 0 4 1
+4 1 0 2
+8 8 1
+0 0 0 100
+100 0 100 100
+2 2 1
+8 0 23 8
+4 2 91 0
+4 9 10
+0 0 2 2
+0 2 2 0
+4 3 1
+1 8 1000 10
+0 689 10 1000
+90 1 20
+4 9 4 20
+4 41 4 60
+4 4 1
+4 9 4 20
+4 91 4 60
+4 3 1
+0 5 8 5
+2 5 4 0
+6 9 3
+
+
+1.03
+136.60
+8.30
+0.83
+49.60
+28.50
+42.75
+0.93

@@ -1,0 +1,29 @@
+MFC 多文档 最大化父窗口和子窗口MFC 多文档 启动时就最大化父窗口or子窗口最简便的方法：
+
+
+   类视图中：
+
+
+   父窗口：
+
+
+   CXXXApp类中的InitInstance()中加
+
+
+   
+   m_pMainWnd-&gt;ShowWindow(SW_SHOWMAXIMIZED);
+	pMainFrame-&gt;UpdateWindow();
+
+子窗口：
+
+
+   CChildFrame类中重载ActivateFrame函数：
+
+
+   
+   void CChildFrame::ActivateFrame(int nCmdShow)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	nCmdShow=SW_MAXIMIZE;
+	CMDIChildWnd::ActivateFrame(nCmdShow);
+}

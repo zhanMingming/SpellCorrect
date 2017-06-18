@@ -1,0 +1,43 @@
+SQL 基本操作 删除 修改 刷新SQL的操作：
+
+
+   E.g.
+
+
+   judging-表名
+
+
+   userid, name, password-表中的关键字
+
+
+   添加：
+
+
+   string sql = "insert into judging (userid,name,password) values('" + userid.Text.Trim() + "','" + name.Text.Trim() + "','" + password.Text.Trim() + "')";
+
+
+   
+
+
+   删除：
+
+
+   string sql = "delete from judging where userid=" + app.value;
+
+
+   修改：
+
+
+   string sql = "update judging set name='"+modifyname+"',password='"+modifypsw+"'where userid=" + app.value ;
+
+
+   查询：
+
+
+   sql = "select * from judging where name='" + comboBoxName.Text + "' and userid='" + comboBoxID.Text + "'"; 
+
+
+   更新：
+
+
+   string sql = "select userid as userid,name as name from judging";

@@ -1,0 +1,207 @@
+JDK8新特性：使用Optional避免null导致的NullPointerException空指针异常是导致Java应用程序失败的最常见原因。以前，为了解决空指针异常，Google公司著名的Guava项目引入了Optional类，Guava通过使用检查空&#20540;的方式来防止代码污染，它鼓励程序员写更干净的代码。受到Google Guava的启发，Optional类已经成为Java 8类库的一部分。Optional实际上是个容器：它可以保存类型T的&#20540;，或者仅仅保存null。Optional提供很多有用的方法，这样我们就不用显式进行空&#20540;检测。
+
+
+   
+
+
+
+
+   Optional.of()或者Optional.ofNullable()：创建Optional对象，差别在于of不允许参数是null，而ofNullable则无限制。
+
+
+   // 参数不能是null
+Optional&lt;Integer&gt; optional1 = Optional.of(1);
+
+// 参数可以是null
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+// 参数可以是非null
+Optional&lt;Integer&gt; optional3 = Optional.ofNullable(2);
+
+   
+
+
+   
+
+
+
+
+
+Optional.empty()：所有null包装成的Optional对象：
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(null);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+System.out.println(optional1 == optional2);// true
+System.out.println(optional1 == Optional.&lt;Integer&gt;empty());// true
+
+Object o1 = Optional.&lt;Integer&gt;empty();
+Object o2 = Optional.&lt;String&gt;empty();
+System.out.println(o1 == o2);// true
+
+   
+
+
+
+
+   
+
+
+
+isPresent()：判断&#20540;是否存在
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+// isPresent判断值是否存在
+System.out.println(optional1.isPresent() == true);
+System.out.println(optional2.isPresent() == false);
+
+   
+
+
+   
+
+
+
+ifPresent(Consumer consumer)：如果option对象保存的&#20540;不是null，则调用consumer对象，否则不调用
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+// 如果不是null,调用Consumer
+optional1.ifPresent(new Consumer&lt;Integer&gt;() {
+	@Override
+	public void accept(Integer t) {
+		System.out.println(&quot;value is &quot; + t);
+	}
+});
+
+// null,不调用Consumer
+optional2.ifPresent(new Consumer&lt;Integer&gt;() {
+	@Override
+	public void accept(Integer t) {
+		System.out.println(&quot;value is &quot; + t);
+	}
+});
+
+   
+
+
+
+
+   
+
+
+
+orElse(value)：如果optional对象保存的&#20540;不是null，则返回原来的&#20540;，否则返回value
+
+
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+// orElse
+System.out.println(optional1.orElse(1000) == 1);// true
+System.out.println(optional2.orElse(1000) == 1000);// true
+
+   
+
+
+
+
+   
+
+
+
+orElseGet(Supplier supplier)：功能与orElse一样，只不过orElseGet参数是一个对象
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+System.out.println(optional1.orElseGet(() -&gt; {
+	return 1000;
+}) == 1);//true
+
+System.out.println(optional2.orElseGet(() -&gt; {
+	return 1000;
+}) == 1000);//true
+
+   
+
+
+   
+
+
+
+orElseThrow()：&#20540;不存在则抛出异常，存在则什么不做，有点类&#20284;Guava的Precoditions
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+optional1.orElseThrow(()-&gt;{throw new IllegalStateException();});
+
+try
+{
+	// 抛出异常
+	optional2.orElseThrow(()-&gt;{throw new IllegalStateException();});
+}
+catch(IllegalStateException e )
+{
+	e.printStackTrace();
+}
+
+
+   
+
+
+   
+
+
+
+filter(Predicate)：判断Optional对象中保存的&#20540;是否满足Predicate，并返回新的Optional。
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+Optional&lt;Integer&gt; filter1 = optional1.filter((a) -&gt; a == null);
+Optional&lt;Integer&gt; filter2 = optional1.filter((a) -&gt; a == 1);
+Optional&lt;Integer&gt; filter3 = optional2.filter((a) -&gt; a == null);
+System.out.println(filter1.isPresent());// false
+System.out.println(filter2.isPresent());// true
+System.out.println(filter2.get().intValue() == 1);// true
+System.out.println(filter3.isPresent());// false
+
+
+   
+
+
+
+
+   
+
+
+
+map(Function)：对Optional中保存的&#20540;进行函数运算，并返回新的Optional(可以是任何类型)
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+Optional&lt;Integer&gt; optional2 = Optional.ofNullable(null);
+
+Optional&lt;String&gt; str1Optional = optional1.map((a) -&gt; &quot;key&quot; + a);
+Optional&lt;String&gt; str2Optional = optional2.map((a) -&gt; &quot;key&quot; + a);
+
+System.out.println(str1Optional.get());// key1
+System.out.println(str2Optional.isPresent());// false
+
+
+   
+
+
+   
+
+
+
+flatMap()：功能与map()相&#20284;，差别请看如下代码。flatMap方法与map方法类&#20284;，区别在于mapping函数的返回&#20540;不同。map方法的mapping函数返回&#20540;可以是任何类型T，而flatMap方法的mapping函数必须是Optional。
+   Optional&lt;Integer&gt; optional1 = Optional.ofNullable(1);
+
+Optional&lt;Optional&lt;String&gt;&gt; str1Optional = optional1.map((a) -&gt; {
+	return Optional.&lt;String&gt;of(&quot;key&quot; + a);
+});
+
+Optional&lt;String&gt; str2Optional = optional1.flatMap((a) -&gt; {
+	return Optional.&lt;String&gt;of(&quot;key&quot; + a);
+});
+
+System.out.println(str1Optional.get().get());// key1
+System.out.println(str2Optional.get());// key1

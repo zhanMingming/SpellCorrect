@@ -1,0 +1,123 @@
+hdu 1023 Train Problem II 高精训练Train Problem II
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 1106Accepted Submission(s): 654
+
+Problem Description
+
+As we all know the Train Problem I, the boss of the Ignatius Train Station want to know if all the trains come in strict-increasing order, how many orders that all the trains can get out of the railway.
+
+
+
+
+   
+
+Input
+
+The input contains several test cases. Each test cases consists of a number N(1&lt;=N&lt;=100). The input is terminated by the end of file.
+
+
+
+
+   
+
+Output
+
+For each test case, you should output how many ways that all the trains can get out of the railway.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   1
+2
+3
+10
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   1
+2
+5
+16796
+
+   
+
+
+   Hint
+Hint
+ 
+The result will be very large, so you may not process it by 32-bit integers.
+
+   练习高精度的不错选择！
+
+
+&hellip;&hellip;经典的卡塔兰数列。
+
+
+
+
+
+   Catalan数的组合公式为 Cn=C(2n,n) / (n+1);
+
+
+   递推公式为 h(n ) = h(n-1)*(4*n-2) / (n+1)
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+int a[101][101]={0};
+int main()
+{
+    int n,i,j,len,r,temp,t;
+    int b[101];
+    a[1][0] = 1;
+    len = 1;
+    b[1] = 1;
+    for(i=2;i&lt;=100;i++)
+    {
+ t = i-1;
+ for(j=0;j&lt;len;j++) //乘法
+     a[i][j] = a[i-1][j]*(4*t+2);
+ for(r=j=0;j&lt;len;j++)  //处理相乘结果
+ {
+     temp = a[i][j] + r;
+     a[i][j] = temp % 10;
+     r = temp / 10;
+ }
+ while(r) //进位处理
+ {
+     a[i][len++] = r % 10;
+     r /= 10;
+ }
+
+ for(j=len-1,r=0;j&gt;=0;j--) //除法
+ {
+     temp = r*10 + a[i][j];
+     a[i][j] = temp/(t+2);
+     r = temp%(t+2);
+ }
+ while(!a[i][len-1]) //高位零处理
+     len --;
+ b[i] = len;
+    }
+    while(cin&gt;&gt;n)
+    {   
+ for(j=b[n]-1;j&gt;=0;j--)
+     printf("%d",a[n][j]);
+ printf("/n");
+    }
+    return 0;
+}

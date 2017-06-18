@@ -1,0 +1,105 @@
+python实现并行爬虫问题背景：指定爬虫depth、线程数， python实现并行爬虫 思路：  单线程 实现爬虫类Fetcher        多线程 threading.Thread去调Fetcher	 方法：Fetcher 中，用urllib.urlopen打开指定url，读取信息：
+
+   
+
+   response = urllib.urlopen(self.url)
+content = response.read()但是这样有问题， 比如对于www.sina.com来说，读出来的content是乱码的：
+   
+
+   
+
+   &gt;&gt;&gt; content[0:100]
+'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03\xec\xbdk\x93\x1c\xd7u \xf8\x99\x8c\xd0\x7fH\x14W\xe8*t=2\xeb\xd5\xd5]H`\x014@4\x88\x97\x00\xf0%\x10\xea\xc8\xaa\xca\xeeN\xa0\xba\xb2X\x99\x85\x06X\xa8\x1fCj\x1c\xb6ly-\x92\x06\xf5 %\xca&quot;E\xf1!R\x94\xa8\x87C3\x9e\xf1\xd8#\x87\xbd;\x8e\xd8\x99\x8d\xb1\x1d\xf2'
+   
+
+   于是用了python第三方工具chardet，通过
+
+   chardet.detect(content)进行content中字符集的检测：
+   
+
+   
+
+   &gt;&gt;&gt; chardet.detect(content)
+{'confidence': 0.99, 'encoding': 'GB2312'}好，问题解决了：
+   
+
+   
+
+   &gt;&gt;&gt; import urllib
+&gt;&gt;&gt; url = 'http://www.sina.com'
+&gt;&gt;&gt; response = urllib.urlopen(url)
+&gt;&gt;&gt; content = response.read()
+&gt;&gt;&gt; chardet.detect(content)
+{'confidence': 0.99, 'encoding': 'GB2312'}
+
+   
+
+   
+
+   但是我们想高效爬虫的时候需要设置urlopen的timeout时间，这在urllib中没有实现，而在urllib2中有实现：
+
+   
+
+   response = urllib2.urlopen(self.url, timeout = self.timeout)
+   
+
+   但是这时候再用chardet出现的字符集结果与上次不同：
+
+   
+
+   &gt;&gt;&gt; import urllib
+&gt;&gt;&gt; url = 'http://www.sina.com'
+&gt;&gt;&gt; response = urllib2.urlopen(url, timeout=1)
+&gt;&gt;&gt; content = response.read()
+&gt;&gt;&gt; chardet.detect(content)
+{'confidence': 0.0, 'encoding': None}
+   
+
+   这是怎么回事？原来是这个页面的编码问题， 该页面返回的是gzip编码，参考&lt;python urllib2 returns garbage - Stack Overflow&gt;
+
+   
+
+   实际上每次应该判断页面信息的'Content-Encoding'是否为'gzip'。
+
+   urllib支持gzip页面自动解压而urllib2不支持。 所以对于这种页面， 先解压再read：
+
+   
+
+   
+
+   
+   try:
+    response = urllib2.urlopen(self.url, timeout = self.timeout)
+    if response.info().get('Content-Encoding', &quot;&quot;) == 'gzip':  #e.g www.sina.com.cn
+ buf = StringIO.StringIO(response.read())
+ f = gzip.GzipFile(fileobj=buf)
+ content = f.read()
+    else:
+ content = response.read()
+    content = self.enc_dec(content)
+    return content
+except socket.timeout:
+    log.warn(&quot;Timeout in fetching %s&quot; % self.url)
+   
+
+   
+
+   
+
+   到这里，大家是不是都以为我只是个标题党。。。？
+
+   
+
+   *******************************************************************************
+
+   
+
+   那么，就把调通的整个spider文件share一下吧，
+
+   
+
+   
+
+   程序支持多线程爬虫，主文件为spider.py, testSpider.py为单测（不保证覆盖率）。
+
+   程序地址：http://download.csdn.net/detail/abcjennifer/9086751

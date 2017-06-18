@@ -1,0 +1,57 @@
+双层视频跟踪模型-CVPR11_robust tracking模型受今年暑假Summer School中讲cv中多类分类的Ales教授影响，看了一篇他们组2011年发表在ICCV上的一篇文章《An adaptive coupled-layer visual model for robust visual tracking》，感觉思路比较清晰，就精读了一下，在这里贴出一些感想与实施细则，方便大家进行研究(*^__^*) ……
+
+   
+
+   思路：用一个双层耦合模型，维护新特征点组成的patch的检测与outdated patch的删除。这样一个机制，
+
+   
+在local层进行与target无关patch的remove在global层将xindepatch加入local layer
+   
+
+   其间，作者几乎把所有的东西都用概率表示的……这个不评价……估计是Pattern Classification看了好几遍吧……
+
+   
+
+   
+
+   2.1. Local Layer
+
+   
+
+   讲了local layer的组成单位：patch的数据结构，跟踪目标的表示（最大化一个概率），并分解这个目标（为概率的乘积）
+
+   
+
+   
+
+   
+
+   
+
+   2.2 作者定义了两个规则，visual consistency和drift from majority，进行local layer的更新。
+
+   
+
+   
+
+   2.3 在Global Layer，应用3个度量：color, motion, shape描述patch，并适时将新的patch加入model。
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   2.4. 两层的融合，形成本文的核心算法。
+
+   
+
+   
+
+   
+
+   关于Computer Vision更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

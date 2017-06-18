@@ -1,0 +1,57 @@
+如何获得对话框指针获得对话框指针：
+
+
+   
+
+
+   假设CMyDialog为对话框类
+
+
+   1.先在CMyDialog.cpp中声明一个全局变量CMyDialog* pDlg;
+
+
+   2在OnInitDialog()的时候，pDlg = this;
+
+
+   3.在别的类使用他的时候，在别的类的Cpp中添加extern CMyDialog* pDlg;
+
+
+   4.pDlg-&gt;yourfunction();
+
+
+   
+
+
+   
+
+
+   如何使用Tab Control 控件 设置现有页面
+
+
+   void CPage1::OnBnClickedButton1()
+{
+	int temp=0;
+	if(GetCheckedRadioButton(IDC_RADIO1,IDC_RADIO2)==IDC_RADIO1)
+		temp++;
+	if(GetCheckedRadioButton(IDC_RADIO3,IDC_RADIO4)==IDC_RADIO3)
+		temp++;
+	if(GetCheckedRadioButton(IDC_RADIO5,IDC_RADIO6)==IDC_RADIO5)
+		temp++;
+
+	//获取View类指针
+	CMainFrame *pMain=(CMainFrame *)AfxGetApp()-&gt;m_pMainWnd;
+	CintelligentjudgingView *pView=(CintelligentjudgingView *)pMain-&gt;GetActiveView();
+	if(temp&gt;=2)
+	{
+		extern CQue *myquedlg;
+		pView-&gt;type[0]++; 
+		MessageBox((CString)"Please continue to next step!");
+		CRect     r;   
+		myquedlg-&gt;m_tabcontrol.GetClientRect(&amp;r);    
+		myquedlg-&gt;m_tabcontrol.SetCurSel(1);
+		myquedlg-&gt;page1.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW); 
+		myquedlg-&gt;page2.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_SHOWWINDOW);
+		myquedlg-&gt;page3.SetWindowPos (NULL,10,30,r.right-20,r.bottom-40,SWP_HIDEWINDOW   );
+	}
+	// TODO: 在此添加控件通知处理程序代码
+}

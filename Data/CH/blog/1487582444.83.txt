@@ -1,0 +1,98 @@
+K-NiceThis is a super simple problem. The description is simple, the solution is simple. If you believe so, just read it on. Or if you don't, just pretend that you can't see this one. 
+
+
+   We say an element is inside a matrix if it has four neighboring elements in the matrix (Those at the corner have two and on the edge have three). An element inside a matrix is called "nice" when its value equals the sum of its four neighbors. A matrix is called "k-nice" if and only if k of the elements inside the matrix are "nice". 
+
+
+   Now given the size of the matrix and the value of k, you are to output any one of the "k-nice" matrix of the given size. It is guaranteed that there is always a solution to every test case. 
+
+
+   Input 
+
+
+   The first line of the input contains an integer T (1 &lt;= T &lt;= 8500) followed by T test cases. Each case contains three integers n, m, k (2 &lt;= n, m &lt;= 15, 0 &lt;= k &lt;= (n - 2) * (m - 2)) indicating the matrix size n * m and it the "nice"-degree k. 
+
+
+   Output 
+
+
+   For each test case, output a matrix with n lines each containing m elements separated by a space (no extra space at the end of the line). The absolute value of the elements in the matrix should not be greater than 10000. 
+
+
+   Sample Input 
+
+
+   
+
+
+   2
+4 5 3
+5 5 3
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+
+   2 1 3 1 1
+4 8 2 6 1
+1 1 9 2 9
+2 2 4 4 3
+0 1 2 3 0
+0 4 5 6 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define M 20
+int main()
+{
+	int cases,m,n,i,j,t,temp;
+	int map[M][M],flag[M][M];
+	scanf("%d",&amp;cases);
+	while(cases--)
+	{
+		scanf("%d%d%d",&amp;n,&amp;m,&amp;t);
+		memset(map,0,sizeof(map));
+		memset(flag,0,sizeof(flag));
+		temp=(n-2)*(m-2);
+		for(i=1;i&lt;=n-2;i++)
+		{
+			for(j=1;j&lt;=m-2;j++)
+			{
+				flag[i][j]=1;
+			}
+		}
+		for(i=0;i&lt;n&amp;&amp;temp&gt;t;i++)
+		{
+			for(j=0;j&lt;m&amp;&amp;temp&gt;t;j++)
+			{
+				if(flag[i+1][j])
+				{						
+					temp--;
+					flag[i+1][j]=0;
+				}
+				map[i][j]++;
+			}
+		}
+		for(i=0;i&lt;n;i++)
+		{
+			for(j=0;j&lt;m;j++)
+			{
+				if(j)
+					printf(" ");
+				printf("%d",map[i][j]);
+			}
+			printf("/n");
+		}
+	}
+	return 0;
+}

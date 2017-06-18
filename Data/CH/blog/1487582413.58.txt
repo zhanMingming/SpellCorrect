@@ -1,0 +1,154 @@
+red and blackred and black
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:22 Accepted:18 
+
+
+   Description 
+
+
+   There is a rectangular room, covered with square tiles. Each tile is colored either red or black. A man is standing on a black tile. From a tile, he can move to one of four adjacent tiles. But he can't move on red tiles, he can move only on black tiles. Write a program to count the number of black tiles which he can reach by repeating the moves described above. 
+
+
+   Input 
+
+
+   The input consists of multiple data sets. A data set starts with a line containing two positive integers W and H; W and H are the numbers of tiles in the x- and y- directions, respectively. W and H are not more than 20. There are H more lines in the data set, each of which includes W characters. Each character represents the color of a tile as follows. '.' - a black tile '#' - a red tile '@' - a man on a black tile(appears exactly once in a data set) The end of the input is indicated by a line consisting of two zeros. 
+
+
+   Output 
+
+
+   For each data set, your program should output a line which contains the number of tiles he can reach from the initial tile (including itself). 
+
+
+   Sample Input 
+
+
+   
+
+   6 9
+....#.
+.....#
+......
+......
+......
+......
+......
+#@...#
+.#..#.
+11 9
+.#.........
+.#.#######.
+.#.#.....#.
+.#.#.###.#.
+.#.#..@#.#.
+.#.#####.#.
+.#.......#.
+.#########.
+...........
+11 6
+..#..#..#..
+..#..#..#..
+..#..#..###
+..#..#..#@.
+..#..#..#..
+..#..#..#..
+7 7
+..#.#..
+..#.#..
+###.###
+...@...
+###.###
+..#.#..
+..#.#..
+0 0
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   45
+59
+6
+13
+
+
+
+   
+
+
+   Source 
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define M 25
+int n,m;
+char map[M][M];
+bool flag[M][M];
+int startx,starty;
+int num;
+int dir[4][2]={0,1,0,-1,1,0,-1,0};
+int init()
+{
+	num=1;//including itself
+	memset(map,' ',sizeof(map));
+	for(int i=0;i&lt;n;i++)
+	{
+		getchar();
+		for(int j=0;j&lt;m;j++)
+		{
+			scanf("%c",&amp;map[i][j]);
+			if(map[i][j]=='@')
+			{
+				startx=i,starty=j;
+			}
+		}
+	}
+	return 1;
+}
+
+bool judge(int x,int y)
+{
+	if(x&lt;n&amp;&amp;y&lt;m&amp;&amp;x&gt;=0&amp;&amp;y&gt;=0&amp;&amp;map[x][y]=='.')
+		return true;
+	return false;
+}
+
+int dfs(int x,int y)//find num
+{
+	int i,j;
+	int tx=x, ty=y;
+	map[tx][ty]='#';
+	for(i=0;i&lt;4;i++)
+	{
+		if(judge(tx+dir[i][0],ty+dir[i][1]))
+		{
+			num++;
+			dfs(tx+dir[i][0],ty+dir[i][1]);
+		}
+	}
+	return num;
+}
+int main()
+{
+	while(cin&gt;&gt;m&gt;&gt;n&amp;&amp;m&amp;&amp;n)
+	{
+		init();
+		cout&lt;&lt;dfs(startx,starty)&lt;&lt;endl;
+	}
+}

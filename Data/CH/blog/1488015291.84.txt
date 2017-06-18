@@ -1,0 +1,116 @@
+JDK8新特性：lambda入门之前的文章@FunctionalInterface已经介绍了函数式接口，现在我们来了解下JDK8大名鼎鼎的lambda。
+
+
+   Runnable traditionalRunnable = new Runnable() {
+	@Override
+	public void run() {
+		System.out.println(&quot;traditionalRunnable&quot;);
+	}
+};
+traditionalRunnable.run();
+
+
+Runnable lambdaRunnable = () -&gt; System.out.println(&quot;lambdaRunnable&quot;);
+lambdaRunnable.run();traditionalRunnable是我们传统的做法，lambdaRunnable是使用了lambda表达式。两种创建Runnable对象的方法，可以明显看出lambda更加简洁。个人感觉：lambda其实就是为@FunctionalInterface服务的，能够用一种全新的、简洁的语法创建函数式接口的对象。当然如果一个接口不符合函数式接口的定义，是不能通过lambda表达式来创建其对象的。lambda其实就是定义入参、函数体、返回&#20540;，然后可以生成任意一个接口(符合该函数入参和返回&#20540;的函数式接口)的对象。
+
+   
+
+
+
+
+   lambda表达式的一般语法：
+
+
+   (Type1 param1, Type2 param2, ..., TypeN paramN) -&gt; {
+  statment1;
+  statment2;
+  //.............
+  return statmentM;
+}
+
+
+
+   只要一个接口(必须是函数式接口)中的抽象方法，符合lambda表达式的定义，那么就可以通过lambda表达式创建其对象。比如下面的DogInterface和CatInterface都是一个函数式接口：
+
+
+   @FunctionalInterface
+public interface CatInterface {
+    void sayHello();
+}
+
+@FunctionalInterface
+public interface DogInterface {
+    void sayWelcome();
+}
+
+   
+
+
+   
+
+
+
+虽然接口中的方法名不同，但是方法的入参和返回&#20540;都是一样的，所以我们就可以使用相同的lambda表达式创建对象。
+   CatInterface cat = () -&gt; {System.out.println(&quot;cat&quot;);}
+DogInterface dog = () -&gt; {System.out.println(&quot;dog&quot;);}
+cat.sayHello();
+dog.sayWelcome();
+
+   
+
+
+
+
+   lambda表达式有各种简化版本，现在我们就学习下一下常见的简化写法。
+
+
+
+
+   1、入参的类型是可以省略的（当然加上也没有问题），因为可以从上下文环境中推断出lambda表达式的参数类型。
+
+
+   @FunctionalInterface
+public interface TwoArgsInterface {
+    void add(int left, int right);
+}
+
+TwoArgsInterface twoArgs1 = (int a, int b) -&gt; System.out.println(&quot;no argument&quot;);
+// 省略参数类型
+TwoArgsInterface twoArgs2 = (a, b) -&gt; System.out.println(&quot;no argument&quot;);
+
+2、没有入参的时候，比如上面的Runnable接口，直接用()代表无参数。
+   Runnable lambdaRunnable = () -&gt; {System.out.println(&quot;lambdaRunnable&quot;);};
+
+
+   3、当lambda表达式的参数个数只有一个，可以省略小括号。
+
+
+   // 完整语法
+OneArgsInterface oneArgs1 = (int a) -&gt; System.out.println(&quot;arguments=&quot; + a);
+// 省略参数类型
+OneArgsInterface oneArgs2 = (a) -&gt; System.out.println(&quot;arguments=&quot; + a);
+// 最简洁的写法(省略类型和括号)
+OneArgsInterface oneArgs3 = a -&gt; System.out.println(&quot;arguments=&quot; + a);
+
+   
+
+
+   
+
+
+
+4、当lambda表达式只包含一条语句时，可以省略大括号、return和语句结尾的分号。
+   // 完整写法
+Runnable runnable1 = () -&gt; { System.out.println(&quot;lambdaRunnable&quot;); };
+// 省略大括号和结尾的分号
+Runnable runnable2 = () -&gt; System.out.println(&quot;lambdaRunnable&quot;);
+   @FunctionalInterface
+public interface DemoInterface {
+    double add(double right);
+}
+
+// 完整写法
+DemoInterface way1 = a -&gt; { return a * 10; };
+
+// 省略return和大括号
+DemoInterface way2 = a -&gt; a * 10;

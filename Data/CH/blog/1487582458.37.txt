@@ -1,0 +1,115 @@
+设计模式之工厂模式工厂模式只适用于对象的创建。说白了就是封装了new‘一个对象的操作。
+
+
+   
+
+
+
+
+   简单工厂模式
+
+
+   1. 目的
+
+ 工厂模式就是专门负责将大量有共同接口的类实例化,
+
+
+   而且不必事先知道每次是要实例化哪一个类的模式。
+
+
+   它定义一个用于创建对象的接口，由子类决定实例化哪一个类。
+
+2 . 简单工厂模式的结构
+
+
+
+
+3. 一个简单例子
+
+
+
+
+
+
+java 代码
+
+
+
+
+
+
+//产品接口publicinterfaceProduct{ publicvoidgetName(); } //具体产品ApublicclassProductAimplementsProduct{ publicvoidgetName(){ System.out.println(&quot;IamProductA&quot;); } } //具体产品BpublicclassProductBimplementsProduct{ publicvoidgetName(){ System.out.println(&quot;IamProductB&quot;); } } //工厂类publicclassProductCreator{ publicProductcreateProduct(Stringtype){ if(&quot;A&quot;.equals(type)){ returnnewProductA(); } if(&quot;B&quot;.equals(type)){ returnnewProductB(); }elsereturnnull; } publicstaticvoidmain(String[]args){
+ ProductCreatorcreator=newProductCreator(); creator.createProduct(&quot;A&quot;).getName(); creator.createProduct(&quot;B&quot;).getName(); } }
+
+
+这样做的好处直白一点讲就是：
+
+
+
+
+1. 类的创建可以被配置。 字符串A和B都可以写在配置文件里。
+
+
+2. 类的创建隐藏了new操作符。
+
+
+
+
+
+
+
+
+
+
+   抽象工厂模式
+
+
+   1. 抽象工厂模式可以说是简单工厂模式的扩展，
+
+
+   它们主要的区别在于需要创建对象的复杂程度上。
+
+在抽象工厂模式中，创建对象的方法变成了接口（对应与c&#43;&#43;的虚函数），可以让具体的创建对象的子类来实现。
+
+
+
+   2. 抽象工厂模式的结构
+
+
+   
+
+
+   3.一个简单例子
+
+
+
+
+java 代码
+
+
+
+
+
+
+//产品Plant接口publicinterfacePlant{ } //具体产品PlantA，PlantBpublicclassPlantAimplementsPlant{ publicPlantA(){ System.out.println(&quot;createPlantA!&quot;); } publicvoiddoSomething(){ System.out.println(&quot;PlantAdosomething&quot;); } } publicclassPlantBimplementsPlant{ publicPlantB(){ System.out.println(&quot;createPlantB!&quot;); } publicvoiddoSomething(){ System.out.println(&quot;PlantBdosomething&quot;); } } //产品Fruit接口publicinterfaceFruit{ } //具体产品FruitA，FruitBpublicclassFruitAimplementsFruit{ publicFruitA(){ System.out.println(&quot;createFruitA!&quot;); } publicvoiddoSomething(){ System.out.println(&quot;FruitAdosomething&quot;); } } publicclassFruitBimplementsFruit{ publicFruitB(){ System.out.println(&quot;createFruitB!&quot;); } publicvoiddoSomething(){ System.out.println(&quot;FruitBdosomething&quot;); } } //抽象工厂方法publicinterfaceAbstractFactory{ publicPlantcreatePlant(); publicFruitcreateFruit(); } //具体工厂方法publicclassFactoryAimplementsAbstractFactory{ publicPlantcreatePlant(){ returnnewPlantA(); } publicFruitcreateFruit(){ returnnewFruitA(); } } publicclassFactoryBimplementsAbstractFactory{ publicPlantcreatePlant(){ returnnewPlantB(); } publicFruitcreateFruit(){ returnnewFruitB(); } } 
+
+任何设计模式都是服务于实际的项目的。用复杂的术语来描述的设计模式你读一万遍你
+
+
+
+
+
+
+
+
+
+
+都无法理解，还不如在你实际的项目中采用。或者看现有项目的代码是如何用的。
+
+
+
+
+
+
+
+工厂模式是很简单的，不要被复杂的名词或者是术语迷惑。

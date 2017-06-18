@@ -1,0 +1,42 @@
+透彻了解inline的里里外外——effective c++学习笔记inline背后的整体观念：将&ldquo;对此函数的每一次调用&rdquo;都以函数本体替换之。
+
+
+   inline在大多数c++程序中是编译器行为。
+
+
+   inline是个申请，编译器可以忽略。
+
+
+   inline对virtual函数的申请一般都会失败。
+
+
+   一个表面看似inline的函数是否真实inline，取决于你的建置环境，主要取决于编译器。
+
+
+   编译器通常不对&ldquo;通过函数指针而进行的调用&rdquo;实施inline。
+
+
+   对inline函数调用有可能被inline，也可能不被inlined，取决于实施的方式。
+
+
+   不要将Derived（子类）构造函数和析构函数定义为inlined。
+
+
+   程序库的设计者必须评估&ldquo;将函数声明为inlined&rdquo;。更改inlined函数需要主程序进行重新编译。
+
+
+   一开始先不要将任何函数声明为inlined。
+
+
+   至于inline可以提高效率，可以遵循80-20原则：80%的时间花费在20%的代码上。然后对这20%的函数进行优化，包括inlined。
+
+
+   请记住：
+
+
+   1、
+将大多数inlining函数限制在小型，被频繁调用的函数身上。这可使日后的调试过程和二进制升级更加容易，也可以使潜在的代码膨胀问题最小化。
+
+
+   2、
+不要因为function template出现在头文件，就将他们声明为inline。

@@ -1,0 +1,114 @@
+关于导航类搜索首先从语料来源主要由以下部分构成：
+
+
+   1）http://www.dmoz.org/（注意金陵中学的摘要部分）
+
+
+    
+
+
+   
+
+
+   
+
+
+   2）人工导航站(hao123.com 123.sogou.com，site.yahoo.com.cn)等等外链语料
+
+
+   
+
+
+   3）各大站点的友链语料（我曾考虑过做一个站点友链的聚类，并进行相关推荐，同时让各大站点将其联系人进行登录，提供牵线搭桥服务）
+
+
+   
+
+
+   4）据说谷歌等大型搜索引擎有新登记域名的语料，由于新注册域名到使用还有一个过程，因此新站及时发现，也是搜索引擎一个重要课题。
+
+
+   
+
+
+   5）目前各大搜索引擎都提供了新站登记的入口，详细列表参见本文最后。
+
+
+   
+
+
+   导航类搜索可以说是最简单的搜索，但覆盖了大量的查询需求，这一块各大搜索引擎几乎没有差别。
+
+
+   
+
+
+   简单来说，导航类搜索一般为单独索引节点，而且导航索引更新不必非常及时，但需权威，人工语料为主，其余语料为辅。
+
+
+   
+
+
+   
+
+
+   各大搜索引擎新站提交网站大全：
+
+
+   1.Google搜索网站登陆* http://www.google.com/intl/zh-CN/add_url.html
+
+
+   2.Google网页目录收录* http://directory.google.com/Top/World/Chinese_Simplified/
+
+
+   3.百度搜索网站登陆* http://www.baidu.com/search/url_submit.html
+
+
+   4.搜搜搜索引擎：网站登录* http://www.soso.com/help/usb/urlsubmit.shtml
+
+
+   5.hao123网址之家网站登陆* http://221.12.147.30/url_submit.php
+
+
+   http://post.baidu.com/f?kw=hao123
+
+
+   6.搜狐/搜狗网站登陆* http://www.sogou.com/feedback/urlfeedback.php
+
+
+   7.爱问搜索网站登陆* http://iask.com/guest/add_url.php
+
+
+   8.中国雅虎网站登陆*http://search.help.cn.yahoo.com/h4_4.html
+
+
+   9.网易有道搜索网站登陆* http://tellbot.yodao.com/report?keyFrom=help
+
+
+   
+
+   10.Yahoo网站登陆* http://submit.search.yahoo.com/free/request/
+
+
+   11.中国搜索网站登陆* http://ads.zhongsou.com/register/page.jsp
+
+
+   12.有道搜索网站登陆* http://tellbot.yodao.com/report
+
+
+   13.TOM搜索网站登陆* http://search.tom.com/tools/weblog/log.php
+
+
+   14.英文yahoo网站登陆* http://siteexplorer.search.yahoo.com/submit
+
+
+   15.微软bing搜索网站登陆* http://cn.bing.com/docs/submit.aspx
+
+
+   16.alltheweb网站登陆* http://www.alltheweb.com/help/webmaster/submit_site
+
+
+   17.altavista网站登陆* http://www.altavista.com
+
+
+   18.DMOZ中文网站登陆* http://www.dmoz.org/World/Chinese_Simplified/

@@ -1,0 +1,113 @@
+C#接触…… 入门2, 添加窗体支持通过输入用户名和口令判断该用户是否能够进入
+
+
+   
+
+
+   Program.cs部分
+
+
+   using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Collections;
+using System.IO;
+using System.Windows.Forms;
+
+namespace CSDemo
+{
+    class Test40
+    {
+ static Hashtable users = null;
+ private static string logfile = "d://eror.log";
+
+ static Test40()
+ {
+     users = new Hashtable();
+     users["张睿卿"] = (int)1234;
+     users["老马"] = (int)4567;
+     users["宁波大学"] = (int)6789;
+ }
+ //Form1 aw = new Form1();
+ static void Main(string[] args)
+ {
+     Form1 sform = new Form1();
+
+     while (true)
+     {
+  if (sform.ShowDialog() == DialogResult.OK)
+  {//Console.WriteLine("Please input user name:");
+      //string user = Console.ReadLine();
+      //Console.WriteLine("Please input password");
+      //int psw = int.Parse(Console.ReadLine());
+      if (users[sform.User] != null &amp;&amp; (int)(users[sform.User]) == sform.PassWord)
+      {
+   MessageBox.Show(string.Format("Welcome to {0}!", sform.User));
+      }
+      else
+      {
+   MessageBox.Show("Sorry, you can't access to here!");
+   //以追加模式打开记录文件
+   TextWriter error = new StreamWriter(logfile, true);
+   error.WriteLine("{0} tries to login with the psw of {1} at {2}!", sform.User, sform.PassWord, DateTime.Now);
+   error.Close();
+      }
+  }
+  else
+      return;
+     }
+ }
+    }
+}
+
+
+
+   
+
+
+   
+
+
+   Form1.cs部分（不含设计视图）
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace CSDemo
+{
+    public partial class Form1 : Form
+    {
+ public Form1()
+ {
+     InitializeComponent();
+ }
+ public String User
+ {
+     get
+     {
+  return user.Text;
+     }
+ }
+
+ public int PassWord
+ {
+     get
+     {
+  return int.Parse(password.Text);
+     }
+ }
+
+ private void Form1_Load(object sender, EventArgs e)
+ {
+
+ }
+    }
+}

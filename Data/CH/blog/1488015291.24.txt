@@ -1,0 +1,71 @@
+JDK8新特性：重复注解Repeating Annotations注解并不是什么新鲜东西了，比如spring中存在大量注解简化我们的配置。但是在JDK8之前，我们是不能使用重复注解的，即某个位置相同注解只能出现一次。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   比如我们想编写一个定时任务的注解，使用者可以配置在每天哪一小时触发，而且允许用户配置多个时间。传统做法是：
+
+
+   import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TraditionalAnnoSchedule {
+    int[] hour() default {0};
+}
+   @TraditionalAnnoSchedule(hour = {0, 8, 12})
+public class Target {
+    public static void main(String[] args) {
+ TraditionalAnnoSchedule[] annotations = Target.class.getAnnotationsByType(TraditionalAnnoSchedule.class);
+ for (TraditionalAnnoSchedule each : annotations) {
+     System.out.println(Arrays.toString(each.hour()));
+ }
+    }
+}
+
+上面是比较传统的做法，下面我们使用JDK8的重复注解特性改造下上面的注解。
+   @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Schedules {
+    Schedule[] value();
+}
+
+// JDK8新增的@Repeatable
+@Repeatable(Schedules.class)
+public @interface Schedule {
+    int hour() default 0;
+}
+   @Schedule(hour = 0)
+@Schedule(hour = 8)
+@Schedule(hour = 12)
+public class Target {
+    public static void main(String[] args) {
+ // 推荐的方式
+ Schedule[] annotations = Target.class.getAnnotationsByType(Schedule.class);
+ for (Schedule each : annotations) {
+     System.out.println(each.hour());
+ }
+
+ // 老的方式
+ Schedule[] schedules = Target.class.getAnnotation(Schedules.class).value();
+ for (Schedule each : schedules) {
+     System.out.println(each.hour());
+ }
+
+    }
+}
+
+
+
+这里有个使用@Repeatable( Schedules.class )的注解类Schedule，Schedules仅仅是Schedule注解的数组，但Java编译器并不想让程序员意识到Schedules的存在。这样对使用者而言，Target就拥有了两个Schedule注解，而不是1个Schedules注解。同时，反射相关的API提供了新的函数getAnnotationsByType()来返回重复注解的类型。

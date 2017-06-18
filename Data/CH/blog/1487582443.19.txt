@@ -1,0 +1,35 @@
+Java 实现栈用你在数据结构与算法课上学到的知识写一个类Stack，并写一个应用程序来测试Stack（调用它的公共方法）。（&mdash;&mdash;宁波大学计算机082Java老师王老师版权所有，百度没找到）
+
+
+   
+
+
+   
+
+
+   这么想的，实现栈，可以用链表实现（Java系统规定好的）（用import java.util.*引用）；也可以用数组实现，或者甚至可以自己定义一个类，就像C++中的链表，定义元素类。
+
+
+   
+
+
+   那么比如&hellip;&hellip;
+
+
+   import java.util.*;
+public class MyStack {
+	public static void main(String[] args)
+	{
+		LinkedList &lt;String&gt; zrq=new LinkedList&lt;String&gt;();
+		//实现插入
+		for(int i=0;i&lt;=4;i++)
+		{
+			zrq.addLast(Integer.toString(i));
+		}
+		while(!zrq.isEmpty())
+		{
+			System.out.println(lls.removeFirst());
+		}
+	}
+}
+ 这个就是入栈，大家举一反三搞搞出栈啥的吧^_^

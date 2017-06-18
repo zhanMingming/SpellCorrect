@@ -1,0 +1,484 @@
+Shannon-Fano编码——原理与实现香农-范诺算法（Shannon-Fano coding）原理
+
+
+
+
+
+   
+和Huffman-Tree一样，Shannon-Fano coding也是用一棵二叉树对字符进行编码。但在实际操作中呢，Shannon-Fano却没有大用处，这是由于它与Huffman coding相比，编码效率较低的结果（或者说香农-范诺算法的编码平均码字较大）。但是它的基本思路我们还是可以参考下的。
+
+
+   
+
+
+
+
+
+   
+根据Wikipedia上面的解释，我们来看下香农范诺算法的原理：
+
+
+   
+
+
+
+
+   Shannon-Fano的树是根据旨在定义一个有效的代码表的规范而建立的。实际的算法很简单：
+
+
+
+
+对于一个给定的符号列表，制定了概率相应的列表或频率计数，使每个符号的相对发生频率是已知。排序根据频率的符号列表，最常出现的符号在左边，最少出现的符号在右边。清单分为两部分，使左边部分的总频率和尽可能接近右边部分的总频率和。该列表的左半边分配二进制数字0，右半边是分配的数字1。这意味着，在第一半符号代都是将所有从0开始，第二半的代码都从1开始。对左、右半部分递归应用步骤3和4，细分群体，并添加位的代码，直到每个符号已成为一个相应的代码树的叶。
+
+   
+
+
+
+
+
+
+示例
+
+
+
+
+
+
+
+
+
+香农-范诺编码算法
+
+
+
+
+
+
+   这个例子展示了一组字母的香浓编码结构（如图a所示）这五个可被编码的字母有如下出现次数:
+
+
+
+
+
+
+
+Symbol
+
+A
+
+B
+
+C
+
+D
+
+E
+
+
+
+
+Count
+
+15
+
+7
+
+6
+
+6
+
+5
+
+
+
+
+Probabilities
+
+0.38461538
+
+0.17948718
+
+0.15384615
+
+0.15384615
+
+0.12820513
+
+
+
+
+
+   从左到右，所有的符号以它们出现的次数划分。在字母B与C之间划定分割线，得到了左右两组，总次数分别为22,17。 这样就把两组的差别降到最小。通过这样的分割, A与B同时拥有了一个以0为开头的码字, C，D，E的码子则为1,如图b所示。
+ 随后, 在树的左半边，于A，B间建立新的分割线，这样A就成为了码字为00的叶子节点，B的码子01。经过四次分割, 得到了一个树形编码。 如下表所示，在最终得到的树中, 拥有最大频率的符号被两位编码, 其他两个频率较低的符号被三位编码。
+
+
+
+
+
+
+
+符号
+
+A
+
+B
+
+C
+
+D
+
+E
+
+
+
+
+编码
+
+00
+
+01
+
+10
+
+110
+
+111
+
+
+
+
+
+   
+
+
+
+
+   Entropy(熵，平均码字长度):
+
+
+   
+
+
+
+
+   
+
+
+Pseudo-code
+
+
+   
+ 1:  begin
+ 2:     count source units
+ 3:     sort source units to non-decreasing order
+ 4:     SF-SplitS
+ 5:     output(count of symbols, encoded tree, symbols)
+ 6:     write output
+ 7:   end
+ 8:  
+ 9:  procedure SF-Split(S)
+10:  begin
+11:     if (|S|&gt;1) then
+12:      begin
+13: divide S to S1 and S2 with about same count of units
+14: add 1 to codes in S1
+15: add 0 to codes in S2
+16: SF-Split(S1)
+17: SF-Split(S2)
+18:      end
+19:  end
+
+
+想不清楚的朋友可以看下这个网站的模拟程序，很形象，perfect~
+
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+香农-范诺算法实现（Shannon-Fano
+ coding implementation in C&#43;&#43;）
+
+
+
+
+
+
+
+
+
+
+
+我们由上面的算法可知，需要迭代地寻找一个最优点，使得树中每个节点的左右子树频率总和尽可能相近。
+
+
+这里我寻找最优化点用的是顺次查找法，其实呢，我们还可以用二分法（dichotomy）达到更高的效率~
+
+
+   
+
+
+
+
+   
+
+
+   /************************************************************************/
+/*	File Name: Shanno-Fano.cpp
+*		@Function: Lossless Compression
+@Author: Sophia Zhang
+@Create Time: 2012-9-26 20:20
+@Last Modify: 2012-9-26 20:57
+*/
+/************************************************************************/
+
+#include&quot;iostream&quot;
+#include &quot;queue&quot;
+#include &quot;map&quot;
+#include &quot;string&quot;
+#include &quot;iterator&quot;
+#include &quot;vector&quot;
+#include &quot;algorithm&quot;
+#include &quot;math.h&quot;
+using namespace std;
+
+#define NChar 8	//suppose use 8 bits to describe all symbols
+#define Nsymbols 1&lt;&lt;NChar	//can describe 256 symbols totally (include a-z, A-Z)
+#define INF 1&lt;&lt;31-1
+
+typedef vector&lt;bool&gt; SF_Code;//8 bit code of one char
+map&lt;char,SF_Code&gt; SF_Dic;	//huffman coding dictionary
+int Sumvec[Nsymbols];	//record the sum of symbol count after sorting
+
+class HTree
+{
+public :
+	HTree* left;
+	HTree* right;
+	char ch;
+	int weight;
+
+	HTree(){left = right = NULL; weight=0;ch ='\0';}
+	HTree(HTree* l,HTree* r,int w,char c){left = l;	right = r;	weight=w;	ch=c;}
+	~HTree(){delete left; delete right;}
+	bool Isleaf(){return !left &amp;&amp; !right; }
+};
+
+bool comp(const HTree* t1, const HTree* t2)//function for sorting
+{	return (*t1).weight&gt;(*t2).weight;	}
+
+typedef vector&lt;HTree*&gt; TreeVector;
+TreeVector TreeArr;//record the symbol count array after sorting
+
+void Optimize_Tree(int a,int b,HTree&amp; root)//find optimal separate point and optimize tree recursively
+{
+	if(a==b)//build one leaf node
+	{
+		root = *TreeArr[a-1];
+		return;
+	}
+	else if(b-a==1)//build 2 leaf node
+	{
+		root.left = TreeArr[a-1];
+		root.right=TreeArr[b-1];
+		return;
+	}
+	//find optimizing point x
+	int x,minn=INF,curdiff;
+	for(int i=a;i&lt;b;i++)//find the point that minimize the difference between left and right; this can also be implemented by dichotomy
+	{
+		curdiff = Sumvec[i]*2-Sumvec[a-1]-Sumvec[b];
+		if(abs(curdiff)&lt;minn){
+			x=i;
+			minn = abs(curdiff);
+		}
+		else break;//because this algorithm has monotonicity
+	}
+	HTree*lc = new HTree;	HTree *rc = new HTree;
+	root.left = lc;		root.right = rc;
+	Optimize_Tree(a,x,*lc);
+	Optimize_Tree(x+1,b,*rc);
+}
+
+HTree* BuildTree(int* freqency)//create the tree use Optimize_Tree
+{
+	int i;
+	for(i=0;i&lt;Nsymbols;i++)//statistic
+	{
+		if(freqency[i])
+			TreeArr.push_back(new HTree (NULL,NULL,freqency[i], (char)i));
+	}
+	sort(TreeArr.begin(), TreeArr.end(), comp);
+	memset(Sumvec,0,sizeof(Sumvec));
+	for(i=1;i&lt;=TreeArr.size();i++)
+		Sumvec[i] = Sumvec[i-1]+TreeArr[i-1]-&gt;weight;
+	HTree* root = new HTree;
+	Optimize_Tree(1,TreeArr.size(),*root);
+	return root;
+}
+
+/************************************************************************/
+/* Give Shanno Coding to the Shanno Tree
+/*PS: actually, this generative process is same as Huffman coding
+/************************************************************************/
+void Generate_Coding(HTree* root, SF_Code&amp; curcode)
+{
+	if(root-&gt;Isleaf())
+	{
+		SF_Dic[root-&gt;ch] = curcode;
+		return;
+	}
+	SF_Code lcode = curcode;
+	SF_Code rcode = curcode;
+	lcode.push_back(false);
+	rcode.push_back(true);
+	Generate_Coding(root-&gt;left,lcode);
+	Generate_Coding(root-&gt;right,rcode);
+}
+
+int main()
+{
+	int freq[Nsymbols] = {0};
+	char *str = &quot;bbbbbbbccccccaaaaaaaaaaaaaaaeeeeedddddd&quot;;//15a,7b,6c,6d,5e
+
+	//statistic character frequency
+	while (*str!='\0')		freq[*str++]++;
+
+	//build tree
+	HTree* r = BuildTree(freq);
+	SF_Code nullcode;
+	Generate_Coding(r,nullcode);
+
+	for(map&lt;char,SF_Code&gt;::iterator it = SF_Dic.begin(); it != SF_Dic.end(); it++) {  
+		cout&lt;&lt;(*it).first&lt;&lt;'\t';  
+		std::copy(it-&gt;second.begin(),it-&gt;second.end(),std::ostream_iterator&lt;bool&gt;(cout));  
+		cout&lt;&lt;endl;  
+	}  
+}
+
+
+
+
+   
+
+
+   
+
+
+   Result：
+
+
+   以上面图中的统计数据为例，进行编码。
+
+
+   
+
+
+
+
+
+符号
+
+A
+
+B
+
+C
+
+D
+
+E
+
+
+
+
+计数
+
+15
+
+7
+
+6
+
+6
+
+5
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   Reference:
+
+
+   
+
+
+Shannon-Fano coding. Wikipedia, the free encyclopediaClaude Elwood Shannon. Wikipedia, the free encyclopedia.C. E. Shannon:A Mathematical Theory of Communication. The Bell System Technical Journal, Vol. 27, July, October, 1948.C. E. Shannon:Prediction and Entropy of Printed English. The Bell System Technical Journal, Vol. 30, 1951.C. E. Shannon:Communication Theory of Secrecy Systems. The Bell System Technical Journal, Vol. 28, 1949.http://www.stringology.org/DataCompression/sf/index_en.html
+
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+关于Compression更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

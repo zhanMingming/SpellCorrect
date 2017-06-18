@@ -1,0 +1,355 @@
+几道面试题1）下列程序片段运行时间排序
+
+
+   代码1：
+
+
+   for(uint i = 0;i&lt;1024;&#43;&#43;i)
+
+
+    {
+
+
+        char* url = (char*)malloc(4096);
+
+
+   
+     memset(url,0x0,4096);
+
+     free(url);
+
+    }
+
+
+   代码2:
+
+
+   for(uint i = 0;i&lt;1024;&#43;&#43;i)
+
+
+   
+ {
+
+
+   
+     char* url = (char*)malloc(4096);
+
+
+   
+    free(url);
+
+
+   
+
+
+   
+ }
+
+
+   
+代码3:
+
+
+   
+ char* url = (char*)malloc(4096);  
+
+
+   
+  for(uint i = 0;i&lt;1024;&#43;&#43;i)
+
+
+   
+  {
+
+
+   
+      memset(url,0x0,4096);     
+
+
+   
+ }
+
+
+
+
+   
+   free(url);
+
+
+   
+
+
+
+   
+
+
+
+
+
+   
+代码4:
+
+
+   
+for(uint i = 0;i&lt;10*1024;&#43;&#43;i)
+
+
+   
+ {
+
+
+   
+     char* url = (char*)malloc(4096);
+
+
+   
+     free(url);
+
+
+   
+
+
+
+   
+ }
+
+
+   给出你认为的代码耗时排序？
+
+
+
+
+
+
+
+2）写出下面代码所犯的错误，并指出这种错误导致的后果
+
+
+
+
+   void to_upper(char* s,char* buffer)
+
+
+   {
+
+
+    buffer =(char*)malloc((strlen(s)&#43;1)*sizeof(char));
+
+
+    memset(buffer,0x0,strlen(s)&#43;1);
+
+
+    for(uint32_t i = strlen(s)-1;i&gt;=0;--i) 
+
+
+    {
+
+
+    unsigned char t = s[i] - 'a';
+
+
+    buffer[i] = s[i] &#43;('A'-'a')*(t&lt;='z'-'a'?1:0);
+
+
+    }
+
+
+   }
+
+
+   int main(void)
+
+
+   {
+
+
+    char string[] = &quot;123 , goodmorning { ABC&quot;;
+
+
+    char* buffer = NULL;
+
+
+    to_upper(string,buffer);
+
+
+    cout&lt;&lt;buffer&lt;&lt;endl;
+
+
+    free(buffer);
+
+
+   }
+
+
+
+
+
+
+3）写出下面C&#43;&#43;代码的错误，并指出可能的改进
+
+
+前提：strcpy的基本语义
+
+
+1）原串不能被修改。
+
+
+2）拷贝的原串和目的串可能非常大，比如：10M字节。
+
+
+3）拷贝过程或者成功，或者失败，不会出现拷贝一部分成功，一部分失败
+
+
+4）拷贝失败返回NULL
+
+
+假定：
+
+
+1）目的串和原串都是\0结尾的合法字符串
+
+
+char* strcpy(char* dst,const char *src) 
+
+
+
+
+{ 
+
+  char *ret = dst; 
+
+  while ((*dst&#43;&#43; = *src&#43;&#43;)); 
+
+  return ret; 
+
+}
+
+
+
+
+
+4）下面两个结构体定义中，为什么第二个结构体要加一个padding，这有什么好处？
+
+
+
+
+
+
+
+
+   struct s_nopadding{
+
+ char a;
+
+ char b;
+
+ char c;
+
+};
+
+
+   struct s_withpadding{
+
+ char a;
+
+ char b;
+
+ char c;
+
+ char padding;
+
+};
+
+
+   5) 第三题中的结构体中，如果定义s_nopadding t[1024];，则sizeof(t)是1024*3还是1024*4？
+
+
+   
+
+
+
+
+   6)请问下面这段代码这样写的好处？
+
+
+   typedef void(*pattern_fun)(uint32_t* code,uint32_t* data,size_t n);
+
+
+
+
+   pattern_fun PACK[]={PACK0,PACK1,PACK2,PACK3};
+
+
+   void PACK0(uint32_t* code,uint32_t* data,size_t n) //PACK1,PACK2,PACK3均类&#20284;，直接返回。
+
+
+   {
+
+
+      return;
+
+
+   }
+
+
+   int main
+
+
+   {
+
+
+     XXXX            //一些初始化code，data，n的代码
+
+
+     for(int i = 0;i&lt;4096;&#43;&#43;i)
+
+
+     {
+
+
+         PACK[i%4](code,data,n);
+
+
+         XXXX       // 一些后续代码
+
+
+     }
+
+
+   }
+
+
+   7）什么是稳定的排序，举一个使用稳定排序的例子？
+
+
+
+
+
+
+8）如果设计一个快表，你会从哪些方面考虑，并给出你的设计？
+
+
+9）分享一个你感兴趣的领域或者技术，并通过专研达到了某种技术高度。
+
+
+10) 现代操作系统地址的单位是什么？
+
+
+  下列代码有什么用处？
+
+
+   #define PACKET uint32_t  //PACKET表示一种数据封装的类型，可以是整形
+
+
+   char* char_ptr = NULL; 
+
+   for (char_ptr = str; ((unsigned long int) char_ptr&amp; (sizeof (PACKET) - 1)) != 0;&#43;&#43;char_ptr)
+
+
+   {
+
+
+       ...
+
+
+   }

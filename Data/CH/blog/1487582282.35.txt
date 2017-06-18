@@ -1,0 +1,255 @@
+Caffe —— Deep learning in Practice因工作交接需要， 要将caffe使用方法及整体结构描述清楚。 鉴于也有同学问过我相关内容， 决定在本文中写个简单的tutorial, 方便大家参考。 
+
+本文简单的讲几个事情：
+
+
+
+Caffe能做什么？
+为什么选择caffe?
+环境
+整体结构
+Protocol buffer
+训练基本流程
+Python中训练
+Debug
+
+
+
+
+
+   Caffe能做什么？
+
+
+
+定义网络结构
+训练网络
+C++/CUDA 写的结构
+cmd/python/Matlab接口
+CPU/GPU工作模式
+给了一些参考模型&amp;pretrain了的weights
+
+
+
+
+
+   为什么选择caffe?
+
+
+
+模块化做的好
+简单：修改结构无需该代码
+开源：共同维护开源代码
+
+
+
+
+
+   环境：
+
+
+
+
+   $ lsb_release -a 
+
+Distributor ID: Ubuntu 
+
+Description:    Ubuntu 12.04.4 LTS 
+
+Release:    12.04 
+
+Codename:   precise
+
+
+   $ cat /proc/version 
+
+Linux version 3.2.0-29-generic (buildd@allspice) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #46-Ubuntu SMP Fri Jul 27 17:03:23 UTC 2012
+
+
+   Vim + Taglist + Cscope
+
+
+
+
+
+
+   整体结构：
+
+
+
+   定义CAFFE为caffe跟目录，caffe的核心代码都在$CAFFE/src/caffe 下，主要有以下部分：net, blob, layer, solver.
+
+
+
+
+   net.cpp:  
+
+net定义网络， 整个网络中含有很多layers， net.cpp负责计算整个网络在训练中的forward, backward过程， 即计算forward/backward 时各layer的gradient。
+
+
+
+   layers:  
+
+在$CAFFE/src/caffe/layers中的层，在protobuffer (.proto文件中定义message类型，.prototxt或.binaryproto文件中定义message的值) 中调用时包含属性name， type（data/conv/pool…）， connection structure (input blobs and output blobs)，layer-specific parameters（如conv层的kernel大小）。定义一个layer需要定义其setup, forward 和backward过程。
+
+
+
+   blob.cpp:  
+
+net中的数据和求导结果通过4维的blob传递。一个layer有很多blobs， e.g, 
+
+
+对data，weight blob大小为Number * Channels * Height * Width, 如256*3*224*224；
+对conv层，weight blob大小为 Output 节点数 * Input 节点数 * Height * Width，如AlexNet第一个conv层的blob大小为96 x 3 x 11 x 11；
+对inner product 层， weight blob大小为 1 * 1 * Output节点数 * Input节点数； bias blob大小为1 * 1 * 1 * Output节点数（ conv层和inner product层一样，也有weight和bias，所以在网络结构定义中我们会看到两个blobs_lr，第一个是weights的，第二个是bias的。类似地，weight_decay也有两个，一个是weight的，一个是bias的）； 
+
+
+ 
+
+blob中，mutable_cpu/gpu_data() 和cpu/gpu_data()用来管理memory，cpu/gpu_diff()和 mutable_cpu/gpu_diff()用来计算求导结果。
+
+
+   slover.cpp:  
+
+结合loss，用gradient更新weights。主要函数：  
+
+Init(), 
+
+Solve(), 
+
+ComputeUpdateValue(),  
+
+Snapshot(), Restore(),//快照（拷贝）与恢复 网络state 
+
+Test()；
+ 
+
+在solver.cpp中有3中solver，即3个类：AdaGradSolver, SGDSolver和NesterovSolver可供选择。
+ 
+
+关于loss，可以同时有多个loss，可以加regularization（L1/L2）；
+
+
+
+
+
+
+   Protocol buffer：
+
+
+
+   上面已经将过， protocol buffer在 .proto文件中定义message类型，.prototxt或.binaryproto文件中定义message的值；
+
+
+
+
+   Caffe 
+
+Caffe的所有message定义在$CAFFE/src/caffe/proto/caffe.proto中。
+
+
+   Experiment 
+
+在实验中，主要用到两个protocol buffer: solver的和model的，分别定义solver参数（学习率啥的）和model结构(网络结构)。
+ 
+
+技巧：
+
+
+冻结一层不参与训练：设置其blobs_lr=0
+对于图像，读取数据尽量别用HDF5Layer（因为只能存float32和float64，不能用uint8, 所以太费空间）
+
+
+
+
+
+   训练基本流程：
+
+
+
+数据处理 
+
+法一，转换成caffe接受的格式：lmdb, leveldb, hdf5 / .mat, list of images, etc.；法二，自己写数据读取层(如https://github.com/tnarihi/tnarihi-caffe-helper/blob/master/python/caffe_helper/layers/data_layers.py)
+定义网络结构
+配置Solver参数
+训练：如 caffe train -solver solver.prototxt -gpu 0
+
+
+
+   
+
+
+
+
+
+
+   在python中训练:  
+
+Document &amp; Examples: https://github.com/BVLC/caffe/pull/1733 
+
+
+
+
+
+
+   核心code：
+
+
+
+$CAFFE/python/caffe/_caffe.cpp 
+
+定义Blob, Layer, Net, Solver类
+$CAFFE/python/caffe/pycaffe.py 
+
+Net类的增强功能
+
+
+
+
+
+   Debug：
+
+
+
+在Make.config中设置DEBUG := 1
+在solver.prototxt中设置debug_info: true
+在python/Matlab中察看forward &amp; backward一轮后weights的变化
+
+
+
+
+
+   经典文献： 
+
+[ DeCAF ] J. Donahue, Y. Jia, O. Vinyals, J. Hoffman, N. Zhang, E. Tzeng, and T. Darrell. Decaf: A deep convolutional activation feature for generic visual recognition. ICML, 2014. 
+
+[ R-CNN ] R. Girshick, J. Donahue, T. Darrell, and J. Malik. Rich feature hierarchies for accurate object detection and semantic segmentation. CVPR, 2014. 
+
+[ Zeiler-Fergus Visualizing] M. Zeiler and R. Fergus.  visualizing and understanding convolutional networks. ECCV, 2014. 
+
+[ LeNet ] Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner. Gradient-based learning applied to document recognition. IEEE, 1998. 
+
+[ AlexNet ] A. Krizhevsky, I. Sutskever, and G. Hinton. Imagenet classification with deep convolutional neural networks. NIPS, 2012. 
+
+[ OverFeat ] P. Sermanet, D. Eigen, X. Zhang, M. Mathieu, R. Fergus, and Y. LeCun. Overfeat: Integrated recognition, localization and detection using convolutional networks. ICLR, 2014. 
+
+[ Image-Style (Transfer learning) ] S. Karayev, M. Trentacoste, H. Han, A. Agarwala, T. Darrell, A. Hertzmann, H. Winnemoeller. Recognizing Image Style. BMVC, 2014. 
+
+[ Karpathy14 ] A. Karpathy, G. Toderici, S. Shetty, T. Leung, R. Sukthankar, and L. Fei-Fei. Large-scale video classification with convolutional neural networks. CVPR, 2014. 
+
+[ Sutskever13 ] I. Sutskever. Training Recurrent Neural Networks. PhD thesis, University of Toronto, 2013. 
+
+[ Chopra05 ] S. Chopra, R. Hadsell, and Y. LeCun. Learning  a similarity metric discriminatively, with application to face verification. CVPR, 2005.
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

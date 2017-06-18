@@ -1,0 +1,129 @@
+OpenCV基本数据类型Point_
+
+   
+[cpp]view plaincopy
+
+
+typedefPoint_&lt;int&gt;Point2i;typedefPoint2iPoint;typedefPoint_&lt;float&gt;Point2f;typedefPoint_&lt;double&gt;Point2d;
+Point3_
+   
+
+   
+[cpp]view plaincopy
+
+
+typedefPoint3_&lt;int&gt;Point3i;typedefPoint3_&lt;float&gt;Point3f;typedefPoint3_&lt;double&gt;Point3d;
+Size_
+   
+
+   
+[html]view plaincopy
+
+
+typedefSize_&lt;int&gt;Size2i;typedefSize2iSize;typedefSize_&lt;float&gt;Size2f;
+Rect_
+   
+
+   
+[cpp]view plaincopy
+
+
+typedefRect_&lt;int&gt;Rect;
+Matx
+   
+
+   
+[cpp]view plaincopy
+
+
+typedefMatx&lt;float,1,2&gt;Matx12f;typedefMatx&lt;double,1,2&gt;Matx12d;...
+Vec
+   
+
+   
+[cpp]view plaincopy
+
+
+typedefVec&lt;uchar,2&gt;Vec2b;typedefVec&lt;short,3&gt;Vec3s;typedefVec&lt;int,4&gt;Vec4i;typddefVec&lt;float,6&gt;Vec6i;...
+Scalar_
+   
+
+   
+[cpp]view plaincopy
+
+
+typedefScalar_&lt;double&gt;Scalar;
+Range
+   
+
+   
+[cpp]view plaincopy
+
+
+classRange{public:...intstart,end;};
+ex:取A的全部行，和 1到179列[cpp]view plaincopy
+
+
+MatA=imread(&quot;b.jpg&quot;,CV_LOAD_IMAGE_COLOR);MatB=A(Range::all(),Range(1,180));
+
+   
+
+   Mat
+
+   创建复杂的矩阵
+
+   
+[cpp]view plaincopy
+
+
+//makea7x7complexmatrixfilledwith1+3j.MatM(7,7,CV_32FC2,Scalar(1,3));//andnowturnMtoa100x6015-channel8-bitmatrix.//TheoldcontentwillbedeallocatedM.create(100,60,CV_8UC(15));
+多维数组
+   
+
+   
+[cpp]view plaincopy
+
+
+//createa100x100x1008-bitarrayintsz[]={100,100,100};MatbigCube(3,sz,CV_8U,Scalar::all(0));
+矩阵行操作
+   
+
+   
+[cpp]view plaincopy
+
+
+//addthe5-throw,multipliedby3tothe3rdrowM.row(3)=M.row(3)+M.row(5)*3;
+矩阵列操作
+   
+
+   
+[cpp]view plaincopy
+
+
+//nowcopythe7-thcolumntothe1-stcolumn//M.col(1)=M.col(7);//thiswillnotworkMatM1=M.col(1);M.col(7).copyTo(M1);
+locateROI使用
+   
+
+   
+[cpp]view plaincopy
+
+
+MatA=Mat::eye(10,10,CV_32S);//extractsAcolumns,1(inclusive)to3(exclusive).MatB=A(Range::all(),Range(1,3));//extractsBrows,5(inclusive)to9(exclusive).//thatis,C~A(Range(5,9),Range(1,3))MatC=B(Range(5,9),Range::all());Sizesize;Pointofs;C.locateROI(size,ofs);//sizewillbe(width=10,height=10)andtheofswillbe(x=1,y=5)
+矩阵元素访问：
+   
+
+   指针加[ ]
+
+   
+[cpp]view plaincopy
+
+
+intsum=0;MatM=Mat::eye(20,20,CV_8UC1);for(inti=0;i&lt;M.rows;i++){constuchar*mi=M.ptr&lt;uchar&gt;(i);for(intj=0;j&lt;M.cols;j++){sum+=mi[j];}}
+迭代
+   
+
+   
+[cpp]view plaincopy
+
+
+MatConstIterator_&lt;uchar&gt;it=M.begin&lt;uchar&gt;(),it_end=M.end&lt;uchar&gt;();for(;it!=it_end;++it)sum+=*it;

@@ -1,0 +1,131 @@
+再谈spring mvc中的root/child WebApplicationContext之前的博客介绍了spring mvc里childWebApplicationContext和rootApplicationContext的关系，以及获取方式。最近我遇到了一个问题：按照之前的博客，无法获取childWebApplicationContext。场景是这样的：spring
+ mvc只拦截特定路径的url，web.xml中配置如下：
+
+
+   &lt;servlet&gt;
+	&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+	&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+	&lt;init-param&gt;
+		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+		&lt;param-value&gt;/WEB-INF/spring/spring-dispatcher.xml&lt;/param-value&gt;
+	&lt;/init-param&gt;
+	&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+	&lt;servlet-name&gt;dispatcher&lt;/servlet-name&gt;
+	&lt;url-pattern&gt;/mvc/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+
+   
+
+
+   
+
+
+
+
+   项目还提供了一个外部的servlet，给别的子系统调用，这个servlet不在spring mvc拦截路径范围内。
+
+
+   &lt;servlet&gt;
+	&lt;servlet-name&gt;none&lt;/servlet-name&gt;
+	&lt;servlet-class&gt;net.aty.MyServlet&lt;/servlet-class&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+	&lt;servlet-name&gt;none&lt;/servlet-name&gt;
+	&lt;url-pattern&gt;/test.do&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+   public class MyServlet extends HttpServlet {
+
+	private static final long serialVersionUID = -2931357660081416782L;
+
+	@Override
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		WebApplicationContext context = (WebApplicationContext) request
+				.getAttribute(DispatcherServlet.WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+
+		System.out.println(&quot;context==null: &quot; + (context==null));//true
+	}
+
+}
+
+我们在这个servlet里面不能获取到spring mvc的WebApplicationContext。我猜测原因是：我们的请求没有经过spring拦截，spring没有将childWebApplicationContext塞入到request对象中。
+
+   
+
+
+   
+
+
+
+
+   目前没有想到特别好的解决方式，使用了spring框架的ApplicationContextAware接口，将其存到全局变量中。
+
+
+   @Controller
+public class FirstController implements ApplicationContextAware{
+
+	@Autowired
+	private MyService service;
+
+	@Autowired
+	private HttpServletRequest request;
+
+	@RequestMapping(&quot;/mvc/first/hello.do&quot;)
+	@ResponseBody
+	public String hello(@RequestParam(&quot;userName&quot;) String userName) {
+		return service.process(userName);
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		
+		System.out.println(&quot;...........&quot;);
+		
+		SpringMvcContextUtils.setApplicationContext(applicationContext);
+	}
+}
+   public class SpringMvcContextUtils {
+
+	private static volatile ApplicationContext applicationContext;
+
+	public static ApplicationContext getApplicationContext() {
+		return applicationContext;
+	}
+
+	public static void setApplicationContext(
+			ApplicationContext applicationContext) {
+		SpringMvcContextUtils.applicationContext = applicationContext;
+	}
+
+}
+
+   
+
+
+
+由于FirstController是由spring mvc加载的，它存在于childWebApplicationContext，所有我们使用ApplicationContextAware接口，获取到的就是child容器。
+
+   
+
+
+
+
+   这样在外部的servlet中就可以拿到child容器了：
+
+
+   public class MyServlet extends HttpServlet {
+
+	private static final long serialVersionUID = -2931357660081416782L;
+
+	@Override
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		ApplicationContext another = SpringMvcContextUtils.getApplicationContext();
+		
+	}
+}

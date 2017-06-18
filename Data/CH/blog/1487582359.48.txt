@@ -1,0 +1,161 @@
+hdu 1231 最大连续子序列最大连续子序列
+Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)
+
+Total Submission(s): 9289Accepted Submission(s): 3925
+
+
+
+
+Problem Description
+
+
+给定K个整数的序列{ N1, N2, ..., NK }，其任意连续子序列可表示为{ Ni, Ni&#43;1, ...,
+
+Nj }，其中 1 &lt;= i &lt;= j &lt;= K。最大连续子序列是所有连续子序列中元素和最大的一个，
+
+例如给定序列{ -2, 11, -4, 13, -5, -2 }，其最大连续子序列为{ 11, -4, 13 }，最大和
+
+为20。
+
+在今年的数据结构考卷中，要求编写程序得到最大和，现在增加一个要求，即还需要输出该
+
+子序列的第一个和最后一个元素。
+
+
+
+
+
+
+
+
+Input
+
+
+测试输入包含若干测试用例，每个测试用例占2行，第1行给出正整数K( &lt; 10000 )，第2行给出K个整数，中间用空&#26684;分隔。当K为0时，输入结束，该用例不被处理。
+
+
+
+
+
+
+
+
+Output
+
+
+对每个测试用例，在1行里输出最大和、最大连续子序列的第一个和最后一个元
+
+素，中间用空&#26684;分隔。如果最大连续子序列不唯一，则输出序号i和j最小的那个（如输入样例的第2、3组）。若所有K个元素都是负数，则定义其最大和为0，输出整个序列的首尾元素。
+
+
+
+
+
+
+
+
+Sample Input
+
+
+
+   6
+-2 11 -4 13 -5 -2
+10
+-10 1 2 3 4 -5 -23 3 7 -21
+6
+5 -8 3 2 5 0
+1
+10
+3
+-1 -5 -2
+3
+-1 0 -2
+0
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   20 11 13
+10 1 4
+10 3 5
+10 10 10
+0 -1 -2
+0 0 0
+
+Hint
+Hint
+ 
+Huge input, scanf is recommended.
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生复试上机考试-2005年
+
+
+   
+
+
+   
+
+
+
+
+   
+   #include &quot;iostream&quot;  
+#include &quot;stdio.h&quot;  
+#include &quot;math.h&quot;  
+#include &quot;vector&quot;  
+#include &quot;queue&quot;  
+#include &quot;memory.h&quot;  
+#include &quot;algorithm&quot;  
+#include &quot;string&quot;  
+using namespace std;  
+#define max(a,b) a&gt;b?a:b
+#define min(a,b) a&lt;b?a:b
+
+int n;
+int a[10010];
+
+int main()
+{
+    while(scanf(&quot;%d&quot;,&amp;n)!=EOF&amp;&amp;n)
+    {
+ int i,j=0,tmp=0,sum=0,maxx=-1,s=0,e=n-1;
+ for(i=0;i&lt;n;i++)
+     scanf(&quot;%d&quot;,&amp;a[i]);
+ for(i=0;i&lt;n;i++)
+ {
+     tmp+=a[i];
+     if(tmp&gt;maxx)
+     {
+ s=j;
+ e=i;
+ maxx=tmp;
+     }
+     else if(tmp&lt;0)
+     {
+ j=i+1;
+ tmp=0;
+     }
+ }
+ if(maxx&lt;0)
+    maxx=0;
+ printf(&quot;%d %d %d\n&quot;,maxx,a[s],a[e]);
+    }
+}

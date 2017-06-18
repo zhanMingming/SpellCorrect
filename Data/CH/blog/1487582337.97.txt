@@ -1,0 +1,55 @@
+MFC opencv 中恢复图像（重新加载）CXXXDOC中显示图片:
+
+
+   
+   BOOL CCVMFCDoc::Load(IplImage** pp, LPCTSTR csFilename)
+{
+	IplImage* pImg=NULL;
+
+	pImg = cvLoadImage(csFilename,-1);      //  读图像文件(DSCV)
+	if (!pImg) return(false);
+	cvFlip(pImg);      //  与 DIB 像素结构一致
+	if (*pp) {
+		cvReleaseImage(pp);
+	}
+	(*pp)=pImg;
+	m_Display=0;
+	return(true);
+}
+
+BOOL CCVMFCDoc::Save(LPCTSTR csFilename, IplImage* pImg)
+{
+	int   bl;
+	cvFlip(pImg);      //  恢复原 OpenCV 位图结构
+	bl=cvSaveImage(csFilename,pImg); //  图像存盘
+	return(bl);
+}
+
+BOOL CCVMFCDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+	if(!CDocument::OnOpenDocument(lpszPathName))	return false;
+	Load(&amp;pImg,lpszPathName);
+	if(pImg) return true;
+	return false;
+}
+
+
+CXXXView中刷新图片：
+
+
+   
+   void CCVMFCView::OnColorImageRefresh()
+{
+	CCVMFCDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc-&gt;m_Display=0;
+	Invalidate();
+}
+
+
+   CCVMFCDoc* CCVMFCView::GetDocument() const // 非调试版本是内联的
+{
+	ASSERT(m_pDocument-&gt;IsKindOf(RUNTIME_CLASS(CCVMFCDoc)));
+	return (CCVMFCDoc*)m_pDocument;
+}
+#endif //_DEBUG

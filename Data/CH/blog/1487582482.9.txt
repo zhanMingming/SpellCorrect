@@ -1,0 +1,244 @@
+枚举串口端口串口作为最基本的电脑通信 I/O 接口，其使用虽然在 PC 
+上越来越少，但是在工业仪器领域仍然用的相当普遍，由于笔者工作中需要用到串口，而且发现枚举串口至今仍未搞得很清楚，为此自己先整理下，希望大侠和同行
+们对我不懂和错误的地方指点一下。 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+   
+
+1 、查询注册表
+
+查询注册表的方法是网上见到的比较常见的方法，该方法就是使用编程方法读取注册表内信息，相当于用户通过在运行框内输入 &rdquo;regedit&rdquo; （或 regedit32 ）直接打开注册表，查看&ldquo; 
+
+HKEY_LOCAL_MACHINE/HARDWARE/DEVICEMAP/SERIALCOMM &rdquo;项来获取串口信息。以下是源代码：
+
+CString strSerialList[256]; // 临时定义 256 个字符串组，因为系统最多也就 256 个
+
+HKEY hKey;
+
+LPCTSTR data_Set=&quot;HARDWARE//DEVICEMAP//SERIALCOMM//&quot;;
+
+long ret0 = (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, data_Set, 0, KEY_READ, &amp;hKey));
+
+if(ret0 != ERROR_SUCCESS)
+
+{
+
+return -1;
+
+}
+
+int i = 0;
+
+CHAR Name[25];
+
+UCHAR szPortName[25];
+
+LONG Status;
+
+DWORD dwIndex = 0;
+
+DWORD dwName;
+
+DWORD dwSizeofPortName;
+
+DWORD Type;
+
+dwName = sizeof(Name);
+
+dwSizeofPortName = sizeof(szPortName);
+
+do
+
+{
+
+Status = RegEnumValue(hKey, dwIndex++, Name, &amp;dwName, NULL, &amp;Type,
+
+ szPortName, &amp;dwSizeofPortName);
+
+if((Status == ERROR_SUCCESS)||(Status == ERROR_MORE_DATA))
+
+{
+
+strSerialList[i] = CString(szPortName); // 串口字符串保存
+
+i++;// 串口计数
+
+ }
+
+} while((Status == ERROR_SUCCESS)||(Status == ERROR_MORE_DATA));
+
+RegCloseKey(hKey);
+
+以上方法同样也可以实现对并口的查询，只要将 &quot;HARDWARE // DEVICEMAP// SERIALCOMM//&quot; 用 &quot;HARDWARE//DEVICEMAP//PARALLEL PORTS//&quot; 代替就行了。
+
+比较：该方法时间最省，笔者在自己电脑上试过，在 1ms （少于 1ms 的我也不知道怎么编程计时）内即可完成；同时也可解决 usb 转串口设备的问题，比较实用，唯一缺点是，
+
+如果用户在装某些软硬件时在注册表中注册了虚拟串口之类的，用此法枚举得到的该类串口实际上是不能当串口用的。
+
+
+
+2 、使用 EnumPort 方法
+
+该方法调用 EnumPort （） API 函数，该函数本身就是枚举电脑端口用的，它枚举的并非只有串口，所以必须对其所得串口进行分析选择，以下是源代码：
+
+ int m_nSerialPortNum(0);// 串口计数
+
+ CString strSerialList[256]; // 临时定义 256 个字符串组
+
+ LPBYTE pBite = NULL;
+
+ DWORD pcbNeeded = 0; // bytes received or required
+
+ DWORD pcReturned = 0; // number of ports received
+
+ m_nSerialPortNum = 0;
+
+ // 获取端口信息，能得到端口信息的大小 pcbNeeded
+
+ EnumPorts(NULL, 2, pBite, 0, &amp;pcbNeeded, &amp;pcReturned);
+
+ pBite = new BYTE[pcbNeeded];
+
+ // 枚举端口，能得到端口的具体信息 pBite 以及端口的的个数 pcReturned
+
+ EnumPorts(NULL, 2, pBite, pcbNeeded, &amp;pcbNeeded, &amp;pcReturned);
+
+ PORT_INFO_2 *pPort;
+
+ pPort = (PORT_INFO_2*)pBite;
+
+ for ( i = 0; i &lt; pcReturned; i++)
+
+ {
+
+ CString str = pPort[i].pPortName;
+
+ // 串口信息的具体确定
+
+ if (str.Left(3) == &quot;COM&quot;)
+
+ { 
+
+ strSerialList[m_nSerialPortNum] = str.Left(strlen(str) - 1);
+
+ //CString temp = str.Right(strlen(str) - 3);// 下面两行注释获取串口序号用
+
+ //m_nSerialPortNo[m_nSerialPortNum] = atoi(temp.Left(strlen(temp) - 1));
+
+ m_nSerialPortNum++; 
+
+ }
+
+ }
+
+以上方法除了串口，还可以枚举所有的并口和打印机等接口，而且能找到虚拟串口（这些串口有些未使用时，在注册表和硬件设备管理器中是不能取得的）。但是该方法稍微耗
+
+时些，笔者在自己电脑上试过，大概需要几十 ms ，主要问题是该方法有些 usb 串口并不能查到，所以该方法并不可靠。
+
+
+
+3 、依次打开串口的方法
+
+该方法就是中规中矩的依次打开串口，看打开是否成功来判断串口的有无，该方法源代码如下：
+
+ int m_nSerialPortNum(0);// 串口数
+
+ CString strSerialList[256]; // 临时定义 30 个字符串组
+
+ int nCom = 0;
+
+ int count = 0;
+
+ HANDLE hCom;
+
+ do {
+
+ nCom++;
+
+ strCom.Format(&quot;COM%d&quot;, nCom);
+
+ hCom = CreateFile(strCom, 0, 0, 0,
+
+ OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+ if(INVALID_HANDLE_VALUE == hCom )
+
+ break;
+
+ strSerialList[m_nSerialPortNum] = strCom;
+
+ m_nSerialPortNum++; 
+
+ CloseHandle(hCom);
+
+ } while(1);
+
+以上方法枚举的都是当前可用的串口，如果有一个串口当前被占用则其后的串口也将无法枚举得到，当然以上方法也可以改成调用 for 循环让其枚举打开 256 个串口的方法以避免
+
+上述情况，不过该方法比前两种更耗时（一般查找一个串口就要 15ms 左右），不过可以枚举得到所有当前可打开的串口，当然不能枚举得到一些虚拟串口。
+
+
+
+4 、使用 SetupAPI 函数集的方法
+
+此种方法是我所见过最简单的方法，之所以简单是因为已经有人将复杂的代码封装起来了，我只需像傻子一样调用就可以完成工作了，具体的说明请看 
+
+http://www.codeguru.com/Cpp/W-P/system/hardwareinformation/article.php/c5721/ ，下面给出本人调用该方法的例子代码：
+
+ int m_nSerialPortNum(0);// 串口计数
+
+ CString strSerialList[256]; // 临时定义 256 个字符串组
+
+ CArray&lt;SSerInfo,SSerInfo&amp;&gt; asi;
+
+ EnumSerialPorts(asi,TRUE);// 参数为 TRUE 时枚举当前可以打开的串口，
+// 否则枚举所有串口
+
+ m_nSerialPortNum = asi.GetSize();
+
+ for (int i=0; i&lt;asi.GetSize(); i++)
+
+ {
+
+ CString str = asi[i].strFrien dlyName;
+
+ }
+
+补充说明一下，使用该方法只要在你的程序中，添加&ldquo; EnumSerial.cpp &rdquo;和&ldquo; EnumSerial.h &rdquo;两个文件，并且将 Setupapi.lib 包含进你的工程文件中就行了，该方法时间上来说可能和第三种
+
+方法差不多，但该方法获取的串口完完全全就是硬件设备管理器中的串口。

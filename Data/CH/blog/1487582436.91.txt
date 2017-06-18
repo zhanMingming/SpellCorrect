@@ -1,0 +1,69 @@
+Murder in RestaurantMurder in Restaurant
+
+
+
+   Time Limit: 1 Second  Memory Limit: 32768 KB 
+
+
+
+   Murder in closet happened again in a small restaurant and Conan went there to collect evidence with Kogoro. After they reached the restaurant, they got a list of renters that lived in this restaurant recently. Yet the list was so long that they couldn't get the useful information from it. As an assistant of Conan, you must have been ready to help him to get the information on which rooms the renters have lived in. 
+
+
+   Input
+
+
+   There are no more than 20 test cases. The first line of each test case contains two integers n and m, indicating the number of renters and the rooms of the restaurant (0 &lt; n, m &lt;= 100). The i-th line of the next n lines contains two integers t1 and t2, the day when they wanted to check in and to leave (0 &lt; t1 &lt; t2 &lt;= 1000). 
+
+
+   Each renter rends exactly one room and their check-in days are distinct. Each time a renter came, the owner would give him/her an available room with minimum room number if there were still empty rooms. Otherwise the renter would leave at once and never come back again. Note that rooms are always returned in morning and rented in afternoon. The input is ended with two zeroes. 
+
+
+   Output
+
+
+   For each test case, output n lines of integers. The i-th integer indicates the room number of the i-th renter. The rooms are numbered from 1. If someone didn't live in this restaurant, output 0 in the corresponding line. 
+
+
+   Sample Input
+
+
+   
+
+
+   2 5
+1 3
+2 4
+4 2
+1 5
+2 3
+3 5
+4 5
+0 0
+
+
+   
+
+
+   Sample Output
+
+
+   
+
+
+   1
+2
+1
+2
+2
+0
+
+
+   模拟题，但是&hellip;&hellip;应该说题意没有理解清楚吧&hellip;&hellip;这个题的意思是所有人的信息输入之后,将入住时间排序,然后一次性输出所有人的住房信息!
+
+   而不是说进去一个人就输出一个人&hellip;&hellip;
+
+   1、按入住时间排序
+
+   2、for循环比较，看是否能住进去
+
+   3、按人的id排序，依次输出

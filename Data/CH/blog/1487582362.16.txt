@@ -1,0 +1,202 @@
+hdu 1878 欧拉回路/************************************************************************/
+/* hdu 1878
+欧拉回路
+
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 32768/32768 K (Java/Others)
+Total Submission(s): 5934    Accepted Submission(s): 2034
+
+
+Problem Description
+欧拉回路是指不令笔离开纸面，可画过图中每条边仅一次，且可以回到起点的一条回路。现给定一个图，问是否存在欧拉回路？
+
+
+Input
+测试输入包含若干测试用例。每个测试用例的第1行给出两个正整数，分别是节点数N ( 1 &lt; N &lt; 1000 )和边数M；随后的M行对应M条边，每行给出一对正整数，分别是该条边直接连通的两个节点的编号（节点从1到N编号）。当N为0时输入结
+束。
+
+
+Output
+每个测试用例的输出占一行，若欧拉回路存在则输出1，否则输出0。
+
+
+Sample Input
+3 3
+1 2
+1 3
+2 3
+3 2
+1 2
+2 3
+0
+
+
+Sample Output
+1
+0
+
+
+Author
+ZJU
+
+
+Source
+浙大计算机研究生复试上机考试-2008年*/
+/************************************************************************/
+
+//Think: 连通图-度数都为偶数
+//判断连通：法一、Dfs
+#include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 1005
+
+int deg[N];
+bool used[N];
+vector&lt;int&gt; edge[N];
+
+void Dfs(int point)
+{
+	int i,j,p;
+	used[point]=true;
+	for(i=0;i&lt;edge[point].size();i++)
+	{
+		p=edge[point][i];
+		if(!used[p])
+			Dfs(p);
+	}
+}
+
+int main()
+{
+	int n,m,i,j,a,b;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF&amp;&amp;n)
+	{
+		scanf(&quot;%d&quot;,&amp;m);
+		for(i=1;i&lt;=n;i++)
+		{
+			deg[i]=0;
+			edge[i].clear();//千万别忘了
+		}		
+		while(m--)
+		{
+			scanf(&quot;%d%d&quot;,&amp;a,&amp;b);
+			if(a!=b)
+			{
+				edge[a].push_back(b);
+				edge[b].push_back(a);
+				deg[a]++,deg[b]++;
+			}
+		}
+		bool flag=true;
+		for(i=1;i&lt;=n;i++)
+			if(deg[i]%2)
+			{
+				printf(&quot;0\n&quot;);
+				flag=false;
+				break;
+			}
+
+			if(!flag)
+				continue;
+
+			memset(used,false,sizeof(used));
+			Dfs(1);
+
+			for (i=1;i&lt;=n;i++)
+			{
+				if(!used[i])
+				{
+					flag=false;
+					break;
+				}
+			}
+			if(flag)
+				printf(&quot;1\n&quot;);
+			else 
+				printf(&quot;0\n&quot;);
+	}
+}
+
+//判断连通：法二、并查集
+
+#include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 1005
+
+int deg[N];
+vector&lt;int&gt; edge[N];
+int father[N];
+
+int cha(int x)
+{
+	while(x!=father[x])
+		x=father[x];
+	return x;
+}
+void bing(int a,int b)
+{
+	father[b]=cha(a);
+}
+
+int main()
+{
+	int n,m,i,j,a,b;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF&amp;&amp;n)
+	{
+		scanf(&quot;%d&quot;,&amp;m);
+		for(i=1;i&lt;=n;i++)
+		{
+			deg[i]=0;
+			edge[i].clear();//千万别忘了
+			father[i]=i;
+		}		
+		while(m--)
+		{
+			scanf(&quot;%d%d&quot;,&amp;a,&amp;b);
+			if(a!=b)
+			{
+				edge[a].push_back(b);
+				edge[b].push_back(a);
+				deg[a]++,deg[b]++;
+				if(cha(a)!=cha(b))
+					bing(a,b);
+			}
+		}
+		bool flag=true;
+		for(i=1;i&lt;=n;i++)
+			if(deg[i]%2)
+			{
+				printf(&quot;0\n&quot;);
+				flag=false;
+				break;
+			}
+
+			if(!flag)
+				continue;
+
+			int x=father[1];
+			for (i=2;i&lt;=n;i++)
+			{
+				if(cha(i)!=x)
+				{
+					flag=false;
+					break;
+				}
+			}
+			if(flag)
+				printf(&quot;1\n&quot;);
+			else 
+				printf(&quot;0\n&quot;);
+	}
+}

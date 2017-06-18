@@ -1,0 +1,88 @@
+关于搜索引擎索引文件的一些介绍在搜索引擎的技术中，索引是一项很复杂的技术，索引文件具有以下特点：
+
+
+   （1）文件异常大，一般都是TB级别的文件。
+
+
+   （2）文件只读不写，索引仅仅用来查询，只有只读操作。
+
+
+   （3）索引文件的更换并不频繁。
+
+
+   （4）文件需要快速读取
+
+
+   
+
+
+   首先我们希望索引文件具有以下性质
+
+
+   （1）索引文件在磁盘上尽可能连续存放
+
+
+    索引文件随机读的部分基本都在内存中，倒排表在磁盘中，倒排表均为顺序存放，因此索引文件可以看做是顺序读的情况。
+
+
+   一个大文件即便是顺序地访问，但由于文件系统在分配是分配在不同的磁盘块中，也会导致看上去顺序的访问，其实是随机访问，磁盘的寻道时间不可避免，磁盘读取的优化，例如缓存，预取等都无法享受到。关于预取可以参考下面的推荐阅读。
+
+
+   ext2文件系统有限的支持了continuous block的功能，能够尽可能的将文件分配在一个group中，但是对于索引文件这个大家伙来说，价值有限。
+
+
+    因此，索引文件可以考虑存放在裸设备上，据了解oracle在使用裸设备作为存储介质，性能提升50%。相关内容参考推荐阅读。
+
+
+   
+
+
+   （2）索引文件的制作代价可控，出错可弥补
+
+
+    过大的索引文件，访问效率不高，且重建代价高，如果数据异常重做代价高。
+
+
+    因此索引分层，索引分段的制作是非常必要的。
+
+
+    
+
+
+   （3）索引文件能够支持快速读取（随机读，顺序读）
+
+
+    通常采用mmap的方式进行读取。
+
+
+   
+
+
+   文件碎片（空洞文件）的介绍：http://en.wikipedia.org/wiki/File_system_fragmentation
+
+
+   ftruncate函数的说明：http://opengroup.org/onlinepubs/007908799/xsh/ftruncate.html
+
+
+   Sparse file（稀疏文件，和空洞文件时一回事）:http://en.wikipedia.org/wiki/Sparse%5Ffile
+
+
+   文件预取：http://linux.chinaunix.net/techdoc/system/2008/09/13/1032255.shtml
+
+
+   ext2文件系统的设计原理：http://frankdrews.com/public_filetree/cs458_558_SQ03/studentpapers/patelhimanshu.pdf
+
+
+   http://e2fsprogs.sourceforge.net/extensions-ext23/
+
+
+   oracle使用裸设备的性能提升50%：http://www.remote-dba.net/t_oracle_9i_administration_26_disk_raw_devices.htm
+
+
+   C++读取mmap提速测试：http://www.byvoid.com/blog/fast-readfile/
+
+
+   AIO（异步IO）相关http://www.ibm.com/developerworks/cn/linux/l-async/
+
+
+   文件大规模写入调优：http://www.westnet.com/~gsmith/content/linux-pdflush.htm

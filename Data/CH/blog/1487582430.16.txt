@@ -1,0 +1,104 @@
+窗体事件的处理程序here I'll just show some simple examples&hellip;&hellip;
+
+
+   
+
+
+   create a 窗体应用程序：
+
+
+   
+
+
+   then write its code:
+
+
+   
+
+
+   （为treeview 添加子节点）
+
+
+   
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace test1
+{
+    public partial class Form1 : Form
+    {
+ public Form1()
+ {
+     InitializeComponent();
+ }
+
+ private void Form1_Load(object sender, EventArgs e)
+ {
+   //  result.DialogResult = DialogResult.Yes;
+ }
+
+ private void result_Click(object sender, EventArgs e)
+ {
+     /*   double i = double.Parse(add1.Text) + double.Parse(add2.Text);
+    res.Text = i.ToString();*/     
+    
+     res.Text= Convert.ToString( Convert.ToDouble(add1.Text) + Convert.ToDouble(add2.Text));
+     //以上两种写法都可以实现相加
+    Close();
+ }
+
+ private void Form1_MouseClick(object sender, MouseEventArgs e)
+ {
+     MessageBox.Show("YES!");
+ }
+
+ private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+ {
+ }
+
+ private void Add_Click(object sender, EventArgs e)
+ {
+     //node.Text
+     /*
+     TreeNode mynode = new TreeNode(node.Text);
+     treeView1.Nodes.Add(mynode);
+      * */
+
+     //  treeView1.Nodes[treeView1.SelectedNode.Index].Nodes.Add(node.Text);   
+     //treeView1.SelectedNode.Index只判断当前层的几号节点，不会判断选中的是第几层
+     //也就是说只能给最外层的root添加节点
+
+     //MessageBox.Show(treeView1.SelectedNode.Nodes.Count.ToString());
+     //表示一个节点的child个数
+
+     //MessageBox.Show(treeView1.GetNodeCount(true).ToString());
+     //return the number of nodes all
+
+      treeView1.SelectedNode.Nodes.Add(node.Text);
+     //能给任一root或child添加子节点
+ }
+
+ private void Click_Node(object sender, TreeNodeMouseClickEventArgs e)
+ {
+     
+ }
+    }
+}
+ 
+
+
+   
+
+
+   
+
+
+   其中treeview的用法值得记录！

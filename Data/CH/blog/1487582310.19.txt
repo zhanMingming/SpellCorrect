@@ -1,0 +1,944 @@
+Python进阶（三）——Python语法近几年来，随着Google、YouTube、IRobot等大公司对Python语言的广泛使用，Python公司的身影经常出现与我们的视线，Python语言也在软件质量、开发效率、程序的可移植性、标准库的支持等方面成为了一个优秀的程序开发语言，可以完成网站、游戏开发到航空航天控制等领域的各种任务。本栏目希望通过学习《Python学习手册》和网站上的相关指导，从零学习Python，希望对大家有一些帮助。
+
+
+   
+本栏目开发环境：Windows 7 &#43; Python 2.7.2 &#43; VS2008（以后集成）
+
+
+   
+
+
+
+
+
+   
+
+
+
+   
+Python进阶（三）——Python语法
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+之前在第二章，Python对象类型时，我们已经讲过了python中基本类型，并用一些例子说明，大家应该已经对Python的语法有了基本了解，本章就不多讲赋&#20540;、表达式和打印的语法了，针对if测试、while和for循环、以及文档三部分做出具体讲解。
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+第一节、if测试
+
+   
+
+
+   
+  if测试的一般形式：
+
+
+   
+
+
+
+
+
+   
+if-elif-else语法举例（Python中的多路分支）：
+
+
+   
+
+
+
+   myname='Sophia'
+if myname=='Jane':
+ 	print &quot;The is the first sister&quot;
+elif myname=='Ella':
+    print'This is the second sister'
+else:
+    print 'This is Sophia'
+     
+
+
+   
+python的代码块分隔符：
+
+
+   x=1
+if x:
+    y=2
+    if y:
+ print'block2'
+    print'block1'
+print 'block0'
+
+
+
+   
+以上面这段代码为例，包含三个模块：第一个完全没有缩进，第二个缩进四&#26684;，第三个缩进八&#26684;，这里注意，python不在乎你怎么缩进代码。只在乎缩进是否一致！！！由此我们终于可以知道了，为什么if不需要C&#43;&#43;中{}的约束，也不需要matlab中类&#20284;endif的约束了，因为它需要的知识相同缩进。相对应的，如果你硬要在if外面加个大括号反倒有语法错误了！
+
+
+   
+
+
+
+
+
+   
+
+
+
+可以横跨数行的语法：
+有两种语法可以使用后横跨数行仍保持是一条语句：一个是语法括号对 ( ) [ ] { }，另一种是上一章中讲过的三个引号，相当于HTML中的&lt;pre&gt;，想起来了吗？
+
+
+
+
+另外在做语句判定时，我们不得不讲的是逻辑真&#20540;判定，这里有三个操作：and or not
+
+
+
+   
+
+
+   
+我们来看些例子：
+
+
+   
+
+
+
+   1 and 2
+2
+&gt;&gt;&gt; 1 and 0
+0
+&gt;&gt;&gt; 0 and 1
+0
+&gt;&gt;&gt; 5 and 6
+6
+&gt;&gt;&gt; 6 and 5
+5
+&gt;&gt;&gt; 1&lt;2 and 2&gt;3
+False
+&gt;&gt;&gt; 1&lt;2 and 2&lt;3
+True
+&gt;&gt;&gt; 1&lt;2 , 2&gt;3
+(True, False)
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 2 or 3, 3 or 2, 1 or 0, 0 or 0  #return left operand if true
+(2, 3, 1, 0)
+&gt;&gt;&gt; 2 and 3, 3 and 2, 1 and 0, 0 and 1 #return left operand if false
+(3, 2, 0, 0)
+
+   
+
+
+
+
+
+   
+最后，总结一下本小结的知识要点，答案都在上面，请大家自行练习：
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+第二节、while和for循环
+
+
+
+   
+
+
+   1. while循环
+
+
+   while循环的一般&#26684;式：
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+for example:
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+break，continue，pass，else：
+
+break：跳出循环；
+
+
+continue：跳到循环的首行；
+
+
+pass：什么都不做，空占位（比如现在只占个位子，以后再写内容）；
+
+
+else：循环正常离开后执行；
+
+
+   
+
+
+   
+举个例子：
+
+
+   
+
+
+
+   def fun1():
+    print 'run fun1'
+
+def fun2():
+    print 'run fun2'
+
+
+x='Sophia'
+while x:
+    if len(x)%2:
+ fun1()
+    else:
+ fun2()
+    x=x[1:]
+    if len(x)&lt;=1:
+ break
+
+print'end'
+    
+
+
+运行结果：
+
+   
+
+
+   
+
+
+
+   run fun2
+run fun1
+run fun2
+run fun1
+run fun2
+end
+
+   
+
+
+
+
+
+   
+2. for循环
+
+
+
+
+   
+for循环的一般语法：
+
+
+   
+
+
+
+
+
+   
+example1:
+
+
+   
+
+
+
+   sum = 0
+for x in [1,2,3,4]:
+    sum = sum+x;
+print sum
+
+
+S=('Sophia','test','prog')
+for x in S:
+    print x,
+
+
+结果：
+
+   
+
+
+   
+
+
+
+   &gt;&gt;&gt; 
+10
+Sophia test prog
+
+
+
+
+   
+
+
+   
+example2：
+
+
+   
+
+
+
+   a = []
+for i in range(10):
+    a.append(i)
+print a
+
+S='Sophia'
+b=[]
+i=0
+while i&lt;len(S):
+    b.append(S[i])
+    i+=1
+
+print b
+
+i=0
+for j in range(1,len(S)-1):
+    if b[j]&lt;b[j-1]:
+ print a[i]
+    i+=1
+     
+
+
+结果：
+
+   
+
+
+   
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+['S', 'o', 'p', 'h', 'i', 'a']
+
+2
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+嵌套循环：
+
+   
+
+
+   
+
+
+
+   s1=[1,2]
+s2='scam'
+
+res=[]
+
+for x in s1:
+    for x in s2:
+ res.append(x)
+
+
+print res
+
+
+
+
+
+   
+
+
+   
+结果：
+
+
+
+
+   
+['s', 'c', 'a', 'm', 's', 'c', 'a', 'm']
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+现在我们引入python中文件打开的方式，首先说下暴力方式：
+
+原文：t1.py
+
+
+
+   x=1
+if x:
+    y=2
+    if y:
+ print'block2'
+    print'block1'
+print 'block0'
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+for循环进行文件迭代：
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+这就是传说中的文件迭代器，当然还存在其他的迭代器，比如字典有字典的迭代器，如上一节中所讲:
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+循环计数器：range
+
+   
+
+
+   
+range常用在for循环中产生索引，也可以用在需要整数列表的任何地方：
+
+
+   
+&gt;&gt;&gt; range(5),range(2,5),range(0,10,2)
+
+([0, 1, 2, 3, 4], [2, 3, 4], [0, 2, 4, 6, 8])
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+非完全遍历：
+
+   
+
+
+   
+
+
+
+   &gt;&gt;&gt; S='Sophia'
+&gt;&gt;&gt; range(0,len(S),2)
+[0, 2, 4]
+&gt;&gt;&gt; for i in range(0,len(S),2):
+	print S[i]
+
+	
+S
+p
+i
+
+
+
+
+   
+
+
+   
+
+
+
+并行遍历：zip和map
+
+   
+zip创建配对后元组列表：
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+map与zip的唯一不同是，map用类&#20284;的方法把序列的元素配对后，为较短的序列以None补齐。
+
+
+   
+另外还可以用zip构造字典：
+
+
+   
+
+
+
+   keys = ['a','b','c']
+vals = [1,2,3]
+
+
+Dic={}
+for (k,v) in zip(keys,vals):
+    Dic[k]=v
+
+    
+
+
+结果：
+
+   
+
+
+   
+&gt;&gt;&gt;Dic
+
+
+   
+{'a': 1, 'c': 3, 'b': 2}
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+偏移元素：enumerate
+
+   
+
+
+   
+
+
+
+   S = 'Spam'
+offset=0
+for item in S:
+    print item, 'appears at offset', offset
+    offset+=1
+    
+#same function can be realized by enumerate:
+
+E = enumerate(S)
+print E.next()
+print E.next()
+print E.next()
+print E.next()
+
+
+
+
+
+   
+
+
+   
+结果：
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+enumerate函数返回一个生成器对象，该对象有一个next方法，每次列表遍历时，会返回一个（index，value）的元组。
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+第三节、文档
+
+
+   
+
+
+
+
+
+   
+之前有朋友一直在问，Python的语法即便非常清晰，其预置功能数量依然惊人：内置函数和异常、预定义对象属性和方法、标准库模块等。我们之前只谈到了皮毛而已，那么困扰初学者的问题来了：怎样找到这些内置工具呢？本节提供了一些python可用的文档资源。
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+表1. python文档资源
+
+
+   
+
+
+
+
+
+   
+#注释、dir函数和help函数之前我们已讲过，不予赘述，这里我们来看看其他几项。
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+__doc__是自动附加在对象上的文档，而且在运行时还可保存查看（类&#20284;#），从语法上来说，这类注释是写成字符串，放在模块文件、函数积累语句的顶端，在任何可执行代码前的。python会自动封装这个字符串。PyDoc：HTML报表：PyDoc提供的GUI接口可以将报表通过HTML网页&#26684;式来呈现。标准手册集：ActivePython27.chm（不同版本有不同名称）
+
+
+
+   
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+最后呢，还要给大家奉送上一些常见陷阱：
+
+
+   
+
+
+
+不要忘记冒号从第一行开始写程序空白行在交互模式提示符下非常significant
+
+模块文件中的空白行都会被忽略，但是交互模式下输入空白行会结束语句。
+
+
+同一模块内缩进一致不要尝试在Python中写C代码，比如if (x==1)：其实语法上没关系，但是是多余的，另外语句后不要打分号推荐使用简单的for循环，而不是while和range。因为for循环速度比较快，有时比等效的while快两倍
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=====================================================
+
+小结
+
+本章讲述了Python语法，主要是if条件判定，while/for循环和一些帮助文档，希望大家有所收获，下一张将针对Python函数进行讲解。后面将更加注重Python的科学计算方面。
+
+
+   
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+
+   
+关于Python更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

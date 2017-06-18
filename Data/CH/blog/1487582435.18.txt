@@ -1,0 +1,223 @@
+Attack of Panda Virusrules: 
+
+
+The virus can only spread along the network from the already infected computers to the clean ones. 
+If a computer has already been infected by one virus variation, it will never be infected by another variation. 
+The transmission capacity of the Panda Virus will increase each day. In day 1, the virus only infects computers with a defense level 1 provided the virus can spread to that computer, however, a computer with a defense level &gt;1 will stop the transmission along that path. In day D, it can spread to all the computers connected with a defense level &lt;=D, provided that the transmission is not stopped by a computer with a defense level &gt; D along the path. 
+Within one day, the virus variation of type 1 would spread first and infects all the computers it can reach. And then the virus variation of type 2, then type 3, etc. 
+
+
+   The following samples show the infection process described above: 
+
+
+   At the beginning, only 2 computers were infected: 
+
+
+   1 0 0 00 0 0 20 0 0 0
+
+
+   In day 1:
+
+
+   1 0 0 00 0 0 20 0 2 2
+
+
+   In day 2:
+
+
+   1 0 1 01 1 1 20 1 2 2
+
+
+   In day 3:
+
+
+   1 1 1 11 1 1 21 1 2 2
+
+
+   So at last, all the computers in the networks were infected by virus. 
+
+
+   Your task is to calculate after all the computers are infected, how many computers are infected with some specific virus variations. 
+
+
+   Input
+
+
+   The input contains multiple test cases! 
+
+
+   On the first line of each test case are two integers M and N (1 &lt;= M, N &lt;= 500), followed by a M * N matrix. A positive integer T in the matrix indicates that the corresponding computer had already been infected by the virus variations of type T at the beginning while a negative integer -L indicates that the computer has a defense level L. Then there is an integer Q indicating the number of queries. Each of the following Q lines has an integer which is the virus variation type we care.
+
+
+   Output
+
+
+   For each query of the input, output an integer in a single line which indicates the number of computers attacked by this type of virus variation. 
+
+
+   Sample Input
+
+
+   3 41 -3 -2 -3-2 -1 -2 2-3 -2 -1 -1212
+
+
+   Sample Output
+
+
+   93
+
+
+
+   Author: XUE, ZaiyueSource: Zhejiang Provincial Programming Contest 2007
+
+Submit  Status
+
+
+
+
+
+   
+
+
+   /*
+Attack of Panda Virus：
+
+Input
+
+The input contains multiple test cases! 
+
+On the first line of each test case are two integers M and N (1 &lt;= M, N &lt;= 500), followed by a M * N matrix. A positive integer T in the matrix indicates that the corresponding computer had already been infected by the virus variations of type T at the beginning while a negative integer -L indicates that the computer has a defense level L. Then there is an integer Q indicating the number of queries. Each of the following Q lines has an integer which is the virus variation type we care.
+
+Output
+
+For each query of the input, output an integer in a single line which indicates the number of computers attacked by this type of virus variation. 
+
+Sample Input
+
+3 4
+1 -3 -2 -3
+-2 -1 -2 2
+-3 -2 -1 -1
+2
+1
+2
+
+Sample Output
+
+9
+3
+
+*/
+#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;cmath&gt;
+#define MAX 502
+using namespace std;
+
+typedef struct node
+{
+    int x;
+    int y;
+    int day;
+    int ty;
+    friend bool operator &lt; (node a,node b)
+    {
+ if(a.day!=b.day)
+     return a.day&gt;b.day;
+ else
+     return a.ty&gt;b.ty;
+    }
+}Point;
+
+int maze[MAX][MAX],n,m,sum,a[4][2]={{0,-1},{0,1},{1,0},{-1,0}};
+int num[MAX*MAX];
+priority_queue&lt;Point&gt;Q;
+Point p,temp;
+void Init()
+{
+    while(!Q.empty())
+     Q.pop();
+    int i,j;
+    sum=0;
+    for(i=0;i&lt;MAX*MAX;i++)
+ num[i]=0;
+    for(i=0;i&lt;n;i++)
+ for(j=0;j&lt;m;j++)
+ {
+     scanf("%d",&amp;maze[i][j]);
+     if(maze[i][j]&gt;0)
+     {
+  p.x=i;
+  p.y=j;
+  p.day=1;
+  p.ty=maze[i][j];
+  num[p.ty]++;
+  Q.push(p);
+  sum++;
+     }
+ }
+}
+bool Bound(int x,int y)
+{
+    if(x&gt;=0&amp;&amp;y&gt;=0&amp;&amp;x&lt;n&amp;&amp;y&lt;m)
+ return 1;
+    else
+ return 0;
+}
+void BFS()
+{
+    int i,tt;
+    while(!Q.empty())  //队列空,和全部遍历均需结束
+    {
+ p=Q.top();
+ Q.pop();
+ tt=1;
+ for(i=0;i&lt;4;i++)
+ {
+     temp.x=p.x+a[i][0];
+     temp.y=p.y+a[i][1];
+     temp.day=p.day;
+     temp.ty=p.ty;
+     if(!Bound(temp.x,temp.y))
+  continue;
+     if(maze[temp.x][temp.y]&lt;0)
+     {
+  if(p.day&gt;=abs(maze[temp.x][temp.y]))
+  {
+      maze[temp.x][temp.y]=p.ty;
+      sum++;
+      num[p.ty]++;
+      if(sum==n*m)
+   return ;
+      Q.push(temp);
+  }
+  else
+  {
+      if(maze[temp.x][temp.y]&gt;tt||tt==1)
+   tt=maze[temp.x][temp.y];
+  }
+     }
+ }
+ if(tt!=1)
+ {
+     p.day=-tt;
+     Q.push(p);
+ }
+    }    
+}
+int main()
+{
+    while(scanf("%d%d",&amp;n,&amp;m)!=EOF)
+    {
+ int i,j,Q,type,s;
+ Init();
+ BFS();
+ scanf("%d",&amp;Q);
+ while(Q--)
+ {
+     scanf("%d",&amp;type);
+     printf("%d/n",num[type]);
+ }
+    }
+    return 0;
+}

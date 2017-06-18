@@ -1,0 +1,135 @@
+搜索引擎时间分析框架关于ifDateUnit函数的分析
+
+
+bool NewsPageAnalysis::ifDateUnit(int unit, tParsedDate &amp; datep, bool &amp; iffutretime)
+
+
+{}
+
+
+函数包括如下启发式规则，举例如下：
+
+1. 如果文本单元是连接,那么不可能是日期
+
+2. 如果文本单元出现在开头8个字节或者80个字节以后的部分都不可能是日期?
+
+3. 如果汉字百分比超过85%则不是日期
+
+4. 。。。
+
+5. 合法日期模式
+
+
+
+
+
+函数大量硬编码，每个过程端彼此独立，却在一个函数中堆砌，每一条启发式规则都不断堆砌在这个函数中，该函数的进化性不强。
+
+
+该函数执行了两个过程一个是判断文本中是否含日期，第二个过程是如果是日期给datep赋值，破坏了单一责任原则。
+
+
+比较好的修改方法如下:伪码形式
+
+
+Abstract class DatePatternBase {定义接口bool parse(int unit bool &amp; iffutretime)=0,bool PatternsMode()=0}
+
+
+Abstract class TextUnitDatePattern: DatePatternBase //合法模式
+
+
+Abstract class TextUnitDateAntiPattern: DatePatternBase //非法模式
+
+
+
+
+
+Class LinkNotDataPattern: TextUnitDateAntiPattern
+
+
+Class LocationExpNotDataPattern: TextUnitDateAntiPattern
+
+
+Class ChineseWordRationHighNotDataPattern: TextUnitDateAntiPattern
+
+
+Class ValidDataPattern: TextUnitDatePattern
+
+
+
+
+
+Class DataAnalysisFramework
+
+
+[
+
+
+ Public: bool ifDateUnit(int unit bool &amp; iffutretime)
+
+
+  Create();
+
+
+ 
+
+
+ Private: bool RegisterAnalysisPatterns(DatePatternBase patterns)
+
+
+ Private: list&lt; DatePatternBase &gt; m_ptterns;
+
+
+]
+
+
+Create()过程中大概含有以下代码
+
+
+{
+
+RegisterAnalysisPatterns(new LinkNotDataPattern());
+
+RegisterAnalysisPatterns(new LocationExpNotDataPattern ());
+
+RegisterAnalysisPatterns(new ChineseWordRationHighNotDataPattern ());
+
+RegisterAnalysisPatterns(new ValidDataPattern());
+
+
+}
+
+
+ifDateUnit()函数中含有以下代代码
+
+
+{
+
+For i=0 to m_ptterns.len;
+
+If(m_patterns[i].mode = AntiPatterns)
+
+{ if(m_patterns[i]. parse (unit,iffutretime))
+
+{
+
+ Return false;
+
+}
+
+}
+
+Else if(m_patterns[i].mode = ValidPatterns)
+
+{
+
+Return m_patterns[i]. parse (unit,iffutretime));
+
+}
+
+Else{}
+
+
+} 
+
+这样无论是修改还是增加新的启发式规则都比较简洁。

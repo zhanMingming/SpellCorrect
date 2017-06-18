@@ -1,0 +1,134 @@
+合唱队形-最长递增子序列变种题目1131：合唱队形
+
+
+
+   
+时间限制：1 秒
+
+
+   
+内存限制：32 兆
+
+
+   
+特殊判题：否
+
+
+   
+提交：315
+
+
+   
+解决：97
+
+
+
+
+
+
+题目描述：
+
+   
+N位同学站成一排，音乐老师要请其中的(N-K)位同学出列，使得剩下的K位同学不交换位置就能排成合唱队形。
+
+合唱队形是指这样的一种队形：设K位同学从左到右依次编号为1, 2, …, K，他们的身高分别为T1, T2, …, TK，
+
+则他们的身高满足T1 &lt; T2 &lt; … &lt; Ti , Ti &gt; Ti&#43;1 &gt; … &gt; TK (1 &lt;= i &lt;= K)。
+
+你的任务是，已知所有N位同学的身高，计算最少需要几位同学出列，可以使得剩下的同学排成合唱队形。
+
+
+
+
+输入：
+
+   
+输入的第一行是一个整数N（2 &lt;= N &lt;= 100），表示同学的总数。
+
+第一行有n个整数，用空&#26684;分隔，第i个整数Ti（130 &lt;= Ti &lt;= 230）是第i位同学的身高（厘米）。
+
+
+
+
+输出：
+
+   
+可能包括多组测试数据，对于每组数据，
+
+输出包括一行，这一行只包含一个整数，就是最少需要几位同学出列。
+
+
+
+
+样例输入：
+
+   8
+186 186 150 200 160 130 197 220
+
+
+
+样例输出：
+
+   4
+
+
+
+
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+
+int inc1[200],inc2[200],a[200];
+//inc1--&gt;longest increase array from head to tail
+//inc2--&gt;longest increase array from tail to head
+
+int main()
+{
+	int n;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF)
+	{
+		int ans=0,i,j;
+		for(i=1;i&lt;=n;i++)
+			scanf(&quot;%d&quot;,&amp;a[i]);
+		inc1[1]=1;
+		for(i=2;i&lt;=n;i++)
+		{
+			inc1[i]=1;
+			for(j=1;j&lt;i;j++)
+				if(a[i]&gt;a[j]&amp;&amp;inc1[j]+1&gt;inc1[i])
+					inc1[i]=inc1[j]+1;
+		}
+		inc2[n]=1;
+		for(i=n-1;i&gt;=1;i--)
+		{
+			inc2[i]=1;
+			for(j=n;j&gt;i;j--)
+				if(a[j]&lt;a[i]&amp;&amp;inc2[j]+1&gt;inc2[i])
+					inc2[i]=inc2[j]+1;
+		}
+		for(i=1;i&lt;=n;i++)
+			if(inc1[i]+inc2[i]-1&gt;ans) 
+				ans=inc1[i]+inc2[i]-1;
+		printf(&quot;%d\n&quot;,n-ans);
+	}
+	return 0;
+}

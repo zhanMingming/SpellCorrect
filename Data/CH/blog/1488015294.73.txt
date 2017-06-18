@@ -1,0 +1,62 @@
+(十二)ng-repeat指令中使用track by子语句解决重复数据遍历的错误我们可以使用ng-repeat指令遍历一个javascript数组，当数组中有重复元素的时候,angularjs会报错:
+
+
+   Error: [ngRepeat:dupes] Duplicates in a repeater are not allowed. Use 'track by' expression to specify unique keys. Repeater: user in users, Duplicate key: number:1。下面的代码就会报错：
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;angular-1.2.2/angular.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;	
+		 function rootController($scope,$rootScope,$injector)
+		 {
+			$scope.dataList = [1,2,1];
+		 }
+	&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body ng-app ng-controller=&quot;rootController&quot;&gt;
+		&lt;div ng-repeat=&quot;data in dataList&quot;&gt;
+			{{data}}	
+		&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+   
+
+
+
+
+   这是因为ng-Repeat不允许collection中存在两个相同Id的对象。
+
+
+   For example: item in items is equivalent to item in items track by $id(item). This implies that the DOM elements will be associated by item identity in the array.
+
+
+   对于数字或者字符串等基本数据类型来说，它的id就是它自身的&#20540;。因此数组中是不允许存在两个相同的数字的。为了规避这个错误，需要定义自己的track by表达式。
+
+
+   // 业务上自己生成唯一的id
+
+item in items track by item.id
+
+
+   //或者直接拿循环的索引变量$index来用
+
+item in items track by $index
+
+
+   
+
+
+
+
+   如果是javascript对象类型数据，那么就算内容一摸一样，ng-repeat也不会认为这是相同的对象。如果将上面的代码中dataList，那么是不会报错的。比如$scope.dataList = [{&quot;age&quot;:10},{&quot;age&quot;:10}];
+
+
+
+
+   
+
+
+
+&#65279;&#65279;

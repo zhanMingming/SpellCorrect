@@ -1,0 +1,193 @@
+opencv 人脸识别 （二）训练和识别上一篇中我们对训练数据做了一些预处理，检测出人脸并保存在\pic\color\x文件夹下（x=1,2,3,...类别号），本文做训练和识别。为了识别，首先将人脸训练数据 转为灰度、对齐、归一化，再放入分类器（EigenFaceRecognizer）,最后用训练出的model进行predict。
+
+   
+
+   -----------------------------------------
+
+   
+
+   环境：vs2010+opencv 2.4.6.0
+
+   特征：eigenface
+
+   Input：一个人脸数据库，15个人，每人20个样本（左右）。
+
+   Output：人脸检测，并识别出每张检测到的人脸。
+
+   
+
+   -----------------------------------------
+
+   
+
+   1. 为训练数据预处理（转为灰度、对齐、归一化）
+
+   
+转为灰度和对齐是后面做训练时EigenFaceRecognizer的要求；归一化是防止光照带来的影响
+   
+
+   在上一篇的2.2 Prehelper.cpp文件中加入函数
+
+   void resizeandtogray(char* dir,int k, 	vector&lt;Mat&gt; &amp;images, vector&lt;int&gt; &amp;labels,		vector&lt;Mat&gt; &amp;testimages, vector&lt;int&gt; &amp;testlabels);
+
+   
+
+   
+
+   void resizeandtogray(char* dir,int K, vector&lt;Mat&gt; &amp;images, vector&lt;int&gt; &amp;labels,
+	vector&lt;Mat&gt; &amp;testimages, vector&lt;int&gt; &amp;testlabels)
+{
+	IplImage* standard = cvLoadImage(&quot;D:\\privacy\\picture\\photo\\2.jpg&quot;,CV_LOAD_IMAGE_GRAYSCALE);
+	string cur_dir;
+	char id[5];
+	int i,j;
+	for(int i=1; i&lt;=K; i++)
+	{
+		cur_dir = dir;
+		cur_dir.append(&quot;gray\\&quot;);	
+		_itoa(i,id,10);
+		cur_dir.append(id);
+		const char* dd = cur_dir.c_str();
+		CStatDir statdir;
+		if (!statdir.SetInitDir(dd))
+		{
+			puts(&quot;Dir not exist&quot;);
+			return;
+		}
+		cout&lt;&lt;&quot;Processing samples in Class &quot;&lt;&lt;i&lt;&lt;endl;
+		vector&lt;char*&gt;file_vec = statdir.BeginBrowseFilenames(&quot;*.*&quot;);
+		for (j=0;j&lt;file_vec.size();j++)
+		{
+			IplImage* cur_img = cvLoadImage(file_vec[j],CV_LOAD_IMAGE_GRAYSCALE);
+			cvResize(cur_img,standard,CV_INTER_AREA);
+			Mat cur_mat = cvarrToMat(standard,true),des_mat;
+			cv::normalize(cur_mat,des_mat,0, 255, NORM_MINMAX, CV_8UC1);
+			cvSaveImage(file_vec[j],cvCloneImage(&amp;(IplImage) des_mat));
+			if(j!=file_vec.size())
+			{
+					images.push_back(des_mat);
+					labels.push_back(i);
+			}
+			else
+			{
+				testimages.push_back(des_mat);
+				testlabels.push_back(i);
+			}
+		}
+		cout&lt;&lt;file_vec.size()&lt;&lt;&quot; images.&quot;&lt;&lt;endl;
+	}
+}
+   
+
+   
+
+   并在main中调用：
+
+   
+
+   int main( )
+{
+	CvCapture* capture = 0;
+	Mat frame, frameCopy, image;
+	string inputName;	
+	int mode;
+
+	char dir[256] = &quot;D:\\Courses\\CV\\Face_recognition\\pic\\&quot;; 
+	//preprocess_trainingdata(dir,K); //face_detection and extract to file
+	vector&lt;Mat&gt; images,testimages;
+	vector&lt;int&gt; labels,testlabels;
+	resizeandtogray(dir,K,images,labels,testimages,testlabels); //togray, normalize and resize
+	
+	system(&quot;pause&quot;);
+	return 0;
+}
+   
+
+   
+
+   2. 训练
+
+   有了vector&lt;Mat&gt; images,testimages;	vector&lt;int&gt; labels,testlabels; 可以开始训练了，我们采用EigenFaceRecognizer建模。
+
+   在Prehelper.cpp中加入函数
+
+   Ptr&lt;FaceRecognizer&gt; Recognition(vector&lt;Mat&gt; images, vector&lt;int&gt; labels,vector&lt;Mat&gt; testimages, vector&lt;int&gt; testlabels)；
+
+   
+
+   
+
+   Ptr&lt;FaceRecognizer&gt; Recognition(vector&lt;Mat&gt; images, vector&lt;int&gt; labels,
+	vector&lt;Mat&gt; testimages, vector&lt;int&gt; testlabels)
+{
+	Ptr&lt;FaceRecognizer&gt; model = createEigenFaceRecognizer(10);//10 Principal components
+	cout&lt;&lt;&quot;train&quot;&lt;&lt;endl;
+	model-&gt;train(images,labels);
+	int i,acc=0,predict_l;
+	for (i=0;i&lt;testimages.size();i++)
+	{
+		predict_l = model-&gt;predict(testimages[i]);
+		if(predict_l != testlabels[i])
+		{
+			cout&lt;&lt;&quot;An error in recognition: sample &quot;&lt;&lt;i+1&lt;&lt;&quot;, predict &quot;&lt;&lt;
+				predict_l&lt;&lt;&quot;, groundtruth &quot;&lt;&lt;testlabels[i]&lt;&lt;endl;
+			imshow(&quot;error 1&quot;,testimages[i]);
+			waitKey();
+		}
+		else
+			acc++;
+	}
+	cout&lt;&lt;&quot;Recognition Rate: &quot;&lt;&lt;acc*1.0/testimages.size()&lt;&lt;endl;
+	return model;
+}
+   
+Recognization()输出分错的样本和正确率，最后返回建模结果Ptr&lt;FaceRecognizer&gt; model
+   
+
+   
+
+   主函数改为：
+
+   int main( )
+{
+	CvCapture* capture = 0;
+	Mat frame, frameCopy, image;
+	string inputName;	
+	int mode;
+
+	char dir[256] = &quot;D:\\Courses\\CV\\Face_recognition\\pic\\&quot;; 
+	//preprocess_trainingdata(dir,K); //face_detection and extract to file
+	vector&lt;Mat&gt; images,testimages;
+	vector&lt;int&gt; labels,testlabels;
+	//togray, normalize and resize; load to images,labels,testimages,testlabels
+	resizeandtogray(dir,K,images,labels,testimages,testlabels); 
+	//recognition
+	Ptr&lt;FaceRecognizer&gt; model = Recognition(images,labels,testimages,testlabels);
+	char* dirmodel = new char [256];
+	strcpy(dirmodel,dir); strcat(dirmodel,&quot;model.out&quot;);
+	FILE* f = fopen(dirmodel,&quot;w&quot;);
+	fwrite(model,sizeof(model),1,f);
+	system(&quot;pause&quot;);
+	return 0;
+}
+   
+
+   
+
+   最终结果：一个错分样本，正确率93.3%
+
+   
+
+   
+
+   
+
+   
+
+   文章所用代码打包链接：http://download.csdn.net/detail/abcjennifer/7047853
+
+   
+
+   
+
+   关于Computer Vision更多的学习资料将继续更新，敬请关注本博客和新浪微博Rachel Zhang。

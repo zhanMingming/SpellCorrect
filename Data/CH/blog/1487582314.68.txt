@@ -1,0 +1,236 @@
+压缩传感的系列论文和点评【摘自：http://blog.sina.com.cn/wuyuzaizai】
+
+
+   压缩传感不是万能的，
+
+虽然它是信号和图像处理领域最热门的研究对象
+
+但是它不可能解决所有问题
+
+就像中科院李老师的话：
+
+
+   “压缩感知根植于数学理论，它给目前国内浮躁的学术环境提了一个警钟！因为只有很好地钻研它的基本理论和方法，才能将其有效地应用在所关心的问题中；否则它只能是一剂春药，一种无法名状的春药！”
+
+
+   ------------------------------------------------------------------------------------------
+
+
+   人们习惯于用正交基来表示信号，直到最近几十年，人们才发现用冗余的基元素集合来表示信号能够取得更好的结果，当然我们追求的肯定是用最小数量的基元素来最优的表示信号，这就出现了信号的稀疏表示。
+
+
+   L1范数最小化最早并不是Donoho提出的，早在80年代，Fadil Santosa 和William Symes就曾提出了L1范数的最小化，而Donoho提出Compressed sensing 并不是换汤不换药，CS并不是解决信号在一个完备集里面的最优表示问题的，而是提出了一种新的信号采集或者测量方式，这种新的测量方式打破了Shannon-Nyquist定理在信号处理领域一手遮天的局面，已经提出，就引起了相关领域大批学者的关注。Shannon-Nyquist采样定理要求在信号的采集阶段以高于信号带宽的两倍采样率来获取信号，信号才能得到完美的重构，而CS则对信号的带宽不再作要求，取而代之的是稀疏性，满足条件的信号则可在远少于SN采样率的情况下精确的重构信号。
+
+
+   从数学上来说，CS是在一定的条件下求解欠定(不适定)方程，条件包括x要是稀疏的，测量矩阵要满足RIP条件，那么欠定(不适定)方程就会以很大的概率有唯一解。
+
+
+   -------------------------------------------------------------------------------------------
+
+
+   《Robust
+ uncertainty principles: Exact signal reconstruction from highly incomplete frequency information》
+
+
+   1.文章告诉我们压缩传感在图像领域的发展源于作者在医学图像领域--MR图像重构得到的惊人结果，接着提出了压缩传感的数学模型，即当一信号在时域具有稀疏性的前提下，对频域进行少量样本的随机抽样，就可以对信号进行重构，作者事实上是从一个特例开始讨论的，即B1是简单的抽样基，B2是傅里叶基，到了文章的结尾，才对这一事实进行扩展，而且上来就是全变分模型，而不是抽象的L1范数最小化。
+
+
+   2.接着作者提出了两个问题：哪一类的信号才可以得到完美的重构，以及，重构时对采样数目的要求到底是什么，作者用定理1.3回答了以上问题，具有T稀疏性的信号，如果采样数满足。。。要求，那么信号可以得到重构，并且可以证明，重构是唯一的而且是最优的。最优性指的是，没有其他的算法可以用更少的采样数目得到这样的结果。
+
+
+   3.作者阐述了压缩传感与测不准原理的关系，并且提出了新的更强的准则。
+
+
+   4。压缩传感与相关研究的联系：利用L1范数最小化来恢复稀疏信号并不是压缩传感的新创，由来已久，其外，压缩传感与信号的稀疏分解具有很深的渊源，从某种意义上说，他们是相同的，当然他们具有本质上的不同：压缩传感是从不完整的数据中恢复信号，而稀疏分解是找到信号的最稀疏最有效的表达，最后作者从信号采样的角度告诉我们文章的最大贡献是提出了一种新的信号采样方式：数目更少，随机性。
+
+
+   5.文章花了大部分的篇幅来证明解的唯一性，在最后，给出了算法的稳定性，鲁棒性，以及算法的扩展，信号具有T稀疏，且采样数目满足定理要求，算法是稳定的，鲁棒性在相关的文章讨论，扩展指的是信号可以在更多的基里面具有稀疏性，不局限于时域和频域，且采样矩阵也可以有更加多样的选择。
+
+
+   -------------------------------------------------------------------------------------------
+
+
+   1-On theory of compressive sensing via ell1 minimization Simple derivations and extensions
+
+
+   作者信息：Rice,Yin Zhang:http://www.caam.rice.edu/~zhang/
+
+
+   该文首先指出目前的CS理论有两大部分构成：recoverability和stability,recoverability指的是，什么样的采样矩阵和恢复算法能够重构k稀疏信号，而stability指的是当出现信号的近&#20284;k稀疏或者出现观测噪声时，算法的鲁棒性。本文的主要的contributions包括：1）提出了一种全新的non-RIP的分析框架；2）与RIP类算法相比，该算法能够将任意形式的先验信息融合到CS理论中；3）文章还验证了随机矩阵本质上是一致的。
+
+
+   2-Instance-optimality in probability with an ell1 decoder
+
+
+   作者信息：Department of Mathematics University of South Carolina
+
+
+   ronald devore：http://www.math.sc.edu/~devore/
+
+
+   该文……
+
+
+   3-Incoherent dictionaries and the statistical restricted isometry property
+
+
+   作者信息:Tel-Aviv UniversityShamgar Gurevich:http://math.berkeley.edu/~shamgar/
+
+
+   这个大牛的文章太深奥，纯的数学
+
+
+   4-On verifiable sufficient conditions for sparse signal recovery via ell-1 minimization
+
+
+   作者信息：未找到
+
+
+   文章直接指出现有的RIP或者其他的包括Restricted Eigenvalue assumption 和Restricted Correlation assumption都不能立即判定一个矩阵是否能适合L1范数最小化来精确重构信号，因为这些指标都是不可计算的都属于NP问题，而唯一的可计算的指标：Mutual
+ Incoherence又过于保守。该文提出了一种新的量化指标来定量描述给定的矩阵是否足够好来适合L1范数最小化来重构信号。
+
+
+   5-The secrecy of compressed sensing measurements
+
+
+   作者信息：Draper Laboratory，Yaron rachlin：http://yaron.rachlin.googlepages.com/
+
+
+   该文讨论了CS理论在密码学中应用的可行性，作者主要集中在L1范数最小化算法且无噪声的情况，结论是利用CS并不能得到完美的密码，但是作者阐释了一种称为computational notion of secrey,并说明了CS的measurment可以考虑作为密码。
+
+
+   6-Toeplitz compressed sensing matrices with applications to sparse channel estimation
+
+
+   作者信息：Rice University，Javis Haupt：http://www.ece.rice.edu/~jdh6/
+
+
+   该文前边部分对CS做了很好的综述，包括介绍CS的几种情况：最简单的CS，近&#20284;稀疏信号的CS重构，含Gaussian观测噪声的CS恢复算法，含有限噪声的CS恢复算法。特别是最后两种的区别，文章给了很好的解释和说明，包括相应的算法的各自特点。
+
+
+   7-On recovery of sparse signals via ell1 minimization
+
+
+   作者信息：The Wharton SchoolUniversity
+ of Pennsylvania
+
+t.tony cai：http://www-stat.wharton.upenn.edu/~tcai/
+
+
+   这篇文章是对candes及Donoho的方法的改进，作者将问题进行了不同的分类，包括无噪声，有限噪声及高斯噪声三种情况，然后讨论了两种重构模型：DantZig Selector和L1 minimation with L2 constraints,主要的改进之一是提出了更弱的条件，使得可以重构的信号范围进一步扩大。通常我们用RIP性质，或者MIP性质来验证矩阵是否能用来作为一个采样矩阵，文章对这两个条件进行了讨论，并分析了他们之间的关系。作者只是将一个更弱的条件用到这三种情况下，不过作者主页上还是可以看到，09年作者做了相当多的工作。
+
+
+   8-Deterministic designs with deterministic guarantees Toeplitz compressed sensing matrices sequence design and system identification
+
+
+   作者信息：Boston UniversityDepartment
+ of Electrical and Computer Engineering
+
+
+   venkatesh saligrama：http://iss.bu.edu/srv/
+
+
+   该文应该属于CS在无线通讯领域的应用，以前的满足RIP性质的采样矩阵一般都是满足特定分布的随机矩阵，最近才逐渐出现确定元素构成的采样矩阵，本文作者根据该领域的特殊要求，构造了特别的采样矩阵，并证明了其满足RIP性质。
+
+
+   9-Compressive sensing by random convolution
+
+
+   作者信息：Georgia Tech，Justin Romberg：http://users.ece.gatech.edu/justin/Justin_Romberg.html
+
+
+   该文提出了一种全新的CS框架：先与随机的波形元素进行卷积，然后在时域内进行降采样，从而得到观测&#20540;。作者在文章中说明了这种方法是一种通用有效的稀疏数据观测方式，并用radar和Fourier optics两种应用情景来说明这种观测方式能够让我们得到分辨率更高的结果，但是这个框架的通用性还是&#20540;得进一步的探究。个人认为作者对信号的稀疏性解释的非常详细，并且分别将稀疏度与带宽对应，采样需求数目与采样频率对应。作者对以前的随机采样矩阵进行了分类：每个元素服从于某种分布；随机从某正交基中抽取m行作为采样矩阵，并从通用性和计算量上对两种矩阵进行了对比。作者还提出了三个考量采样系统的指标：通用性，计算量，以及物理可实现性。
+
+
+   10-Compressed sensing over the Grassmann manifold A unified analytical framework
+
+
+   作者信息：Caltch，Weiyu Xu：http://mathbaby.spaces.live.com/
+
+
+   该文指出，满足RIP的采样矩阵能够恢复出稀疏信号，只是一个充分条件，作者基于高维几何，提出了更加紧的充要条件，而算法的目标也很明确：近&#20284;稀疏信号（作者给出了很特别的定义：基于L1范数）；
+
+
+   11-Combining geometry and combinatorics A unified approach to sparse signal recovery
+
+
+   作者信息：MIT，Radu Berinde：http://people.csail.mit.edu/radu/
+
+
+   该文对采样矩阵和恢复算法进行了分类：基于组合的方法和基于几何的方法，并且相应的算法有相应的采样矩阵与其相对应，组合的方法通常对应于稀疏的二&#20540;矩阵，而几何的方法主要是指常用的l1范数最小化等，对应的矩阵为稠密的随机高斯随机贝努力矩阵。文章从整体的观点出发，认为两种方法在某种意义下是相同的，并提出了新的采样矩阵和恢复算法。
+
+
+   12-High-dimensional subset recovery in noise Sparsified measurements without loss of statistical efficiency
+
+
+   作者信息:UC Berkeley,Dapo Omidiran:http://www.eecs.berkeley.edu/~dapo/
+
+
+   该文同上篇文章一样，也是研究了基于稀疏采样矩阵的Losso算法，同时考虑采样矩阵的稀疏和观测样本的噪声，并证明了当采样矩阵的稀疏度趋于0的情况下所需要的采样数目与稠密的采样矩阵需要的相同。
+
+
+   13-Efficient compressed sensing using high quality expander graphs
+
+
+   作者信息：Princeton，sina Jafarpour：http://sina2jp.googlepages.com/sinajafarpour%27shomepage
+
+
+   该文起源于Coding Theory，用于error correcting,其中比较经典的error correcting codes是LDPC（Low Density Parity Codes）,随后被xu weiyu（加州理工）用于CS领域，这篇文章是对Xu的理论的改进。
+
+
+   常用的RIP性质被用来检验一个随机矩阵是否能够用来作为采样矩阵，从而使得L1范数最小化算法能够对稀疏信号进行完美的重构，满足RIP性质的矩阵可以作为采样矩阵（充分条件），而Radu（见本页第一篇文章）提出了一种新的RIP，called RIP-1，标准的RIP（也称:RIP-2）保持了两稀疏信号的欧氏距离即Norm2，而RIP-1，则保持了稀疏信号的Manhattan距离，即Norm1，作者在文中说明了，只要矩阵满足RIP-1，也能保证将稀疏信号完美重构。
+
+
+   14-On some deterministic dictionaries supporting sparsity
+
+
+   作者信息：（特拉维夫，以色列港市）Shamgar Gurevich：http://math.berkeley.edu/~shamgar/
+
+
+   作者系数学出身，这篇文章从语言到内容涉及到太多的数学内容，可略过。
+
+
+   15-A remark on compressed sensing中提到：关于采样矩阵需要满足的条件，首先是由D.Donoho在文Compressive Sensing中提出的CS1-CS3条件，接着E.Candes,J.Romberg,T.Tao也独立的证明了矩阵需要满足的条件，进一步的研究，由A.Cohen,W.Dahmen,R.Devore(Compressed
+ Sensing and k-term approximation)中完成，而这篇文章主要的工作就是证明了在渐进的情况下，即当m,n趋于无穷大的情况下，以上三个条件是一致的。
+
+
+   16-Toeplitz structured compressed sensing matrices：
+
+
+   又是一篇关于采样矩阵的文章，这篇文章提出了一种新的构造采样矩阵的方法，Toeplitz Matrix,并且证明了改矩阵满足Cades提出的RIP性质，列出了与通常的随机采样矩阵相比的优缺点，以及该采样矩阵在系统辨识中的应用。
+
+
+   17-Efficient compressive sensing with determinstic guarantees using expander graphs
+
+
+   这篇文章很好，一个原因是它将07年之前的关于压缩CS的文章进行了很好的总结，综述内容很丰富，此外是该文提出了一种新的框架，一种基于bipartite expander graphs的方法，利用图论来解决CS的问题，最终回答了作者提出的两个CS存在的问题：1.对于O（n），及k=O（n）的情况，目前的CS理论是否能够精确重构，2.如果能的话，信号满足稀疏性的前提下，这样的矩阵及重构算法是否存在？
+
+
+   18-Computation and relaxation of conditions for equivalence between ell1 and ell0 minimization
+
+
+   这篇文章证明了在什么情况下，l0和l1的解是相同的，而且对信号的稀疏性有什么要求。
+
+
+   19-Fast compressive sampling with structurally random matrices
+
+
+   该文首先分析了已有的采样矩阵所具有的四个重要特征，并指出目前的采样矩阵一般只具备其中部分特征，之后具体分析的现在流行的两类采样矩阵的优缺点，包括第一类：随机高斯，随机贝努力，及亚高斯阵，第二类：部分傅里叶阵以及部分正交阵。在分析的基础上提出了一个hybrid采样矩阵，证明了该采样矩阵能够同时具有上述四个特点。
+
+
+   20-Sparse recovery using sparse random matrices
+
+
+   作者来自MIT,http://people.csail.mit.edu/radu/,主要研究方向也就是CS，文章的综述不错，总结的很详细，实验也很不错，文章主要是对稀疏的采样矩阵与通常的随机采样矩阵的对比，及其优势，并通过丰富的实验对几种常用的采样矩阵进行了比较。
+
+
+   21-A negative result concerning explicit matrices with the restricted isometry property
+
+
+   正如题目所示：文章指出通常的0，1采样矩阵需要额外的条件才能满足最优性，并且给出了更加紧的满足RIP条件的结果。
+
+
+   22-Toeplitz block matrices in compressed sensing
+
+
+   同样是讨论采样矩阵文章。

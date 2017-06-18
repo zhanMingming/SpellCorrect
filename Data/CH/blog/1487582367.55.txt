@@ -1,0 +1,81 @@
+二叉树的遍历 非递归 C实现——中序遍历篇同上文法一方法类&#20284;实现：
+
+
+   原理：中序遍历-左根右
+
+
+   循环每次把左孩子入栈，直到叶节点；沿着栈里弹出的顺序一次访问右孩子。
+
+
+   
+
+
+
+
+   
+   #include &lt;iostream&gt;
+#include &quot;stack&quot;
+using namespace std;
+
+struct TNode
+{
+	TNode *left;
+	TNode *right;
+	int data;
+};
+
+TNode *Root;
+void Visit(TNode *cur)
+{
+	cout&lt;&lt;cur-&gt;data&lt;&lt;endl;
+}
+
+stack&lt;TNode*&gt; ST2;
+void midOrder(TNode* root)
+{
+	while (!ST2.empty()||root!=NULL)
+	{
+		if(root!=NULL)
+		{
+			ST2.push(root);
+			root=root-&gt;left;
+		}
+		else
+		{
+			root=ST2.top();
+			ST2.pop();
+			Visit(root);
+			root=root-&gt;right;
+		}
+	}
+}
+
+void InitTree(TNode *root)
+{
+	root-&gt;data=1;
+	TNode* tree[10];
+
+	for (int i=0;i&lt;7;i++)
+	{
+		tree[i]=(TNode*) malloc(sizeof(TNode*));
+		tree[i]-&gt;data=i;
+		tree[i]-&gt;left=tree[i]-&gt;right=NULL;
+	}
+
+	tree[4]-&gt;right=tree[6];
+	tree[1]-&gt;left=tree[3];
+	tree[1]-&gt;right=tree[4];
+	tree[2]-&gt;left=tree[5];
+	tree[0]-&gt;left=tree[1];
+	tree[0]-&gt;right=tree[2];
+
+	Root=tree[0];
+}
+
+void main()
+{
+	Root=(TNode*) malloc(sizeof(TNode*));
+	InitTree(Root);
+	//preOrder1(Root);
+	midOrder(Root);
+}

@@ -1,0 +1,67 @@
+Windows 窗体应用开发——应用对话框控件C#里给我们提供了很多很好的对话框控件，如ColorDialog, FontDialog ,OpenFileDialog, SaveFileDialog,
+
+
+   here I did a test just now:
+
+
+   
+
+
+   加入上述四个控件，在加入四个按钮分别予以实现：
+
+
+   以下是按钮的消息响应函数：
+
+
+   
+
+
+    private void button1_Click(object sender, EventArgs e)
+ {
+     openFileDialog1.Reset();
+     openFileDialog1.Filter = "文本文件(*.txt)|*.txt";
+     openFileDialog1.CheckFileExists = true;//如果user指定不存在的文件名，是否发出警告
+     openFileDialog1.CheckPathExists = true;//如果user指定不存在的路径，是否发出警告
+     openFileDialog1.Multiselect = false;//设置对话框是否允许选择多个文件
+     openFileDialog1.Title = "打开文件";
+     if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
+     {
+  richTextBox1.LoadFile(openFileDialog1.FileName, RichTextBoxStreamType.PlainText);
+     }
+ }
+
+ private void button2_Click(object sender, EventArgs e)
+ {
+     if (MessageBox.Show("确定退出？","ASK", MessageBoxButtons.YesNo,MessageBoxIcon.Question) == DialogResult.Yes)
+  Application.Exit();
+ }
+
+ private void button3_Click(object sender, EventArgs e)
+ {
+     fontDialog1.ShowApply = false;//设置该弹出的字体对话框是否包含"应用"按钮
+     fontDialog1.ShowEffects = true;//是否包含"删除线、下划线"项
+     fontDialog1.ShowColor = true;
+     //set all colors
+     colorDialog1.AnyColor = true;
+     colorDialog1.AllowFullOpen = true;
+     colorDialog1.FullOpen = true;
+     
+     if (fontDialog1.ShowDialog(this) == DialogResult.OK)
+     {
+  richTextBox1.Font = fontDialog1.Font;
+  if (colorDialog1.ShowDialog(this) == DialogResult.OK)
+  richTextBox1.ForeColor = colorDialog1.Color;
+    //     richTextBox1.ForeColor = fontDialog1.Color;
+     }
+ }
+
+ private void button4_Click(object sender, EventArgs e)
+ {
+     saveFileDialog1.Reset();
+     saveFileDialog1.Filter = "文本文件(*.txt)|*.txt";
+     saveFileDialog1.Title = "另存为";
+     if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+     {
+  richTextBox1.SaveFile(saveFileDialog1.FileName, RichTextBoxStreamType.PlainText);
+     }
+ }

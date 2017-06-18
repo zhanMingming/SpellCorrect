@@ -1,0 +1,181 @@
+Second My Problem First HDOJ 5th Anniversary Contest 1007Second My Problem First
+
+   Time Limit: 12000/4000 MS (Java/Others)Memory Limit: 65536/65536 K (Java/Others)Total Submission(s): 1272Accepted Submission(s): 212
+
+Problem Description
+
+Give you three integers n, A and B. Then we define Si = Ai mod B and Ti = Min{ Sk | i-A &lt;= k &lt;= i, k &gt;= 1}Your task is to calculate the product of Ti (1 &lt;= i &lt;= n) mod B.
+
+
+
+
+   
+
+Input
+
+Each line will contain three integers n(1 &lt;= n &lt;= 107),A and B(1 &lt;= A, B &lt;= 231-1). Process to end of file.
+
+
+
+
+   
+
+Output
+
+For each case, output the answer in a single line.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   1 2 3
+2 3 4
+3 4 5
+4 5 6
+5 6 7
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   2
+3
+4
+5
+6
+
+
+
+
+
+
+   
+
+Author
+
+WhereIsHeroFrom@HDU
+
+相似题目：pku Sliding window
+
+单调队列处理查询是递增的区间最小值
+
+
+
+   #include&lt;iostream&gt;
+
+
+   using namespace std;
+
+
+   #define N 10000000
+
+
+   int n;
+
+
+   struct QU
+
+
+   {
+
+
+    int pos;
+
+
+    __int64 value;
+
+
+   }Q[N];
+
+
+   
+
+
+   int main()
+
+
+   {
+
+
+    __int64 a,b,t,i,ans,minn,ss;
+
+
+    while(scanf("%I64d%I64d%I64d",&amp;n,&amp;a,&amp;b)!=EOF)
+
+
+    {
+
+
+    int head=1;
+
+
+    int tail=0;
+
+
+    t=a;
+
+
+    ans=1;
+
+
+    minn=a;
+
+
+    for(i=1;i&lt;=n&amp;&amp;a!=1;i++)
+
+
+    {
+
+
+    ss=a%b;
+
+
+    while(head&lt;=tail&amp;&amp;ss&lt;Q[tail].value)
+
+
+    tail--;
+
+
+    while(head&lt;=tail&amp;&amp;Q[head].pos&lt;i-t)
+
+
+    head++;
+
+
+    Q[++tail].value=ss;
+
+
+    Q[tail].pos=i;
+
+
+    ans=(ans*Q[head].value)%b;
+
+
+   
+
+
+    a=(a*t)%b; 
+
+
+    }
+
+
+    printf("%I64d/n",ans);
+
+
+    }
+
+
+   }

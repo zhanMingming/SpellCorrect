@@ -1,0 +1,23 @@
+MFC设置对话框的焦点方法有二：
+
+
+   
+
+
+   1. 设置对话框控件的tab order。 按Ctrl&#43;D即可看见。将需要被设置到焦点的空间的tab order设为1.
+
+
+   
+
+
+
+
+   2. 对话框的OnInitDialog返回FALSE。解释如下：(摘抄至msdn)
+
+
+   
+IfOnInitDialogreturns nonzero, Windows sets the input focus to the
+ first control in the dialog box.
+
+
+   The application can return 0 only if it has explicitly set the input focus to one of the controls in the dialog box.

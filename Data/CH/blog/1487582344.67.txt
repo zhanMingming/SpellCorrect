@@ -1,0 +1,202 @@
+opencv中的矩阵操作有很多函数有mask，代表掩码，如果某位mask是0,那么对应的src的那一位就不计算，mask要和矩阵/ROI/的大小相等
+
+大多数函数支持ROI，如果图像ROI被设置，那么只处理ROI部分
+
+少部分函数支持COI，如果COI设置，只处理感兴趣的通道
+
+
+   矩阵逻辑运算
+
+void cvAnd(const CvArr* src1, const CvArr* src2, CvArr* dst, const CvArr* mask=NULL);//
+
+void cvAndS(const CvArr* src, CvScalar value, CvArr* dst, const CvArr* mask=NULL);//
+
+void cvOr(const CvArr* src1, const CvArr* src2, CvArr* dst, const CvArr* mask=NULL);//
+
+void cvOrS(const CvArr* src, CvScalar value, CvArr* dst, const CvArr* mask=NULL);//
+
+void cvXor(const CvArr* src1, const CvArr* src2, CvArr* dst, const CvArr* mask=NULL);//
+
+void cvXorS(const CvArr* src, CvScalar value, CvArr* dst, const CvArr* mask=NULL);//
+
+void cvNot(const CvArr* src,CvArr* dst);//矩阵取反
+
+
+   
+
+
+   矩阵算术运算
+
+绝对&#20540;
+
+void cvAbs(const CvArr* src,CvArr* dst);
+
+void cvAbsDiff(const CvArr* src1,const CvArr* src2, CvArr* dst);//两矩阵相减取绝对&#20540;
+
+void cvAbsDiffS(const CvArr* src, CvArr* dst,CvScalar value);//矩阵减去一个数取绝对&#20540;
+
+加减
+
+void cvAdd(const CvArr* src1,const CvArr* src2,CvArr* dst,const CvArr* mask = NULL);//两数组相加，dst(I)=src1(I)&#43;src2(I) if mask(I)!=0
+
+void cvAddS(const CvArr* src,CvScalar value,CvArr*dst,const CvArr* mask = NULL);//数组和一个数相加，dst(I)=src(I)&#43;value if mask(I)!=0
+
+void cvAddWeighted(const CvArr* src1,double alpha,const CvArr* src2,double beta,double gamma,CvArradded to each sum* dst);//带权相加相当于dst(x,y) = α ? src1(x,y) &#43; β ? src2(x,y) &#43; γ
+
+void cvSub(const CvArr* src1, const CvArr* src2, CvArr* dst, const CvArr* mask=NULL);//矩阵减法，dst(I)=src1(I)-src2(I) if mask(I)!=0
+
+void cvSubS(const CvArr* src, CvScalar value, CvArr* dst, const CvArr* mask=NULL);//矩阵减数，dst(I)=src(I)-value if mask(I)!=0
+
+void cvSubRS(const CvArr* src, CvScalar value, CvArr* dst, const CvArr* mask=NULL);//数减矩阵，dst(I)=value-src(I) if mask(I)!=0
+
+乘除
+
+void cvDiv(const CvArr* src1, const CvArr* src2, CvArr* dst, double scale=1);//scale*src1(i)/src2(i)，如果src1=NULL，则计算scale/src2(i)
+
+void cvMul(const CvArr* src1,const CvArr* src2,CvArr* dst,double scale=1);//两矩阵元素之间的简单乘法，一般的矩阵点乘用cvGEMM();
+
+次方
+
+void cvPow(const CvArr* src, CvArr* dst, double power);//为每个src的数求power次方
+
+指数
+
+void cvExp(const CvArr* src, CvArr* dst);//dst(I)=EXP(src(I))
+
+对数
+
+void cvLog(const CvArr* src, CvArr* dst);//
+
+
+   
+
+
+   线性代数计算
+
+加&amp;乘
+
+void cvScaleAdd(const CvArr* src1, CvScalar scale, const CvArr* src2, CvArr* dst);//src1和scale的乘积加上src2
+
+void cvCrossProduct(const CvArr* src1,const CvArr* src2,CvArr* dst);//计算两个3D向量（单通道）的叉乘运算
+
+double cvDotProduct(const CvArr* src1, const CvArr* src2);//两个向量点乘
+
+void cvGEMM(const CvArr* src1, const CvArr* src2, double alpha, const CvArr* src3, double beta, CvArr* dst, int tABC=0);//乘加运算的始祖
+
+由通用乘加函数参与定义的两个具体宏
+
+ cvMatMul(const CvArr* src1,const CvArr* src2,CvArr* dst);
+
+ cvMatMulAdd(const CvArr* src1,const CvArr* src2,const CvArr* src3,CvArr* dst);
+
+CvScalar cvTrace(const CvArr* mat);//计算对角线上的元素和
+
+变换
+
+void cvTransform(const CvArr* src, CvArr* dst, const CvMat* transmat, const CvMat* shiftvec=NULL);//dst=transmat · src &#43; shiftvec
+
+void cvPerspectiveTransform(const CvArr* src, CvArr* dst, const CvMat* mat);//把矩阵每个元素中三个通道当做一个矩阵，乘mat，mat是一个3×3或者4×4的转换矩阵
+
+转置
+
+void cvTranspose(const CvArr* src, CvArr* dst);
+
+void cvMulTransposed(const CvArr* src, CvArr* dst, int order, const CvArr* delta=NULL, double scale=1.0);//(src-delta)乘以它的转置再乘以scale
+
+逆矩阵
+
+double cvInvert(const CvArr* src,CvArr* dst,int method=CV_LU);//求原矩阵的逆矩阵，默认使用高斯消去法
+
+方阵可逆的充要条件是|A|!=0
+
+ method取&#20540;为CV_LU高斯消去法（默认） CV_SVD奇异&#20540;分解SVD CV_SVD_SYM对称矩阵的SVD
+
+行列式
+
+double cvDet(const CvArr* mat);//计算方阵行列式，一定是单通道的
+
+小型方阵直接计算，大型方阵用高斯消去法计算
+
+如果矩阵正定对称，用奇异&#20540;分解的方法解决cvSVD();
+
+特征向量特征&#20540;
+
+void cvEigenVV(CvArr* mat, CvArr* evects, CvArr* evals, double eps=0);//计算对称矩阵的特征&#20540;和特征向量，evects输出特征向量，evals输出特征&#20540;，eps雅可比方法停止参数
+
+要求三个矩阵都是浮点类型，10×10以下该方法有效，20×20以上的矩阵不能计算出结果，为节约计算量，eps通常设为DBL_EPSILON(10^-15)
+
+如果给定的矩阵是对称正定矩阵，那么考虑使用cvSVD();
+
+协方差
+
+void cvCalcCovarMatrix(const CvArr** vects, int count, CvArr* cov_mat, CvArr* avg, int flags);//给定一组大小和类型相同的向量，向量的个数，计算标记，输出协方差正阵和每个向量的平均&#20540;矩阵
+
+ CV_COVAR_NORMAL普通计算协方差和平均&#20540;，输出的是n×n的协方差阵
+
+ CV_COVAR_SCRAMBLED快速PCA“Scrambled”协方差，输出的是m×m的协方差阵
+
+ CV_COVAR_USE_AVERAGE平均&#20540;是输入的
+
+ CV_COVAR_SCALE重新缩放输出的协方差矩阵
+
+四个flag通过并运算协同发挥作用，前两个不能并
+
+CvSize cvMahalonobis(const CvArr* vec1,const CvArr* vec2,CvArr* mat);
+
+int cvSolve(const CvArr* src1, const CvArr* src2, CvArr* dst, int method=CV_LU);//Solves a linear system or least-squares problem.
+
+void cvSVD(CvArr* A, CvArr* W, CvArr* U=NULL, CvArr* V=NULL, int flags=0);//Performs singular value decomposition of a real floating-point matrix.
+
+void cvSVBkSb(const CvArr* W, const CvArr* U, const CvArr* V, const CvArr* B, CvArr* X, int flags);//Performs singular value back substitution.
+
+
+   
+
+
+   数组比较
+
+void cvCmp(const CvArr* src1, const CvArr* src2, CvArr* dst, int cmp_op);//两矩阵比较运算
+
+ CV_CMP_EQ - src1(I)是否相等
+
+ CV_CMP_GT - src1(I)是否大于
+
+ CV_CMP_GE - src1(I)是否大于等于
+
+ CV_CMP_LT - src1(I)是否小于
+
+ CV_CMP_LE - src1(I)是否小于等于
+
+ CV_CMP_NE - src1(I)是否不等
+
+如果判断为假，dst设为0，如果判断为真，dst设为0xff
+
+void cvCmpS(const CvArr* src, double value, CvArr* dst, int cmp_op);//矩阵和一个数字比较运算
+
+
+   
+
+
+   矩阵内转换
+
+类型转换
+
+void cvConvertScale(const CvArr* src,CvArr* dst,double scale,double shift);//矩阵首先乘以scale再加上shift，然后把src中的数据类型转换成dst类型，但是src和dst通道数需要相等
+
+void cvConvertScaleAbs(const CvArr* src,CvArr* dst,double scale,double shift);//在src到dst类型转换前，先做绝对&#20540;
+
+void cvCvtColor(const CvArr* src,CvArr* dst, int code);//图像颜色空间转换，src要为8U 16U 32F，dst的数据类型需要和src相同，通道数看code
+
+ code&#26684;式如：CV_原色彩空间2目的色彩空间色彩空间要考虑RGB的顺序
+
+支持的颜色空间包括：RGB RGB565 RGB555 GRAY RGBA XYZ YCrCb HSV HLS Luv BayerRG
+
+空间转换
+
+void cvFlip(const CvArr* src, CvArr* dst=NULL, int flip_mode=0);//图像绕x、y轴旋转。当用在一维数组上时并且flip_mode&gt;0，可以用来颠倒数据排列
+
+ flip_mode=0：左右对称values of the conversion resul
+
+ flip_mode&gt;0：上下对称
+
+ flip_mode&lt;0：中心对称

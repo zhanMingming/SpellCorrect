@@ -1,0 +1,1156 @@
+GDI+ C# 画图 、 输出文字学习贴图，可拉伸图片大小
+
+
+   
+
+
+   学习使用画刷，创建不同类型画刷，并用画刷产生画笔
+
+
+   
+
+
+   private void button1_Click(object sender, EventArgs e)//画图响应按钮(类似完成MFC中BitBlt或StrechBlt的功能)
+ {
+    Bitmap bitmap = new Bitmap(@&quot;D:/工作照.jpg&quot;);
+    Graphics g = CreateGraphics();
+
+    //获得窗口屏幕大小
+    Rectangle rect = System.Windows.Forms.SystemInformation.VirtualScreen;
+    int width = rect.Width;
+    int height = rect.Height; 
+
+    g.DrawImage(bitmap, rect);
+    button1.Visible = true;
+ }
+
+private void button2_Click(object sender, EventArgs e)//动态输出文字(类似MFC中的TextOut())
+{
+    Font myFont = new Font(&quot;Verdana&quot;, 12);
+    Graphics g = CreateGraphics();
+
+    //创建线渐变画刷： 
+    LinearGradientBrush myBrush = new LinearGradientBrush(ClientRectangle, Color.FromArgb(120, 120, 250), Color.Red, LinearGradientMode.Vertical);
+    //  g.DrawString(&quot;GDI 显示字符串&quot;, myFont, myBrush, new RectangleF(10, 10, 500, 200));
+
+    //创建一般画刷：
+    SolidBrush bru1 = new SolidBrush(Color.FromArgb(250, 200, 0));
+    g.DrawString(&quot;GDI 显示字符串&quot;, myFont, bru1, new RectangleF(10, 10, 500, 200));
+
+    Pen newpen = new Pen(bru1);
+    Point[] p = new Point[] { new Point(0, 0), new Point(100, 100), new Point(50, 100), new Point(200, 100) };
+    g.DrawEllipse(newpen,50,50, 100, 100); 
+} 
+
+
+   
+
+
+   附录：
+
+
+   
+
+
+   1.
+
+画刷详解：
+
+
+
+
+   命名空间： System.Drawing.Drawing2D
+
+
+   
+
+
+   SolidBrush：一般的画刷，通常只用一种颜色去填充GDI&#43;图形
+
+
+   创建一般画刷： 
+
+
+
+
+
+
+
+
+
+
+   SolidBrush sdBrush1 =newSolidBrush(Color);
+
+
+
+
+
+
+
+
+   
+
+
+   HatchBrush：阴影画刷，有两种颜色：前景色和背景色，以及6种阴影。
+
+
+   创建阴影画刷： 
+
+
+
+
+
+
+
+
+
+
+   HatchBrush(HatchStyle,Color);//前景
+
+
+   HatchBrush(HatchStyle,Color,Color)；//前景、背景
+
+
+
+
+
+
+
+
+   HatchStyle对应阴影方案列表。 
+
+
+
+
+
+
+
+
+
+
+   名称
+
+
+
+
+   说明
+
+
+
+
+
+
+
+   BackwardDiagonal
+
+
+
+
+   从右上到左下的对角线的线条图案。
+
+
+
+
+
+
+
+   Cross
+
+
+
+
+   指定交叉的水平线和垂直线。
+
+
+
+
+
+
+
+   DarkDownwardDiagonal
+
+
+
+
+   从顶点到底点向右倾斜的对角线，两边夹角比ForwardDiagonal小50%，宽度是其两倍。此阴影图案不是锯齿消除的。
+
+
+
+
+
+
+
+   DarkHorizontal
+
+
+
+
+   指定水平线的两边夹角比Horizontal小50%并且宽度是Horizontal的两倍。
+
+
+
+
+
+
+
+   DarkUpwardDiagonal
+
+
+
+
+   指定从顶点到底点向左倾斜的对角线，其两边夹角比BackwardDiagonal小50%，宽度是其两倍，但这些直线不是锯齿消除的。
+
+
+
+
+
+
+
+   DarkVertical
+
+
+
+
+   指定垂直线的两边夹角比Vertical小50%并且宽度是其两倍。
+
+
+
+
+
+
+
+   DashedDownwardDiagonal
+
+
+
+
+   指定虚线对角线，这些对角线从顶点到底点向右倾斜。
+
+
+
+
+
+
+
+   DashedHorizontal
+
+
+
+
+   指定虚线水平线。
+
+
+
+
+
+
+
+   DashedUpwardDiagonal
+
+
+
+
+   指定虚线对角线，这些对角线从顶点到底点向左倾斜。
+
+
+
+
+
+
+
+   DashedVertical
+
+
+
+
+   指定虚线垂直线。
+
+
+
+
+
+
+
+   DiagonalBrick
+
+
+
+
+   指定具有分层砖块外观的阴影，它从顶点到底点向左倾斜。
+
+
+
+
+
+
+
+   DiagonalCross
+
+
+
+
+   交叉对角线的图案。
+
+
+
+
+
+
+
+   Divot
+
+
+
+
+   指定具有草皮层外观的阴影。
+
+
+
+
+
+
+
+   ForwardDiagonal
+
+
+
+
+   从左上到右下的对角线的线条图案。
+
+
+
+
+
+
+
+   Horizontal
+
+
+
+
+   水平线的图案。
+
+
+
+
+
+
+
+   HorizontalBrick
+
+
+
+
+   指定具有水平分层砖块外观的阴影。
+
+
+
+
+
+
+
+   LargeGrid
+
+
+
+
+   指定阴影样式Cross。
+
+
+
+
+
+
+
+   LightHorizontal
+
+
+
+
+   指定水平线，其两边夹角比Horizontal小50%。
+
+
+
+
+
+
+
+   LightVertical
+
+
+
+
+   指定垂直线的两边夹角比Vertical小50%。
+
+
+
+
+
+
+
+   Max
+
+
+
+
+   指定阴影样式SolidDiamond。
+
+
+
+
+
+
+
+   Min
+
+
+
+
+   指定阴影样式Horizontal。
+
+
+
+
+
+
+
+   NarrowHorizontal
+
+
+
+
+   指定水平线的两边夹角比阴影样式Horizontal小 75%（或者比LightHorizontal小25%）。
+
+
+
+
+
+
+
+   NarrowVertical
+
+
+
+
+   指定垂直线的两边夹角比阴影样式Vertical小 75%（或者比LightVertica小25%）。
+
+
+
+
+
+
+
+   OutlinedDiamond
+
+
+
+
+   指定互相交叉的正向对角线和反向对角线，但这些对角线不是锯齿消除的。
+
+
+
+
+
+
+
+   Percent05
+
+
+
+
+   指定5%阴影。前景色与背景色的比例为5:100。
+
+
+
+
+
+
+
+   Percent90
+
+
+
+
+   指定90%阴影。前景色与背景色的比例为90:100。
+
+
+
+
+
+
+
+   Plaid
+
+
+
+
+   指定具有&#26684;子花呢材料外观的阴影。
+
+
+
+
+
+
+
+   Shingle
+
+
+
+
+   指定带有对角分层鹅卵石外观的阴影，它从顶点到底点向右倾斜。
+
+
+
+
+
+
+
+   SmallCheckerBoard
+
+
+
+
+   指定带有棋盘外观的阴影。
+
+
+
+
+
+
+
+   SmallConfetti
+
+
+
+
+   指定带有五彩纸屑外观的阴影。
+
+
+
+
+
+
+
+   SolidDiamond
+
+
+
+
+   指定具有对角放置的棋盘外观的阴影。
+
+
+
+
+
+
+
+   Sphere
+
+
+
+
+   指定具有球体彼此相邻放置的外观的阴影。
+
+
+
+
+
+
+
+   Trellis
+
+
+
+
+   指定具有&#26684;架外观的阴影。
+
+
+
+
+
+
+
+   Vertical
+
+
+
+
+   垂直线的图案。
+
+
+
+
+
+
+
+   Wave
+
+
+
+
+   指定由代字号&quot;~&quot;构成的水平线。
+
+
+
+
+
+
+
+   Weave
+
+
+
+
+   指定具有织物外观的阴影。
+
+
+
+
+
+
+
+
+   
+
+
+   TextureBrush：纹理画刷。拥有图案，使用起来填充封闭图形。
+
+
+   创建纹理画刷： 
+
+
+
+
+
+
+
+
+
+
+   public TextureBrush(Image,WrapMode,Rectangle);
+
+
+   public TextureBrush(Image,Rectangle,ImageAttributes);
+
+
+
+
+
+
+
+
+   wrapMode： 纹理或渐变平铺方式
+
+
+
+
+
+
+
+
+
+   名称
+
+
+
+
+   说明
+
+
+
+
+
+
+
+   Tile
+
+
+
+
+   平铺渐变或纹理
+
+
+
+
+
+
+
+   TileFlipX
+
+
+
+
+   水平反转纹理或渐变，然后平铺该纹理或渐变
+
+
+
+
+
+
+
+   TileFlipY
+
+
+
+
+   垂直反转纹理或渐变，然后平铺该纹理或渐变
+
+
+
+
+
+
+
+   TileFlipXY
+
+
+
+
+   水平和垂直反转纹理或渐变，然后平铺该纹理或渐变
+
+
+
+
+
+
+
+
+   
+
+
+   LinearGradientBrush：线渐变画刷。
+
+
+   创建线渐变画刷：
+
+
+
+
+
+
+
+
+
+
+   LinearGradientBrush(Rectangle,Color,Color,
+LinearGradientMode);
+
+
+   LinearGradientBrush(Rectangle,Color,Color,
+float);
+
+
+   LinearGradientBrush(RectangleF,Color,Color,
+float,bool);
+
+
+
+
+
+
+
+
+   LinearGradientMode：枚举元素，它指定渐变方向。
+
+
+
+
+
+
+
+
+
+   名称
+
+
+
+
+   说明
+
+
+
+
+
+
+
+   Horizontal
+
+
+
+
+   指定从左到右的渐变
+
+
+
+
+
+
+
+   Vertical
+
+
+
+
+   指定从上到下的渐变
+
+
+
+
+
+
+
+   ForwardDiagonal
+
+
+
+
+   指定从左上到右下的渐变
+
+
+
+
+
+
+
+   BackwardDiagonal
+
+
+
+
+   指定从右上到左下的渐变
+
+
+
+
+
+
+
+
+   Float：渐变方向线的角度（从 X 轴以顺时针角度计算）
+
+
+   Bool：设置为 true，指定角度受与此 System.Drawing.Drawing2D.LinearGradientBrush 关联的变换所影响；否则为false。
+
+
+   Rectangle：位置，大小，可以用相关参数替换
+
+
+   
+
+
+   PathGradientBrush：路径渐变画刷
+
+
+   创建路径渐变画刷： 
+
+
+
+
+
+
+
+
+
+
+   public PathGradientBrush(GraphicsPath );
+
+
+   public PathGradientBrush(Point[] ,WrapMode);
+
+
+
+
+
+
+
+
+   属性成员： 
+
+
+
+
+
+
+
+
+
+   名称
+
+
+
+
+   说明
+
+
+
+
+
+
+
+   CenterColor
+
+
+
+
+   中心处的颜色
+
+
+
+
+
+
+
+   CenterPoint
+
+
+
+
+   中心点
+
+
+
+
+
+
+
+   FocusScales
+
+
+
+
+   渐变过渡的焦点
+
+
+
+
+
+
+
+   WrapMode
+
+
+
+
+   PathGradientBrush的环绕模式
+
+
+
+
+
+
+
+2.Graphics.DrawImage 方法详解
+
+重载列表
+
+
+
+
+
+
+
+
+
+
+
+名称
+说明
+
+
+
+	
+	DrawImage(Image, Rectangle, Int32, Int32, Int32, Int32, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort, IntPtr)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Single, Single, Single, Single, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort, IntPtr)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Point)
+	在指定的位置使用原始物理大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, Point[])
+	在指定位置并且按指定形状和大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, PointF)
+	在指定的位置使用原始物理大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, PointF[])
+	在指定位置并且按指定形状和大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, Rectangle)
+	在指定位置并且按指定大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, RectangleF)
+	在指定位置并且按指定大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, Int32, Int32)
+	在由坐标对指定的位置，使用图像的原始物理大小绘制指定的图像。
+
+
+
+	
+	DrawImage(Image, Single, Single)
+	在指定的位置使用原始物理大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, Point[], Rectangle, GraphicsUnit)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, PointF[], RectangleF, GraphicsUnit)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Rectangle, GraphicsUnit)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, RectangleF, RectangleF, GraphicsUnit)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Point[], Rectangle, GraphicsUnit, ImageAttributes)
+	在指定位置绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, PointF[], RectangleF, GraphicsUnit, ImageAttributes)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Int32, Int32, Rectangle, GraphicsUnit)
+	在指定的位置绘制图像的一部分。
+
+
+
+	
+	DrawImage(Image, Int32, Int32, Int32, Int32)
+	在指定位置并且按指定大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, Single, Single, RectangleF, GraphicsUnit)
+	在指定的位置绘制图像的一部分。
+
+
+
+	
+	DrawImage(Image, Single, Single, Single, Single)
+	在指定位置并且按指定大小绘制指定的 Image。
+
+
+
+	
+	DrawImage(Image, Point[], Rectangle, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, PointF[], RectangleF, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Point[], Rectangle, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort, Int32)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, PointF[], RectangleF, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort, Int32)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Int32, Int32, Int32, Int32, GraphicsUnit)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Single, Single, Single, Single, GraphicsUnit)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Int32, Int32, Int32, Int32, GraphicsUnit, ImageAttributes)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Single, Single, Single, Single, GraphicsUnit, ImageAttributes)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Int32, Int32, Int32, Int32, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+	
+	DrawImage(Image, Rectangle, Single, Single, Single, Single, GraphicsUnit, ImageAttributes, Graphics.DrawImageAbort)
+	在指定位置并且按指定大小绘制指定的 Image 的指定部分。
+
+
+
+页首
+
+另请参见
+
+
+
+
+
+
+
+参考
+Graphics 类
+
+Graphics 成员
+
+System.Drawing 命名空间

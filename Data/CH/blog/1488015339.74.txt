@@ -1,0 +1,195 @@
+我所见过的讲&quot;javascript中apply、call、bind&quot;最清晰最易懂的文章首先声明这篇文章大部分内容都是转载的，转载自ChokCoco&quot;深入浅出妙用Javascript中apply、call、bind&quot;这篇文章。如此好文章仅仅作为一个链接放在CSDN着实可惜，所以还是自己手动敲一遍，羞涩地冠以原创之名，作为自己的知识库。
+
+
+   阮一峰的这段话说的真好啊，绝对说出了写博客人的心声。&quot;对我来说，博客首先是一种知识管理工具，其次才是传播工具。我的技术文章，主要用来整理我还不懂的知识。我只写那些我还没有完全掌握的东西，那些我精通的东西，往往没有动力写。炫耀从来不是我的动机，好奇才是。&quot;
+
+apply和call的作用
+
+   在 javascript 中，call 和 apply 都是为了改变某个函数运行时的上下文（context）而存在的，换句话说，就是为了改变函数体内部 this 的指向。
+
+
+   JavaScript 的一大特点是，函数存在「定义时上下文」和「运行时上下文」以及「上下文是可以改变的」这样的概念。先来一个例子：
+
+
+   function fruits() {}
+ 
+fruits.prototype = {
+    color: &quot;red&quot;,
+    say: function() {
+ console.log(&quot;My color is &quot; + this.color);
+    }
+}
+ 
+var apple = new fruits;
+apple.say();    //My color is red但是如果我们有一个对象banana= {color : &quot;yellow&quot;} ,我们不想对它重新定义 say 方法，那么我们可以通过 call 或 apply 用 apple 的 say 方法：
+   banana = {
+    color: &quot;yellow&quot;
+}
+apple.say.call(banana);     //My color is yellow
+apple.say.apply(banana);    //My color is yellow所以，可以看出 call 和 apply 是为了动态改变 this 而出现的，当一个 object 没有某个方法（本例子中banana没有say方法），但是其他的有（本例子中apple有say方法），我们可以借助call或apply用其它对象的方法来操作。
+
+
+   
+
+apply、call 的区别
+
+对于apply、call 二者而言，作用完全一样，只是接受参数的方式不太一样。例如，有一个函数定义如下：
+
+
+
+
+
+   var func = function(arg1, arg2) {
+     
+};就可以通过如下方式来调用：
+
+
+
+   func.call(this, arg1, arg2);
+func.apply(this, [arg1, arg2])其中this 是你想指定的上下文，他可以是任何一个 JavaScript 对象(JavaScript 中一切皆对象)，call 需要把参数按顺序传递进去，而 apply 则是把参数放在数组里。JavaScript 中，某个函数的参数数量是不固定的，因此要说适用条件的话，当你的参数是明确知道数量时用 call。而不确定的时候用 apply，然后把参数
+ push 进数组传递进去。当参数数量不确定时，函数内部也可以通过 arguments 这个数组来遍历所有的参数。
+
+
+
+
+
+
+
+
+apply、call的一些使用技巧
+
+1.数组之间追加
+
+
+
+   var array1 = [12 , &quot;foo&quot; , {name &quot;Joe&quot;} , -2458]; 
+var array2 = [&quot;Doe&quot; , 555 , 100]; 
+Array.prototype.push.apply(array1, array2); 
+/* array1 值为  [12 , &quot;foo&quot; , {name &quot;Joe&quot;} , -2458 , &quot;Doe&quot; , 555 , 100] */
+
+2.获取数组中的最大&#20540;和最小&#20540;
+
+
+
+   var  numbers = [5, 458 , 120 , -215 ]; 
+var maxInNumbers = Math.max.apply(Math, numbers),   //458
+    maxNumbers = Math.max.call(Math,5, 458 , 120 , -215); //458
+
+
+
+
+
+3.验证对象是否为数组
+
+
+
+   function isArray(obj){ 
+    return Object.prototype.toString.call(obj) === &#39;[object Array]&#39; ;
+}
+
+
+
+
+
+4.伪数组转换成真正的数组
+
+
+
+   var domNodes = Array.prototype.slice.call(document.getElementsByTagName(&quot;*&quot;));Javascript中存在一种名为伪数组的对象结构。比较特别的是 arguments 对象，还有像调用 getElementsByTagName , document.childNodes 之类的，它们返回NodeList对象都属于伪数组。不能应用 Array下的 push , pop 等方法。但是我们能通过 Array.prototype.slice.call
+ 转换为真正的数组的带有 length 属性的对象，这样 domNodes 就可以应用 Array 下的所有方法了。
+
+
+
+bind
+说完了 apply 和 call ，再来说说bind。bind() 方法与 apply 和 call 很相&#20284;，也是可以改变函数体内 this 的指向。
+
+
+
+MDN的解释是：bind()方法会创建一个新函数，称为绑定函数，当调用这个绑定函数时，绑定函数会以创建它时传入 bind()方法的第一个参数作为 this，传入 bind() 方法的第二个以及以后的参数加上绑定函数运行时本身的参数按照顺序作为原函数的参数来调用原函数。
+
+
+
+直接来看看具体如何使用，在常见的单体模式中，通常我们会使用 _this , that , self 等保存 this ，这样我们可以在改变了上下文之后继续引用到它。 像这样：
+
+
+
+   var foo = {
+    bar : 1,
+    eventBind: function(){
+ var _this = this;
+ $(&#39;.someClass&#39;).on(&#39;click&#39;,function(event) {
+     /* Act on the event */
+     console.log(_this.bar);     //1
+ });
+    }
+}由于 Javascript 特有的机制，上下文环境在 eventBind:function(){ } 过渡到 $('.someClass').on('click',function(event) { }) 发生了改变，上述使用变量保存 this 这些方式都是有用的，也没有什么问题。当然使用 bind() 可以更加优雅的解决这个问题：
+
+
+
+   var foo = {
+    bar : 1,
+    eventBind: function(){
+ $(&#39;.someClass&#39;).on(&#39;click&#39;,function(event) {
+     /* Act on the event */
+     console.log(this.bar);      //1
+ }.bind(this));
+    }
+}在上述代码里，bind() 创建了一个函数，当这个click事件绑定在被调用的时候，它的 this 关键词会被设置成被传入的&#20540;（这里指调用bind()时传入的参数）。因此，这里我们传入想要的上下文 this(其实就是 foo )，到 bind() 函数中。然后，当回调函数被执行的时候， this 便指向 foo 对象。再来一个简单的栗子：
+
+
+
+   var bar = function(){
+	console.log(this.x);
+}
+var foo = {
+	x:3
+}
+bar(); // undefined
+var func = bar.bind(foo);
+func(); // 3再看一段代码：使用了bind强行改变了this
+
+
+
+   var obj = {
+	color:&quot;red&quot;,
+	say : function(){
+		console.log(this.color);
+	}
+}
+   
+obj.say = obj.say.bind({color:&quot;aty&quot;});
+
+obj.say();//aty
+
+apply、call、bind比较
+
+
+   var obj = {
+    x: 81,
+};
+ 
+var foo = {
+    getX: function() {
+ return this.x;
+    }
+}
+ 
+console.log(foo.getX.bind(obj)());  //81
+console.log(foo.getX.call(obj));    //81
+console.log(foo.getX.apply(obj));   //81三个输出的都是81，但是注意看使用 bind() 方法的，他后面多了对括号。也就是说，区别是，当你希望改变上下文环境之后并非立即执行，而是回调执行的时候，使用 bind() 方法。而 apply/call 则会立即执行函数。
+
+
+
+
+
+
+
+再总结一下：
+
+apply 、 call 、bind 三者都是用来改变函数的this对象的指向的；
+
+apply 、 call 、bind 三者第一个参数都是this要指向的对象，也就是想指定的上下文；
+
+apply 、 call 、bind 三者都可以利用后续参数传参；
+
+bind是返回对应函数，便于稍后调用；apply 、call 则是立即调用。

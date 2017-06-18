@@ -1,0 +1,101 @@
+Discriminative Learning和Generative LearningDiscriminative 学习算法是一类模型化输入（X）输出（Y）的关系的方法，简单来说就好比中医，我们只知道用若干个药（当归，虎骨。。。）可以凑成一个药方，就能治疗跌打病痛。但我们并不去了解内部的原因，我们将其看做一个黑盒，只需了解Ｘ和Ｙ的关系，即model Ｐ（Ｙ｜Ｘ）．学习的结果就是X的一组参数，好比当归2钱，虎骨1两。Discriminative Learning要求X的各个项是独立变化的。
+
+
+    Generative学习算法不直接model P(Y|X)，因为这可能非常复杂，例如model 在give 一个X=吸烟的人，Y得肺癌的几率。而是model P(X|Y)，就好像在得肺癌的人里面看吸烟人的情况。我们都知道吸烟的人数亿亿计，但得肺癌的人&#36924;近是少数，model 从得肺癌的人出发，更加容易，比如10万个得肺癌的，抽样1000个就差不多了。
+
+
+    Generative的算法需要考察X的每个项的概率分布情况，即P(Y|{x1,x2,x3...xn})，需要考察P(x1|Y)...P(xn|Y)...
+
+
+   一句话，直接model P(Y|X)的算法就是Discriminative Learning，model P(X|Y)和 P(Y)然后间接的model P(Y|X)的就是 Generative Learning。
+
+
+
+   
+
+
+   以下来自维基百科
+
+
+   http://en.wikipedia.org/wiki/Discriminative_model
+
+
+   Discriminative model
+
+
+From Wikipedia, the free encyclopedia
+
+
+
+
+
+
+   Discriminative modelsare a class of models used inmachine learningfor
+ modeling the dependence of an unobserved variableyon an observed variablex.
+ Within a statistical framework, this is done by modeling theconditional probability distributionP(y|x),
+ which can be used for predictingyfromx.
+
+
+   Discriminative models differ fromgenerative modelsin that they do not allow one
+ to generate samples from thejoint distributionofxandy.
+ However, for tasks such asclassificationandregressionthat
+ do not require the joint distribution, discriminative models generally yield superior performance. On the other hand, generative models are typically more flexible than discriminative models in expressing dependencies in complex learning tasks. In addition,
+ most discriminative models are inherentlysupervisedand cannot easily be extended tounsupervised
+ learning.
+
+
+   Examples of discriminative models used in machine learning include:
+
+
+Logistic regression, a type ofgeneralized
+ linear regressionused for predictingbinaryorcategoricaloutputs
+ (also known asmaximum entropy classifiers)Linear discriminant analysisSupport vector machinesBoostingConditional random fieldsLinear regressionNeural networks
+
+
+
+
+
+   
+
+
+   
+
+Generative model
+
+   
+
+
+From Wikipedia, the free encyclopedia
+
+
+
+
+
+   Inprobabilityandstatistics,
+ agenerative modelis a model for randomly generating observable data, typically given some hidden parameters. It specifies ajoint
+ probability distributionover observation and label sequences. Generative models are used inmachine learningfor either
+ modeling data directly (i.e., modeling observed draws from aprobability density function), or as an intermediate step to
+ forming aconditional probability density function. A conditional distribution can be formed from a generative model through the use ofBayes'
+ rule.
+
+
+   Shannon(1948) gives an example in which a table of frequencies of English word pairs is used to generate
+ a sentence beginning with &quot;representing and speedily is an good&quot;; which is not proper English but which will increasingly approximate it as the table is moved from word pairs to word triplets etc.
+
+
+   Generative models contrast withdiscriminative models, in that a generative model is a
+ full probabilistic model of all variables, whereas a discriminative model provides a model only for the target variable(s) conditional on the observed variables. Thus a generative model can be used, for example, to simulate (i.e.generate)
+ values of any variable in the model, whereas a discriminative model allows only sampling of the target variables conditional on the observed quantities. On the other hand, despite the fact that discriminative models do not need to model the distribution of
+ the observed variables, they cannot generally express more complex relationships between the observed and target variables. They don't necessarily perform better than generative models atclassificationandregressiontasks.
+
+
+   Examples of generative models include:
+
+
+Gaussian mixture modeland other types ofmixture
+ modelHidden Markov modelNaive BayesAODELatent Dirichlet allocationRestricted Boltzmann Machine
+
+   If the observed data are truly sampled from the generative model, then fitting the parameters of the generative model tomaximize
+ the data likelihoodis a common method. However, since most statistical models are only approximations to thetruedistribution, if the model's application is to infer about a subset of variables conditional
+ on known values of others, then it can be argued that the approximation makes more assumptions than are necessary to solve the problem at hand. In such cases, it is often more accurate to model the conditional density functions directly, using adiscriminative
+ model(see above).

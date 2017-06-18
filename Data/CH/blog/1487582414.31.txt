@@ -1,0 +1,302 @@
+飞越千岛湖Description 
+
+
+   勇敢的SwordHoly 完成了任务之后，正在迅速的向自己的基地撤退。但由于后面有着一大群追兵，所以SwordHolys 尽快地返回基地，否则就会被敌人逮住。 终于，SwordHoly来到了最后一站：千岛湖，穿过这里就可以回到基地了。然而敌人依然紧追不舍。不过，千岛湖的地理条件对SwordHoly十分有利，众多的湖泊随处分布。敌人需要绕道而行。但SwordHoly有变成鹰的特殊能力，使得他能轻轻松松地飞越湖面。当然，为了保证安全起见，SwordHoly还是决定找一条能最快回到基地的路。 假设千岛湖是一个m*n的矩阵，它有两种地形，P表示小岛，L表示湖泊。SwordHoly只能停留在小岛上。他目前的位置在左上角（1，1）处。而目的地为右下角的(m,n)。SwordHoly可以向前后左右4个方向移动或者飞行，每移动1格需要1单位时间。而飞行的时间主要花费在变形上，飞行本身时间消耗很短，所以无论一次飞行多远的距离，都只需要1单位时间。飞行的途中不能变向，并且以此飞行最终必须要降落在平地上。当然，由于受到能量的限制，SwordHoly不能无限制的飞行，他总共最多可以飞行的距离为D。在知道了以后了以上的信息后，请你帮助SwordHoly计算一下，他最快到达基地所需要的时间。 
+
+
+   Input 
+
+
+   第一行是3个正整数，m(1&lt;=m&lt;=100),n(1&lt;=n&lt;=100),D(1&lt;=D&lt;=100).表示千岛湖是m*n的矩阵，SwordHoly最多只能飞行距离为D。 接下来的m行每行有n个字符，相互之间没有空格。P表示当前位置是平地，L则表好似湖泊。假定(1,1)和(m,n)一定是平地。 
+
+
+   Output 
+
+
+   一个正整数，表示SwordHoly能到达基地的最短时间。如果无法到达则输出impossible
+
+
+   Sample Input 
+
+
+   
+
+   4 4 2
+PLLP
+PPLP
+PPPP
+PLLP
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   5
+
+   &mdash;&mdash;姚大牛出的题目，很搞~~~
+
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define M 100
+#define INF 10000000
+
+int dir[4][2]={0,1,1,0,0,-1,-1,0};
+char map[M][M];
+
+//record flydistance on position(x,y) with a given step
+int visited[M][M][M];//visited[x][y][step],because different step may have different ways to walk
+int ans=INF,step=0;
+int n,m,d,cnt=0;
+
+struct POINTS
+{
+	int x,y;
+	int step;
+	int fd;//fly distance
+}now,next;
+
+int judge(int x,int y,int used)
+{
+	if(x&gt;=0&amp;&amp;x&lt;n&amp;&amp;y&gt;=0&amp;&amp;y&lt;m&amp;&amp;used&lt;=d&amp;&amp;map[x][y]=='P'&amp;&amp;!(x==n-1&amp;&amp;y==m-1))
+		return 1;
+	else return 0;
+}
+
+int check(int x,int y)
+{
+	if(x&gt;=0&amp;&amp;x&lt;n&amp;&amp;y&gt;=0&amp;&amp;y&lt;m)
+		return 1;
+	else return 0;
+}
+queue&lt;POINTS&gt;Q;
+
+void bfs()
+{
+	int i,j,k;
+	while(!Q.empty())
+		Q.pop();
+	now.x=now.y=now.step=now.fd=0;
+	visited[0][0][0]=now.fd;
+	Q.push(now);
+	while(!Q.empty())
+	{
+		now=Q.front();
+		next=now;
+		Q.pop();
+		for(i=0;i&lt;2;i++)
+		{
+			if(i==0)
+			{
+				for(j=0;j&lt;4;j++)
+				{
+					next.x=now.x+dir[j][0];
+					next.y=now.y+dir[j][1];
+					next.step=now.step+1;
+					if(next.x==n-1&amp;&amp;next.y==m-1)
+					{
+						if(ans&gt;next.step)
+							ans=next.step;
+					}
+					if(judge(next.x,next.y,next.fd)&amp;&amp;(visited[next.x][next.y][next.step]==-1||next.fd&lt;visited[next.x][next.y][next.step]))
+					{
+						Q.push(next);
+						cnt++;
+						visited[next.x][next.y][next.step]=next.fd;
+					}
+				}
+			}
+			if(cnt&gt;=10000)
+				return;
+			else if(i==1)
+			{
+				for(j=0;j&lt;4;j++)//I don't sure whether 2 dirction is ok
+				{
+					k=1;
+					while(next=now,judge(next.x,next.y,next.fd+k))
+					{
+						next.x=now.x+k*dir[j][0];
+						next.y=now.y+k*dir[j][1];
+						if(!check(next.x,next.y))
+							break;
+						next.fd=now.fd+k;
+						next.step=now.step+1;
+						k++;
+						if(next.x==n-1&amp;&amp;next.y==m-1)
+						{
+							if(ans&gt;next.step)
+								ans=next.step;
+						}
+						if(judge(next.x,next.y,next.fd)&amp;&amp;(visited[next.x][next.y][next.step]==-1)||next.fd&lt;visited[next.x][next.y][next.step])
+						{
+							Q.push(next);
+							cnt++;
+							visited[next.x][next.y][next.step]=next.fd;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+int main()
+{
+	while(scanf("%d%d%d",&amp;n,&amp;m,&amp;d)!=EOF&amp;&amp;m&amp;&amp;n)
+	{
+		ans=INF;
+		step=0,cnt=0;
+		memset(visited,-1,sizeof(visited));
+		for(int i=0;i&lt;n;i++)
+		{
+			getchar();
+			for(int j=0;j&lt;m;j++)
+				scanf("%c",&amp;map[i][j]);
+		}
+		bfs();
+		if(ans!=INF)
+			printf("%d/n",ans);
+		else
+			cout&lt;&lt;"impossible"&lt;&lt;endl;
+	}
+} 
+
+
+
+   经叔叔指点&hellip;&hellip;bfs是按step依次入队的呀！那搜出的第一个到(n-1,m-1)结果必然是最优解！！！上面那个代码傻了，再贴一个吧
+
+
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define M 100
+#define INF 10000000
+
+int dir[4][2]={0,1,1,0,0,-1,-1,0};
+char map[M][M];
+
+//record flydistance on position(x,y) with a given step
+int visited[M][M][M];//visited[x][y][step],because different step may have different ways to walk
+int ans=INF,step=0;
+int n,m,d,cnt=0;
+
+struct POINTS
+{
+	int x,y;
+	int step;
+	int fd;//fly distance
+}now,next;
+
+int judge(int x,int y,int used)
+{
+	if(x&gt;=0&amp;&amp;x&lt;n&amp;&amp;y&gt;=0&amp;&amp;y&lt;m&amp;&amp;used&lt;=d&amp;&amp;map[x][y]=='P'&amp;&amp;!(x==n-1&amp;&amp;y==m-1))
+		return 1;
+	else return 0;
+}
+
+int check(int x,int y)
+{
+	if(x&gt;=0&amp;&amp;x&lt;n&amp;&amp;y&gt;=0&amp;&amp;y&lt;m)
+		return 1;
+	else return 0;
+}
+queue&lt;POINTS&gt;Q;
+
+void bfs()
+{
+	int i,j,k;
+	while(!Q.empty())
+		Q.pop();
+	now.x=now.y=now.step=now.fd=0;
+	visited[0][0][0]=now.fd;
+	Q.push(now);
+	while(!Q.empty())
+	{
+		now=Q.front();
+		next=now;
+		Q.pop();
+		for(i=0;i&lt;2;i++)
+		{
+			if(i==0)
+			{
+				for(j=0;j&lt;4;j++)
+				{
+					next.x=now.x+dir[j][0];
+					next.y=now.y+dir[j][1];
+					next.step=now.step+1;
+					if(next.x==n-1&amp;&amp;next.y==m-1)
+					{
+						ans=next.step;
+						return ;
+					}
+					if(judge(next.x,next.y,next.fd)&amp;&amp;(visited[next.x][next.y][next.step]==-1||next.fd&lt;visited[next.x][next.y][next.step]))
+					{
+						Q.push(next);
+						visited[next.x][next.y][next.step]=next.fd;
+					}
+				}
+			}
+			else if(i==1)
+			{
+				for(j=0;j&lt;4;j++)
+				{
+					k=1;
+					while(next=now,judge(next.x,next.y,next.fd+k))
+					{
+						next.x=now.x+k*dir[j][0];
+						next.y=now.y+k*dir[j][1];
+						if(!check(next.x,next.y))
+							break;
+						next.fd=now.fd+k;
+						next.step=now.step+1;
+						k++;
+						if(next.x==n-1&amp;&amp;next.y==m-1)
+						{
+							ans= next.step;
+							return;
+						}
+						if(judge(next.x,next.y,next.fd)&amp;&amp;(visited[next.x][next.y][next.step]==-1)||next.fd&lt;visited[next.x][next.y][next.step])
+						{
+							Q.push(next);
+							visited[next.x][next.y][next.step]=next.fd;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+int main()
+{
+	while(scanf("%d%d%d",&amp;n,&amp;m,&amp;d)!=EOF&amp;&amp;m&amp;&amp;n)
+	{
+		ans=INF;
+		step=0,cnt=0;
+		memset(visited,-1,sizeof(visited));
+		for(int i=0;i&lt;n;i++)
+		{
+			getchar();
+			for(int j=0;j&lt;m;j++)
+				scanf("%c",&amp;map[i][j]);
+		}
+		bfs();
+		if(ans!=INF)
+			printf("%d/n",ans);
+		else
+			cout&lt;&lt;"impossible"&lt;&lt;endl;
+	}
+} 
+
+
+   
+
+
+   没多大区别，就是把cnt的计数去掉了，找到就直接return，效率大升。

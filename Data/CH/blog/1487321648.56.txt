@@ -1,0 +1,67 @@
+Machine Learning实验6 理解核函数#include&quot;stdio.h&quot;
+#include &lt;math.h&gt;
+double function(double matrix[5][4],double theta[3],int sample_i)
+{
+ double ret=0.0;
+ for(int i=0;i&lt;3;++i)
+ {
+  ret+=matrix[sample_i][i]*theta[i];
+ }
+ return ret;
+}
+double theta[3]={1,1,1};
+int main(void)
+{
+ double matrix[5][4]={
+   {1,1,1,1},
+   {1,1,4,2},
+   {1,1,9,3},
+   {1,1,16,4},
+   {1,1,25,5},
+      };
+
+ double alfa = 0.1;
+ double c = 0;
+ double d = 0.5;
+
+ double loss = 0.0;
+ for(int j = 0;j&lt;15;++j)
+ {
+  double sum=function(matrix,theta,j);
+  loss += pow((pow(sum+c,d)-matrix[j][3]),2);
+ }
+ printf(&quot;loss : %lf\n&quot;,loss);
+ for(int i=0;i&lt;200;++i)
+ {
+  for(int sample_i = 0; sample_i&lt;5;sample_i++)
+  {
+   double result = function(matrix,theta,sample_i)+c;
+   for(int j=0;j&lt;3;++j)
+   {
+    theta[j] = theta[j] - alfa*(pow(result,d)-matrix[sample_i][3])*d*pow((result),d-1)*matrix[sample_i][j];
+   }
+  }
+  double loss = 0.0;
+  for(int j = 0;j&lt;5;++j)
+  {
+   double sum=function(matrix,theta,j);
+   loss += pow((pow(sum+c,d)-matrix[j][3]),2);
+  }
+  printf(&quot;%d,loss  now: %lf,%lf,%lf,%lf\n&quot;,i,loss,theta[0],theta[1],theta[2]);
+
+ }
+ return 0;
+}
+
+   上面这个是多项式核函数的实验，暂时不解释。未来整体写一个博客来解释。
+
+
+   通过本实验加强对向量点乘的理解。
+
+
+   以上实验受到Multivariate calculus课程的影响
+
+
+   网易公开课看到这个课程：http://v.163.com/special/opencourse/multivariable.html
+
+MIT地址：http://ocw.mit.edu/courses/mathematics/18-02sc-multivariable-calculus-fall-2010/

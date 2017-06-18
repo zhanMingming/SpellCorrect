@@ -1,0 +1,34 @@
+《深入搜索引擎》勘误新增两条 感谢尚家兴同学的指正第二章
+
+
+    P62 第3段第4行
+
+
+    译文：在这种情况下，需要使用6个算术编码步骤。这看上去很多，实际上很少。
+
+
+    较好的翻译应该是：这看上去很多，但这种情况发生的概率很小。
+
+
+    in this case, six arithmetic encoding stpes would be required. This may seem extreme,but actually it is very rare-during the early parts of the text, while the model is still learning, it is unlikely that fifth-order contexts will be repeated,and once...
+
+
+    --------贡献人 尚家兴 2010-8-27
+
+
+   
+
+
+    P62 第3段第5行
+
+
+    译文：在处理文本的前面部分时，模型仍然在学习阶段。五阶上下文重复出现的概率很低，当建模由速度决定时，不太可能需要低阶上下文。
+
+
+    较好的翻译应该是：在处理文本的前面部分是，模型仍然在学习阶段，五阶上下文重复出现的概率很低（因此需要低阶上下文），当算法进行到一定程度时（步入正轨），就太可能需要低阶上下文了。（因此作者后面才得出结论这种算法比单纯的0阶算法只稍慢一些）。
+
+
+    --------贡献人 尚家兴 2010-8-27
+
+
+   全部勘误参见：http://blog.csdn.net/pennyliang/archive/2009/06/26/4300493.aspx

@@ -1,0 +1,268 @@
+面向对象包的设计原则ADP/SDP/SAP与包的设计度量工具jDependRobert C. Martin名著《敏捷软件开发：原则、模式与实践》一书第20章“包的设计原则”提到了几个很重要的设计原则。这篇文章主要看下涉及包的依赖性和稳定性的3个设计原则ADP/SDP/SAP。熟悉这3个设计原则之后，我们再看下度量工具jDepend的使用。
+
+1.ADP(Acyclic Dependencies Principle)
+
+无循环依赖原则，这个比较简单，就是包之间不允许有循环依赖。
+
+
+
+
+
+
+2.SDP(Stable DependenciesPrinciple)
+
+稳定依赖原则，包应该朝着稳定的方向进行依赖。比如我们有3个包A、B、C，其中A依赖于B，B依赖于C，SDP原则要求包的稳定性关系是A&lt;=B&lt;=C。也就是说越高层的包越不稳定，越底层的包越稳定。稳定意味一旦修改，工作量会非常的大。具有很多输入依赖关系的包是非常稳定的，因为如果修改它，那么所有依赖它的其他包都要修改。比如J2EE项目，一般会分为action层、service层、dao层、vo层，它们之间一般会存在如下的依赖关系：
+
+
+
+
+
+
+
+
+
+
+
+
+我们称vo是最稳定的，action是最不稳定的。因为一旦我们修改vo，那么action、service、dao都需要修改；如果我们修改action，那么service、dao、vo都不会受影响。可以看到：包的输入依赖越多就会越稳定，也就越难以修改。
+
+
+
+
+
+
+
+现在我们看下如何通过数据指标来度量包的稳定性。我们定义3个指标：Ca、Ce、I。
+
+
+Ca：输入耦合(Afferent Coupling)，指处于该包的外部并依赖于该包中的类的类的数目。
+
+
+Ce：输出耦合(Effernet Coupling)，指处于该包的内部并依赖于该包外的类的类的数目。
+
+
+I：不稳定性(Instability)，其中I = Ce / (Ca &#43; Ce)，该度量的取&#20540;范围是[0, 1]。I=0 表示该包具有最大的稳定性，I=1 表示该包具有最大的不稳定性。
+
+
+
+
+
+
+
+当一个包的I度量&#20540;为1时，意味着没有任何其他包依赖于该包(Ca=0)，也就是说该包并不承担责任，就可以随意的修改。当一个包的I度量&#20540;为0，意味着它是有责任的，因为别的包依赖它。SDP原则规定一个包的I&#20540;应该大于它所依赖的包的I&#20540;，也就是说I的&#20540;应该顺着依赖的方向减少。
+
+
+
+
+
+
+3.SAP(Stable Abstractions Principle)
+
+稳定抽象原则，包的抽象程度和其稳定程度一致。一个稳定的包应该也是抽象的，这样它的稳定性就不会使其无法扩展。一个不稳定的包应该是具体的，因为它的不稳定性使得其内部的代码易于修改。SDP规定依赖应该朝着稳定的方向进行，SAP规定依赖应该朝着抽象的方向进行。
+
+
+
+
+
+
+
+抽象性的度量，我们定义指标Na，Nc，A。
+
+
+Na：包中抽象类的数目，对应java中的是抽象类和接口。
+
+
+Nc：包中类的数目。
+
+
+A：抽象性，A = Na/Nc，A的取&#20540;范围是[0，1]，A=0意味着包没有任何抽象类，A=1意味着包中只包含抽象类。
+
+
+
+
+
+
+4.稳定性和抽象性的关系D
+
+我们创建一个以A为y轴，以I为x轴的坐标系。如果在坐标轴中绘制出两种“好”的包类型，会发现那些最稳定、最抽象的包位于左上角的(0,1)处；那些最不稳定、最具体的包位于右下角的(1,0)处。
+
+
+
+
+
+
+
+
+
+
+
+
+并不是所有的包都会落在这两个好的位置。比如一个抽象类派生自另一个抽象类的情况是很常见的。派生类是具有依赖性的抽象体，因此它虽然是最大程度的抽象，但却不是最大程度的稳定。它的依赖性会降低它的稳定性。因此不能强制所有的包都位于(0,1)或者(1,0)处。那么问题就来了，依赖性A和抽象性I满足什么的关系是合理的呢？
+
+
+
+
+
+
+
+
+
+
+
+
+考虑(0,0)附近的包，这是一个高度稳定而且具体的包。我们不想要这种包，因为它是僵化的，无法对其进行扩展，因为它不是抽象的。并且由于它的稳定性，也很难对它进行修改。通常我们不希望设计良好的包位于(0,0)附近，称之为痛苦地带(Zone of Pain)。
+
+
+
+
+
+
+
+应该注意，在有些情况下，包确实会落入痛苦地带。比如数据库模式，对应我们应用程序VO层中的实体类。数据库模式的易变性是众所周知的，但是这些实体类却是非常具体的、被高度依赖的。这就是为什么面向对象应用程序和数据库之间的接口难以定义、以及数据库模式的修改非常痛苦的原因。
+
+
+
+
+
+
+
+还有另一种包位于(0,0)附近的情况，比如我们的工具包，如StringUtils、CollectionUtils等，这种包里面的类是具体的，也是被高度依赖的。这种位于(0,0)附近的包是没有什么问题的，因为工具类很少改变。
+
+
+
+
+
+
+
+
+
+
+
+
+考虑(1,1)附近的包，这不是一个好位置，因为该位置的包具有最大的抽象性但是却没有依赖者。显然这种包是无用的，称这个区域为无用地带(Zone of Uselessness)。
+
+
+
+
+
+
+
+很显然，我们想让可变的包都尽可能地远离这2个被排除的区域。那些离这2个区域最远的轨迹点组成了连接(1,0)和(0,1)这2个好位置的直线。该线称之为主序列(main sequence)。位于主序列上的包既不是太抽象，因为它具有稳定性；也不是太稳定，因为它具有抽象性。它既不是无用的，又不是特别令人痛苦的。
+
+
+
+
+
+
+
+显然，包的最佳位置位于主序列的2个端点处。一般来说，项目中可以具有这种最佳特征的包少于一半。对于其他包来说，它们能够位于主序列上或者主序列附近就已经很不错了。
+
+
+
+
+
+
+
+如果希望包能够位于或者靠近主序列，那么我们可以创建一个度量指标来衡量包到这个理想位置的距离。D = | A &#43; I - 1|/sqrt(2)，该&#20540;的范围是[0,0.707]。由于带了根号，所以不方便，一般我们使用规范化距离D' = |A &#43; I - 1|，取&#20540;范围是[0,1]。0表示包刚好位于主序列上，1表示包到主序列的距离最远。使用规范化距离，非常有助于确定哪些包更容易维护，哪些包对变化更不敏感。
+
+
+
+
+
+
+5.包度量工具jDepend
+
+有了上面这些理论作为支撑，接下来看看如何使用jDepend，这个工具能够帮我们计算上面各种度量指标的&#20540;。jDepend官网描述如下：
+
+
+
+   JDepend traverses Java class file directories and generates design quality metrics for each Java package. 
+JDepend allows you to automatically measure the quality of a design in terms of its extensibility, 
+reusability, and maintainability to manage package dependencies effectively.
+
+
+
+
+
+
+jDepend有独立版，也有eclipse插件版，是一个很轻量级的工具，我使用的是JDepend4Eclipse插件。安装完插件后，可以在Eclipse的preference里面对jdepend进行一些配置(主要就是为了忽略某些jdk或者第三方的类库)。
+
+
+
+
+
+
+
+
+
+忽略JDK/Android这些基础类库，或者某些第三方库，主要是为了方便计算传入耦合和传出耦合这2个指标。使用jDepend插件很简单，选中项目的src目录(注意：不是工程目录)，右键菜单有一个“Run jDepend Analysis”。
+
+
+
+
+
+
+
+
+
+
+
+
+jDepend输出的几个度量指标&#20540;，跟我们上面介绍的理论基本一致。jDepend官方对这几个指标解释如下：
+
+
+
+   1.Number of Classes and Interfaces
+The number of concrete and abstract classes (and interfaces) in the package is an indicator of the 
+extensibility of the package.
+
+2.Afferent Couplings (Ca)
+The number of other packages that depend upon classes within the package is an indicator of the 
+package&#39;s responsibility.
+
+3.Efferent Couplings (Ce)
+The number of other packages that the classes in the package depend upon is an indicator of the 
+package&#39;s independence.
+
+4.Abstractness (A)
+The ratio of the number of abstract classes (and interfaces) in the analyzed package to the total
+number of classes in the analyzed package.
+
+The range for this metric is 0 to 1, with A=0 indicating a completely concrete package and A=1 
+indicating a completely abstract package.
+
+5.Instability (I)
+The ratio of efferent coupling (Ce) to total coupling (Ce + Ca) such that I = Ce / (Ce + Ca). This 
+metric is an indicator of the package&#39;s resilience to change.
+
+The range for this metric is 0 to 1, with I=0 indicating a completely stable package and I=1
+indicating a completely instable package.
+
+6.Distance from the Main Sequence (D)
+The perpendicular distance of a package from the idealized line A + I = 1. This metric is an indicator 
+of the package&#39;s balance between abstractness and stability.
+
+A package squarely on the main sequence is optimally balanced with respect to its abstractness and
+stability. Ideal packages are either completely abstract and stable (x=0, y=1) or completely concrete
+and instable (x=1, y=0).
+
+The range for this metric is 0 to 1, with D=0 indicating a package that is coincident with the main 
+sequence and D=1 indicating a package that is as far from the main sequence as possible.
+
+7.Package Dependency Cycles
+Package dependency cycles are reported along with the hierarchical paths of packages participating in 
+package dependency cycles.可以看到Ca和Ce的计算，我们上面的理论用的是类的数目，而jDepend用的是包的数目，其他指标是一样的。
+
+
+
+
+
+
+
+参考文章：
+
+
+《敏捷软件开发：原则、模式与实践》Robert C. Martin
+
+
+jDepend官网：http://www.clarkware.com/software/JDepend.html

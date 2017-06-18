@@ -1,0 +1,182 @@
+(三)seajs中的模块标识本文转载自[模块标识#258]，介绍下模块id相关的东东。
+
+
+   模块标识是一个字符串，用来标识模块。在 require、 require.async 等加载函数中，第一个参数都是模块标识。Sea.js 中的模块标识是 CommonJS模块标识的超集。也就是说符合CommonJS规范的id，一定符合seajs，反之则不然。
+
+
+
+
+   CommonJS的id规范如下：
+
+
+   1.A module identifier is a String of &quot;terms&quot; delimited by forward slashes.
+
+
+   2.A term must be a camelCase identifier, &quot;.&quot;, or &quot;..&quot;.
+
+
+   3.Module identifiers may not have file-name extensions like &quot;.js&quot;.
+
+
+   4.Module identifiers may be &quot;relative&quot; or &quot;top-level&quot;. A module identifier is &quot;relative&quot; if the first term is &quot;.&quot; or &quot;..&quot;.
+
+
+   5.Top-level identifiers are resolved off the conceptual module name space root.
+
+
+   6.Relative identifiers are resolved relative to the identifier of the module in which &quot;require&quot; is written and called.
+
+
+
+相对标识
+
+   相对标识以 . 开头，只出现在模块环境中（define 的 factory 方法里面）。相对标识永远相对当前模块的 URI 来解析：
+
+
+
+
+   
+
+
+   // 在 http://example.com/js/a.js 的 factory 中：
+require.resolve(&#39;./b&#39;);
+  // =&gt; http://example.com/js/b.js
+
+// 在 http://example.com/js/a.js 的 factory 中：
+require.resolve(&#39;../c&#39;);
+  // =&gt; http://example.com/c.js
+
+
+   
+
+顶级标识
+
+   
+
+
+   顶级标识不以点（.）或斜线（/）开始， 会相对模块系统的基础路径（即 Sea.js 的 base 路径）来解析：
+
+
+   // 假设 base 路径是：http://example.com/assets/
+
+// 在模块代码里：
+require.resolve(&#39;gallery/jquery/1.9.1/jquery&#39;);
+  // =&gt; http://example.com/assets/gallery/jquery/1.9.1/jquery.js
+
+模块系统的基础路径即 base 的默认&#20540;，与 sea.js 的访问路径相关：
+   如果 sea.js 的访问路径是：
+  http://example.com/assets/sea.js
+
+则 base 路径为：
+  http://example.com/assets/
+
+当 sea.js 的访问路径中含有版本号时，base 不会包含 seajs/x.y.z 字串。 当 sea.js 有多个版本时，这样会很方便。
+   如果 sea.js 的路径是：
+  http://example.com/assets/seajs/1.0.0/sea.js
+
+则 base 路径是：
+  http://example.com/assets/
+
+当然，也可以手工配置 base 路径, 最佳实践就是手动配置base：
+   seajs.config({
+  base: &#39;http://code.jquery.com/&#39;
+});
+
+// 在模块代码里：
+require.resolve(&#39;jquery&#39;);
+  // =&gt; http://code.jquery.com/jquery.js
+
+
+   
+
+普通路径
+
+   
+
+
+   除了相对和顶级标识之外的标识都是普通路径。普通路径的解析规则，和 HTML 代码中的 &lt;script src=&quot;...&quot;&gt;&lt;/script&gt; 一样，会相对当前页面解析。
+
+
+   // 假设当前页面是 http://example.com/path/to/page/index.html
+
+// 绝对路径是普通路径：
+require.resolve(&#39;http://cdn.com/js/a&#39;);
+  // =&gt; http://cdn.com/js/a.js
+
+// 根路径是普通路径：
+require.resolve(&#39;/js/b&#39;);
+  // =&gt; http://example.com/js/b.js
+
+// use 中的相对路径始终是普通路径：
+seajs.use(&#39;./c&#39;);
+  // =&gt; 加载的是 http://example.com/path/to/page/c.js
+
+seajs.use(&#39;../d&#39;);
+  // =&gt; 加载的是 http://example.com/path/to/d.js
+
+提示：
+
+
+
+1.顶级标识始终相对 base 基础路径解析。
+
+   
+
+
+   2.绝对路径和根路径始终相对当前页面解析。
+
+
+   3.require 和 require.async 中的相对路径相对当前模块路径来解析。
+
+
+   4.seajs.use 中的相对路径始终相对当前页面来解析。
+
+
+
+
+   
+
+
+
+文件后缀的自动添加规则
+
+   Sea.js 在解析模块标识时， 除非在路径中有问号（?）或最后一个字符是井号（#），否则都会自动添加 JS 扩展名（.js）。如果不想自动添加扩展名，可以在路径末尾加上井号（#）。
+
+
+   // &quot;.js&quot; 后缀可以省略：
+require.resolve(&#39;http://example.com/js/a&#39;);
+require.resolve(&#39;http://example.com/js/a.js&#39;);
+  // =&gt; http://example.com/js/a.js
+
+// &quot;.css&quot; 后缀不可省略：
+require.resolve(&#39;http://example.com/css/a.css&#39;);
+  // =&gt; http://example.com/css/a.css
+
+// 当路径中有问号（&quot;?&quot;）时，不会自动添加后缀：
+require.resolve(&#39;http://example.com/js/a.json?callback=define&#39;);
+  // =&gt; http://example.com/js/a.json?callback=define
+
+// 当路径以井号（&quot;#&quot;）结尾时，不会自动添加后缀，且在解析时，会自动去掉井号：
+require.resolve(&#39;http://example.com/js/a.json#&#39;);
+  // =&gt; http://example.com/js/a.json
+
+
+
+
+   
+
+设计原则
+
+   模块标识的规则就上面这些，设计的核心出发点是：
+
+
+
+1.关注度分离。比如书写模块 a.js 时，如果需要引用 b.js，则只需要知道 b.js 相对 a.js 的相对路径即可，无需关注其他。
+
+
+
+2.尽量与浏览器的解析规则一致。比如根路径（/xx/zz）、绝对路径、以及传给 use 方法的非顶级标识，都是相对所在页面的 URL 进行解析。
+
+
+
+一旦理解了以上两点，一切都会很自然、很简单。不必刻意去记这些规则，多写写，自然就会。

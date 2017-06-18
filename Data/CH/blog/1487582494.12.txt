@@ -1,0 +1,800 @@
+深入理解c++拷贝构造函数<!--
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:普通表格;
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+-->
+
+
+   C++
+拷贝构造函数的几个细节
+
+
+
+
+
+
+
+   关键字
+: c++
+
+
+
+
+
+   拷贝构造函数是
+C++
+最基础的概念之一，大家自认为对拷贝构造函数了解么？请大家先回答一下三个问题
+:
+
+
+
+
+   1.
+
+以下函数哪个是拷贝构造函数
+,
+为什么
+?
+
+
+
+
+
+
+   1. 
+
+
+X::X(
+const
+X&amp;); 
+
+
+
+
+
+
+   2. 
+
+
+X::X(X); 
+
+
+
+
+
+   3. 
+
+
+X::X(X&amp;,
+int
+a=1);
+
+
+
+
+
+
+   4. 
+
+
+X::X(X&amp;,
+int
+a=1,b=2);
+
+
+
+
+
+
+
+   
+2.
+
+一个类中可以存在多于一个的拷贝构造函数吗
+?
+
+
+
+
+
+   3.
+
+写出以下程序段的输出结果
+, 
+并说明为什么
+?
+
+如果你都能回答无误的话，那么你已经对拷贝构造函数有了相当的了解。
+
+
+
+
+
+
+
+   1. 
+
+
+#include&lt;iostream&gt;&lt;/iostream&gt;
+
+
+
+
+
+
+
+
+   2. 
+
+
+#include&lt;string&gt;&lt;/string&gt;
+
+
+
+
+
+
+
+
+   3. 
+
+
+
+
+
+
+
+
+
+   4. 
+
+
+struct
+X{ 
+
+
+
+
+
+
+
+   5. 
+
+
+
+template
+&lt;
+typename
+T&gt; 
+
+
+
+
+
+
+
+
+   6. 
+
+
+X(T&amp;){std::cout&lt;&lt;
+&quot;Thisisctor.&quot;
+&lt;&lt;std::endl;} 
+
+
+
+
+
+
+
+   7. 
+
+
+
+
+
+
+
+
+
+   8. 
+
+
+
+template
+&lt;
+typename
+T&gt; 
+
+
+
+
+
+
+
+
+   9. 
+
+
+X&amp;operator=(T&amp;){std::cout&lt;&lt;
+&quot;Thisisctor.&quot;
+&lt;&lt;std::endl;} 
+
+
+
+
+
+
+
+   10. 
+
+
+}; 
+
+
+
+
+
+
+   11. 
+
+
+
+
+
+
+
+
+
+   12. 
+
+
+void
+main(){ 
+
+
+
+
+
+
+
+   13. 
+
+
+Xa(5); 
+
+
+
+
+
+
+   14. 
+
+
+Xb(10.5); 
+
+
+
+
+
+
+   15. 
+
+
+Xc=a; 
+
+
+
+
+
+
+   16. 
+
+
+c=b; 
+
+
+
+
+
+
+   17. 
+
+
+}
+
+
+
+
+
+
+
+
+   
+
+
+
+
+   解答如下：
+
+
+
+
+
+
+   1. 
+
+
+对于一个类
+X,
+如果一个构造函数的第一个参数是下列之一
+:
+a) X&amp;
+b) const X&amp;
+c) volatile X&amp;
+d) const volatile X&amp;
+
+且没有其他参数或其他参数都有默认值
+,
+那么这个函数是拷贝构造函数
+.
+
+
+
+
+
+
+
+
+   但是此时调用的时候，你必须显示指定，否则会有二义性。
+
+
+
+
+
+
+
+   2. 
+
+
+X::X(
+const
+X&amp;);
+//
+是拷贝构造函数
+
+
+
+
+
+
+
+
+
+
+
+   3. 
+
+
+X::X(X&amp;,int=1);
+//
+是拷贝构造函数
+
+
+
+
+
+
+
+
+
+
+
+   2.
+类中可以存在超过一个拷贝构造函数
+,
+
+
+
+
+
+
+   1. 
+
+
+class
+X{ 
+
+
+
+
+
+
+
+   2. 
+
+
+public
+: 
+
+
+
+
+
+
+
+   3. 
+
+
+X(
+const
+X&amp;); 
+
+
+
+
+
+
+
+   4. 
+
+
+X(X&amp;);
+//OK
+
+
+
+
+
+
+
+
+   5. 
+
+
+};
+
+
+
+
+
+
+
+
+   注意
+,
+如果一个类中只存在一个参数为
+X&amp;
+的拷贝构造函数
+,
+那么就不能使用
+const X
+或
+volatile X
+的对象实行拷贝初始化
+.
+
+
+
+
+
+
+
+
+
+
+
+   1. 
+
+
+class
+X{ 
+
+
+
+
+
+
+
+   2. 
+
+
+public
+: 
+
+
+
+
+
+
+
+   3. 
+
+
+X(); 
+
+
+
+
+
+
+   4. 
+
+
+X(X&amp;); 
+
+
+
+
+
+
+   5. 
+
+
+}; 
+
+
+
+
+
+
+   6. 
+
+
+ 
+
+
+
+
+
+
+   7. 
+
+
+const
+Xcx; 
+
+
+
+
+
+
+
+   8. 
+
+
+Xx=cx;
+//error
+
+
+
+
+
+
+
+
+
+
+   如果一个类中没有定义拷贝构造函数
+,
+那么编译器会在需要的时候生成一个默认的拷贝构造函数(按位拷贝)
+.
+
+这个默认的参数可能为
+X::X(const X&amp;)
+或
+X::X(X&amp;),
+由编译器根据上下文决定选择哪一个
+.
+
+
+
+
+
+
+
+
+
+   默认拷贝构造函数的行为如下
+:
+
+默认的拷贝构造函数执行的顺序与其他用户定义的构造函数相同
+,
+执行先父类后子类的构造
+.
+
+拷贝构造函数对类中每一个数据成员执行成员拷贝
+(memberwise Copy)
+的动作
+.
+a)
+如果数据成员为某一个类的实例
+,
+那么调用此类的拷贝构造函数
+.
+b)
+如果数据成员是一个数组
+,
+对数组的每一个执行按位拷贝
+.
+
+
+c)
+如果数据成员是一个数量
+,
+如
+int,double,
+那么调用系统内建的赋值运算符对其进行赋值
+.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+   3.
+ 
+拷贝构造函数不能由成员函数模版生成
+.
+
+
+
+
+
+
+
+   1. 
+
+
+struct
+X{ 
+
+
+
+
+
+
+
+   2. 
+
+
+
+template
+&lt;
+typename
+T&gt; 
+
+
+
+
+
+
+
+
+   3. 
+
+
+X(
+const
+T&amp;);
+//NOTcopyctor,Tcan'tbeX
+
+
+
+
+
+
+
+
+
+   4. 
+
+
+
+
+
+
+
+
+
+   5. 
+
+
+
+template
+&lt;
+typename
+T&gt; 
+
+
+
+
+
+
+
+
+   6. 
+
+
+operator=(
+const
+T&amp;);
+//NOTcopyass't,Tcan'tbeX
+
+
+
+
+
+
+
+
+
+   7. 
+
+
+}; 
+
+
+
+
+
+
+   8. 
+
+
+
+
+
+
+
+
+
+
+
+   原因很简单
+, 
+成员函数模版并不改变语言的规则
+,
+而语言的规则说
+,
+如果程序需要一个拷贝构造函数而你没有声明它
+,
+那么编译器会为你自动生成一个
+. 
+所以成员函数模版并不会阻止编译器生成拷贝构造函数
+, 
+赋值运算符重载也遵循同样的规则
+.(
+参见
+Effective C++ 3edition, Item45)

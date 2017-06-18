@@ -1,0 +1,314 @@
+寻找前K大数寻找前K大数，虽然这个问题已经被做烂了，但是无意中看到之前A题时候的一个代码，还是忍不住改了改想提高下效率，从O(NlogN)降到O（N+KlogK）。
+
+   
+
+   
+Problem Description
+浙江桐乡乌镇共有n个人,请找出该镇上的前m个大富翁.
+
+Input
+输入包含多组测试用例.每个用例首先包含2个整数n（0&lt;n&lt;=100000）和m(0&lt;m&lt;=10)，其中: n为镇上的人数，m为需要找出的大富翁数, 接下来一行输入镇上n个人的财富值.n和m同时为0时表示输入结束.
+
+Output
+请输出乌镇前m个大富翁的财产数，财产多的排前面，如果大富翁不足m个，则全部输出,每组输出占一行.
+
+Sample Input
+
+   3 1
+2 5 -1
+5 3
+1 2 3 4 5
+0 0
+
+
+Sample Output
+
+   5
+5 4 3
+
+
+
+
+
+   
+
+   
+
+   当时用的是很简单的冒泡和sort，恩，也就是对数组全部元素排序，复杂度O(NlogN), 但是当K很小时，比如题目中K&lt;=10的情况无疑浪费了。因此用quicksort的思路，每次将数组partition成两部分，一边＜key，一边＞key。然后迭代地找前k大数。
+
+   
+
+   code：
+
+   
+
+   //
+//  k_biggest_num.c
+//  ACM
+//  Find the k biggest number in an array
+//
+//  Created by Rachel on 14-2-13.
+//  Copyright (c) 2014年 ZJU. All rights reserved.
+//
+
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;stdio.h&gt;
+#include &lt;functional&gt;
+#include &lt;utility&gt;
+using namespace std;
+#define N 100010
+#define K 11
+typedef int DT;//datatype: DT
+DT A[N];
+DT kbig[K];
+DT partition_r[N],partition_l[N];
+
+void swap(DT* a, DT* b)
+{
+    DT t = *a;
+    *a = *b;
+    *b = t;
+}
+
+pair&lt;int,int&gt; findKbig(int left, int right, int k)
+{
+    int l = left, r = right, m = (l+r)/2;
+	DT key = A[m];
+	while(l&lt;=r)
+	{
+		while(A[l]&lt;key) l++;
+		while(A[r]&gt;key) r--;
+		if(l&lt;=r) 
+		{
+			swap(&amp;A[l],&amp;A[r]); l++; r--;
+		}
+	}
+	/*
+	for(int i = left; i&lt;=right; i++)
+		cout&lt;&lt;A[i]&lt;&lt;&quot; &quot;;
+	cout&lt;&lt;endl;
+	*/
+
+	int n = right-l+1; //#elements &gt; key
+	pair&lt;int, int&gt; lr = make_pair(l,right);
+	if(right-left+1==k)
+	{
+		lr.first = left;
+		return lr;
+	}
+	else if(n==k)
+		return lr;
+	else if(n&gt;k)
+		return findKbig(l,right,k);
+	else
+	{
+		lr.first = findKbig(left,l-1,k-n).first;
+		return lr;
+	}
+}
+
+int main()
+{
+    int i,n,k;
+    while (true) {
+ cin&gt;&gt;n&gt;&gt;k;
+ 
+ if (n==0 &amp;&amp; k==0) {
+     break;
+ }
+ k = k&gt;n?n:k;
+ for (i=0; i&lt;n; i++) {
+     cin&gt;&gt;A[i];
+ }
+ pair&lt;int,int&gt; P = findKbig(0,n-1,k);
+		int l = P.first, r = P.second;
+		DT res[K];
+		memset(res,0,sizeof(res));
+		for(i = l; i&lt;=r ; i++)
+			res[i-l] = A[i];
+ sort(res, res+K,greater&lt;int&gt;());
+ for (i = 0; i&lt;k-1; i++) {
+     cout&lt;&lt;res[i]&lt;&lt;&quot; &quot;;
+ }
+ cout&lt;&lt;res[i]&lt;&lt;endl;
+    }
+    return 0;
+}
+some typical testing samples：
+   
+
+   
+
+   6 3
+
+   2 4 6 9 1 2
+
+   
+
+   10 3
+
+   2 3 4 1 53 23 52 32 32 32
+
+   
+
+   4 2
+
+   24 34 24 24
+
+   
+
+   5 6
+
+   1 2 3 4 5
+
+   
+
+   5 3
+
+   5 3 1 4 2
+
+   
+
+   5 3
+
+   1 2 1 1 1
+
+   
+
+   5 3
+
+   1 2 3 4 5
+
+   
+
+   10 4
+
+   2 5 3 6 2 7 8 7 4 3
+
+   
+
+   
+---------------------------------------------------
+   复杂度：
+
+   假设每次partition砍掉一半，则
+
+   T(N) = T(N/2) + N
+
+   = T(N/4) + N + N/2
+
+   = ...
+
+   = T(1) + N + N/2 + N/4 + ...
+
+   
+
+   ∴T(N) = N + N/2 + N/4 + ... = 2N
+
+   
+
+   再对选出元素排序：O(KlogK)
+
+   所以复杂度O(N+KlogK).
+
+   
+
+   
+
+   
+
+   法2. 最小堆（size = k）
+
+   复杂度O(nlogk)
+
+   
+   //
+//  k_biggest_num.c
+//  ACM
+//  Find the k biggest number in an array
+//
+//  Created by Rachel on 14-2-16.
+//  Copyright (c) 2014年 ZJU. All rights reserved.
+//
+
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;stdio.h&gt;
+#include &lt;functional&gt;
+#include &lt;utility&gt;
+using namespace std;
+#define N 100010
+#define K 12
+typedef int DT;//datatype: DT
+DT kbig[K];//minheap
+
+inline void swap(DT* a, DT* b)
+{
+    DT t = *a;
+    *a = *b;
+    *b = t;
+}
+
+void AdjustHeap(int idx, int k)
+{
+	int left = idx*2+1;
+	int right = idx*2+2;
+	int pos; // the position of smaller child
+	if(left&gt;k-1) return;
+	else if(right&gt;k-1) pos = left;
+	else pos = kbig[left]&lt;kbig[right]?left:right;
+
+	if(kbig[pos]&lt;kbig[idx])
+	{
+		swap(&amp;kbig[pos],&amp;kbig[idx]);
+		AdjustHeap(pos,k);
+	}	
+}
+
+void BuildHeap(int k)
+{
+	int nonleaf_idx = (k-2)/2;
+	for (int i = nonleaf_idx; i&gt;=0; i--)
+		AdjustHeap(i,k);
+}
+
+int main()
+{
+    int i,n,k,tmp;
+    while (scanf(&quot;%d%d&quot;,&amp;n,&amp;k)!=EOF) {
+ 
+ if (n==0 &amp;&amp; k==0)
+     break;
+
+ k = k&gt;n?n:k;
+ for (i=0; i&lt;k; i++)
+			scanf(&quot;%d&quot;,&amp;kbig[i]);
+		BuildHeap(k);
+		for (i=k; i&lt;n; i++)
+		{
+			scanf(&quot;%d&quot;,&amp;tmp);
+			if(tmp&gt;kbig[0])
+			{
+				kbig[0] = tmp;
+				AdjustHeap(0,k);//top-down adjust
+			}
+		}
+		sort(kbig,kbig+k,greater&lt;int&gt;());
+ for (i = 0; i&lt;k-1; i++)
+			printf(&quot;%d &quot;,kbig[i]);
+ cout&lt;&lt;kbig[i]&lt;&lt;endl;
+    }
+    return 0;
+}
+
+
+   
+
+   
+
+   谢谢Swordholy和xindoo的纠错~
+
+   
+
+   关于Algorithms更多的学习资料将继续更新，敬请关注本博客和新浪微博Rachel Zhang。

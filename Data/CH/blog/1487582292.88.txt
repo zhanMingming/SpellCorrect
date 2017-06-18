@@ -1,0 +1,11 @@
+无法定位程序输入点_invalid_parameter_noinfo_noreturn于动态链接库 MSVCR100.dll上- 试过重装MSVCR100.dll (无效而且由于版本不对引起了其他错误:
+
+   无法定位程序输入点1_NonReentrantPPLLockHolder@details@Concurrency@@QAE@XZ与动态链接库msvcr100.dll上)，官方MSVCR win7，XP的dll下载地址：http://www.microsoft.com/zh-cn/download/details.aspx?id=5555
+
+   
+
+   
+
+   最终成功方法：这个链接。
+
+   项目-属性-Code-Code Generation

@@ -1,0 +1,423 @@
+(二)学习seajs模块定义和模块引用相关API知道如何引入seajs，如何启动模块之后，现在我们改来看一下如何定义模块，如何让一个模块调用另一个模块。经常使用的 API 只有 define, require, require.async, exports, module.exports 这五个。本文主要摘抄自[CMD模块定义规范#242]和[require书写约定#259]。
+
+
+   在CMD规范中，一个模块就是一个文件。每个的书写&#26684;式如下：
+
+
+
+
+   
+
+
+   define(function(require, exports, module) {
+
+  // 模块代码
+
+});
+
+   
+
+
+   
+
+
+
+1.define Function
+
+define 是一个全局函数，用来定义模块。
+
+
+
+
+
+
+define define(factory)
+
+define 接受 factory 参数，factory 可以是一个函数，也可以是一个对象或字符串。
+
+
+
+
+factory 为对象、字符串时，表示模块的接口就是该对象、字符串。比如可以如下定义一个 JSON 数据模块：
+
+
+
+
+
+   define({ &quot;foo&quot;: &quot;bar&quot; });
+
+
+
+
+
+也可以通过字符串定义模板模块：
+
+
+
+   define(&#39;I am a template. My name is {{name}}.&#39;);
+
+
+
+
+
+factory 为函数时，表示是模块的构造方法。执行该构造方法，可以得到模块向外提供的接口。factory 方法在执行时，默认会传入三个参数：require、exports 和 module：
+
+
+
+   define(function(require, exports, module) {
+
+  // 模块代码
+
+});
+
+define define(id?, deps?, factory)
+
+
+
+define 也可以接受两个以上参数。字符串 id 表示模块标识，数组 deps 是模块依赖。比如：
+
+
+
+   define(&#39;hello&#39;, [&#39;jquery&#39;], function(require, exports, module) {
+
+  // 模块代码
+
+});id 和deps 参数可以省略。省略时，可以通过构建工具自动生成。最佳实践也是:不要写id和deps,由构建工具来帮我们自动生成。
+
+
+
+define.cmd Object
+
+
+
+一个空对象，可用来判定当前页面是否有 CMD 模块加载器：
+
+
+
+   if (typeof define === &quot;function&quot; &amp;&amp; define.cmd) {
+  // 有 Sea.js 等 CMD 模块加载器存在
+}
+
+2.require Function
+
+
+
+require 是 模块factory 函数的第一个参数。
+
+require require(id)
+
+require 是一个方法，接受 模块标识 作为唯一参数，用来获取其他模块提供的接口。
+
+
+
+   define(function(require, exports) {
+
+  // 获取模块 a 的接口
+  var a = require(&#39;./a&#39;);
+
+  // 调用模块 a 的方法
+  a.doSomething();
+
+});
+
+require.async require.async(id, callback?)
+
+
+
+require.async 方法用来在模块内部异步加载模块，并在加载完成后执行指定回调。callback 参数可选。
+
+
+
+   define(function(require, exports, module) {
+
+  // 异步加载一个模块，在加载完成时，执行回调
+  require.async(&#39;./b&#39;, function(b) {
+    b.doSomething();
+  });
+
+  // 异步加载多个模块，在加载完成时，执行回调
+  require.async([&#39;./c&#39;, &#39;./d&#39;], function(c, d) {
+    c.doSomething();
+    d.doSomething();
+  });
+
+});注意：require 是同步往下执行，require.async 则是异步回调执行。require.async 一般用来加载可延迟异步加载的模块。
+
+require.resolve require.resolve(id)
+
+使用模块系统内部的路径解析机制来解析并返回模块路径。该函数不会加载模块，只返回解析后的绝对路径。后面文章中，我们研究seajs模块id的时候，这个api很有用。
+
+
+
+
+
+   define(function(require, exports) {
+
+  //返回结果是:b模块所在的url
+  console.log(require.resolve(&#39;./b&#39;));
+
+});
+
+3.exports Object
+
+
+
+exports 是一个对象，用来向外提供模块接口。
+
+
+
+   define(function(require, exports) {
+
+  // 对外提供 foo 属性
+  exports.foo = &#39;bar&#39;;
+
+  // 对外提供 doSomething 方法
+  exports.doSomething = function() {};
+
+});
+
+
+
+
+
+除了给 exports 对象增加成员，还可以使用 return 直接向外提供接口。
+
+
+
+   define(function(require) {
+
+  // 通过 return 直接提供接口
+  return {
+    foo: &#39;bar&#39;,
+    doSomething: function() {}
+  };
+
+});
+
+特别注意：下面这种写法是错误的！
+
+
+
+
+
+   define(function(require, exports) {
+
+  // 错误用法！！!
+  exports = {
+    foo: &#39;bar&#39;,
+    doSomething: function() {}
+  };
+
+});
+
+正确的写法是用 return 或者给 module.exports 赋&#20540;：
+
+
+
+
+
+   define(function(require, exports, module) {
+
+  // 正确写法
+  module.exports = {
+    foo: &#39;bar&#39;,
+    doSomething: function() {}
+  };
+
+});提示：exports 仅仅是 module.exports 的一个引用。在 factory 内部给 exports 重新赋&#20540;时，并不会改变 module.exports 的&#20540;。因此给 exports 赋&#20540;是无效的，不能用来更改模块接口。
+
+
+
+
+
+
+4.module Object
+
+module 是一个对象，上面存储了与当前模块相关联的一些属性和方法。
+
+module.id String
+
+返回模块的唯一标识。下面代码中，define 的第一个参数就是模块标识。
+
+
+
+   define(&#39;id&#39;, [], function(require, exports, module) {
+
+  // 模块代码
+
+});
+
+module.uri String
+
+
+
+根据模块系统的路径解析规则得到的模块绝对路径。一般情况下（没有在 define 中手写 id 参数时），module.id 的&#20540;就是 module.uri，两者完全相同。
+
+
+
+   define(function(require, exports, module) {
+
+  console.log(module.uri); 
+  // ==&gt; http://example.com/path/to/this/file.js
+
+});
+
+module.dependencies Array
+
+
+
+dependencies 是一个数组，表示当前模块的依赖。
+
+
+
+
+
+
+module.exports Object
+
+当前模块对外提供的接口。传给 factory 构造方法的 exports 参数是 module.exports 对象的一个引用。只通过 exports 参数来提供接口，有时无法满足开发者的所有需求。 比如当模块的接口是某个类的实例时，需要通过 module.exports 来实现：
+
+
+
+   define(function(require, exports, module) {
+
+  // exports 是 module.exports 的一个引用
+  console.log(module.exports === exports); // true
+
+  // 重新给 module.exports 赋值
+  module.exports = new SomeClass();
+
+  // exports 不再等于 module.exports
+  console.log(module.exports === exports); // false
+
+});
+
+注意：对 module.exports 的赋&#20540;需要同步执行，不能放在回调函数里。下面这样是不行的：
+
+
+
+   // x.js
+define(function(require, exports, module) {
+
+  // 错误用法
+  setTimeout(function() {
+    module.exports = { a: &quot;hello&quot; };
+  }, 0);
+
+});
+
+
+
+
+
+在 y.js 里有调用到上面的 x.js:
+
+
+
+   // y.js
+define(function(require, exports, module) {
+
+  var x = require(&#39;./x&#39;);
+
+  // 无法立刻得到模块 x 的属性 a
+  console.log(x.a); // undefined
+
+});
+
+
+
+5.require 书写约定
+
+
+
+使用Sea.js 书写模块代码时，需要遵循一些简单规则。面得导致后面的构建出现问题。当然这些规则，对程序员是有好处的。下面的这些规则 只是书写和调试时的规范！！！构建后的代码完全不需要遵循下面的约定！！！！！！
+
+
+
+
+
+正确拼写 
+
+模块 factory 构造方法的第一个参数必须命名为 require ：
+
+
+
+   // 错误！
+define(function(req) {
+  // ...
+});
+
+// 正确！
+define(function(require) {
+  // ...
+});
+
+不要修改
+不要重命名 require 函数，或在任何作用域中给 require 重新赋&#20540;：
+
+
+
+   // 错误 - 重命名 &quot;require&quot;！
+var req = require, mod = req(&quot;./mod&quot;);
+
+// 错误 - 重定义 &quot;require&quot;!
+require = function() {};
+
+// 错误 - 重定义 &quot;require&quot; 为函数参数！
+function F(require) {}
+
+// 错误 - 在内嵌作用域内重定义了 &quot;require&quot;！
+function F() {
+  var require = function() {};
+}
+
+使用直接量
+require 的参数&#20540; 必须 是字符串直接量：
+
+
+
+   // 错误！
+require(myModule);
+
+// 错误！
+require(&quot;my-&quot; + &quot;module&quot;);
+
+// 错误！
+require(&quot;MY-MODULE&quot;.toLowerCase());
+
+// 正确！
+require(&quot;my-module&quot;);
+
+
+
+
+
+在书写模块代码时，必须遵循这些规则。其实只要把 require 看做是语法关键字就好啦。
+
+
+
+
+
+
+
+
+
+
+关于动态依赖
+
+有时会希望可以使用 require 来进行条件加载：
+
+
+
+   if (todayIsWeekend)
+  require(&quot;play&quot;);
+else
+  require(&quot;work&quot;);但请牢记，从静态分析的角度来看，这个模块同时依赖 play 和 work 两个模块，加载器会把这两个模块文件都下载下来。 这种情况下，推荐使用 require.async 来进行条件加载。
+
+
+
+
+
+
+
+可以看到这些规则并不复杂，也很合理，并没有加重程序员的负担。虽然id、dependencies都是必须的，但是我们源码中并不需要自己去添加这2个参数。在构建发布的时候，seajs会帮助我们自动补充这些东西。以后我们再看看，构建到底是啥意思。这其实和java等语言类&#20284;，源码只是用了方便修改和阅读，并不是我们实际发布产品需要用的。

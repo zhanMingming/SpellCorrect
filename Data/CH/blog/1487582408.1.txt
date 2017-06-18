@@ -1,0 +1,33 @@
+SQL 问题执行 Transact-SQL 语句或批处理时发生了异常。 (Microsoft.SqlServer.ConnectionInfo)
+
+------------------------------
+其他信息:
+
+由于文件不可访问，或者内存或磁盘空间不足，所以无法打开数据库 'msdb'。有关详细信息，请参阅 SQL Server 错误日志。 (Microsoft SQL Server，错误: 945)
+
+
+
+   
+
+
+   
+
+
+   USE MASTER
+GO
+SP_CONFIGURE 'ALLOW UPDATES',1 
+RECONFIGURE WITH OVERRIDE
+GO
+UPDATE SYSDATABASES SET STATUS =32768 WHERE NAME='msdb'
+Go
+sp_dboption 'msdb', 'single user', 'true'
+Go
+DBCC CHECKDB('msdb') 
+Go
+update sysdatabases set status =28 where name='msdb'
+Go
+sp_configure 'allow updates', 0 
+reconfigure with override
+Go 
+sp_dboption 'msdb', 'single user', 'false'
+Go

@@ -1,0 +1,226 @@
+list::splice()函数详解list::splice实现list拼接的功能。将源list的内容部分或全部元素删除，拼插入到目的list。
+
+
+   函数有以下三种声明：
+
+
+   void splice ( iterator position, list&lt;T,Allocator&gt;&amp; x ); //
+
+
+   void splice ( iterator position, list&lt;T,Allocator&gt;&amp; x, iterator i );
+
+
+   void splice ( iterator position, list&lt;T,Allocator&gt;&amp; x, iterator first, iterator last );
+
+
+   函数说明：在list间移动元素：
+
+
+   将x的元素移动到目的list的指定位置，高效的将他们插入到目的list并从x中删除。
+
+
+   目的list的大小会增加，增加的大小为插入元素的大小。x的大小相应的会减少同样的大小。
+
+
+   前两个函数不会涉及到元素的创建或销毁。第三个函数会。
+
+
+   指向被删除元素的迭代器会失效。
+
+
+   参数：
+
+
+   position
+
+
+   目的list的位置，用来标明 插入位置
+
+
+   x
+
+
+   源list、
+
+
+   first,last
+
+
+   x里需要被移动的元素的迭代器。区间为[first, last).
+
+
+   包含first指向的元素，不包含last指向的元素。
+
+
+   例子：
+
+
+   
+
+
+   // splicing lists
+
+
+   #include &lt;iostream&gt;
+
+
+   #include &lt;list&gt;
+
+
+   #include &lt;string&gt;
+
+
+   #include &lt;algorithm&gt;
+
+
+   using namespace std;
+
+
+   int main ()
+
+
+   {
+
+
+   list&lt;int&gt; mylist1, mylist2;
+
+
+   list&lt;int&gt;::iterator it;
+
+
+   // set some initial values:
+
+
+   for (int i=1; i&lt;=4; i++)
+
+
+     mylist1.push_back(i);   // mylist1: 1 2 3 4
+
+
+   for (int i=1; i&lt;=3; i++)
+
+
+     mylist2.push_back(i*10);  // mylist2: 10 20 30
+
+
+   it = mylist1.begin();
+
+
+   ++it;             // points to 2
+
+
+   mylist1.splice (it, mylist2); // mylist1: 1 10 20 30 2 3 4
+
+
+                  // mylist2 (empty)
+
+
+                  // "it" still points to 2 (the 5th element)                  
+
+
+   mylist2.splice (mylist2.begin(),mylist1, it);
+
+
+                  // mylist1: 1 10 20 30 3 4
+
+
+                  // mylist2: 2
+
+
+                  // "it" is now invalid.
+
+
+   it = mylist1.begin();
+
+
+   advance(it,3);        // "it" points now to 30
+
+
+   
+
+
+   mylist1.splice ( mylist1.begin(), mylist1, it, mylist1.end());
+
+
+                  // mylist1: 30 3 4 1 10 20
+
+
+   
+
+
+   cout &lt;&lt; "mylist1 contains:";
+
+
+   for (it=mylist1.begin(); it!=mylist1.end(); it++)
+
+
+    cout &lt;&lt; " " &lt;&lt; *it;
+
+
+   
+
+
+   cout &lt;&lt; "/nmylist2 contains:";
+
+
+   for (it=mylist2.begin(); it!=mylist2.end(); it++)
+
+
+    cout &lt;&lt; " " &lt;&lt; *it;
+
+
+   cout &lt;&lt; endl;
+
+
+   
+
+
+   list&lt;string&gt; dictionary, bword;
+
+
+   dictionary.push_back("any");
+
+
+   dictionary.push_back("angle");
+
+
+   dictionary.push_back("ajust");
+
+
+   dictionary.push_back("common");
+
+
+   dictionary.push_back("cannon");
+
+
+   dictionary.push_back("company");
+
+
+   bword.push_back("blue");
+
+
+   bword.push_back("banana");
+
+
+   bword.push_back("break");
+
+
+   list&lt;string&gt;::iterator its = dictionary.begin();
+
+
+   for (int i = 0; i &lt; 3; i++)
+
+
+     its++;
+
+
+   dictionary.splice(its, bword);
+
+
+   copy(bword.begin(), bword.end(), ostream_iterator&lt;string&gt;(cout, "/n"));
+
+
+   return 0;
+
+
+   }

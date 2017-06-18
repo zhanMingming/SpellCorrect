@@ -1,0 +1,124 @@
+Catch That CowCatch That Cow
+
+
+   Time Limit:2000MS Memory Limit:65536KTotal Submit:118 Accepted:30 
+
+
+   Description 
+
+
+   Farmer John has been informed of the location of a fugitive cow and wants to catch her immediately. He starts at a point N (0 &le; N &le; 100,000) on a number line and the cow is at a point K (0 &le; K &le; 100,000) on the same number line. Farmer John has two modes of transportation: walking and teleporting. * Walking: FJ can move from any point X to the points X - 1 or X + 1 in a single minute * Teleporting: FJ can move from any point X to the point 2 &times; X in a single minute. If the cow, unaware of its pursuit, does not move at all, how long does it take for Farmer John to retrieve it? 
+
+
+   Input 
+
+
+   Line 1: Two space-separated integers: N and K 
+
+
+   Output 
+
+
+   Line 1: The least amount of time, in minutes, it takes for Farmer John to catch the fugitive cow. 
+
+
+   Sample Input 
+
+
+   
+
+   5 17
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   4
+
+
+
+   
+
+
+   Hint 
+
+
+   The fastest way for Farmer John to reach the fugitive cow is to move along the following path: 5-10-9-18-17, which takes 4 minutes.
+
+
+   Source 
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+using namespace std;
+#define M 100001
+#define INF 10000000
+
+struct POINT
+{
+	int pos;
+	int step;
+}now,next;
+queue&lt;POINT&gt;Q;
+bool visited[M];
+
+int n,k;
+int bfs()
+{
+	while(!Q.empty())
+		Q.pop();
+	now.pos=n;
+	now.step=0;
+	visited[now.pos]=true;
+	Q.push(now);
+	while(!Q.empty())
+	{
+		now=Q.front();
+		Q.pop();
+		next=now;
+		for(int i=0;i&lt;3;i++)
+		{
+			if(i==0) 
+				next.pos=now.pos+1;
+			if(i==1)
+				next.pos=now.pos-1;
+			if(i==2)
+				next.pos=now.pos*2;
+			next.step=now.step+1;
+			if(next.pos==k)
+				return next.step;
+			if(next.pos&lt;0||next.pos&gt;M)
+				continue;
+			if(!visited[next.pos])
+			{
+				visited[next.pos]=true;
+				Q.push(next);
+			}
+		}
+	}
+	return INF;
+}
+
+int main()
+{
+	while(cin&gt;&gt;n&gt;&gt;k)
+	{
+		memset(visited,false,sizeof(visited));
+		if(n&lt;k)
+			cout&lt;&lt;bfs()&lt;&lt;endl;
+		if(n==k)
+			cout&lt;&lt;0&lt;&lt;endl;
+		if(n&gt;k)
+			cout&lt;&lt;n-k&lt;&lt;endl;
+	}
+}

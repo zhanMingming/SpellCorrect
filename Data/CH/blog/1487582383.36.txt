@@ -1,0 +1,144 @@
+zoj 1149 双向dp本来想学四边形优化DP的，不小心学到了一个双向dp，耗时比优化了还少
+
+
+   
+
+
+   
+
+Dividing
+
+Time Limit: 1 Second  Memory Limit: 32768 KB 
+
+
+   Marsha and Bill own a collection of marbles. They want to split the collection among themselves so that both receive an equal share of the marbles. This would be easy if all the marbles had the same value, because then they could just split the collection in half. But unfortunately, some of the marbles are larger, or more beautiful than others. So, Marsha and Bill start by assigning a value, a natural number between one and six, to each marble. Now they want to divide the marbles so that each of them gets the same total value. 
+
+
+   Unfortunately, they realize that it might be impossible to divide the marbles in this way (even if the total value of all marbles is even). For example, if there are one marble of value 1, one of value 3 and two of value 4, then they cannot be split into sets of equal value. So, they ask you to write a program that checks whether there is a fair partition of the marbles. 
+
+
+   Input Each line in the input describes one collection of marbles to be divided. The lines consist of six non-negative integers n1, n2, ..., n6, where ni is the number of marbles of value i. So, the example from above would be described by the input-line ``1 0 1 2 0 0''. The maximum total number of marbles will be 20000. 
+
+
+   The last line of the input file will be ``0 0 0 0 0 0''; do not process this line. 
+
+
+   Output For each colletcion, output ``Collection #k:'', where k is the number of the test case, and then either ``Can be divided.'' or ``Can't be divided.''. 
+
+
+   Output a blank line after each test case. 
+
+
+   Sample Input 
+
+
+   1 0 1 2 0 01 0 0 0 1 10 0 0 0 0 0
+
+
+   Sample Output 
+
+
+   Collection #1:Can't be divided.
+
+
+   Collection #2:Can be divided.
+
+
+
+   Source: Mid-Central European Regional Contest 1999
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;stdio.h&gt;
+#include&lt;memory.h&gt;
+using namespace std;
+bool flag[8][60005];
+int main()
+{
+	int num=0,i,i1,i2,sum,data[7];
+	bool ans;
+	while(1)
+	{
+		sum=0;
+		//deal with data in order to prevent tle with using __int64
+		for(i=1;i&lt;=6;i++)
+		{
+			scanf("%d",&amp;data[i]);
+			if(data[i]&gt;10)
+				data[i]=data[i]%10+10;
+			sum+=data[i]*i;
+		}
+		if(sum==0)
+			break;
+		num++;
+		if(sum%2==1)
+		{
+			printf("Collection #%d:/nCan't be divided./n/n",num);
+			continue;
+		}
+		sum/=2;
+		memset(flag,0,sizeof(flag));
+		ans=false;
+		for(i=0;i&lt;=7;i++)
+		{
+			flag[i][0]=true;
+		}
+		//双向dp
+		//origen formulation: f[i,j]=f[i,j]||f[i-1][j-k*i];(f[i,j]表示前i堆（共6堆）中是否能选出value为j)
+		//flag[6][sum]=true即可
+		/*
+		two-way dp:
+		f[i,j]=f[i,j]||f[i-1][j-k*i];(1&lt;=i&lt;=3)(f[i,j]表示前i堆中是否能选出value为j)
+		f[i,j]=f[i,j]||f[i+1,j-k*i];(4&lt;=i&lt;=6)(f[i,j]表示i-6堆中是否能选出value为j)
+		flag[3,i]&amp;&amp;flag[4,sum-i]即可
+		*/
+		for(i=1;i&lt;=3;i++)
+		{
+			for(i1=1;i1&lt;=sum;i1++)
+			{
+				for(i2=0;i2&lt;=data[i];i2++)
+				{
+					if(i1-i*i2&lt;0)
+						break;
+					if(flag[i-1][i1-i*i2])
+					{
+						flag[i][i1]=true;
+						break;
+					}
+				}
+			}
+		}
+		for(i=6;i&gt;=4;i--)
+		{
+			for(i1=1;i1&lt;=sum;i1++)
+			{
+				for(i2=0;i2&lt;=data[i];i2++)
+				{
+					if(i1-i*i2&lt;0)
+						break;
+					if(flag[i+1][i1-i*i2])
+					{
+						flag[i][i1]=true;
+						break;
+					}
+				}
+			}
+		}
+		for(i=0;i&lt;=sum;i++)
+		{
+			if(flag[3][i]&amp;&amp;flag[4][sum-i])
+			{
+				ans=true;
+				break;
+			}
+		}
+		if(ans)
+			printf("Collection #%d:/nCan be divided./n/n",num);
+		else
+			printf("Collection #%d:/nCan't be divided./n/n",num);
+	}
+	return 0;
+}

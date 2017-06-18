@@ -1,0 +1,545 @@
+FLV文件格式官方规范详解——如果要学习一个新的知识点，官方手册可能是最快的途径。查看网上其他人的总结也许入门更快，但是要准确，深入，完整，还是要看官方手册。
+
+   
+
+   以下内容来自对官方文档Video File Format Specification Version 10的分析总结。过程中借助ffmpeg实际转换了一个flv文件用例研究。
+
+   
+
+   一个FLV文件，每种类型的tag都属于一个流，也就是一个flv文件最多只有一个音频流，一个视频流，不存在多个独立的音视频流在一个文件的情况。（mp4好像是可以的）
+
+   
+
+   另外，FLV文件格式所用的是大端序。
+
+   
+
+   注：下面的数据type中，UI表示无符号整形，后面跟的数字表示其长度是多少位。比如UI8，表示无法整形，长度一个字节。UI24是三个字节。UB表示位域，UB5表示一个字节的5位。可以参考c中的位域结构体。
+
+   
+
+   FLV头
+
+   
+
+   
+
+   Field
+
+   type
+
+   Comment
+
+   签名
+
+   UI8
+
+   ’F’(0X46)
+
+   签名
+
+   UI8
+
+   ‘L’(0X4C)
+
+   签名
+
+   UI8
+
+   ‘V’(0x56)
+
+   版本
+
+   UI8
+
+   FLV的版本。0x01表示FLV 版本是1
+
+   保留字段
+
+   UB5
+
+   前五位必须是0
+
+   是否有音频流
+
+   UB1
+
+   音频流是否存在标志
+
+   保留字段
+
+   UB1
+
+   必须是0
+
+   是否有视频流
+
+   UB1
+
+   视频流是否存在标志
+
+   文件头大小
+
+   UI32
+
+   FLV版本1时填写9，表明的是FLV头的大小，为后期的FLV版本扩展使用。包括这四个字节。
+
+   数据的起始位置就是从文件开头偏移这么多的大小。
+
+   
+
+   FLV文件体
+
+   
+
+   
+
+   body部分由一个个Tag组成，每个Tag的下面有一块4bytes的空间，用来记录这个tag的长度，这个后置用于逆向读取处理，他们的关系如下图：
+
+   
+
+   
+
+   注意：头下面四个自己就是PreviousTagSize，因为前一个没有Tag，所以，值填写0。
+
+   
+
+   FLV tags 结构
+
+   
+
+   
+
+   Field
+
+   type
+
+   Comment
+TAG类型
+   UI8
+
+   8: audio
+
+   9: video
+
+   18: script data——这里是一些描述信息。
+
+   all others: reserved其他所有值未使用。
+
+   数据大小
+
+   UI24
+
+   数据区的大小，不包括包头。包头总大小是11个字节。
+
+   时戳
+
+   UI24
+
+   当前帧时戳，单位是毫秒。相对于FLV文件的第一个TAG时戳。第一个tag的时戳总是0。——不是时戳增量，rtmp中是时戳增量。
+
+   时戳扩展字段
+
+   UI8
+
+   如果时戳大于0xFFFFFF，将会使用这个字节。这个字节是时戳的高8位，上面的三个字节是低24位。
+
+   流ID
+
+   U24
+
+   总是0
+
+   数据区
+
+   UI8[n]
+
+   
+
+   音频数据
+
+   
+
+   
+
+   Field
+
+   type
+
+   Comment
+
+   音频格式
+
+   UB4
+
+   0 = Linear PCM, platform endian1 = ADPCM2 = MP33 = Linear PCM, little endian4 = Nellymoser 16-kHz mono5 = Nellymoser 8-kHz mono6 = Nellymoser
+
+   7 = G.711 A-law logarithmic PCM
+
+   8 = G.711 mu-law logarithmic PCM 9 = reserved
+
+   10 = AAC11 = Speex
+
+   14 = MP3 8-Khz
+
+   15 = Device-specific sound
+
+   7, 8, 14, and 15：内部保留使用。
+
+   flv是不支持g711a的，如果要用，可能要用线性音频。
+
+   采样率
+
+   UB2
+
+   For AAC: always 3
+
+   0 = 5.5-kHz
+
+   1 = 11-kHz
+
+   2 = 22-kHz
+
+   3 = 44-kHz
+
+   采样大小
+
+   UB1
+
+   0 = snd8Bit
+
+   1 = snd16Bit
+
+   声道
+
+   UB1
+
+   0=单声道
+
+   1=立体声,双声道。AAC永远是1
+
+   声音数据
+UI8[N]
+   如果是PCM线性数据，存储的时候每个16bit小端存储，有符号。
+
+   如果音频格式是AAC，则存储的数据是AAC AUDIO DATA，否则为线性数组。
+
+   
+
+   AAC AUDIO DATA
+
+   
+
+   
+
+   
+
+   
+
+   视频数据
+
+   
+
+   
+
+   Field
+
+   type
+
+   Comment
+
+   帧类型
+
+   UB4
+
+   1: keyframe (for AVC, a seekable frame)——h264的IDR，关键帧，可重入帧。
+
+   2: inter frame (for AVC, a non- seekable frame)——h264的普通帧
+
+   3: disposable inter frame (H.263 only)4: generated keyframe (reserved for server use only)
+
+   5: video info/command frame
+
+   编码ID
+
+   UB4
+
+   使用哪种编码类型：
+
+   1: JPEG (currently unused) 2: Sorenson H.2633: Screen video
+
+   4: On2 VP6
+
+   5: On2 VP6 with alpha channel 6: Screen video version 2
+
+   7: AVC
+
+   视频数据
+
+   UI[N]
+
+   如果是avc，则参考下面的介绍：
+
+   AVCVIDEOPACKET
+
+   
+
+   AVCVIDEOPACKET
+
+   
+
+   
+
+   Field
+
+   type
+
+   Comment
+
+   AVC packet类型
+
+   UI8
+
+   0：AVC序列头
+
+   1：AVC NALU单元
+
+   2：AVC序列结束。低级别avc不需要。
+
+   CTS
+
+   SI24
+
+   如果AVC packet类型是1，则为cts偏移(见下面的解释)，为0则为0
+
+   数据
+
+   UI8[n]
+
+   如果AVC packet类型是0，则是解码器配置，sps，pps。
+
+   如果是1，则是nalu单元，可以是多个，具体格式：将下面
+
+   
+
+   关于CTS：这是一个比较难以理解的概念，需要和pts，dts配合一起理解。
+
+   
+
+   首先，pts（presentation time stamps），dts(decoder timestamps)，cts(CompositionTime)的概念：
+
+   
+
+   pts：显示时间，也就是接收方在显示器显示这帧的时间。单位为1/90000 秒。
+
+   
+
+   dts：解码时间，也就是rtp包中传输的时间戳，表明解码的顺序。单位单位为1/90000 秒。——根据后面的理解，pts就是标准中的CompositionTime
+
+   
+
+   cts偏移：cts = (pts - dts) / 90 。cts的单位是毫秒。
+
+   
+
+   pts和dts的时间不一样，应该只出现在含有B帧的情况下，也就是profile main以上。baseline是没有这个问题的，baseline的pts和dts一直想吐，所以cts一直为0。
+
+   
+
+   在flv tag中的时戳就是DTS。
+
+   
+
+   研究 一下文档， ISO/IEC 14496-12:2005(E)   8.15 Time to Sample Boxes，发现CompositionTime就是presentation time stamps，只是叫法不同。——需要再进一步确认。
+
+   
+
+   
+
+   
+
+   在上图中，cp就是pts，显示时间。DT是解码时间，rtp的时戳。
+
+   
+
+   I1是第一个帧，B2是第二个，后面的序号就是摄像头输出的顺序。决定了显示的顺序。
+
+   
+
+   DT，是编码的顺序，特别是在有B帧的情况，P4要在第二个解，因为B2和B3依赖于P4，但是P4的显示要在B3之后，因为他的顺序靠后。这样就存在显示时间CT(PTS)和解码时间DT的差，就有了CT偏移。
+
+   
+
+   P4解码时间是10，但是显示时间是40，
+
+   
+
+   AVCVIDEOPACKET中data格式：
+
+   
+
+   Field
+
+   type
+
+   Comment
+
+   长度
+
+   UI32
+
+   nalu单元的长度，不包括长度字段。
+
+   nalu数据
+
+   UI8[N]
+
+   NALU数据，没有四个字节的nalu单元头，直接从h264头开始，比如：65 ** ** **，41 ** ** **
+
+   长度
+
+   UI32
+
+   nalu单元的长度，不包括长度字段。
+
+   nalu数据
+
+   UI8[N]
+
+   NALU数据，没有四个字节的nalu单元头，直接从h264头开始，比如：65 ** ** **，41 ** ** **
+
+   ...
+
+   ...
+
+   ...
+
+   
+
+   
+
+   
+
+   Data tags
+
+   
+
+   
+
+   主要是onMeta信息需要关注。
+
+   
+
+   
+
+   
+
+   AVCDecoderConfigurationRecord
+
+   
+
+   
+
+   AVCVIDEOPACKET的数据格式，保存控制信息。
+
+   
+
+   记录sps，pps信息。一般出现在第二个tag中，紧跟在onMeta之后。
+
+   
+
+   
+
+   
+
+   一个典型的序列：
+
+   
+
+   0000190: 0900 0033 0000 0000 0000 0017 0000 0000 ...3............
+
+   
+
+   00001a0: 0164 002a ffe1 001e 6764 002a acd9 4078 .d.*....gd.*..@x
+
+   
+
+   00001b0: 0227 e5ff c389 4388 0400 0003 0028 0000 .'....C......(..
+
+   
+
+   00001c0: 0978 3c60 c658 0100 0568 ebec b22c 0000 .x&lt;`.X...h...,..
+
+   
+
+   17:表示h264IDR data
+
+   
+
+   00：表示是AVC序列头
+
+   
+
+   00 00 00 ：cts为0
+
+   
+
+   //从此往下就是AVCDecoderConfigurationRecord
+
+   
+
+   01 ：版本号
+
+   
+
+   64 00 2a：profile level id，sps的三个字节，64表示是h264 high profile，2a表示level。
+
+   
+
+   FF：NALU长度，为3？不知道这个长度用在哪里。
+
+   
+
+   E1：表示下面紧跟SPS有一个。
+
+   
+
+   //sps[N]：sps数组。
+
+   
+
+   00 1e:  前面是两个字节的sps长度，表示后面的sps的长度是1e大小。
+
+   
+
+   6764 002a acd9 40780227 e5ff c389 4388 0400 0003 0028 00000978 3c60 c658：sps的数据。
+
+   
+
+   //因为只有一个sps，跳过这些长度，然后就是pps的个数信息：
+
+   
+
+   01 ：pps个数，1
+
+   
+
+   //pps[n] pps 的个数
+
+   
+
+   00 05：表示pps的大小是5个字节。
+
+   
+
+   68 eb ec b2 2c：pps的数据
+
+   
+
+   00 00 …….这是下一个tag 的内容了
+
+   
+
+   
+
+   我 的微信公众号

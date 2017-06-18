@@ -1,0 +1,69 @@
+MFC开发常见问题汇总（不断更新）MFC在不同VC，VS版本上开发上会出现不同问题，所以我想把常见问题汇总一下，希望大家能提出意见一起完善，省得以后每次都要费劲找了哈！
+
+
+
+1. error C2664: strcpy : 不能将参数 1 从 CString 转换为 const char *等类&#20284;错误
+
+
+
+     解决方案：
+
+
+   法1、项目属性-字符集-使用多字节字符集
+
+
+   法2、把代码改成这样的形式 _T(&quot;insert into MasterInfo
+ (EditTime,GSMCCN,GSMCEN,CLSJ,FRDBCN,FRDBEN,POSTCODE,&quot;) 宽字符
+
+
+   法3、必要的话用Format函数
+
+
+   2. 链接错误Failed to save the updated manifest to the file “...”
+
+
+     解决方案：
+
+
+   工程右键-重新生成
+
+
+   必要的话再改成静态链接生成方式。
+
+
+   （reason：Theproject
+ being rebuilt has not been changed and has previously builtsuccessfully.）
+
+
+   3.Cannot open include file: 'stdafx.h':
+
+
+     解决方案：
+
+
+   该文件如果被需要，那么在你新建项目的时候，Visual studio会自动为你生成一个，否则的话你可以去掉#include&quot;stdafx.h&quot;即可
+
+
+   4.无法打开预编译头文件:“.\Debug/CVMFC.pch”: No such file or directory
+
+
+     解决方案：
+
+
+   重新生成（rebuild all）整个项目
+
+
+   5.无法解析的外部符号 &quot;public: __thiscall CvvImage::CvvImage(void)&quot; (??0CvvImage……
+
+
+    原因：有的库没有包含进去
+
+
+    解决方案：
+
+
+   工程右键-属性-链接器-常规-附加库目录：cxcore.lib cv.lib ml.lib cvaux.lib highgui.lib
+
+
+   工程右键-属性-链接器-输入-附加库目录（Debug下和Realize下都要）：cxcore.lib
+ cv.lib ml.lib cvaux.lib highgui.lib

@@ -1,0 +1,62 @@
+JDK8新特性:编译器保留方法参数名字在JDK8之前，java编译器会忽略我们编写代码时候设定的参数名，比如在mybatis框架中，我们可以使用@Param注解来让mybatis知道参数名。
+
+
+   public interface DemoMapper {
+
+    List&lt;Card&gt; getCardList(@Param(&quot;cardIds&quot;) List&lt;Integer&gt; cardIds);
+
+    Card getCard(@Param(&quot;cardId&quot;)int cardId);
+}
+
+很长一段时间里，Java程序员一直在发明不同的方式使得方法参数的名字能保留在Java字节码中，并且能够在运行时获取它们（比如Paranamer类库）。最终，在Java 8中把这个强烈要求的功能添加到语言层面（通过反射API与Parameter.getName()方法）与字节码文件（通过新版的javac的–parameters选项）中。
+
+
+   public class ParameterNames {
+    public static void main(String[] args) throws Exception {
+ Method method = ParameterNames.class.getMethod( &quot;main&quot;, String[].class );
+ for( final Parameter parameter: method.getParameters() ) {
+			System.out.println(&quot;isNamePresent: &quot; + parameter.isNamePresent());
+     System.out.println( &quot;Parameter: &quot; + parameter.getName() );
+ }
+    }
+}
+
+   
+
+
+   
+
+
+
+
+   如果不使用–parameters参数来编译这个类，然后运行这个类，会得到下面的输出：
+
+
+   isNamePresent: false
+Parameter: arg0
+
+   
+
+
+
+
+   
+
+
+
+如果使用–parameters参数来编译这个类，参数的真实名字将会显示出来：
+   isNamePresent: true
+Parameter: args
+
+如果是maven项目，可以配置maven编译插件:
+   &lt;plugin&gt;
+	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+	&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+	&lt;version&gt;3.1&lt;/version&gt;
+	&lt;configuration&gt;
+		&lt;compilerArgument&gt;-parameters&lt;/compilerArgument&gt;
+		&lt;encoding&gt;UTF-8&lt;/encoding&gt;
+		&lt;source&gt;1.8&lt;/source&gt;
+		&lt;target&gt;1.8&lt;/target&gt;
+	&lt;/configuration&gt;
+&lt;/plugin&gt;

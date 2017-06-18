@@ -1,0 +1,148 @@
+matlab GUI callback 函数实现搞了一下午，看了些资料，终于弄好了matlab GUI中的回调函数。
+
+效果图见底部~
+
+
+   umtitled3.m:
+
+
+   
+
+
+   function varargout = untitled3(varargin)
+% UNTITLED3 M-file for untitled3.fig
+%      UNTITLED3, by itself, creates a new UNTITLED3 or raises the existing
+%      singleton*.
+%
+%      H = UNTITLED3 returns the handle to a new UNTITLED3 or the handle to
+%      the existing singleton*.
+%
+%      UNTITLED3('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in UNTITLED3.M with the given input arguments.
+%
+%      UNTITLED3('Property','Value',...) creates a new UNTITLED3 or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before untitled3_OpeningFunction gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to untitled3_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one
+%      instance to run (singleton)&quot;.
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Copyright 2002-2003 The MathWorks, Inc.
+
+% Edit the above text to modify the response to help untitled3
+
+% Last Modified by GUIDE v2.5 18-Mar-2012 16:58:53
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',mfilename, ...
+     'gui_Singleton',  gui_Singleton, ...
+     'gui_OpeningFcn', @untitled3_OpeningFcn, ...
+     'gui_OutputFcn',  @untitled3_OutputFcn, ...
+     'gui_LayoutFcn',  [] , ...
+     'gui_Callback',   []);
+if nargin &amp;&amp; ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before untitled3 is made visible.
+function untitled3_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to untitled3 (see VARARGIN)
+
+% Choose default command line output for untitled3
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes untitled3 wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = untitled3_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+% --- Executes on button press in openfile.
+function openfile_Callback(hObject, eventdata, handles)%打开文件
+global filep
+filep=OnFileOpen();
+% hObject    handle to openfile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)%求取sift特征
+global filep
+global im1
+global des1
+global loc1
+[im1,des1,loc1] = sift(filep);
+showkeys(im1,loc1);
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton3.
+function pushbutton3_Callback(hObject, eventdata, handles)%写入txt文件
+global im1
+global des1
+global loc1
+fid=fopen('matrix.txt','w');
+fprintf(fid,'%f',des1);%sift特征
+fclose(fid);
+
+% hObject    handle to pushbutton3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+   图片贴上：
+
+
+   design view:
+
+
+   
+
+
+
+
+   result view:
+
+
+   
+
+
+
+
+   property inspector:

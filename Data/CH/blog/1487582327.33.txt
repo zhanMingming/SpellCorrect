@@ -1,0 +1,21 @@
+vs2010 库函数问题：objidl.h(11266) : error C2061: syntax error : identifier &#39;__RPC__out_xcount_part&#39;这个错误是lib文件缺失或者include缺失导致的，但VS2010的UI设置的相当不合理，让人们想编辑原先的VC&#43;&#43;目录文件却无从下手。解决方案如下：
+
+
+   打开VS2010工程项目
+
+注意 在左下角有Solution Explorer、Class View、Property Manager等几个选项
+在VS2010中修改Inherited VC&#43;&#43; Directories和之前的VS不一样了。
+
+显示Property Manager
+里面有Debug|Win32和Release|Win32选 项
+这2个选项可以设置Debug和Release的工程属性设置
+打开其中任何一个
+双击 Microsoft.Cpp.Win32.user会弹出Microsoft.Cpp.Win32.user Property Pages页面，
+在这里可以修改Inherited VC&#43;&#43; Directories。
+
+如果你遇到了下面的编译错误：
+objidl.h(11266):errorC2061:syntaxerror:identifier'__RPC__out_xcount_part'
+用上面的方法把DirectX SDK Include从Include路径中删除就可以了。
+
+补充说明：
+在project property对话框里面修改的VC&#43;&#43;Directories是特定于工程的。以上修改的VC&#43;&#43;Directories是全局的，影响所有工程和所有配置(Debug/Release/...)。

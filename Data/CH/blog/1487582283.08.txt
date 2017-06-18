@@ -1,0 +1,60 @@
+Makefile 速成终于答辩结束，有空来水水博客，今天总结一下Makefile中的常用规则，技巧，基本涵盖了日常应用， 如有不全希望大家留言添加~ 本文主要内容：
+
+   
+
+   一. Makefile/makefile规则及举例
+
+   二. make的工作方式
+
+   三、makefile中的常用自动化变量与通配符
+
+   四、makefile自动生成依赖性关系
+
+   五、 调用命令
+
+       1. 显示命令
+
+       2. 命令出错
+
+       3. 命令执行
+
+   六、 变量
+
+       1. 变量定义
+
+       2. 变量引用
+
+       3. 变量替换
+
+   七、 条件判断
+
+   八、 常用函数
+
+       1. 字符串处理函数
+
+       2. 文件名操作函数
+
+       3. if
+
+       4. foreach
+
+       5. shell
+
+   九、 指定make的目标
+
+                                                                   
+
+   
+
+   
+
+   更全更多文档请见《跟我一起写Makefile》陈皓78页的pdf。
+
+   
+
+   
+
+   
+
+   一. Makefile/makefile规则及举例：
+makefile由规则组成，每条规则告诉make两件事： 文件的依赖关系 &amp; 如何生成目标文件。e.gobjects = main.o kbd.o command.o display.o \insert.o search.o files.o utils.o# 定义变量， 反斜杠（\）是换行符的意思。edit : $(objects)# targets : prerequisites 冒号前表示目标文件， 冒号后为依赖文件（prerequisites）cc -o edit $(objects)# 编译命令, 每个target下都需要配一行command（使用了隐晦规则除外）main.o : defs.h# 本来是main.o: main.c defs.h, 根据make 的“隐晦规则”可以省略main.c，只列出其所需的头文件# 根据make 的“隐晦规则”隐含了cc -c main.ckbd.o : defs.h command.hcommand.o : defs.h command.hdisplay.o : defs.h buffer.hinsert.o : defs.h buffer.hsearch.o : defs.h buffer.hfiles.o : defs.h buffer.h command.hutils.o : defs.h.PHONY : clean#.PHONY 意思表示 clean 是一个“伪目标”， 我们并不生成“clean”这个文件。 #可以用“make clean”运行“clean”这个目标。clean :rm edit $(objects)二. make的工作方式:1、读入所有的 Makefile。2、读入被 include 的其它 Makefile。3、初始化文件中的变量。4、推导隐晦规则，并分析所有规则。5、为所有的目标文件创建依赖关系链。6、根据依赖关系和文件生成时间，决定哪些目标要重新生成。7、执行生成命令。三、makefile中的常用自动化变量与通配符：makefile中支持的3个通配符： *,?,[...]$@: 目标集$&lt;: 第一个依赖文件$^: 所有依赖文件$?: 所有比目标新的依赖集合objects = *.oobjects := $(wildcard *.o)四、自动生成依赖性关系在Makefile中如果要对每个文件编写依赖关系会非常麻烦， 为了避免这个过程， 我们可以用c/c++编译器的&quot;-M&quot;功能， 即自动寻找源文件中包含的头文件， 并生成依赖关系。如 cc -M Main.c 的输出是 main.o: main.c defs.hPS：GNU的编译器（gcc/g++）需要用-MM参数， 如gcc -MM main.c, 不然&quot;-M&quot;会把一些标准库的头文件也引进来。这部分内容我们就不详细讲了，因为在CoMake2中已经有了更好的集成。五、 调用命令1. 显示命令@echo running...这在调试整个make流程时很有用， 可以用make -n 或make --just-print之显示命令，但不执行命令。 也就是可以看到我们写的makefile真正执行起来的顺序流程。2. 命令出错忽略错误继续执行： make -k 或 make b--keep-going全局忽略错误： make -i 或 make --ignore-errors某一句忽略错误： 在前面加一个减号， 如-rm -f *.o3. 命令执行exec：cd subdir; export variable=value;\ %将变量value以&quot;variable&quot;传递到subdir， 如果传递所有变量， 只需一个export就行$(MAKE);\ % 嵌套执行make;mkdir subsubdirPS：make -w 可以查看当前工作目录六、 变量1. 变量定义：大小写敏感不许含有:,#,=,空格变量声明时需要赋值，用=幅值不一定是用已经幅好值的变量，也可以引用后面定义的变量；用:=幅值， 只能引用已经幅值过的变量进行幅值；赋值运算符A?=B表示， 若A被定义过，则不做，否则A赋值为B;A+=B表示，变量幅值时字符串的追加；2. 变量引用：$(var)3. 变量替换：foo:= a.o b.o c.o希望赋值bar为a.c, b.c, c.c, 有两种方法：方法一： bar := $(foo:.o=.c)#将foo中所有以.o结尾的&quot;.o&quot;字串全替换为&quot;.c&quot;方法二： bar := $(foo:%.o=%.c)七、 条件判断语法：libs_for_gcc = -lgnuifeq($(UNAME),Linux)	LINUX := 1else ifeq($(UNAME),Darwin)	OSX := 1endif类似地， 还有三个关键字： ifneq，ifdef和ifndef注意，条件表达式中不要放自动化变量， 如$@，因为自动化变量只在运行时才有，而make在读取Makefile时就会根据条件表达式的值选择语句。八、 常用函数函数调用方法：$(&lt;function&gt; &lt;args&gt;)1. 字符串处理函数：$(subst &lt;from&gt;,&lt;to&gt;,&lt;text&gt;) 将&lt;text&gt;中的&lt;from&gt;替换成&lt;to&gt;$(patsubst &lt;fromP&gt;,&lt;toP&gt;,&lt;text&gt;) 将&lt;text&gt;中符合模式&lt;fromP&gt;的部分替换成&lt;toP&gt;$(strip &lt;text&gt;) 去&lt;text&gt;中开头和结尾的空字符$(findstring &lt;find&gt;,&lt;from&gt;) 在&lt;from&gt;中找&lt;find&gt;; 找到返回&lt;find&gt;, 否则返回空字符串$(filter &lt;pattern&gt;,&lt;text&gt;) 从text中过滤出符合pattern模式的项$(filter-out &lt;pattern&gt;,&lt;text&gt;) 反过滤$(sort &lt;list&gt;) 排序2. 文件名操作函数：$(dir &lt;text&gt;) 取目录$(suffix &lt;text&gt;) 取后缀名$(addsuffix &lt;suffix&gt;,&lt;names&gt;) 加后缀$(addprefix &lt;prefix&gt;,&lt;names&gt;) 加前缀$(join &lt;list1&gt;,&lt;list2&gt;) list1, list2对应元素进行concatenate3. if$(if &lt;condition&gt;, &lt;then&gt;, &lt;else&gt;)4. foreach$(foreach &lt;var&gt;,&lt;list&gt;,&lt;text&gt;)5. shell执行shell命令e.g $(shell find . -name '*.$(suffix_name)')九、 常用指定make的目标功能:all: 编译所有目标clean: 删除所有被make创建的文件install: 安装已编译好的程序， 就是将目标执行文件拷贝到指定目标中去print: 列出改变了的源文件tar: 把原程序打包备份为一个tar文件参考材料： 《跟我一起写Makefile》PS：其实还有别的参考，但是感觉这篇文档已经足够涵盖makefile常用内容了。

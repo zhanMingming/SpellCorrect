@@ -1,0 +1,98 @@
+spring websocket stomp如何向服务端传递参数之前的这篇文章，html页面和java代码是写死的只能向greetings这个主题发送信息，很显然有很大的局限性，现在我们看下如何传递参数。html页面中通过stomp给服务端传递参数有2种方式：在消息头中添加参数，在路径中添加参数。
+
+
+   
+
+
+
+
+   方式1：在消息头中添加参数
+
+
+   function sendName() {
+     var name = document.getElementById(&#39;name&#39;).value;
+     stompClient.send(&quot;/app/hello&quot;, {atytopic:&quot;greetings&quot;}, name);
+ }
+
+
+
+
+   
+
+
+   对应的java代码可以通过如下方式来接收参数：使用@Header或者@Headers
+
+
+   @Controller
+public class ChatController {
+
+	@Autowired
+	private SimpMessagingTemplate template;
+
+	@MessageMapping(&quot;/hello&quot;)
+	public String send(String message, @Header(&quot;atytopic&quot;) String topic,
+			@Headers Map&lt;String, Object&gt; headers) {
+
+		System.out.println(&quot;message==&quot; + message);
+		System.out.println(&quot;topic==&quot; + topic);
+		System.out.println(&quot;headers==&quot; + headers);
+
+		template.convertAndSend(&quot;/topic/&quot; + topic, message);
+
+		return &quot;&quot;;
+	}
+
+}
+
+
+
+
+   
+
+
+   方式2：在路径中添加参数，这个类&#20284;于rest服务在url中写参数。
+
+
+   function sendName() {
+     var name = document.getElementById(&#39;name&#39;).value;
+     stompClient.send(&quot;/app/hello/aty/greetings&quot;, {}, name);
+ }
+
+
+
+
+   
+
+
+   后台java代码如下：使用@DestinationVariable接收
+
+
+   @Controller
+public class Chat2Controller {
+
+	@Autowired
+	private SimpMessagingTemplate template;
+
+	// 如果只有一个模板变量,那么可以直接使用@DestinationVariable
+	@MessageMapping(&quot;/hello/{userName}/{topic}&quot;)
+	public String send(String message, @DestinationVariable(&quot;topic&quot;) String topic, @DestinationVariable(value=&quot;userName&quot;) String userName) {
+
+		System.out.println(&quot;message==&quot;+message);
+		System.out.println(&quot;topic==&quot;+topic);
+		System.out.println(&quot;userName==&quot;+userName);
+		
+		template.convertAndSend(&quot;/topic/&quot;+topic, message);
+
+		return &quot;&quot;;
+	}
+
+	
+}
+
+
+
+
+   
+
+
+   可以看到这2种方式都可以正确传递参数到服务端。

@@ -1,0 +1,93 @@
+视频编码部分定义GOP
+
+   QP
+
+   BitRate(码率)
+
+   PSNR
+
+   Definitions:
+
+   ØGOP（GroupofPictures）
+
+   策略影响编码质量：所谓GOP，意思是画面组，一个GOP就是一组连续的画面。MPEG编码将画面（即帧）分为I、P、B三种，I是内部编码帧，P是前向预测帧，B是双向内插帧。简单地讲，I帧是一个完整的画面，而P帧和B帧记录的是相对于I帧的变化。没有I帧，P帧和B帧就无法解码，这就是MPEG格式难以精确剪辑的原因，也是我们之所以要微调头和尾的原因。GOP越长，B帧所占比例更高，编码的率失真性能越高。
+
+   InVideocoding,agroupofpicturesspecifiestheorderinwhichintra-andinter-framesarearranged.
+
+   TheGOPisagroupofsuccessivepictureswithinacodedvideostream.EachcodedvideostreamconsistsofsuccessiveGOPs.Fromthepicturescontainedinit,thevisibleframesaregenerated.
+
+   AGOPcancontainthefollowingpicturetypes:
+
+   §I-pictureorI-frame(intracodedpicture)-referencepicture,whichrepresentsafixedimageandwhichisindependentofotherpicturetypes.EachGOPbeginswiththistypeofpicture.
+
+   §P-pictureorP-frame(predictivecodedpicture)-containsmotion-compensateddifferenceinformationfromtheprecedingI-orP-frame.
+
+   §B-pictureorB-frame(bidirectionallypredictivecodedpicture)-containsdifferenceinformationfromtheprecedingandfollowingI-orP-framewithinaGOP.
+
+   §D-pictureorD-frame(DCdirectcodedpicture)-servesthefastadvance.
+
+   AGOPalwaysbeginswithanI-frame.AfterwardsseveralP-framesfollow,ineachcasewithsomeframesdistance.IntheremaininggapsareB-frames.AfewvideocodecsallowformorethanoneI-frameinaGOP.
+
+   TheI-framescontainthefullimageanddonotrequireanyadditionalinformationtoreconstructit.ThereforeanyerrorswithintheGOPstructurearecorrectedbythenextI-frame.B-frameswithinaGOPonlypropagateerrorsinH.264,whereB-framescanbereferencedbyotherpicturesinordertoincreasecompressionefficiency.
+
+   ThemoreI-framesthevideostreamhas,themoreeditableitis.However,havingmoreI-framesincreasesthestreamsize.Inordertosavebandwidthanddiskspace,videospreparedforinternetbroadcastoftenhaveonlyoneI-frameperGOP.
+
+   TheGOPstructureisoftenreferredbytwonumbers,forexampleM=3,N=12.Thefirstonetellsthedistancebetweentwoanchorframes(IorP).Thesecondonetellsthedistancebetweentwofullimages(I-frames):itistheGOPlength&lt;就是说GOP长度是两个I帧的距离&gt;.FortheexampleM=3N=12,theGOPstructureisIBBPBBPBBPBBI.
+
+   
+
+   QP&lt;quantizationparameter&gt;量化参数
+
+   Wikipedia上居然没有对这个做一个解释，至少现在还木有。只好查了别的资料，解释如下：
+
+   H.264编解码器中，量化参数QP和量化步长Qstep的关系：
+
+   量化步长Qstep共有52个值。（对于亮度编码而言）
+
+   量化参数QP是量化步长Qstep的序号，取值0~51。
+
+   QP取最小值0时，表示量化最精细；相反，QP取最大值51时，表示量化是最粗糙的。
+
+   Qstep随着QP的增加而增加，QP每增加6，Qstep增加一倍。
+
+   对于色度编码，QP的最大值是39。
+
+   在深度视频实验里我用的QP分别是22,27,32,37；结果可见22的最清晰，37的最模糊。
+
+   
+
+   BitRate码率
+
+   Intelecommunicationsandcomputing,bitrate(sometimeswrittenbitrate,datarateorasavariableR[1])isthenumberofbitsthatareconveyedorprocessedperunitoftime.
+
+   码率就是数据传输时单位时间传送的数据位数,一般我们用的单位是kbps即千位每秒。通俗一点的理解就是取样率，单位时间内取样率越大，精度就越高，处理出来的文件就越接近原始文件，也就是说画面的细节就越丰富，但压缩率也就越小。
+
+   码流x时间=总容量
+
+   Multimediaencoding
+
+   Indigitalmultimedia,bitrateoftenreferstothenumberofbitsusedperunitofplaybacktimetorepresentacontinuousmediumsuchasaudioorvideoaftersourcecoding(datacompression).Theencodingbitrateofamultimediafileisthesizeofamultimediafileinbytesdividedbytheplaybacktimeoftherecording(inseconds),multipliedbyeight.
+
+   Forrealtimestreamingmultimedia,theencodingbitrateisthegoodputthatisrequiredtoavoidinterrupt:
+
+   Encodingbitrate=Requiredgoodput
+
+   Thetermaveragebitrateisusedincaseofvariablebitratemultimediasourcecodingschemes.Inthiscontext,thepeakbitrateisthemaximumnumberofbitsrequiredforanyshort-termblockofcompresseddata.[12]
+
+   Atheoreticallowerboundfortheencodingbitrateforlosslessdatacompressionisthesourceinformationrate,alsoknownastheentropyrate.(熵率)
+
+   Entropyrate≤Multimediabitrate
+
+   
+
+   PSNRPeaksignal-to-noiseratio
+
+   
+
+
+
+   
+
+   Thephrasepeaksignal-to-noiseratio,oftenabbreviatedPSNR,isanengineeringtermfortheratiobetweenthemaximumpossiblepowerofasignalandthepowerofcorruptingnoisethataffectsthefidelity(保真度)ofitsrepresentation.Becausemanysignalshaveaverywidedynamicrange,PSNRisusuallyexpressedintermsofthelogarithmicdecibelscale.
+
+   ThePSNRismostcommonlyusedasameasureofqualityofreconstructionoflossycompressioncodecs(e.g.,forimagecompression).Thesignalinthiscaseistheoriginaldata,andthenoiseistheerrorintroducedbycompression.Whencomparingcompressioncodecsitisusedasanapproximationtohumanperceptionofreconstructionquality,thereforeinsomecasesonereconstructionmayappeartobeclosertotheoriginalthananother,eventhoughithasalowerPSNR(ahigherPSNRwouldnormallyindicatethatthereconstructionisofhigherquality).Onehastobeextremelycarefulwiththerangeofvalidityofthismetric;itisonlyconclusivelyvalidwhenitisusedtocompareresultsfromthesamecodec(orcodectype)andsamecontent.PSNR值越大，就代表失真越少。

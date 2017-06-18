@@ -1,0 +1,130 @@
+Game PredictionGame Prediction
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:1 Accepted:1 
+
+
+   Description 
+
+
+   Suppose there are M people, including you, playing a special card game. At the beginning, each player receives N cards. The pip of a card is a positive integer which is at most N*M. And there are no two cards with the same pip. During a round, each player chooses one card to compare with others. The player whose card with the biggest pip wins the round, and then the next round begins. After N rounds, when all the cards of each player have been chosen, the player who has won the most rounds is the winner of the game. Given your cards received at the beginning, write a program to tell the maximal number of rounds that you may at least win during the whole game. 
+
+
+   Input 
+
+
+   The input consists of several test cases. The first line of each case contains two integers m (2?20) and n (1?50), representing the number of players and the number of cards each player receives at the beginning of the game, respectively. This followed by a line with n positive integers, representing the pips of cards you received at the beginning. Then a blank line follows to separate the cases. The input is terminated by a line with two zeros. 
+
+
+   Output 
+
+
+   For each test case, output a line consisting of the test case number followed by the number of rounds you will at least win during the game. 
+
+
+   Sample Input 
+
+
+   
+
+   2 5
+1 7 2 10 9
+6 11
+62 63 54 66 65 61 57 56 50 53 48
+0 0
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   Case 1: 2
+Case 2: 4
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+int a[60],flag[1050];
+int main()
+{
+	int i,m,n,now,max;
+	int cases=0;
+	while(scanf("%d%d",&amp;m,&amp;n)!=EOF&amp;&amp;(m||n))
+	{
+		cases++;
+		now=max=0;
+		memset(flag,0,sizeof(flag));
+		for(i=0;i&lt;n;i++)
+		{
+			scanf("%d",&amp;a[i]);
+			flag[a[i]]=1;
+		}
+		for(i=m*n;i&gt;0;i--)
+		{
+			if(flag[i])
+			{
+				now++;
+				if(now&gt;max)
+					max=now;
+			}
+			else
+				now--;
+		}
+		printf("Case %d: %d/n",cases,max);
+	}
+} 
+
+   每次出最大的。。如果别人手中最大的小于你的。得分+1，而对方则选择最小的一个扔掉。
+
+   如果对方最大的大于你手中最大的，对方会选择自己手中最小但是比你最大的大的牌丢掉。。。。。
+
+   也就是说，从最大点数的牌一直搜下去，如果在我的排中找到，就now++，否则别人就会把他的大牌拿出来跟我比，那我就now--了！
+
+   now最大的时候就是我至少赢的次数。。。
+
+   换一种表达方式更容易理解：有注释在，就不多说啦！
+
+
+
+   #include &lt;iostream&gt;
+using namespace std;
+bool a[1050];
+int main()
+{ 
+	int m=0,n=0,count=0,t; 
+	while (scanf("%d%d",&amp;m,&amp;n)!=EOF) 
+	{  
+		if(m==0&amp;&amp;n==0) 
+			break;  
+		else  
+			count++; 
+		register int i=0; 
+		int win=0,big=0;//big是用来就对方可以大你的次数。只有big=0的时候，才说明你可以大了。 
+		memset(a,0,sizeof(a));
+		for(i=0;i&lt;n;i++) 
+		{   
+			scanf("%d",&amp;t);  
+			a[t]=1;//代表是你的牌 
+		}  
+		for(i=n*m;i&gt;0;i--)//从最大的往前数  
+		{   
+			if (a[i])//是我的牌  
+			{      
+				if (big==0)  
+					++win;   
+				else      
+					--big;    
+			} 
+			else  
+				++big;//代表到数字为i的牌为止对方有比你大的牌的次数   
+		}  
+		printf("Case %d: %d/n",count,win); 
+	} 
+	return 0;
+}

@@ -1,0 +1,346 @@
+(四)seajs.config中vars、alias、paths和map的作用,以及util-path路径解析源码这篇文章主要是学习下seajs.config中vars、alias、paths、map这4个配置参数的作用和使用方式。这4个配置都会影响一个模块最终的url路径。
+
+alias
+
+   
+
+
+   seajs.config({
+  
+  base: &#39;http://www.main.com/base/&#39;,
+  
+  alias: {
+    &#39;jquery&#39;: &#39;jquery/jquery/1.10.1/jquery&#39;,
+    &#39;app/biz&#39;: &#39;http://path/to/app/biz.js&#39;,
+  }
+});
+   define(function(require, exports, module) {
+
+   var $ = require(&#39;jquery&#39;);
+   //=&gt; 加载的是 http://www.main.com/base/jquery/jquery/1.10.1/jquery.js
+
+   var biz = require(&#39;app/biz&#39;);
+   //=&gt; 加载的是 http://path/to/app/biz.js
+
+});当模块标识很长，写起来不方便、容易出错的时候，可以使用alias来简化模块标识。在seajs.config中进行一次配置之后，所有js模块都可以用require(&quot;jquery&quot;)这种简单的方式来加载对应的模块了。使用alias，可以让文件的真实路径与模块调用标识分开，有利于统一维护。
+
+
+
+
+   
+
+paths
+
+   
+
+
+   seajs.config({
+
+  base: &#39;http://www.main.com/base/&#39;,
+  
+  // 别名配置
+  alias: {
+    &#39;hostA-jquery&#39;: &#39;hostA/jquery/1.10.1/jquery.js&#39;,
+  },
+
+  paths: {
+    &#39;hostA&#39;: &#39;https://www.shenzhen.com/sz&#39;
+	&#39;app&#39;: &#39;path/to/app&#39;
+  }
+});
+   define(function(require, exports, module) {
+
+   var underscore = require(&#39;hostA/underscore&#39;);
+     //=&gt; 加载的是 https://www.shenzhen.com/sz/underscore.js
+	 
+   var jquery = require(&#39;hostA-jquery&#39;);
+	 //=&gt; 加载的是 https://www.shenzhen.com/sz/jquery/1.10.1/jquery.js
+	 
+   var biz = require(&#39;APP/biz&#39;);
+     //=&gt; 加载的是 http://www.main.com/base/path/to/app/biz.js
+
+});当目录层次比较深，或者是跨目录调用模块的时候，可以用path简化模块标识的书写。paths 配置可以结合 alias 配置一起使用，让模块引用非常方便。
+
+
+
+vars
+
+   
+
+
+   seajs.config({
+  base: &#39;http://www.main.com/base/&#39;,
+  
+  vars: {
+    &#39;locale&#39;: &#39;zh-cn&#39;
+  }
+});
+   define(function(require, exports, module) {
+
+  var lang = require(&#39;i18n/{locale}.js&#39;);
+     //=&gt; 加载的是 http://www.main.com/base/i18n/zh-cn.js
+});有些场景下，模块路径在运行时才能确定，这时可以使用 vars 变量来配置。vars配置的是模块标识中的变量&#20540;，在模块标识中用 {key} 来表示变量。
+
+
+
+
+   
+
+map
+
+
+   seajs.config({
+   base: &#39;http://www.main.com/base/&#39;,
+   
+  &#39;map&#39;: [
+    [ /(.*?)(\.js)$/i , &#39;$1-debug.js&#39;]
+  ]
+});
+   define(function(require, exports, module) {
+
+  var a = require(&#39;cs/a&#39;);
+     //=&gt; 加载的是 http://www.main.com/base/cs/a-debug.js
+
+});map配置主要用来做调试用途，用来做路径转换、版本号、时间戳等管理。
+
+
+
+
+
+
+
+
+   
+
+
+   seajs解析模块的url，就是根据模块标识(到底是相对标识、顶级标识还是普通标识)，和上面这4个配置来确定的。相关源码在util-path.js中，下面附上util-path.js中最核心部分的源码，我加了很多注释，应该很容易看懂。如果有兴趣专研，可以用seajs.resolve()来尝试一下。
+
+
+   
+
+
+   /**
+ * util-path.js - The utilities for operating path such as id, uri
+ */
+
+ 
+// &#39;/&#39;字符是正则表达式常量的边界,所以需要用&#39;\&#39;进行转义
+var DIRNAME_RE = /[^?#]*\//;
+
+// 全局匹配&quot;/./&quot;,字符slash和dot都是特殊字符
+var DOT_RE = /\/\.\//g;
+
+// DOUBLE_DOT_RE.test(&quot;//../&quot;) ==&gt;false
+// DOUBLE_DOT_RE.test(&quot;/as/../&quot;) ==&gt;true
+var DOUBLE_DOT_RE = /\/[^/]+\/\.\.\//;
+
+
+// MULTI_SLASH_RE.test(&quot;c//&quot;) ==&gt; true
+// MULTI_SLASH_RE.test(&quot;///&quot;) ==&gt; false
+// MULTI_SLASH_RE.test(&quot;://&quot;) ==&gt; false
+// MULTI_SLASH_RE.test(&quot;c://&quot;) ==&gt; false
+// &quot;http://asb///ss&quot;.match(MULTI_SLASH_RE)[0] ==&gt; &quot;b///&quot;
+var MULTI_SLASH_RE = /([^:/])\/+\//g;
+
+// Extract the directory portion(一部分) of a path
+// dirname(&quot;a/b/c.js?t=123#xx/zz&quot;) ==&gt; &quot;a/b/&quot;
+// ref: http://jsperf.com/regex-vs-split/2
+function dirname(path) {
+	//如果path不匹配正则,此时方法会报异常
+	//没有使用/g模式,只查找第一个匹配项,match()返回的是数组
+  return path.match(DIRNAME_RE)[0];
+}
+
+// Canonicalize(规范化) a path
+// realpath(&quot;http://test.com/a//./b/../c&quot;) ==&gt; &quot;http://test.com/a/c&quot;
+function realpath(path) {
+  // /a/b/./c/./d ==&gt; /a/b/c/d
+  path = path.replace(DOT_RE, &quot;/&quot;);
+
+  /*
+    @author wh1100717
+    a//b/c ==&gt; a/b/c
+    a///b/////c ==&gt; a/b/c
+    DOUBLE_DOT_RE matches a/b/c//../d path correctly only if replace // with / first
+  */
+  path = path.replace(MULTI_SLASH_RE, &quot;$1/&quot;);//$1代表第一个分组内容
+
+  // a/b/c/../../d  ==&gt;  a/b/../d  ==&gt;  a/d
+  // first replace &quot;/c/../&quot; ,then replace &quot;/b/../&quot; with &quot;/&quot;
+  while (path.match(DOUBLE_DOT_RE)) {
+    path = path.replace(DOUBLE_DOT_RE, &quot;/&quot;);
+  }
+
+  return path;
+}
+
+// Normalize an id
+// normalize(&quot;path/to/a&quot;) ==&gt; &quot;path/to/a.js&quot;
+// normalize(&quot;a/b/c/&quot;) ==&gt; &quot;a/b/c&quot;
+// normalize(&quot;a/b/c/?d=1&quot;) ===&gt; &quot;a/b/c/?d=1&quot;
+// NOTICE: substring is faster than negative slice and RegExp
+// 看懂这个方法后,理解[http://www.zhangxinxu.com/sp/seajs/docs/zh-cn/module-identifier.html#tips]太容易了吧
+function normalize(path) {
+  var last = path.length - 1;
+  var lastC = path.charCodeAt(last);
+
+  // If the uri ends with `#`, just return it without &#39;#&#39;
+  if (lastC === 35 /* &quot;#&quot; */) {
+    return path.substring(0, last);
+  }
+
+  return (path.substring(last - 2) === &quot;.js&quot; ||
+      path.indexOf(&quot;?&quot;) &gt; 0 ||
+      lastC === 47 /* &quot;/&quot; */) ? path : path + &quot;.js&quot;;
+}
+
+// 不能以&quot;/&quot;和&quot;:&quot;开头, 结尾必须要是 &quot;/&quot;后面跟着任意字符(数量至少1个)
+// PATHS_RE.test(&quot;dd/&quot;)  ==&gt; false
+// PATHS_RE.test(&quot;dd/ss&quot;) ==&gt; true
+// PATHS_RE.test(&quot;d:d/ss&quot;)==&gt; false
+// PATHS_RE.test(&quot;/aa/ss&quot;)==&gt; false
+var PATHS_RE = /^([^/:]+)(\/.+)$/;
+
+// 匹配变量
+// VARS_RE.test(&quot;{}&quot;) ==&gt;  false
+// VARS_RE.test(&quot;{{}&quot;) ===&gt; false
+// VARS_RE.test(&quot;{as}&quot;) ===&gt; true
+var VARS_RE = /{([^{]+)}/g;
+
+// 解析seajs.config({})中的alias配置
+function parseAlias(id) {
+  var alias = data.alias;
+  return alias &amp;&amp; isString(alias[id]) ? alias[id] : id;
+}
+
+function parsePaths(id) {
+  var paths = data.paths;
+  var m;
+
+  // 当id匹配PATHS_RE的时候,m[1]代表第一个分组的内容,m[2]代表第二个分组的内容
+  // m[0]代表的是匹配的内容(不含分组信息,对我这里来说没有啥用)
+  if (paths &amp;&amp; (m = id.match(PATHS_RE)) &amp;&amp; isString(paths[m[1]])) {
+    id = paths[m[1]] + m[2];
+  }
+
+  return id;
+}
+
+function parseVars(id) {
+  var vars = data.vars;
+
+  if (vars &amp;&amp; id.indexOf(&quot;{&quot;) &gt; -1) {
+    id = id.replace(VARS_RE, function(m, key) {
+	 // m like {name}, key like name
+      return isString(vars[key]) ? vars[key] : m;
+    });
+  }
+
+  return id;
+}
+
+// 解析config.map支持正则表达式和函数
+// map最佳实践：用来做版本号和时间戳管理的
+/*
+seajs.config({
+  map: [
+    [&#39;.js&#39;, &#39;-debug.js&#39;]
+  ]
+});
+*/
+/*
+seajs.config({
+  &#39;map&#39;: [
+    [ /^(.*\.(?:css|js))(.*)$/i, &#39;$1?20110801&#39;]
+  ]
+});
+*/
+function parseMap(uri) {
+  var map = data.map;
+  var ret = uri;
+
+  if (map) {
+    for (var i = 0, len = map.length; i &lt; len; i++) {
+      var rule = map[i]
+
+      ret = isFunction(rule) ?
+   (rule(uri) || uri) :
+   uri.replace(rule[0], rule[1]);
+
+      // Only apply the first matched rule
+      if (ret !== uri) break;
+    }
+  }
+
+  return ret;
+}
+
+// 包含&quot;:/&quot; 或者以&quot;//{char}&quot;开头({char}代表任意一个字符)
+// ABSOLUTE_RE.test(&quot;/a&quot;) ==&gt;  false
+var ABSOLUTE_RE = /^\/\/.|:\//;
+
+// ROOT_DIR_RE.test(&quot;///&quot;)  ==&gt; true
+// ROOT_DIR_RE.test(&quot;sd//dd&quot;) ==&gt;false
+// ROOT_DIR_RE.test(&quot;sd//dd/&quot;) ==&gt;true
+// ROOT_DIR_RE.test(&quot;http://127.0.0.1:8080/s/&quot;) ==&gt; true
+// ROOT_DIR_RE.test(&quot;http://127.0.0.1:8080/s&quot;) ==&gt; true
+var ROOT_DIR_RE = /^.*?\/\/.*?\//;
+
+
+function addBase(id, refUri) {
+  var ret;
+  var first = id.charCodeAt(0);
+
+  // Absolute
+  if (ABSOLUTE_RE.test(id)) {
+    ret = id;
+  }
+  // Relative
+  else if (first === 46 /* &quot;.&quot; */) {
+    ret = (refUri ? dirname(refUri) : data.cwd) + id;
+  }
+  // Root
+  else if (first === 47 /* &quot;/&quot; */) {
+    var m = data.cwd.match(ROOT_DIR_RE);
+    ret = m ? m[0] + id.substring(1) : id;
+  }
+  // Top-level
+  else {
+    ret = data.base + id;
+  }
+
+  // Add default protocol when uri begins with &quot;//&quot;
+  if (ret.indexOf(&quot;//&quot;) === 0) {
+    ret = location.protocol + ret;
+  }
+
+  return realpath(ret);
+}
+
+function id2Uri(id, refUri) {
+  if (!id) return &quot;&quot;;
+
+  id = parseAlias(id);
+  id = parsePaths(id);
+  id = parseAlias(id);
+  id = parseVars(id);
+  id = parseAlias(id);
+  id = normalize(id);
+  id = parseAlias(id);
+
+  var uri = addBase(id, refUri);
+  uri = parseAlias(uri);
+  uri = parseMap(uri);
+
+  return uri;
+}
+
+// For Developers
+seajs.resolve = id2Uri;
+
+   
+
+
+
+
+   可以看到id2Uri这个方法在不停的处理alias、paths、vars、map，有兴趣的可以去专研。util-path.js核心就是一堆正则表达式，上面已经加了很多注释。

@@ -1,0 +1,231 @@
+12个阻碍视频广告发展的surprise(转自techcrunch.com)内容比较长，我慢慢翻译。。通过这个文章我对视频网站和视频搜索有了更多理解。
+
+
+   原文出处：http://www.techcrunch.com/2010/01/16/12-things-holding-back-online-video-advertising/
+
+
+   
+
+
+   艾瑞有个简短翻译版http://news.iresearch.cn/0468/20100118/108694.shtml，但是貌似没有尊重来源出处。
+
+
+   
+
+
+   After four years in the online video business, one thing is clear: if you produce high quality content and build sufficient distribution across a large enough number of consumer touch points, you can generate more than enough revenue from multiple sources and platforms to build a profitable, stand-alone business. But no one said it would be quick or easy. Building distribution isn&rsquo;t obvious and most producers fail to build any meaningful reach, but if you can hatch an editorial direction and business strategy that can attract an audience, over time you will be able to create a real business around it. But keep in mind the surprises below.
+
+
+   
+
+
+   在线视频行业经过了4年的发展，有一件事情总算清楚了：如果你要创造高质量的内容，建立遍布足够多的消费者触点(touch points)的庞大网络， 那么你就能从多个渠道获得收入来源，你会有一个盈利的、独立的平台。但是任何人都会说这将会很慢或者很困难。建立营销网络并不是必须的，大部分视频企业没有创造有价值的渠道，但如果你能找到一个编辑方向且能找到能够吸引受众的商业策略，不久你就能够建立一个以之为基础的商业。但请务必首先考虑如下几个surprise：
+
+
+   
+
+
+   Surprise #1: Lack of Definitions and Standards After All of These Years
+
+
+   Surprise #1:这么多年来行业缺乏定义和标准
+
+
+   
+
+
+   Steven Spielberg was trying to transition online with Pop.com in the 1990s and, until his resignation last week,Real Networks&rsquo; Rob Glaser has been &ldquo;at this&rdquo; for 16 years since 1994 . Yet to this day, in online video, we still don&rsquo;t speak a common language.
+
+
+   
+
+
+   直到上周史蒂芬斯皮尔伯格一直试图在用Pop.com进行内容的在线变革，Real Networks&rsquo; Rob Glaser 从1994年就开始将内容在线化，一直持续了16年。然而，直到今天，在线视频，我们仍然没有统一的标准。
+
+
+   
+
+
+   Heck, we&rsquo;re not even on the same planet. The first thing you realize about video advertising is that most of the money being generated from video content isn&rsquo;t derived from in-stream advertising (such as pre-,mid-, or post-roll) but rather by in-banner ads (be they standard display ads or rich media). Yet when you look at the projections being forecast by eMarketer and Forrester, they focus mainly on videos sold inside the video player.
+
+
+   
+
+
+   首先，我们视频广告的认识是：视频内容创造的收入大部分并非来自流媒体广告（如视频的前，中，或后部播放的广告），而是来自横幅广告（标准广告，或富媒体广告）。然而，如果你看看看eMarkerter和Forrester(一个调查机构)的预测，他们专注于视频播放器内售卖视频创造的价值。
+
+
+   
+
+
+   Meanwhile, as online video consumption continues to soar, it is clear that the share of total advertising for video content is going to be much larger than the projections suggest. YouTube, for example, sells pre-roll ads on an infinitely small percentage of its videos. They generate the lion&rsquo;s share via display banners. Personally, I think that while display banners aren&rsquo;t worth much in articles because a reader scrolls down quickly past them, next to video content they are worth a lot more.
+
+
+   But with so much video being consumed on third-party sites, how can producers stay in business, let alone thrive?
+
+
+   One answer, of course, is branded content, which remains unproven at best, and the latest fad at worst.
+
+
+   
+
+
+   与此同时，随着网络视频消费的持续高涨，视频广告市场的总份额将远远大于这些预测。例如，YouTube上销售的视频前广告所占的比例非常小，回报最优厚(lion&rsquo;s share）的是横幅广告。我个人认为横幅广告不值那么多钱，因为网民可能可能会运动滚动条，而看不到它们，视频里的内容更有价值。
+
+
+   
+
+
+   但是，如今有这么多的视频在在第三方网站上展现出来，内容生产商怎么才能控制住这一业务呢？也许品牌内容会是一个方向，但仍未证实是最好的方式，至少最流行的不会是最差的。
+
+
+   
+
+
+   
+
+
+   Surprise #2: The Myth That Branded Content Is a New Thing
+
+
+   Branded content can be many things. It is ultimately the blurring of church and state, or information and advertising. Examples are numerous and include:
+
+
+Soap operas, which were funded initially by Procter &amp; Gamble
+That ubiquitous Coca Cola cup on American Idol
+A web series about a couple trying to conceive sponsored by a home pregnancy test
+How-to videos featuring products, such as the use of a particular vodka or gin in a how-to-make-a-martini video.
+
+
+   Whereas publishers have always relied in part on advertiser support, branded content tends to be fully supported by a marketer. With the so-called death of the 30-second spot and the short-form nature of online video entertainment, the appeal of branded content is growing among video producers desperate to make a buck.
+
+
+   Problem is if a producer waits for the green light from a marketer to produce content that bakes in advertising, they just won&rsquo;t scale their libraries, which means they won&rsquo;t grow overall streams.
+
+
+   Also, it begs the question: does branded content fall into video advertising or sponsorship? That detail isn&rsquo;t clear yet. But with so many competitors vying in the genre, it&rsquo;s worth questioning how important it will be over the long term and if audiences will accept it. What looks like the light at the end of the tunnel for many struggling online video producers could turn out to bean oncoming train.
+
+
+   Surprise #3: It Takes A Different Playbook
+
+
+   The biggest difference with regards to monetizing videos as opposed to articles is that it requires a &ldquo;distribution-over-destination&rdquo; strategy. When Quincy Smith took over as CEO of CBS Interactive, he said that the Tiffany network&rsquo;s Innertube project should have been renamed &ldquo;CBS.com/NoOneComesHere.&rdquo;
+
+
+   No wonder then that the first video content companies went out of business&mdash;because they sought to build &ldquo;owned-and-operated&rdquo; properties. This strategy might work with text content but is nearly impossible with videos. Search engines don&rsquo;t pick up video content well. Hosting videos is expensive. Plus, audiences who read a business article don&rsquo;t automatically watch business videos (and so on).
+
+
+   Looking at the leading video destinations, you quickly realize that they are all basically aggregators or traditional media companies who still reasonably view online video with suspicion and fear.
+
+
+   Surprise #4: Video Consumption Patterns Are Whack
+
+
+   From our experiences, we see that audiences (readers, listeners, viewers) consume content by type (video vs. articles vs. podcasts) and not categories (auto, business, fashion, etc). And when it comes to videos, some categories are much more popular than others, which lead to unreachable expectations for marketers.
+
+
+   According to TubeMogul, 25% of views come in the first four days after a video is published and, over time, the average YouTube video is seen 500 times. Articles are the opposite: search engines tend to drive people to older articles. This is alarming. In order to win, it is imperative to grow video views over time and generate exponentially more video views than the average.
+
+
+   Surprise #5: Just Because You Build an Audience, Doesn&rsquo;t Mean The Advertisers Will Come Knocking
+
+
+   There are three main ways to build an audience: the old way and the new ways.
+
+
+The first is a retail approach where viewers watch your videos on your site and your network channels. This is historically how publishers have built audiences.
+The second is through wholesale partnerships, which are facilitated by MRSS. (RSS &ndash; or Real Simple Syndication &ndash; has change the way users consume content and publishers ingest and distribute content Analogously, MRSS &ndash; or simply Media RSS &ndash; was designed in 2004 by Yahoo! and the Media RSS community. Unbelievably, it has made distributing videos even easier than syndicating text content).
+The third is through social media: be it bloggers and/or social media referrers on Facebook, Twitter and the countless other outlets.
+
+
+   YouTube pioneered the embedding and viral distribution of video. It is certainly true that bloggers are the new &ldquo;newspaper editors&rdquo; who can make or break a producer. Similarly, the same way that MySpace helped build YouTube&rsquo;s success at the macro level, social media referrers will help a video take off on the micro level.
+
+
+   Between MRSS simplifying distribution and video&rsquo;s embeddable nature, syndication exploded . . . but revenues didn&rsquo;t. But don&rsquo;t worry. Over time, marketers follow the audience, they always will.
+
+
+   Surprise #6: When It Comes to Sales, Sell Your Audience, Not Your Videos
+
+
+   Historically, publishers sell ads by audience. But with online video and the lure of branded content, some have developed a tendency to pitch individual videos or a series of videos to advertisers. Publishers don&rsquo;t sell by individual articles, so why should they think that they should sell by individual videos, especially when you consider the widespread nature of videos and where they ultimately end up.
+
+
+   Nonetheless, I see way too many producers sell videos over audience, and then when they fail to generate any meaningful distribution, the marketer gets disappointed, blaming the strategy over the tactic. You have to create audiences for your content. It can be one audience or it can be many.
+
+
+   With a magazine, you can take any one article and project the demographic of that one piece to the whole publication. With videos, due to their embeddable nature, each video can have its own audience profile and as such can embody the demographic of the site that embeds or distributes the video. So videos have the potential to reach a broader demographic than content locked into one site. Regardless, until videos generate more revenue from in-stream ads than in-banner ones, videos&rsquo; embedding nature remains a double-edged sword.
+
+
+   For a producer to distribute through third party distributors, it means:
+
+
+less recognition of your reach initially. This hurts producers in the short term, but over time, services such as comScore and Nielsen will catch up and offer something while startups like TubeMogul seek to establish the best practices. More importantly, agencies recognize this phenomenon and will let you build your case.
+less control of the ad inventory, which can be seen as a negative or a positive. Ultimately, as a producer, you have to position this as a plus because you can offer advertisers more reach and share of voice across a larger segment of the online video universe. But, it takes time, especially with a lack of data to support your reach.
+
+
+   Surprise #7: The Myth and Danger of the Viral Video
+
+
+   Too many clients get enamored with the idea of green lighting a viral video. You might as well just flush your money down the toilet instead of approving such a campaign. It is impossible to actually plan for this and if the ad agency you hired is guaranteeing video views, then fire that ad agency yesterday!
+
+
+   But by the same token, who cares if a video generated a million views last month. If an advertiser runs banners next to that video next month and the video fizzles away, it&rsquo;s moot. This is why it is more important to publish and syndicate videos that over time can generate incremental and sustainable views. This makes the real estate before and next to the video more valuable.
+
+
+   Surprise #8: With Advertisers Sitting on the Sidelines, Partnerships Need to Make Sense for Producers
+
+
+   Historically, advertisers seek revenue-share deals with publishers to mitigate risks. With video, advertisers have sat out the dance, so the commercial nature boils down to producer/publishers and distributors, who in turn seek revenue share deals with producer/publishers. Problem? Most can&rsquo;t generate any sales, so producer/publishers don&rsquo;t get any revenue out of the deals. So my advice is to seek revenue guarantees until advertisers really embrace video advertising.
+
+
+   By and large, most revenue share deals flop because:
+
+
+Media companies have great sales teams, but they are only warming up to online video. So while they might be starting to generate revenue from online video, it is immaterial to their operations. Most of these traditional media companies are not producing or publishing enough online, so they are turning to new media producers like us. However, even though they have great sales organizations, they lack volume to make a dent.
+A lot of the video views are coming from video social networks, but most of them are just not set up to sell ads. They are technology companies operating in the media space, not media companies that understand advertising. Often times their VCs bring in experienced sales executives but have very unrealistic expectations. They also have not yet mastered shifting large portions of their audiences from non-sellable user-generated or pirated material to professional content. It has been stated that YouTube, for example, only sells ads next to 15% of their total streams.
+
+
+   However, social media and user generated content has increased pageviews and ad impressions greatly on these sites. Across the web, there is a chance the equilibrium is broken for good. As a result, CPMs are dirt poor and sell-through rates are abysmal. This adds to the challenge and forces a producer to take over the sales process which, while expensive, should ultimately be the end-goal.
+
+
+   Surprise #9: Don&rsquo;t Chase Hits
+
+
+   Chasing hits is perhaps the most surefire way to kill your business. We adopted the Field of Dreams content strategy: creating content we&rsquo;re passionate about and/or think audiences will watch, build an audience around it, and only worry about monetizing it afterwards.
+
+
+   It&rsquo;s not ideal, but the reality is that what works online is very much random. When we look at our most popular videos, we are flabbergasted! This is why online video is such a challenge to TV companies, because they cannot program a show in a time slot and force it down audiences&rsquo; throats.
+
+
+   Surprise #10: YouTube is More Open than Challengers
+
+
+   What kind of online video article would be complete without an observation on the leader in the space: YouTube. While far from perfect, YouTube has actually been fairly friendly with producers by allowing them to sell ads around their content.
+
+
+   Surprisingly, this is an &ldquo;open&rdquo; strategy. Usually, open strategies are adopted by challengers, not dominant market leaders. You would think that Daily Motion, Veoh and others would allow for this, but they don&rsquo;t. This hurts their standing and importance in the space. Time will tell if they change their policies and follow the market leader YouTube.
+
+
+   Surprise #11: Everything Won&rsquo;t Be Ad-Supported
+
+
+   To quote Ty Ahmad-Taylor, it&rsquo;s true that in theory &ldquo;if you make television shows, films or music, your business is actually the audience business. In practice, however, right now there aren&rsquo;t enough ad dollars to support the &ldquo;audience&rdquo; business. So let&rsquo;s leave the theory for academics. Those in the trenches will tell you it&rsquo;s about survival, and judging by the past year&hellip; it is still about surviving more so than thriving.
+
+
+   After we got disappointed by weak revenues in our earliest syndication deals, we held back distribution and began to pursue licensing deals. Licensing can generate insanely high eCPMs for a producer, but most producers don&rsquo;t have the kind of libraries that can command guaranteed and recurring licensing fees.So your best bet to keep the lights on is to command licensing revenues in the short term while you position yourself for syndication revenue over the long term. By doing that, you will in turn build a large enough library to command the richer branded content deals that will push you over the top.
+
+
+   Surprise #12: Search and Video are Still Miles Apart
+
+
+   Ultimately, video is where search was in 1999: a major part of the online ecosystem is still looking for a business model. But history repeats itself and without a doubt video streams will be monetized just as search queries were.
+
+
+   But differences shall remain, with the two leading ones being:
+
+
+Expectations: Google saw over a dozen search companies precede it, most of them had gone out of business, sold or exited search for portaldom. By the time the Nasdaq crashed, Google had an open field with practically no competitors. Video is the exact opposite: even though only YouTube has had a gargantuan exit, VCs have continued to pour hundreds of millions of dollars into so-called YouTube clones (Veoh, Daily Motion, Metacafe) as well as enablers (CDNs and content management systems) and advertising networks (Tremor, Broadband, Yume, Scanscout). It seems as if everyone is looking for the Google of video, even though for all intents and purposes, Google will be the Google of video thanks to its acquisition of YouTube.
+Short term vs. long term nature of the payoff. Search is largely a performance kind of medium, whereas video is a branding one. While search captures intent, video captures interest. Both are valuable, but in a very different way.
+
+
+   We&rsquo;re still early in the development of the online video business, but we are starting to figure it out.

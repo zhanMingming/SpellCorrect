@@ -1,0 +1,25 @@
+SIP自动化测试工具测试脚本 DSL语法一直有构建一个基于DSL的SIP自动化测试工具的想法。正好最近在学习DSL，顺便考虑了一下测试脚本的语法：
+
+   
+
+
+creat userA set tel = 1002
+creat userB set tel = 2001
+
+userA send invite to userB set sdp_ip = 10.20.1.126, media = g711a
+userB recv invite from userA wheresdp_ip = 10.20.1.126, media = g711a
+
+userA send voice to userB
+
+wait 3s
+
+userA send dtmf to userB set dtmf = 1002
+userB recv dtmf from userA where dtmf = 1002
+
+
+1、也可以考虑：send invite from userA to userB
+2、set表示设置sip消息中的字段值，对应sip库的设置函数。
+3、where表示检查sip消息中的字段值，对应sip库中的get函数。
+4、100try消息应该也能够在上层进行控制。
+5、如何测试语音是否单通或者串音？利用随机生成数字的DTMF语音来判断。具体的做法是一端发生DTMF语音，一端接收DTMF语音，通过检查接收时延来判断语音延迟，通过检查DTMF内容来判断是否单通或者串音。
+6、测试脚本的执行通过python 协程来实现。

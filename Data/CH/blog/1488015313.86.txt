@@ -1,0 +1,62 @@
+学习GitHub(五): 远程仓库和本地仓库这篇文章主要讲述2个场景：已经建好本地仓库情况下，如何提交到远程仓库？如何将远程仓库下载到本地？
+
+
+   
+
+
+
+
+   现在的情景是：我们已经在本地创建了一个Git仓库后，又想在github创建一个Git仓库，并且希望这两个仓库进行远程同步，这样github的仓库可以作为备份，又可以其他人通过该仓库来协作。
+
+
+
+首先我们需要登录github，然后建立一个仓库：
+
+
+   
+
+
+
+
+   可以看到github上first-repo-remote这个仓库是空的，我们可以按照上面的提示，提交本地仓库
+
+
+   git remote add origin https://github.com/aitangyong/first-repo-remote.git
+
+git push -u origin master
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   上传完成后，可以看到远程仓库已经更新了：
+
+
+   
+
+
+
+
+
+下面我们看下：如何将remote仓库下载到本地，找到远程仓库的地址，使用git clone命令即可：
+
+
+   
+
+
+
+修改文件后，可以通过git push origin master将提交同步到远程仓库

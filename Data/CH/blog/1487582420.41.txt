@@ -1,0 +1,16 @@
+设置MFC中EditBox为自动换行设置该EditBox属性：
+
+
+   
+
+
+   1.Auto HScroll False
+
+
+   2.OEM Convert False
+
+
+   3.Want Return True
+
+
+   4.Multiline True

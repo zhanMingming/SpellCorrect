@@ -1,0 +1,4 @@
+CArray随想CArray的性能和用途均低于vector
+
+
+   今天测试了一下，有什么理由不用vector呢？

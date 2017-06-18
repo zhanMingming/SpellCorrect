@@ -1,0 +1,95 @@
+Integer Numbers zoj 3365Integer Numbers
+
+Time Limit: 1 Second  Memory Limit: 32768 KB  Special Judge 
+
+
+
+   The boy likes numbers. He has a sheet of paper. He have written a sequence of consecutive integer numbers on the sheet. The boy likes them. 
+
+
+   But then the girl came. The girl is cruel. She changed some of the numbers. 
+
+
+   The boy is disappointed. He cries. He does not like all these random numbers. He likes consecutive numbers. He really likes them. But his numbers are not consecutive any more. The boy is disappointed. He cries. 
+
+
+   Help the boy. He can change some numbers. He would not like to change many of them. He would like to change as few as possible. He cannot change their order. He would like the numbers to be consecutive again. Help the boy. 
+
+Input
+
+   The first line of the input file contains n --- the number of numbers in the sequence (1 &le; n &le; 50000). The next line contains the sequence itself --- integer numbers not exceeding 109 by their absolute values. 
+
+
+   There are multiple cases. Process to the end of file. 
+
+Output
+
+   Output the minimal number of numbers that the boy must change. After that output the sequence after the change. 
+
+Sample Input
+
+   6
+5 4 5 2 1 8
+
+Sample Output
+
+   3
+3 4 5 6 7 8
+
+
+   思路：每个点减去它的相对位置，得到的那串序列（sort(a[])序列）中出现频率最高的那个数就是最终每个数字的偏移量
+
+   #include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+#define M 50005
+int n;
+int a[M],b[M],c[M];
+int main()
+{
+	int i,j;
+	while(scanf("%d",&amp;n)!=EOF)
+	{
+		for(i=1;i&lt;=n;i++)
+		{
+			scanf("%d",&amp;a[i]);
+			b[i]=a[i];
+			a[i]-=i;
+			c[i]=a[i];
+		}
+		sort(a+1,a+n+1);
+		int temp=1;
+		int max=0;
+		int t=a[1];
+		for(i=1;i&lt;n;i++)
+		{
+			if(a[i]==a[i+1])
+				temp++;
+			else
+			{
+				if(max&lt;temp)
+				{
+					max=max&gt;temp?max:temp;
+					t=a[i];
+				}
+				temp=1;
+			}
+		}
+		if(a[n]==a[n-1])
+		{
+			max=max&gt;temp?max:temp;
+			t=a[i];
+		}
+		if(n==1)
+			cout&lt;&lt;0&lt;&lt;endl;
+		else
+			cout&lt;&lt;n-max&lt;&lt;endl;
+		for(i=1;i&lt;=n;i++)
+		{
+			b[i]-=c[i]-t;
+		}
+		for(i=1;i&lt;n;i++)
+			cout&lt;&lt;b[i]&lt;&lt;" ";
+		cout&lt;&lt;b[n]&lt;&lt;endl;
+	}
+}

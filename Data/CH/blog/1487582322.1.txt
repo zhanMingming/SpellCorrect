@@ -1,0 +1,25 @@
+Linux/Ubuntu下的用户切换Ubuntu下的管理员账号为root，开始的密码是未知的。修改过程如下：
+
+
+   比如我的普通用户账号sophia，登陆的时候写
+
+
+   
+   sudo passwd root
+
+输入sophia的password，然后提示
+
+
+   Enter new UNIX password:就输入我定义的root密码
+
+
+   重新确认后输入
+   su root输入root密码即进入了root账户。
+
+
+   
+
+
+
+
+   详情如下：

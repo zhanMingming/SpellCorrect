@@ -1,0 +1,1402 @@
+CMU &amp; Stanford 课程Stanford课程：
+
+
+   https://www.coursera.org/courses
+
+
+
+
+   网易公开课：http://blog.csdn.net/dcraw/article/details/7712321
+
+
+   学习笔记：http://www.cnblogs.com/jerrylead/archive/2012/05/08/2489725.html
+
+
+   CMU 方向（CMU Areas）：
+
+
+   http://www.cs.cmu.edu/research/areas/index.html
+
+
+
+
+   http://www.csd.cs.cmu.edu/research/index.html
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+   CMU的讨论组
+
+http://www.cs.cmu.edu/seminars/
+
+
+   Courses in Algorithms and Complexity at Carnegie Mellon
+
+http://www.aladdin.cs.cmu.edu/courses/
+
+
+   机器学习课程
+
+http://www.cs.cmu.edu/%7Eepxing/Class/10701/
+
+
+   CMU语言技术研究所
+
+http://www.lti.cs.cmu.edu/
+
+
+   http://projectile.is.cs.cmu.edu/research/public/tools/salm/salm.htm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   图形学课程http://graphics.cs.cmu.edu/courses/
+
+
+   
+
+
+
+
+
+Graphics courses offered
+
+   Current offerings are listed first.
+
+
+
+
+
+Number
+Course name
+Offerings
+
+
+
+
+15-462
+
+Computer Graphics I
+
+Spring 2012,Fall
+ 2011,Spring 2011,Fall
+ 2010,Spring 2010,Fall
+ 2009,Spring 2009,Fall 2008,Spring
+ 2008,Fall 2007,Spring 2007,Fall
+ 2006,Spring 2006,Fall
+ 2005, Spring 2005,Fall 2004,Spring
+ 2004,Fall 2003,Spring 2003,Fall
+ 2002
+
+
+
+
+15-465
+
+Animation Art and Technology
+
+Spring 2012,Spring
+ 2010,Spring 2009,Spring 2008,Spring
+ 2007,Spring 2006,Spring 2005,Fall
+ 2003,Spring 2003
+
+
+
+
+15-869B
+
+Physically Based Character Animation
+
+Spring 2012,Spring
+ 2009, Fall 2006, Fall 2004
+
+
+
+
+16-721
+
+Learning-based methods in Computer Vision
+
+Spring 2012,Spring
+ 2009
+
+
+
+
+15-463
+
+Computational Photography
+
+Fall 2011,Fall
+ 2010,Spring 2010,Fall
+ 2008,Fall 2007,Fall
+ 2006,Fall 2005,Fall
+ 2004
+
+
+
+
+15-869
+
+Special Topics in Graphics:
+ Graphics and Imaging Architectures
+
+Fall 2011
+
+
+
+
+15-869
+
+The Animation of Natural Phenomena
+
+Fall 2011,Fall
+ 2010,Fall 2008
+
+
+
+
+15-899A
+
+Pixels to Percepts:
+ Visual Perception for Computer Vision and Graphics
+
+Spring 2011
+
+
+
+
+16-823
+
+Physics-based methods in Computer Vision
+
+Spring 2011,Fall
+ 2008,Fall 2007,Fall
+ 2006,Fall 2005
+
+
+
+
+15-899A
+
+Hands: Design and Control for Dexterous
+ Manipulation
+
+Spring 2010
+
+
+
+
+15-464
+
+Technical Animation
+
+Fall 2009,Spring
+ 2007,Fall 2005
+
+
+
+
+15-466
+
+Computer Game Programming
+
+Fall 2009,Spring
+ 2008,Spring 2007,Spring
+ 2005,Spring 2004,Fall 2002
+
+
+
+
+16-421
+
+Vision Sensors
+
+Spring 2009, Spring 2008
+
+
+
+
+15-869A
+
+Generating Natural Human Motion
+
+Spring 2008,Spring
+ 2006
+
+
+
+
+15-467
+
+Physical Simulation for Computer Animation
+
+Fall 2007
+
+
+
+
+15-864
+
+Advanced Computer Graphics
+
+Spring 2006,Spring
+ 2005,Spring 2004
+
+
+
+
+16-721
+
+Advanced Perception
+
+Spring 2006
+
+
+
+
+15-863
+
+Physically Based Modeling and Interactive
+ Simulation
+
+Spring 2005,Spring
+ 2003
+
+
+
+
+15-869
+
+Data-driven Character Animation
+
+Fall 2003
+
+
+
+Other courses of possible interest
+
+CFA 51-741: Introduction to Computing in DesignARC 48-120/48-260/48-760: Computer ModelingARC 48-745: Geometric Modeling : Theory, Programming and PracticeARC 48-760: Digital NarrativesART 60-110: Electronic Media Studio I: Computer ArtART 60-210: Electronic Media Studio II: VideoART 60-410: Advanced ETB: Concepts of AnimationART 60-415: Advanced ETB: 3-D AnimationART 60-423: Advanced ETB: Telepresence Art &amp; ApplicationsART 60-424: Advanced ETB: Special Topic: Interactive ProgrammingCFA 51-741: Introduction to Computing in DesignECE 18-396: Signals and SystemsECE 18-551: Digital Communications and Signal Processing Systems DesignECE 18-751: Applied Stochastic ProcessesECE 18-791: Digital Signal Processing IECE 18-792: Digital Signal Processing IIECE 18-796: Multimedia Communications: Coding, Systems, and NetworkingECE 18-798: Image and Video ProcessingETC 53-831: Building Virtual WorldsETC 53-871: Dramatic Structures of Interactive GamesMEG 24-201: Engineering GraphicsMEG 24-351: DynamicsROB 15-385: Computer VisionROB 16-720: Computer Vision
+
+
+
+
+
+
+Computer Graphics I
+
+   
+
+
+   Introduction to graphics, undergraduate level.
+
+
+   课程简介：图形学导论
+
+
+   授课面向的对象：本科
+
+Computational Photography
+
+   Computational Photography is an emerging new field created by the convergence of computer graphics, computer vision and photography. Its role is to overcome the limitations of the traditional camera
+ by using computational techniques to produce a richer, more vivid, perhaps more perceptually meaningful representation of our visual world. The aim of this advanced undergraduate course is to study ways in which samples from the real world (images and video)
+ can be used to generate compelling computer graphics imagery. We will learn how to acquire, represent, and render scenes from digitized photographs. Several popular image-based algorithms will be presented, with an emphasis on using these techniques to build
+ practical systems. This hands-on emphasis will be reflected in the programming assignments, in which students will have the opportunity to acquire their own images of indoor and outdoor scenes and develop the image analysis and synthesis tools needed to render
+ and view the scenes on the computer.
+
+
+   课程简介：计算摄影是一个新兴的领域，是由计算机图形学，计算机视觉和摄影融合形成的。其作用是利用计算技术克服传统相机的局限性，生产更丰富，更生动，或是更感知意义地表示我们的视觉世界。这个高级本科课程的目的是研究用现实世界的样本（图像和视频）来生成引人注目的计算机图形图像的方法。我们将学习如何从数字照片来获取，表示，并绘制场景。课程中将介绍几种流行的基于图像的算法，重点是使用这些技术来构建实用系统，这将体现在编程作业中。学生将有机会获取自己的室内和室外场景的图像并在计算机上使用图像分析与合成工具来绘制和查看场景。
+
+
+   授课面向的对象：本科
+
+Animation Art and Technology
+
+   Students in this course will learn to use computer-based tools such as Maya to create artistic animation. The final project will begin as a storyboard, morph into an animatic and gradually become
+ a complete animation with fullyrendered framesand audio.
+
+
+   课程简介：在这门课中，学生将学习使用基于计算机的工具（如玛雅）来进行动画艺术创作。最后的项目将以一个故事板作为开始，逐渐形成一个动画草稿并最终成为一个完整的包含音乐和渲染帧的动画。
+
+
+   授课面向的对象：本科
+
+Hands: Design and Control for Dexterous Manipulation
+
+   In this course, we will survey robotic hands and learn about the human hand with the goal of understanding hand design and control for dexterity. Questions to be explored include the following.
+ Should robot hand kinematics be humanlike? What robotic sensors are available / practical, how do they measure up to sensors in the human hand, and what sensing capabilities are required for dexterous manipulation? What is a good benchmark suite of tasks for
+ evaluating dexterous behavior? How do we design control algorithms for dexterous manipulation in the presence of uncertainty? What can we learn from human manipulation performance to improve robotic manipulation capability? This is a reading and project course.
+ Students will be asked to present one or two short research papers of their own and to design and carry out a final project.
+
+
+   课程简介：在课程中，我们将调查有关机器人的手和学习人的手目的是理解手灵巧的设计和控制。要探讨的问题包括以下内容。机器人手的运动学性质是否和人类的相&#20284;？什么机器人传感器是可以使用的/可行的，它们是如何与人手的感知相一致的，什么感知能力是灵巧操作要求的？用什么测试任务可以评价一个灵巧的行为？我们如何设计控制算法来解决灵巧操作中存在的不确定性？如何从人类的操作能力中进行学习以用来改进机器人的操作能力？这是一个具有阅读和实际项目的课程。学生最终需要求提交一到两份简短的研究论文并设计与实现一个相关项目。
+
+
+   授课面向的对象：
+
+Technical Animation
+
+   This course introduces techniques for computer animation such as keyframing, procedural methods, motion capture, and simulation. We will focus primarily on character animation, but will also discuss
+ animation of cloth and natural phenomena. Recent research results will be considered as well as basic techniques. The course also includes a brief overview of story-boarding, scene composition, and lighting.
+
+
+   课程简介：本课程将介绍一些电脑动画技术如关键帧动画，过程方法，动作捕捉和模拟。我们将主要集中于角色动画，但还将讨论布料及自然现象动画。最新的研究成果以及基本技术将会被使用到。课程还包括简要概述故事事件，场景组成，照明。
+
+
+   授课面向的对象：
+
+Computer Game Programming
+
+   This course will cover tools and techniques for programming interactive games and virtual reality simulations. The course will focus primarily on programming aspects, including event loops and execution
+ threads, rendering and animation in 3D, terrain/background representation, polygonal models, texturing, collision detection and physically-based modeling, game AI, and multi-user games and networking. Although this course has a heavy programming focus, other
+ topics briefly covered will include the history of computer/video game technology, game genres and design principles, and the social impact of games.
+
+
+   课程简介：该课程涵盖了互动游戏节目和虚拟现实模拟的工具和技术。本课程将主要集中在编程方面，包括事件循环和执行线程，渲染和三维动画制作，地形/背景的表示，多边形模型，纹理，碰撞检测和基于物理的建模，游戏的AI，多用户游戏以及网络模块。虽然这个课程以编程为重点，但也将涉及：电脑/电视游戏技术，游戏类型和设计原则，以及游戏的社会影响。
+
+
+   授课面向的对象：
+
+Physically Based Character Animation
+
+   This course will explore topics in physically based character animation, where the goal is to obtain a character performance that appears both natural and physically plausible. We will focus on
+ optimization approaches to generating realistic motion for humanlike characters and cover research results in computer graphics and biomechanics. The course should be appropriate for graduate students with some computer graphics and / or robotics experience
+ and for advanced undergraduates.
+
+
+   课程简介：本课程将探讨基于物理的角色动画，其目的是要让一个角色可以表现得自然以及物理上的正确性。我们将重点放在优化那些用来为类人的动画角色生成真实感的动作的方法上，其中也包括计算机图形学和生物力学的一些研究成果。
+
+
+   授课面向的对象：有图形学基础或机器人技术的研究生、高年级本科生
+
+Vision Sensors
+
+   This course covers the fundamentals of vision cameras and other sensors - how they function, how they are built, and how to use them effectively. The course presents a journey through the fascinating
+ five hundered year history of &quot;camera-making&quot; from the early 1500's &quot;camera obscura&quot; through the advent of film and lenses, to today's mirror-based and solid state devices (CCD, CMOS). The course includes a significant hands-on component where students learn
+ how to use the sensors and understand, model and deal with the uncertainty (noise) in their measurements. While the first half of the course deals with conventional &quot;single viewpoint&quot; or &quot;perspective&quot; cameras, the second half of the course covers much more
+ recent &quot;multi-viewpoint&quot; or &quot;multi-perspective&quot; cameras that includes a host of lenses and mirrors.
+
+
+   课程简介：本课程涵盖了摄像机和其他传感器的基本原理-它们如何运作，如何构建，以及如何有效地使用它们。本课程主要介绍“相机制造”的五百年的历史：从1500年早期的“暗箱”到胶片和透镜的出现，再到现在的基于镜片的和基于固态器件（CCD，CMOS）的。课程内容包括一个重要的实际操作环节，可以让学生学习如何理解与使用传感器，处理在测量结果中的噪音。虽然课程的上半部分将接触到传统的“单一视点”或“单一视角”相机，但该课程下半部分涵盖更多的是最新的“多视点”或“多视角”照相机，其包含了多个透镜与反光镜。
+
+
+   授课面向的对象：
+
+
+   
+
+
+   
+
+Learning-based methods in Computer Vision
+
+   The goal of this graduate seminar course is to gain a deeper understanding of the computer vision problem in order to better reason about ways data and learning could be used to tackle it. The central
+ focus will be on representation of visual data, rather than on fancy learning techniques. We will be looking at all stages of visual processing, from low-level (color, texture, local patches) all the way to high-level (object recognition, general image understanding).
+ We will pay particular attention to mid-level vision (grouping, segmentation, figure/ground, scene layout, image parsing) -- a crucial glue tying vision together that has been largely neglected. The course will have an emphasis on using large amounts of real
+ data (images, video, textual annotations, other meta-data). We will also discuss the difficult issue of what is the right choice of training data and how can it be acquired.
+
+
+   课程简介：这个研究生课程研讨会的目的是对计算机视觉问题有更深入的理解，以便更好地使用基于数据和学习的方法来解决问题。重点将是视觉数据的表示方法，而不是走马观花地学习技术。我们将遍历视觉处理的所有阶段，从低级别的（颜色，纹理，局部贴片）到高级别的（目标识别，整体对象识别）。我们将特别关注于中等级别的计算机视觉（组合，分割，数字/地面，场景布局，图像解析）——一个关键但常常被忽视的地方。本课程将着重使用大量真实的数据（图像，视频，文字批注，其他元数据）。我们还将讨论怎样正确地选择数据以及如何才能获得这些数据等较难的问题。
+
+
+   授课面向的对象：研究生
+
+
+   
+
+
+   
+
+The Animation of Natural Phenomena
+
+   This class covers physical simulation in computer graphics. The goal is to teach a broad swath of techniques -- from particle systems to human animation -- while learning some math, working on fun
+ projects, and practicing quick problem solving and public presentation skills.
+
+
+   课程简介：这个课程涵盖了计算机图形的物理模拟。我们的目标是教一些技术，从粒子系统到人物动画。而学习一些数学，做些有趣的项目，并学习快速解决问题的能力和公众演讲技巧。
+
+
+   授课面向的对象：
+
+Physics-based methods in Computer Vision
+
+   Everyday we observe an extraordinary array of light and color phenomena around us, ranging from the dazzling effects of the atmosphere, the complex appearances of surfaces and materials and underwater
+ scenarios. For a long time, artists, scientists and photographers have been fascinated by these effects, and have focused their attention on capturing and understanding these phenomena. In this course, we take a computational approach to modeling and analyzing
+ these phenomena, which we collectively call as &quot;visual appearance&quot;. The first half of the course focuses on the physical fundamentals of visual appearance, while the second half of the course focuses on algorithms and applications in a variety of fields such
+ as computer vision, graphics and remote sensing and technologies such as underwater and aerial imaging. This course is an initial attempt to unify concepts usually learnt in physical sciences and their application in imaging sciences. The course will also
+ include a photography competition in addition to
+
+
+   课程简介：每天我们观察我们周围一系列的光线和色彩的现象，有耀&#30524;的大气的效果，复杂的表面和材质以及水下的场景。长期以来，艺术家，科学家和摄影师一直着迷于这些效果，并着重于捕捉和了解这些现象。在这个课程中，我们将采取模拟计算的方法来对这些现象进行建模和分析，我们称之为“视觉外观”。该课程上半部分侧重于视觉外观的物理原理，而该课程的下半部分侧重于算法及其在各个领域的应用，如计算机视觉，图形学，遥感以及空气中与水下成像等技术。本课程初步的理念是统一物理科学及其在影像科学的应用的一些概念。此外，课程亦包括一个摄影比赛。
+
+
+   授课面向的对象：
+
+Generating Natural Human Motion
+
+   This course is an in-depth study of recently developed techniques for creating natural human motion for robotics and computer animation. We will explore both the mathematical techniques behind these
+ systems and techniques for evaluating them. The topics to be covered include: control, motion graphs, statistical motion synthesis, motion blending, and optimization.
+
+
+   课程简介：本课程将深入学习一些最新的为机器人技术和电脑动画创造自然&#36924;真的人物动作的技术。我们将探讨评估系统与技术其后的数学的机制。该课题内容包括：控制，运动图，统计动作合成，运动混合，还有优化。
+
+
+   授课面向的对象：
+
+Physical Simulation for Computer Animation
+
+   Physically based simulation techniques have revolutionized special effects in film and video games, creating extremely realistic effects while allowing unprecedented artistic control and avoiding
+ dangerous situations. This course will explore physically based simulation methods for computer animation of a wide variety of phenomena and materials including rigid and deformable solids, cloth, liquids, and explosions. Students will be introduced to numerical
+ methods, physical models, data structures, and theoretical results which form the building blocks of these methods. To gain hands-on experience, students will implement basic simulators for several phenomena.
+
+
+   课程简介：基于物理模拟技术彻底改变了电影和视频游戏的特效，创造了极其&#36924;真的效果，同时允许进行前所未有的艺术控制和避免一些危险情况。本课程将探讨基于物理的包括刚体，变形固体，布料，液体及爆炸等各种现象和材质的电脑动画的模拟方法。并向学生介绍一些数&#20540;方法，物理模型，数据结构及这些方法的理论基础。为了获得实践经验，学生将实现模拟几种现象的基本的模拟器。
+
+
+   授课面向的对象：
+
+Advanced Computer Graphics
+
+   This course will be a hands-on class on advanced computer graphics. It will cover major aspects of digital image generation: geometric modeling, computer animation, and rendering. The goal of the
+ course is to provide a strong foundation for computer graphics principles, and provide a hands-on introduction to recent advanced topics, e.g., subdivision surfaces, real-time global illumination, and physically based animation. The course should be appropriate
+ for graduate students in all areas and for advanced undergraduates.
+
+
+   课程简介：本课程是高级计算机图形学实践课程。它将涉及数字图像生成的各个方面：几何建模，电脑动画和渲染。本课程的目的是为计算机图形原理建立坚实的基础，并介绍最新的一些高级课题，例如，细分曲面，实时全局光照和基于物理的动画。
+
+
+   授课面向的对象：所有领域的研究生和高年级本科生
+
+Advanced Perception
+
+   16-721 is a graduate seminar devoted to recent research on computer vision. We will be reading an eclectic mix of vision papers on topics such as perception, object and scene recognition, segmentation,
+ tracking, as well as &quot;best papers of all time&quot;.
+
+
+   课程简介：本课程是一个研究生研讨会致力于最新的计算机视觉的研究。我们将阅读一些关于感知，对象和场景识别，图像分割，对象跟踪的论文。
+
+
+   授课面向的对象：研究生
+
+Physically Based Modeling and Interactive Simulation
+
+   This course introduces students to physically based modeling for computer graphics and related fields, and summarizes current research issues. Efficient numerical methods for simulating a host of
+ visually interesting physical phenomena will be covered, and discussed in the context of both interactive and offline simulation. The course should be appropriate for graduate students in all areas and for advanced undergraduates.
+
+
+   课程简介：本课程向学生介绍基于物理的计算机图形和相关领域的建模，并总结了当前研究的问题。课程中包含了使用有效的数&#20540;方法模拟一些有趣的物理现象，并将于交互模拟和离线仿真两个范围内进行讨论。
+
+
+   授课面向的对象：所有领域的研究生和高年级本科生
+
+Data-driven Character Animation
+
+   This course is an in-depth study of recently developed techniques for using data to produce character animations. We will explore systems that have been developed for both interactive and off-line
+ animations using motion capture data, video data, and body scans. The topics to be covered include: motion editing, retargeting, motion graphs, statistical motion synthesis, interfaces, skinning and modeling of deformable shapes for human animation.
+
+
+   课程简介：本课程将对最新的使用数据驱动的角色动画技术进行深入的研究。我们将探讨使用了动作捕捉的数据，视频数据和身体扫描数据进行交互的或是离线的动画制作的系统。该课题内容包括：运动编辑，重定目标，运动图，统计动作合成，接口技术，蒙皮和变形物体建模的人类动画。
+
+
+   
+
+Computer Graphics I
+
+   
+
+
+   概要
+
+
+   本课程对计算机图形学建模，动画和渲染进行了全面地介绍。内容包括基本的图像处理，几何变换，曲线曲面的几何建模，动画，三维浏览，可视化算法，着色和光线追踪。
+
+
+   
+
+
+   
+
+
+   综览
+
+
+   1）预备知识
+
+
+   这门课程的编程作业将用C &#43; &#43;来实现，并要求涉及矩阵，向量等数学知识。因此具备以下课程知识是必需的：
+
+
+   1、计算机系统导论、电气工程数学原理，或是
+
+
+   2、矩阵代数与三维微积分。
+
+
+   2）教材
+
+
+   本课程需要两本教材：
+
+
+   1、计算机图形学原理第二版，雪莉，彼得等人著
+
+
+   2、OpenGL编程指南第六版
+
+
+   3）作业与评分标准
+
+
+   本课程包括4个编程作业，两次书面作业和期中期末考试，最终得分将由以下部分组成：
+
+
+(5%)作业1(5%)作业2(12%)编程作业1(12%)编程作业2(18%)编程作业3(18%)编程作业4(13%)期中考试(17%)期末考试
+
+   
+
+
+   课程提纲
+
+
+   1）第一章：导论与基础数学
+
+
+   1、第一课：简介
+
+
+   阅读材料：OpenGL编程指南第一章（OpenGL简介），第二章（状态管理和绘制几何物体）
+
+
+   2、第二课：OpenGL第一讲（基本知识和光照）
+
+
+   阅读材料：OpenGL编程指南第3-6章
+
+
+   3、第三课：OpenGL第二讲（图形变换和编程作业1）
+
+
+   阅读材料：计算机图形学原理第2章
+
+
+   编程作业：实现OpenGL中基本的相机变换和光照功能，绘制一张拥有两种基本图形（球与三角形）的场景并使用三角风&#26684;绘制一张水面。
+
+
+   4、第四课：图形学的数学基础
+
+
+   阅读材料：计算机图形学原理第6章
+
+
+   5、第五课：图形变换
+
+
+   阅读材料：计算机图形学原理第7章
+
+
+   6、视窗与投影变换
+
+
+   阅读材料：OpenGL编程指南第9章
+
+
+   
+
+
+   
+
+
+   2）第二章：光照
+
+
+   1、第七课：纹理映射
+
+
+   书面作业1
+
+
+   阅读材料：计算机图形学原理第9章
+
+
+   2、第八课：着色
+
+
+   阅读材料：计算机图形学原理第17章
+
+
+   2、第九课：高级纹理映射、GLSL（图形硬件编程）
+
+
+   编程作业2：实现OpenGL的纹理映射并使用GLSL语言实现凹凸纹理映射，环境映射，菲涅尔效应
+
+
+   阅读材料：计算机图形学原理第15章
+
+
+   
+
+
+   
+
+
+   3）第三章：几何图形
+
+
+   1、第十课：曲线与样条
+
+
+   阅读材料：计算机图形学原理第13章
+
+
+   2、第十一课：多边形风&#26684;和隐式曲面
+
+
+   阅读材料：计算机图形学原理第10章
+
+
+   
+
+
+   
+
+
+   4）第四章：光线跟踪
+
+
+   1、第十二课：光线投射
+
+
+   阅读材料：本节课程笔记
+
+
+   2、第十三课：光线跟踪
+
+
+   书面作业2
+
+
+   3、第十四课：空间数据结构
+
+
+   
+
+
+   
+
+
+   5）期中考试、寒假
+
+
+   1、第十五课：期中复习
+
+
+   编程作业3：实现一个光线跟踪器
+
+
+   
+
+
+   
+
+
+   6）间接光照
+
+
+   1、第十六课：辐射度
+
+
+   阅读材料：本节课程笔记
+
+
+   2、第十七课：光子映射
+
+
+   
+
+
+   
+
+
+   7）动画
+
+
+   1、第十八课：动画、动作捕捉、关键帧
+
+
+   2、第十九课：差分方程
+
+
+   3、第二十课：粒子系统
+
+
+   4、第二十一课：布料与隐式积分
+
+
+   5、第二十二课：流体
+
+
+   阅读材料：本节课程笔记
+
+
+   
+
+
+   
+
+
+   8）图像处理
+
+
+   1、第二十三课：图像处理
+
+
+   编程作业4：使用光子映射算法实现焦散现象
+
+
+   2、第二十四课：基于图像的渲染
+
+
+   
+
+
+   
+
+
+   9）高级课题
+
+
+   1、第二十五课：学术讲座1
+
+
+   2、第二十六课：学术讲座2
+
+
+   3、第二十七课：非真实感渲染与可视化
+
+
+   4、第二十八课：期末复习
+
+
+   
+
+
+   
+
+
+   10）期末考试
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+Learning-based methods in Computer Vision
+
+   综览
+
+
+   人类的视觉是最奇特的装置之一。从分散的，有噪声的，模糊的局部场景中通过大脑的处理就可以产生全局的视觉体验。但为何一任务——尽管人类做起来&#20284;乎毫不费力——对计算机来说却依然是个极为困难的工作？一部分答案在于人类有着多年的依靠视觉的经验，而计算机却没有。显然，基于学习的方法可以在这个问题的解决上取得进展。试图使用机器学习的工具来直接处理原始视觉数据的方法取得了很大的成功。
+
+这个研究生课程研讨会的目的是对计算机视觉问题有更深入的理解，以便更好地使用基于数据和学习的方法来解决问题。重点将是视觉数据的表示方法，而不是走马观花地学习技术。我们将遍历视觉处理的所有阶段，从低级别的（颜色，纹理，局部贴片）到高级别的（目标识别，整体对象识别）。我们将特别关注于中等级别的计算机视觉（组合，分割，数字/地面，场景布局，图像解析）——一个关键但常常被忽视的地方。本课程将着重使用大量真实的数据（图像，视频，文字批注，其他元数据）。我们还将讨论怎样正确地选择数据以及如何才能获得这些数据等较难的问题。
+
+本课程将就多方面的课题进行阅读和展示一系列经典或最新的论文。所有学生将需要对每一篇论文提交一份书面总结。此外，本课程还将要做两个大项目。
+
+
+   
+
+
+   
+
+
+   项目
+
+
+   ·语义机器视觉
+
+
+   ·PASCAL目标识别
+
+
+   
+
+进度表
+
+
+   1、简介，视觉：度量与感知
+
+
+   2、概述视觉理论的论文
+
+
+   相关论文：
+
+
+   Cavanagh, P. (1995)Vision is getting easier every
+ day
+
+Optional reading:Nakayama, K.(1998)Vision
+ fin-de-siecle - a reductionistic explanation of perception for the 21st century?
+
+
+   3、概述视觉生理学的论文
+
+
+   相关论文：
+
+
+   Adelson, E.H. &amp; Bergen, J.R. (1991)The Plenoptic
+ Function and the Elements of Early Vision
+
+
+   4、概率边界
+
+
+   相关论文：
+
+
+   D. Martin, C. Fowlkes, and J. Malik. PAMI May 2004.
+
+Learning to Detect Natural Image Boundaries Using Local Brightness, Color, and Texture Cues
+
+M. Maire, P. Arbelaez, C. Fowlkes, and J. Malik. CVPR 2008.
+
+Using Contours to Detect and Localize Junctions in Natural Images
+
+
+   5、概率边界（续）
+
+
+   6、什么情况下目标或场景识别只是纹理识别？
+
+
+   相关论文：
+
+
+   Renninger, L.W. &amp; Malik, J. Vision Research 2004.When is
+ scene recognition just texture recognition?
+
+Csurka, G., Bray, C., Dance, C., and Fan, L. ECCV 2004.Visual categorization with bags of keypoints
+
+Winn, J., Criminisi, A. and Minka, T. ICCV 2005.Object Categorization by Learned Universal Visual Dictionary
+
+
+   7、纹元爆炸
+
+
+   相关论文：
+
+
+   TextonBoost: Joint Appearance, Shape and Context Modeling for Multi-Class
+ Object Recognition and Segmentation.
+
+J. Shotton, J. Winn, C. Rother, A. Criminisi. In Proc. ECCV 2006.
+
+
+   8、Semantic Texton Forests（语义纹元森林？）
+
+
+   目标对象简介，几何体与外观
+
+
+   相关论文
+
+Semantic Texton Forests for Image Categorization and Segmentation.
+
+J. Shotton, M. Johnson, R. Cipolla. In Proc. IEEE CVPR 2008.
+
+Semantic Texton Forests implementation
+
+Object Recognition in the Geometric Era: a Retrospective.J. Mundy. 2006.
+
+
+   大规模场景配对
+
+
+   10、外观生成外观：滑动窗口，星座模型，图案结构等。
+
+
+   11、局部目标识别
+
+
+   相关论文：
+
+
+   A Discriminatively Trained, Multiscale, Deformable Part Model
+
+P. Felzenszwalb, D. McAllester, D. Ramanan, In Proc. IEEE CVPR 2008.
+
+
+   12、简介基于上下文的方法
+
+
+   13、揭示视觉中枢的基本原理
+
+
+   14、相关论文：
+
+
+   Object Recognition by Scene Alignment
+
+B. C. Russell, A. Torralba, C. Liu, R. Fergus, W. T. Freeman In NIPS, 2007.
+
+
+
+code for gist descriptor
+
+
+
+SIFT flow: dense correspondence across different scenes
+
+C. Liu, J. Yuen, A. Torralba, J. Sivic, and W. T. Freeman. ECCV, 2008.
+
+
+   15、相关论文：
+
+
+   Contextual priming for object detection
+
+A. Torralba. IJCV, Vol. 53(2), 169-191, 2003.
+
+
+
+Object detection and localization using local and global features
+
+K. Murphy, A. Torralba, D. Eaton, W. T. Freeman. Sicily workshop on object recognition, 2005.
+
+
+   16、图像拆分简介
+
+
+   相关论文：
+
+
+   Objects in Context
+
+Andrew Rabinovich, Andrea Vedaldi, Carolina Galleguillos, Eric Wiewiora and Serge Belongie. ICCV 2007.
+
+
+
+Context Based Object Categorization: A Critical Survey
+
+Carolina Galleguillos and Serge Belongie
+
+Technical Report UCSD CS2008-0928, 2008.
+
+
+   17、基于上下文的方法（续）
+
+
+   图像拆分（续）
+
+
+   相关论文：
+
+
+   Object Categorization using Co-Ocurrence, Location and Appearance
+
+Carolina Galleguillos, Andrew Rabinovich and Serge Belongie. CVPR 2008.
+
+
+   Recovering Human Body Configurations: Combining Segmentation and Recognition
+
+G. Mori, X. Ren, A. Efros, and J. Malik. CVPR 2004.
+
+
+   18、图像拆分优化
+
+
+   相关论文：
+
+
+   Learning a Classification Model for Segmentation.
+
+Xiaofeng Ren and Jitendra Malik. in ICCV 2003.
+
+Image Segmentation by Data-Driven Markov Chain Monte Carlo.
+
+Z. Tu and S. C. Zhu, PAMI, vol.24, no.5, pp. 657-673, May, 2002.
+
+
+   19、表面
+
+
+   相关论文：
+
+
+   On the semantics of a glance at a scene. Biederman, I. 1981
+
+Recovering Surface Layout from an Image. D. Hoiem, A.A. Efros, and M. Hebert. IJCV, Vol. 75, No. 1, October 2007.
+
+
+   20、遮掩
+
+
+   相关论文：
+
+
+   Figure/Ground Assignment in Natural Images.
+
+Xiaofeng Ren, Charless Fowlkes and Jitendra Malik, ECCV 2006.
+
+Recovering Occlusion Boundaries from a Single Image.
+
+D. Hoiem, A.N. Stein, A.A. Efros, and M. Hebert. ICCV 2007
+
+
+   21、深度
+
+
+   相关论文：
+
+
+   Depth estimation from image structure
+
+A. Torralba, A. Oliva. PAMI Vol. 24(9): 1226-1238. 2003.
+
+Depth Information by Stage Classification.
+
+Vladimir Nedovic, Arnold W.M. Smeulders, Andre Redert and Jan-Mark Geusebroek. ICCV 2007.
+
+Learning Depth from Single Monocular Images
+
+Ashutosh Saxena, Sung H. Chung, Andrew Y. Ng. In NIPS 2005.
+
+
+   22、基于上下文的图像探索
+
+
+   相关论文：
+
+
+   Total Recall: Automatic Query Expansion with a Generative Feature Model for Object Retrieval
+
+Chum, O. , Philbin, J. , Sivic, J. , Isard, M. and Zisserman, A. In ICCV 2007.
+
+
+   23、分类
+
+
+   相关论文：
+
+
+   Principles of Categorization.Eleanor Rosch
+
+Big Book of Concepts, Chapter 3. Gregory L. Murphy.
+
+
+   24、推测对象属性
+
+
+   25、属性共享
+
+
+   相关论文：
+
+
+   Sharing visual features for multiclass and multiview object detection
+
+A. Torralba, K. P. Murphy and W. T. Freeman PAMI. vol. 29, no. 5, pp. 854-869, May, 2007.
+
+
+   26、语法
+
+
+   相关论文：
+
+
+   Learning compositional models for object categories from small sample sets
+
+J. Porway, B. Yao, and S.C. Zhu Book Chapter in Sven Dickinson et al (eds.)
+
+Object Categorization: Computer and Human Vision Perspectives, Cambridge University Press.2009
+
+
+
+A Stochastic Grammar of Images
+
+Song-Chun Zhu and David Mumford
+
+Foundations and Trends in Computer Graphics and Vision Vol. 2, No 4. 2007.
+
+
+   27、动作
+
+
+   相关论文：
+
+
+   Learning Realistic Human Actions from Movies.
+
+Ivan Laptev, Marcin Marszalek, Cordelia Schmid and Benjamin Rozenfeld. in Proc. CVPR'08
+
+
+   28、不合理的有效数据和群众智慧
+
+
+   29、结果测试
+
+
+   30、项目展示1
+
+
+   31、项目展示2
+
+
+   
+
+
+   
+
+
+   
+
+
+   
+
+Physics-based methods in Computer Vision
+
+   综览
+
+
+   每天我们都可以观察到我们周围一系列的光线和色彩的现象，有耀&#30524;的大气的效果，复杂的表面和材质以及水下的场景。长期以来，艺术家，科学家和摄影师一直着迷于这些效果，并着重于捕捉和了解这些现象。在这个课程中，我们将采取模拟计算的方法来对这些现象进行建模和分析，我们称之为“视觉外观”。该课程上半部分侧重于视觉外观的物理原理，而该课程的下半部分侧重于算法及其在各个领域的应用，如计算机视觉，图形学，遥感以及空气中与水下成像等技术。本课程初步的理念是统一物理科学及其在影像科学的应用的一些概念。此外，课程亦包括一个摄影比赛。
+
+
+   
+
+
+   
+
+
+   主题列表
+
+
+原理与现象
+
+光度测定原理光场反射，折射,偏振,衍射,干涉表面反射机制反射的信号处理机制纹理与BRDFs (BTF)光照和阴影相互反射焦散散射与容积光传输流体
+
+
+   
+
+
+   
+
+
+算法与应用
+
+光度'Shape-from-X'算法图像与基于视觉的渲染蒙特卡洛模拟（Monte Carlo Simulations）透明,半透明,潮湿,起伏的表面大气和水下散射作用的现象流体现象——烟,火,水恶劣天气现象在大气，水下，医学，显微成像中的应用自然摄影原则
+
+
+   可选教材
+
+
+Robot Vision, B. K. P. Horn, MIT Press, 1986Light and Color in the Outdoors, M. Minnaert.
+
+   评分标准
+
+
+期中作业20%编程作业30%考试 20%摄影比赛 15%论文展示 15%
+
+   课程提纲
+
+
+   第1周导论
+
+
+第一讲：简介与课程安排第二讲：成像与光度学的基本原理
+
+   第2、3、4周表面反射
+
+
+第三讲:表面反射的基本原理第四讲:粗糙镜面表面的BRDF模型第五讲:粗糙散射表面的BRDF模型第六讲: BRDF的测量方法第七讲: 2D表面的信号处理的机制第八讲: 3D表面的信号处理的机制
+
+   第5周学生展示
+
+
+   
+
+
+   
+
+
+   第6、7周光照，阴影与相互反射
+
+
+第九讲:光照与阴影I第十讲:光照与阴影II第十一讲:相互反射I第十二讲:相互反射II
+
+   第8周学生展示
+
+
+   第9周反射与折射
+
+
+第十三讲:反射焦散与折射焦散的基本原理第十四讲:焦散成像与绘制
+
+   第10周光线偏振
+
+
+第十五讲:光线偏振的基本原理第十六讲:光线偏振在计算机视觉中的应用
+
+   第11、12周光线散射
+
+
+第十七讲:光线散射的基本原理第十八讲:计算机视觉中的体积光散射第十九讲:计算机图形学中的体积光散射
+
+   第13周流体：烟，火，水
+
+
+第二十讲:流体建模的基本原理
+
+   第14周学生展示
+
+
+   
+
+
+   
+
+Advanced Computer Graphics
+
+   课程描述
+
+
+   本课程是高级计算机图形学实践课程。它将涉及数字图像生成的各个方面：几何建模，电脑动画和渲染。本课程的目的是为计算机图形原理建立坚实的基础，并介绍最新的一些高级课题，例如，细分曲面，实时全局光照和基于物理的动画。
+
+
+   预备知识
+
+
+   之前接触过计算机图形或导师批准。具有良好的编程技能，线性代数，3维微积分的知识，和数&#20540;计算基础。
+
+
+   教材
+
+
+   课程笔记与论文。
+
+
+   评估方式
+
+
+   学期评估将基于一系列的编程与书面作业以及一次课堂测试。
+
+
+   课题涵盖
+
+
+光线与物体交互几何体表示；多分辨率建模形变建模计算机动画和基于物理的建模纹理与环境映射光线跟踪辐射度全局光照高级实时绘制
+
+   课程提纲
+
+
+   第1讲：简介（Introduction）
+
+
+   第2讲：表面剖分（Subdivision surfaces）
+
+
+   第3讲：自学Subdivision course notes前四章（No classes(SIGGRAPH deadline)）
+
+
+   作业1：（Assignment #1: Subdivision Surfaces）使用half-edge数据结构并实现表面剖分算法，将剖分后的模型用OBJ文件&#26684;式存储。
+
+
+   第4讲：剖分总结（Subdivision Wrap-up）
+
+
+   第5讲：多分辨率分析（Multiresolution analysis）(MRA)、规则网&#26684;（Normal meshes）
+
+
+   第6讲：网&#26684;简化（Mesh Simplification）
+
+
+   第7讲：递进网&#26684;（Progressive Meshes）
+
+
+   第8讲：网&#26684;流（Streaming Meshes）
+
+
+   第9讲：网&#26684;平滑（Mesh Smoothing and Fairing）
+
+
+   第10讲：拉普拉斯网&#26684;编辑（Laplacian Mesh Editing）
+
+
+   第11讲：隐式曲面（Implicit Surfaces）
+
+
+   第12讲：基于点的模型（Point-based Models）
+
+
+   作业2：薄壳（Assignment #2: Thin Shells）
+
+
+   第13讲：布料的建模与动画（Cloth Modeling and Animation）
+
+
+   第14讲：共轭梯度法（The Conjugate Gradient Method）
+
+
+   第15讲：Newmark积分（Newmark Integration, etc.）——子空间与多分辨率积分
+
+
+   第16讲：可编程图形硬件（Programmable Graphics Hardware）
+
+
+   第17讲：角色皮肤（Character Skinning）
+
+
+   第18讲：辐射度与反射率（Radiometry and Reflectance）
+
+
+   项目建议书（Project Proposal）
+
+
+   第19讲：全局照明简介（Introduction to Global Illumination）
+
+
+   第20讲：蒙特卡罗路径跟踪（Monte Carlo Path Tracing）
+
+
+   第21讲：偏蒙特卡罗方法；光子映射（Biased Monte Carlo Methods;Photon Mapping）
+
+
+   作业3：光子映射（Assignment #3: Photon Mapping）
+
+
+   第22讲：辐射度（Radiosity）
+
+
+   第23讲：可视化重要性（Visual Importance）
+
+
+   第24讲：能见度（Visibility）
+
+
+   第25讲：基于图像的绘制（Image-based Rendering）

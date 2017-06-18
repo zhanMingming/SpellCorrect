@@ -1,0 +1,134 @@
+hdu 3398思路很绝，是看解题报告的，把字符串组合问题改装为平面上走路模型，以下就是大牛的思路：
+
+
+   
+
+
+   题意：求由n个1、m个0组成，并且任意前缀中1的个数不少于0的个数的字符串的个数，并模20100501。
+
+
+   分析：这题很赞，首先是模型的转化或者说是公式的推导，这里用到了一个非常巧妙的转化。
+
+
+   ①：我们设初始在坐标系的原点(0,0)，从字符串第一位开始，碰到一个0就向上走，碰到一个1就向右走，那么由n个1、m个0组成的字符串最后必定走到(n,m)点，即满足由n个1、m个0组成的字符串的个数为C(n+m,n) = C(n+m,m) (满足n+m长度内n个长度走1或者m个长度走0)。
+
+
+   ②：对于任意前缀中1的个数不少于0的个数的字符串的个数这个条件，可以看成是坐标系中，从(0,0)点走到(m, n)点，并且跟y=x-1这条直线不相交的方案数。又因为(0,0)点关于直线y=x-1的对称点是(1,-1)，而从(1,-1)点走到(m, n)点的所有方案一定都会与直线y=x-1相交，对于这些方案，将从(1,-1)点到与y=x-1的第一个交点之间的路径关于y=x-1对称翻转过去，就可以得到所有不满足题意的从(0,0)点走到(m, n)点的方案，于是最终答案就是C(n+m, n)-C(n+m,n+1)。
+
+
+   
+
+
+   接下来就是求上式子模20100501的值，因为n、m很大，所以我们利用质因数分解来分解阶乘，然后分子分母抵消指数最后求指数幂的和即可，但是这样做还是会TLE。而用对于阶乘，有很多非常好的性质可以利用（不利用就TLE。。。），下面介绍N!的质因数分解，也就是求N!中x的幂，首先因为N! = 1*2*3*&hellip;&hellip;*N，所以N!中x的幂就是各个数质因数分解后x的幂之和，考虑含1,2,&hellip;&hellip;,N中含x^1的共有x^1,2*x^1,&hellip;&hellip;,y*x^1共y个，其中y=floor(N/x^1)，而含x^2的共有x^2,2*x^2,&hellip;&hellip;,y*x^2共y个，其中y=floor(N/x^2)=floor((N/x)/x)，所以可以利用递归来计算N!中x的幂
+
+
+   
+
+
+   
+
+
+   照着大牛的思路写了一下,叹服于这种思路！
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+#define M 2000005
+#define MOD 20100501
+#define N 150000
+bool flag[M];
+int prime[N], p[N], len;  
+// prime 记录素数， p 记录素数的幂  len 记录长度
+void calprime()
+{
+    memset(flag,false,sizeof(flag));
+    int i,j,k=2;
+    prime[1]=2;
+    for(i=3;i&lt;=M;i+=2)
+    {
+ if(!flag[i])
+ {
+     prime[k++]=i;
+     for(j=i;j&lt;=M;j+=i)
+  flag[j]=true;
+ }
+    }
+}
+void divide(int n)
+{
+    int i=1,j=1;
+    while(n&gt;1)
+    {
+ while(n%prime[i]==0)
+ {
+     p[i]++;
+     n/=prime[i];
+ }
+ i++;
+    }
+}
+void divf(int n,int oper)//divide factorial,(n!分解结果中2的指数=n/2+n/4+n/8+...)
+{
+    int i=1,j=1,k,temp=n;
+    while(prime[i]&lt;=n)
+    {
+ temp=n;
+ while(temp!=0)
+ {
+     if(oper==0)
+  p[i]+=temp/prime[i];
+     else
+  p[i]-=temp/prime[i];
+     temp/=prime[i];
+ }
+ i++;
+    }
+    len=max(len,i);
+}
+__int64 giveres()//cal (prime[i]^p[i])%M连乘
+{
+    __int64 ans=1;
+    int i,j,k;
+    for(i=1;i&lt;=len;i++)
+    {
+ __int64 a=prime[i],b=p[i],res=1;//cal a^b%MOD
+ while(b)
+ {
+     if(b&amp;1)//b%2==1
+  res*=a%MOD;
+     a=a*a%MOD;
+     b=b&gt;&gt;1;
+ }
+ ans=ans*res%MOD;
+    }
+    return ans;
+}
+int main()
+{
+    calprime();
+    int n,m,cas;
+    scanf("%d",&amp;cas);
+    while(cas--)
+    {
+ scanf("%d%d",&amp;n,&amp;m);
+ if(n&lt;m)
+ {
+     printf("0/n");
+     continue;
+ }
+ memset(p,0,sizeof(p));
+ //divide (n-m+1)
+ int temp=n-m+1;
+ divide(temp);
+ divf(n+m,0);
+ divf(m,1);
+ divf(n+1,1);
+ __int64 ans=giveres();
+ printf("%I64d/n",ans);
+    }
+    return 0;
+}

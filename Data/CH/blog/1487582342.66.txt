@@ -1,0 +1,43 @@
+opencv中RGB转YCbCrCvMat cvRGB2YCbCr(CvMat* src)
+{
+	CvMat dst;
+	cvInitMatHeader(&amp;dst,3,1,CV_32F,zero);
+
+	double B=cvmGet(src,0,0);
+	double G=cvmGet(src,1,0);
+	double R=cvmGet(src,2,0);
+
+	double y  = (int)( 0.299   * R + 0.587   * G + 0.114   * B);
+	double cb = (int)(-0.16874 * R - 0.33126 * G + 0.50000 * B);
+	double cr = (int)( 0.50000 * R - 0.41869 * G - 0.08131 * B);
+
+	cvmSet(&amp;dst,1,0,cb);
+	cvmSet(&amp;dst,0,0,y);
+	cvmSet(&amp;dst,2,0,cr);
+
+	return dst;
+}
+
+   或者使用opencv内部提供函数
+
+
+   
+
+
+   ycb=cvCreateImage(cvGetSize(src),8,3);
+ cvCvtColor(src,ycb,CV_BGR2YCrCb);
+ y=cvCreateImage(cvGetSize(src),8,1);
+ cr=cvCreateImage(cvGetSize(src),8,1);
+ cb=cvCreateImage(cvGetSize(src),8,1);
+ cvSplit(ycb,y,cr,cb,0);
+
+   
+
+
+   这里注意转出来的图像要是直接显示会发现Cb，Cr空间并非彩色图，原因是申请的y,cb,cr都是单通道的。这时只要将其转换到RGB分量上即可得到彩色图像。
+
+
+   比如这里我做了一个彩色图像对比度增强。
+
+
+   http://blog.csdn.net/abcjennifer/article/details/7428737

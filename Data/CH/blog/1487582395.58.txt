@@ -1,0 +1,424 @@
+C#中ToString格式大全 String.Format 格式C 货币
+
+
+   2.5.ToString("C")
+
+
+   ￥2.50 
+
+
+   D 十进制数
+
+
+   25.ToString("D5")
+
+
+   00025
+
+
+   E 科学型
+
+
+   25000.ToString("E")
+
+
+   2.500000E+005
+
+
+   F 固定点
+
+
+   25.ToString("F2")
+
+
+   25.00
+
+
+   G 常规
+
+
+   2.5.ToString("G")
+
+
+   2.5
+
+
+   N 数字
+
+
+   2500000.ToString("N")
+
+
+   2,500,000.00
+
+
+   X 十六进制
+
+
+   255.ToString("X")
+
+
+   FF 
+
+
+   formatCode 是可选的格式化代码字符串。（详细内容请搜索&ldquo;格式化字符串&rdquo;查看） 必须用&ldquo;{&rdquo;和&ldquo;}&rdquo;将格式与其他字符分开。如果恰好在格式中也要使用大括号，可以用连续的两个大括号表示一个大括号，即： &ldquo;{{&rdquo;或者&ldquo;}}&rdquo;。
+
+
+   常用格式举例：
+
+
+   （1） int i=12345;
+
+
+   this.textBox1.Text=i.ToString();
+
+
+   //结果 12345（this指当前对象，或叫当前类的实例）
+
+
+   this.textBox2.Text=i.ToString("d8");
+
+
+   //结果 00012345
+
+
+   （2） int i=123;
+
+
+   double j=123.45;
+
+
+   string s1=string.Format("the value is {0,7:d}",i);
+
+
+   string s2=string.Format("the value is {0,7:f3}",j);
+
+
+   this.textBox1.Text=s1 ;
+
+
+   //结果 the value is 123
+
+
+   this.textBox2.Text=s2;
+
+
+   //结果 the value is 123.450
+
+
+   （3）double i=12345.6789;
+
+
+   this.textBox1.Text=i.ToString("f2"); //结果 12345.68
+
+
+   this.textBox2.Text=i.ToString("f6");
+
+
+   //结果 12345.678900
+
+
+   （4）double i=12345.6789;
+
+
+   this.textBox1.Text=i.ToString("n"); //结果 12,345.68
+
+
+   this.textBox2.Text=i.ToString(&ldquo;n4&rdquo;); //结果 12,345.6789
+
+
+   （5）double i=0.126;
+
+
+   string s=string.Format("the value is {0:p}",i);
+
+
+   this.textBox1.Text=i.ToString("p"); //结果 12.6%
+
+
+   this.textBox2.Text=s; //结果 the value is 12.6%
+
+
+   （6） DateTime dt =new DateTime(2003,5,25);
+
+
+   this.textBox1.Text=dt.ToString("yy.M.d");
+
+
+   //结果 03.5.25
+
+
+   this.textBox2.Text=dt.ToString(&ldquo;yyyy年M月&rdquo;);
+
+
+   //结果 2003年5月
+
+
+   Convert.ToDateTime("2005/12/22 22:22:22").ToString("yyyy/MM/dd HH:mm:ss")"2005/12/22 22:22:22"
+
+
+   （7） int i=123;
+
+
+   double j=123.45;
+
+
+   string s=string.Format("i:{0,-7},j:{1,7}",i,j);
+
+
+   //-7表示左对齐，占7位
+
+
+   this.textBox1.Text=s ;
+
+
+   //结果i:123 ,j: 123.45
+
+
+   DateTime.ToString()用法详解
+
+
+   我们经常会遇到对时间进行转换,达到不同的显示效果，默认格式为:2006-6-6 14:33:34 如果要换成成200606,06-2006,2006-6-6或更多的格式该怎么办呢？这里将要用到:DateTime.ToString的方法(String, IFormatProvider)示例：using System;using System.Globalization;String format="D";DateTime date=DataTime.Now;Response.Write(date.ToString(format, DateTimeFormatInfo.InvariantInfo));结果输出Thursday, June 16, 2006
+
+
+   在这里列出了参数format格式详细用法=======================格式字符 关联属性/说明 d ShortDatePattern D LongDatePattern f 完整日期和时间（长日期和短时间） F FullDateTimePattern（长日期和长时间） g 常规（短日期和短时间） G 常规（短日期和长时间） m、M MonthDayPattern r、R RFC1123Pattern s 使用当地时间的 SortableDateTimePattern（基于 ISO 8601） t ShortTimePattern T LongTimePattern u UniversalSortableDateTimePattern 用于显示通用时间的格式 U 使用通用时间的完整日期和时间（长日期和长时间） y、Y YearMonthPattern
+
+
+   下表列出了可被合并以构造自定义模式的模式========================================这些模式是区分大小写的；例如，识别&ldquo;MM&rdquo;，但不识别&ldquo;mm&rdquo;。如果自定义模式包含空白字符或用单引号括起来的字符，则输出字符串页也将包含这些字符。未定义为格式模式的一部分或未定义为格式字符的字符按其原义复制。
+
+
+   格式模式 说明 ：d 月中的某一天。一位数的日期没有前导零。 dd 月中的某一天。一位数的日期有一个前导零。 ddd 周中某天的缩写名称，在 AbbreviatedDayNames 中定义。 dddd 周中某天的完整名称，在 DayNames 中定义。 M 月份数字。一位数的月份没有前导零。 MM 月份数字。一位数的月份有一个前导零。 MMM 月份的缩写名称，在 AbbreviatedMonthNames 中定义。 MMMM 月份的完整名称，在 MonthNames 中定义。 y 不包含纪元的年份。如果不包含纪元的年份小于 10，则显示不具有前导零的年份。 yy 不包含纪元的年份。如果不包含纪元的年份小于 10，则显示具有前导零的年份。 yyyy 包括纪元的四位数的年份。 gg 时期或纪元。如果要设置格式的日期不具有关联的时期或纪元字符串，则忽略该模式。 h 12 小时制的小时。一位数的小时数没有前导零。 hh 12 小时制的小时。一位数的小时数有前导零。 H 24 小时制的小时。一位数的小时数没有前导零。 HH 24 小时制的小时。一位数的小时数有前导零。 m 分钟。一位数的分钟数没有前导零。 mm 分钟。一位数的分钟数有一个前导零。 s 秒。一位数的秒数没有前导零。 ss 秒。一位数的秒数有一个前导零。 f 秒的小数精度为一位。其余数字被截断。 ff 秒的小数精度为两位。其余数字被截断。 fff 秒的小数精度为三位。其余数字被截断。 ffff 秒的小数精度为四位。其余数字被截断。 fffff 秒的小数精度为五位。其余数字被截断。 ffffff 秒的小数精度为六位。其余数字被截断。 fffffff 秒的小数精度为七位。其余数字被截断。 t 在 AMDesignator 或 PMDesignator 中定义的 AM/PM 指示项的第一个字符（如果存在）。 tt 在 AMDesignator 或 PMDesignator 中定义的 AM/PM 指示项（如果存在）。 z 时区偏移量（&ldquo;+&rdquo;或&ldquo;-&rdquo;后面仅跟小时）。一位数的小时数没有前导零。例如，太平洋标准时间是&ldquo;-8&rdquo;。 zz 时区偏移量（&ldquo;+&rdquo;或&ldquo;-&rdquo;后面仅跟小时）。一位数的小时数有前导零。例如，太平洋标准时间是&ldquo;-08&rdquo;。 zzz 完整时区偏移量（&ldquo;+&rdquo;或&ldquo;-&rdquo;后面跟有小时和分钟）。一位数的小时数和分钟数有前导零。例如，太平洋标准时间是&ldquo;-08:00&rdquo;。 : 在 TimeSeparator 中定义的默认时间分隔符。 / 在 DateSeparator 中定义的默认日期分隔符。 % c 其中 c 是格式模式（如果单独使用）。如果格式模式与原义字符或其他格式模式合并，则可以省略&ldquo;%&rdquo;字符。 / c 其中 c 是任意字符。照原义显示字符。若要显示反斜杠字符，请使用&ldquo;//&rdquo;。
+
+
+   只有上面第二个表中列出的格式模式才能用于创建自定义模式；在第一个表中列出的标准格式字符不能用于创建自定义模式。自定义模式的长度至少为两个字符；例如，
+
+
+   DateTime.ToString( "d") 返回 DateTime 值；&ldquo;d&rdquo;是标准短日期模式。 DateTime.ToString( "%d") 返回月中的某天；&ldquo;%d&rdquo;是自定义模式。 DateTime.ToString( "d ") 返回后面跟有一个空白字符的月中的某天；&ldquo;d&rdquo;是自定义模式。
+
+
+   比较方便的是,上面的参数可以随意组合,并且不会出错,多试试,肯定会找到你要的时间格式如要得到2005年06月 这样格式的时间可以这样写:date.ToString("yyyy年MM月", DateTimeFormatInfo.InvariantInfo)如此类推.
+
+
+   下面列出一些Asp.net中具体的日期格式化用法：============================================1.绑定时格式化日期方法:
+
+
+   
+
+
+   2.数据控件如DataGrid/DataList等的件格式化日期方法: e.Item.Cell[0].Text = Convert.ToDateTime(e.Item.Cell[0].Text).ToShortDateString();
+
+
+   3.用String类转换日期显示格式: String.Format( "yyyy-MM-dd ",yourDateTime);
+
+
+   4.用Convert方法转换日期显示格式: Convert.ToDateTime("2005-8-23").ToString
+
+
+   ("yyMMdd",System.Globalization.DateTimeFormatInfo.InvariantInfo); //支持繁体数据库
+
+
+   5.直接用ToString方法转换日期显示格式: DateTime.Now.ToString("yyyyMMddhhmmss"); DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss")
+
+
+   6.只显示年月 DataBinder.Eval(Container.DataItem,"starttime","{0:yyyy-M}")
+
+
+   7.显示时间所有部分，包括：年月日时分秒 DataFormatString='{0:yyyy-MM-dd HH24:mm:ss}'&gt;
+
+
+   
+
+
+   用DateTime.ToString(string format)输出不同格式的日期
+
+
+   DateTime.ToString()函数有四个重载。一般用得多的就是不带参数的那个了。殊不知，DateTime.ToString(string format)功能更强大，能输出不同格式的日期。以下把一些情况罗列出来，供大家参考。有些在MSDN上有的就没有列出来了。
+
+
+   1. y代表年份，注意是小写的y，大写的Ｙ并不代表年份。
+
+
+   2. M表示月份。
+
+
+   3. d表示日期，注意D并不代表什么。
+
+
+   4. h或H表示小时，h用的是12小时制，H用的是24小时制。
+
+
+   5. m表示分钟。
+
+
+   6. s表示秒。注意S并不代表什么。
+
+
+   格式输出示例
+
+
+   年
+
+
+   y7string yy = DateTime.Now.ToString("y-MM")
+
+
+   yy="7-05"
+
+
+   yy07string yy = DateTime.Now.ToString("yy-MM")
+
+
+   yy="07-05"
+
+
+   yyy或更多的y1984string yy = DateTime.Now.ToString("yyyy");
+
+
+   yy="2007"
+
+
+   月
+
+
+   M5.string mon = DateTime.Parse("1984-05-09")ToString("yyyy-M")
+
+
+   mon = "1984-5"
+
+
+   MM05. string mon = DateTime.Parse("1984-05-09")ToString("MＭ")
+
+
+   mon = "05"
+
+
+   MMM如果是中文版的操作系统，则会输出：五月.
+
+
+   如果是英文操作系统，则输入月份前三个字母的简写：Maystring mon = DateTime.Parse("2006-07-01").ToString("MMM")
+
+
+   英文版操作系统：Jul
+
+
+   中文版操作系统：七月
+
+
+   MMMM或更多的Ｍ如果是中文版的操作系统，则会输出：五月.
+
+
+   如果是英文操作系统，则输入月份的全写string mon = DateTime.Parse("2006-07-01").ToString("MMM")
+
+
+   英文版操作系统：July
+
+
+   中文版操作系统：七月
+
+
+   日期或星期
+
+
+   d9string dd= DateTime.Parse("1984-05-09")ToString("d")
+
+
+   dd= "9"
+
+
+   dd09string dd= DateTime.Parse("1984-05-09")ToString("dd")
+
+
+   dd= "09"
+
+
+   ddd如果是中文版的操作系统，则会输出星期，如星期三。.
+
+
+   如果是英文操作系统，则输出星期的简写：如
+
+
+   Wedstring dd = DateTime.Parse("2006-07-01").ToString("ddd")
+
+
+   英文版操作系统：Wed
+
+
+   中文版操作系统：星期三
+
+
+   dddd或更多的d如果是中文版的操作系统，则会输出星期，如星期三。.
+
+
+   如果是英文操作系统，则输出星期：如
+
+
+   Wednesdaystring dd = DateTime.Parse("2006-07-01").ToString("dddd")
+
+
+   英文版操作系统：Wednesday
+
+
+   中文版操作系统：星期三
+
+
+   小时
+
+
+   h小时范围：1-12string hh = DateTime.Now.ToString(&ldquo;h&rdquo;);
+
+
+   hh = 8
+
+
+   hh或更多的h小时范围：1-12string hh = DateTime.Now.ToString(&ldquo;hh&rdquo;);
+
+
+   hh = 08
+
+
+   H小时范围：0-23string hh = DateTime.Now.ToString(&ldquo;yyyy-H&rdquo;);
+
+
+   hh = 2006-8
+
+
+   HH或更多的H小时范围：0-23string hh = DateTime.Now.ToString(&ldquo;yyyy-HH&rdquo;);
+
+
+   hh = 2006-08
+
+
+   string hh = DateTime.Pare(&ldquo;2006-7-4 18:00:00&rdquo;).ToString(&ldquo;yyyy-HH&rdquo;);
+
+
+   hh = 2006-18
+
+
+   分钟
+
+
+   m6string mm = DateTime.Now.ToString("yyyy-MM-dd-m");
+
+
+   mm = &ldquo;2006-07-01-6&rdquo;;
+
+
+   mm或更多的m06string mm = DateTime.Now.ToString("yyyy-MM-dd-mm");
+
+
+   mm = &ldquo;2006-07-01-06&rdquo;;
+
+
+   秒
+
+
+   s6string mm = DateTime.Now.ToString("yyyy-MM-dd-s");
+
+
+   mm = &ldquo;2006-07-01-6&rdquo;;
+
+
+   ss或更多的s06string mm = DateTime.Now.ToString("yyyy-MM-dd-ss");
+
+
+   mm = &ldquo;2006-07-01-06&rdquo;;

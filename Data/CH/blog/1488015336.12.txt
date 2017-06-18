@@ -1,0 +1,190 @@
+java socket编程中backlog的含义使用java.net.ServerSocket能够方便的创建一个服务端套接字，这个类的构造函数有一个参数backlog。下面这段代码，在本机的8888端口上建立了一个套接字，backlog设置为5。
+
+
+   // port:8888,backlog:5
+ServerSocket server = new ServerSocket(8888, 5);
+
+   
+
+
+
+下面的Client是我们的测试类，会创建30个socket连接。
+   import java.net.Socket;
+
+public class Client {
+	private static Socket[] clients = new Socket[30];
+	public static void main(String[] args) throws Exception {
+		for (int i = 1; i &lt;= 30; i++) {
+			clients[i-1] = new Socket(&quot;127.0.0.1&quot;, 8888);
+			System.out.println(&quot;client connection:&quot; + i);
+		}
+	}
+}
+
+如果没有启动服务端套接字，那么直接运行Client会报错误：Connection refused: connect。
+   Exception in thread &quot;main&quot; java.net.ConnectException: Connection refused: connect
+	at java.net.DualStackPlainSocketImpl.connect0(Native Method)
+	at java.net.DualStackPlainSocketImpl.socketConnect(DualStackPlainSocketImpl.java:79)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:339)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:200)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:182)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:172)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:579)
+	at java.net.Socket.connect(Socket.java:528)
+	at java.net.Socket.&lt;init&gt;(Socket.java:425)
+	at java.net.Socket.&lt;init&gt;(Socket.java:208)
+
+接下来我们启动Server端套接字，但是不调用accept()方法，也就是说不处理客户端的socket连接。
+   import java.net.ServerSocket;
+
+public class Server {
+
+	public static void main(String[] args) throws Exception{
+		
+		// port:8888,backlog:5
+		ServerSocket server = new ServerSocket(8888, 5);
+		
+		while(true)
+		{
+		     
+		}
+		     
+	}
+}
+
+运行Client测试类，运行结果见下图：
+
+   
+
+
+
+
+
+
+   可以看到：测试类Client中，前面5个客户端Socket创建是成功的，后面再创建Scoket就会报错。能够成功创建客户端套接字的个数，刚好就是创建ServerSocket时候指定的backlog。
+
+
+   
+
+
+
+
+   下面这段代码，ServerSocket正常处理客户端socket的连接请求。
+
+
+   import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+	public static void main(String[] args) throws Exception{
+		
+		// port:8888,backlog:5
+		ServerSocket server = new ServerSocket(8888, 5);
+		
+		int acceptCount = 0;
+		
+		while(true)
+		{
+			Socket client = server.accept();
+			 
+			acceptCount++;
+			 
+		     System.out.println(&quot;new connection has connected, num=&quot; + acceptCount);
+		}
+		     
+	}
+}
+
+运行测试类Client，服务端和客户端的运行结果如下：没有任何异常产生。
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   下面我们再修改下服务端代码，处理每个客户端连接需要花费2s，我们用线程睡眠来模拟。
+
+
+   import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+	public static void main(String[] args) throws Exception{
+		
+		// port:8888,backlog:5
+		ServerSocket server = new ServerSocket(8888, 5);
+		
+		int acceptCount = 0;
+		
+		while(true)
+		{
+			Socket client = server.accept();
+			 
+			acceptCount++;
+			 
+		    System.out.println(&quot;new connection has connected, num=&quot; + acceptCount);
+		    
+		    Thread.sleep(2 * 1000);
+		}
+		     
+	}
+}
+
+运行测试类Client，服务端和客户端运行结果如下：
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   总结一下：
+
+
+   服务端socket处理客户端socket连接是需要一定时间的。ServerSocket有一个队列，存放还没有来得及处理的客户端Socket，这个队列的容量就是backlog的含义。如果队列已经被客户端socket占满了，如果还有新的连接过来，那么ServerSocket会拒绝新的连接。也就是说backlog提供了容量限制功能，避免太多的客户端socket占用太多服务器资源。
+
+
+   客户端每次创建一个Socket对象，服务端的队列长度就会增加1个。
+
+
+   
+
+
+   new Socket(&quot;127.0.0.1&quot;, 8888);
+
+服务端每次accept()，就会从队列中取出一个元素。
+
+   
+
+
+   Socket client = server.accept();

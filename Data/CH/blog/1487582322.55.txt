@@ -1,0 +1,60 @@
+循环移位 - 修订版题目要求：
+
+   将字符串str进行循环移位，要求算法空间复杂度O(1),时间复杂度O(n)
+
+   思路：
+
+   假设str需要循环移位k位，则将其分为前后两部分，分别长k和n-k,称AB
+
+   则循环移位的过程即为XY-&gt;YX. 可由XT即转置完成，(XTYT)T=(YT)T(XT)T=YX
+
+   实现如下：
+
+   
+
+   /*
+ * Reverse_String.cpp
+ *
+ *  Created on: May 22, 2012
+ *      Author: Rachel
+ */
+
+#include&quot;stdio.h&quot;
+#include&quot;string.h&quot;
+
+void Reverse(char* str, int s, int e)
+{
+	char tmp;
+	while (s &lt; e)
+	{
+		tmp = str[s];
+		str[s] = str[e];
+		str[e] = tmp;
+		s++;
+		e--;
+	}
+}
+
+void RightReverse(char* str, int k, int n)
+{
+	if (k &gt; 0 &amp;&amp; n &gt; 0)//avoid exception
+	{
+		Reverse(str, 0, k - 1);
+		Reverse(str, k, n - 1);
+		Reverse(str, 0, n - 1);
+		printf(&quot;%s\n&quot;, str);
+	}
+}
+
+int main()
+{
+	char str[25];
+	int k, n;
+	while (scanf(&quot;%s%d&quot;, str, &amp;k) != EOF)
+	{
+		n = strlen(str);
+		if (k &gt; n)
+			k %= n;
+		RightReverse(str, k, n);
+	}
+}

@@ -1,0 +1,166 @@
+用vector来实现matrix。众所周知，c++没有提供默认的matrix(矩阵)类型。不过大部分时候我们可以
+
+
+   沿用c的用法，可以声明一个二维数组来声明matrix。本文描述了另外一种方法，
+
+
+   来实现一个matrix类，表达一个二维数组的概念，具体的实现是二维的vector。
+
+
+   
+
+
+   
+
+
+   #ifndef MATRIX_H
+
+
+   #define MATRIX_H
+
+
+   
+
+
+   #include &lt;vector&gt;
+
+
+   using std::vector;
+
+
+   
+
+
+   template &lt;typename T&gt;
+
+
+   class matrix
+
+
+   {
+
+
+   private:
+
+
+    vector&lt; vector&lt;T&gt; &gt; vv;
+
+
+    int row;
+
+
+    int col;
+
+
+   public:
+
+
+   	matrix(int rows, int cols):vv(rows), row(rows), col(cols)
+
+
+   	{	 
+
+
+   	  for (int i = 0; i &lt; row; ++i) //这个唯一的需要注意的地方是如何构造一个二维的vector。先构造一个vector&lt; vector&lt;&gt; &gt;,
+
+
+                        // 再初始化里面的vector的长度。
+
+
+   	  {
+
+
+   		  vv[i].resize(cols);
+
+
+   	  }
+
+
+   	}
+
+
+   
+
+
+   	 const vector&lt;T&gt;&amp; operator[](int row) const
+
+
+   	{
+
+
+   if (row &gt;= this-&gt;row)
+
+
+   {
+
+
+     throw "index out of range";  // 这里我们可以抛出自己定义的异常，也可以不这样，因为vector也会检查index是否越界。
+
+
+   }
+
+
+   return vv[row];
+
+
+   	}
+
+
+   
+
+
+   	vector&lt;T&gt;&amp; operator[](int row) // 非const的版本，用来写。通常编译器会自动选择匹配的函数来调用。
+
+
+   	{
+
+
+    if (row &gt;= this-&gt;row)
+
+
+    {
+
+
+      throw "index out of range";
+
+
+    }
+
+
+    return vv[row];
+
+
+   	}  
+
+
+   
+
+
+   	int getrownum() const { return row;} //取得行数
+
+
+   	int getcolnum() const { return col;}  // 取得列数。
+
+
+   
+
+
+   };
+
+
+   
+
+
+   #endif
+
+
+   
+
+
+   
+
+
+   这里我们不需要定义复制构造函数和赋值构造函数，因为默认的已经够用了。
+
+
+   以上代码经过vs2008编译和测试。

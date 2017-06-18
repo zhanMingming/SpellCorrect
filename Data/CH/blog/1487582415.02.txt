@@ -1,0 +1,166 @@
+ACM CommandsCommands
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:51 Accepted:14 
+
+
+   Description 
+
+
+   You are standing on some arbitrary point in the infinite plane. You are given some string commands that contains the commands you have to execute. Each character of each element of commands is one command. The commands must be executed in the given order: first you execute all commands in the first element of commands one by one, then those in the second element, etc. There are only three types of commands: 'S' means "step forward", 'L' means "turn 90 degrees to the left", and 'R' means "turn 90 degrees to the right". All your steps have the same length. You will be executing the commands forever: after you execute the last character of the last element of commands, you will always start from the beginning again. We say that your path is bounded if there is some positive real number R such that while executing the infinite sequence of steps you will never leave the circle with radius R steps and center at your starting location. You should determine whether your path will be bounded or not. Return the string "bounded" (quotes for clarity) if the path is bounded and "unbounded" if it is not. Input: The first line is a number n,means there are n commands; And then n lines,every line is a string consist of 'S','R','L',means n commands; Output: Output one line "bounded" if there is some positive real number R such that while executing the infinite sequence of steps you will never leave the circle with radius R steps and center at your starting location. else output one line "unbounded"; Constraints - commands will contain between 1 and 50 elements, inclusive. - Each element in commands will contain between 1 and 50 characters, inclusive. - Each character in each element of commands will be one of 'S', 'L', and 'R'.
+
+
+   Input 
+
+
+   The first line is a number n,means there are n commands; And then n lines,every line is a string consist of 'S','R','L',means n commands;
+
+
+   Output 
+
+
+   Output one line "bounded" if there is some positive real number R such that while executing the infinite sequence of steps you will never leave the circle with radius R steps and center at your starting location. else output one line "unbounded";
+
+
+   Sample Input 
+
+
+   
+
+   1
+L
+1
+SRSL
+2
+SSSS
+R
+4
+SRSL
+LLSSSSSSL
+SSSSSS
+L
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   bounded
+unbounded
+bounded
+unbounded
+
+
+
+
+   
+
+
+   Source 
+
+
+   TopCoder
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define North 0
+#define Right 1
+#define Sorth 2
+#define Left 3
+#define M 100
+#define B 1000//bound
+
+int cm=North;//current mode
+int ans;
+char command[M][M];
+string ss;
+int t,tx,ty;//temp point
+char map[B][B];
+
+bool ifexceed(int t,string s)
+{
+	int temp=(s.length()-1)*4-1;
+	if(temp==-1)
+		temp=0;
+//	cout&lt;&lt;temp&lt;&lt;endl;
+	if(t&gt;temp)
+		return true;
+	return false;
+}
+
+void mode(char c)
+{
+	if(c=='L')
+		cm--;
+	if(c=='R')
+		cm++;
+	cm=(cm+4)%4;
+	if(c=='S')
+	{
+		if(cm==North)  ty--;
+		if(cm==Right)  	tx++;
+		if(cm==Left)		tx--;
+		if(cm==Sorth)	ty++;
+	}
+}
+
+int init()
+{
+	int i,j;
+	ans=0;
+	ss="";
+	for(i=0;i&lt;t;i++)
+	{
+		scanf("%s",command[i]);
+		ss+=command[i];
+	}
+	memset(map,0,sizeof(map));
+	tx=ty=B/2;
+	map[tx][ty]=1;
+	return 1;
+}
+
+void exe(string s)//execute 60 times, look whether will out
+{
+	for(int t=0;t&lt;60;t++)
+	{
+		int temp=0;
+		for(int j=0;j&lt;s.length();j++)
+		{
+			mode(s[j]);
+			if(!map[tx][ty])
+			{
+				map[tx][ty]=1;
+				temp++;
+			}
+		}
+		ans+=temp;
+	}
+	//cout&lt;&lt;ans&lt;&lt;endl;
+	if(ifexceed(ans,s))
+		cout&lt;&lt;"unbounded"&lt;&lt;endl;
+	else
+		cout&lt;&lt;"bounded"&lt;&lt;endl;
+}
+
+int main()
+{
+	while(scanf("%d",&amp;t)!=EOF)
+	{
+		init();
+		exe(ss);
+	}
+}

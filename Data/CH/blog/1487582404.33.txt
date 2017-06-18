@@ -1,0 +1,102 @@
+Count 101 hdu 3485Count 101
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 373Accepted Submission(s): 196
+
+Problem Description
+
+You know YaoYao is fond of his chains. He has a lot of chains and each chain has n diamonds on it. There are two kinds of diamonds, labeled 0 and 1. We can write down the label of diamonds on a chain. So each chain can be written as a sequence consisting of 0 and 1.We know that chains are different with each other. And their length is exactly n. And what&rsquo;s more, each chain sequence doesn&rsquo;t contain &ldquo;101&rdquo; as a substring. Could you tell how many chains will YaoYao have at most?
+
+
+
+
+   
+
+Input
+
+There will be multiple test cases in a test data. For each test case, there is only one number n(n&lt;10000). The end of the input is indicated by a -1, which should not be processed as a case.
+
+
+
+
+   
+
+Output
+
+For each test case, only one line with a number indicating the total number of chains YaoYao can have at most of length n. The answer should be print after module 9997.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   3
+4
+-1
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   7
+12
+Hint
+We can see when the length equals to 4. We can have those chains:
+0000,0001,0010,0011
+0100,0110,0111,1000
+1001,1100,1110,1111
+
+ 
+
+
+
+
+
+
+   
+
+Source
+
+2010 ACM-ICPC Multi-University Training Contest（5）&mdash;&mdash;Host by BJTU 
+
+找到规律：
+
+f[i]=f[i-1]+f[i-2]+f[i-4];
+
+#include&lt;iostream&gt;
+using namespace std;
+int f[10005];
+int n;
+
+int deal(int n)
+{
+    if(f[n]!=0)
+ return f[n];
+    f[n-1]=deal(n-1)%9997;
+    f[n-2]=deal(n-2)%9997;
+    f[n-4]=deal(n-4)%9997;
+
+    return ((f[n-1]+f[n-2]+f[n-4])%9997);
+}
+
+int main()
+{
+    while(scanf("%d",&amp;n)!=EOF&amp;&amp;n!=-1)
+    {
+ f[0]=1;
+ f[1]=2;
+ f[2]=4;
+ f[3]=7;
+ printf("%d/n",deal(n));
+    }
+}

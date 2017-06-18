@@ -1,0 +1,152 @@
+在ASP.NET的GridView(CommandField、ButtonField、ItemTemplate)里的刪除Button加入Confirm的用法在ASP.NET的GridView(CommandField、ButtonField、ItemTemplate)里的刪除Button加入Confirm的用法
+
+
+   
+
+
+   &lt;%@ Page Language="C#" AutoEventWireup="true" CodeFile="GridViewConfirm.aspx.cs" Inherits="GridViewConfirm" %&gt;   
+2   
+3 &lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;   
+4   
+5 &lt;html xmlns="http://www.w3.org/1999/xhtml" &gt;   
+6 &lt;head runat="server"&gt;   
+7     &lt;title&gt;GridViewConfirm&lt;/title&gt;   
+8 &lt;/head&gt;   
+9 &lt;body&gt;   
+10     &lt;form id="form1" runat="server"&gt;   
+11     &lt;div&gt;   
+12  &lt;asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False" DataKeyNames="id"  
+13DataSourceID="SqlDataSource1" EmptyDataText="没有资料可显示。" OnRowCreated="GridView1_RowCreated"&gt;   
+14      &lt;Columns&gt;   
+15   &lt;asp:CommandField ButtonType="Button" HeaderText="CommandField" ShowDeleteButton="True" /&gt;   
+16   &lt;asp:ButtonField ButtonType="Button" HeaderText="ButtonField" Text="刪除" CommandName="Delete" /&gt;   
+17   &lt;asp:TemplateField HeaderText="TemplateField"&gt;   
+18&lt;ItemTemplate&gt;   
+19    &lt;asp:Button ID="Button1" runat="server" OnClientClick="return confirm('确定删除吗?')"  
+20  Text="刪除" CommandName="Delete" /&gt;   
+21&lt;/ItemTemplate&gt;   
+22   &lt;/asp:TemplateField&gt;   
+23   &lt;asp:BoundField DataField="id" HeaderText="id" ReadOnly="True" SortExpression="id" /&gt;   
+24   &lt;asp:BoundField DataField="gender" HeaderText="gender" SortExpression="gender" /&gt;   
+25   &lt;asp:BoundField DataField="name" HeaderText="name" SortExpression="name" /&gt;   
+26      &lt;/Columns&gt;   
+27  &lt;/asp:GridView&gt;   
+28  &lt;asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="&lt;%$ ConnectionStrings:DatabaseConnectionString %&gt;"  
+29DeleteCommand="DELETE FROM [user] WHERE [id] = @id"  
+30ProviderName="&lt;%$ ConnectionStrings:DatabaseConnectionString.ProviderName %&gt;"  
+31SelectCommand="SELECT [id], [gender], [name] FROM [user]" &gt;   
+32      &lt;DeleteParameters&gt;   
+33   &lt;asp:Parameter Name="id" Type="Int32" /&gt;   
+34      &lt;/DeleteParameters&gt;   
+35  &lt;/asp:SqlDataSource&gt;   
+36
+37     &lt;/div&gt;   
+38     &lt;/form&gt;   
+39 &lt;/body&gt;   
+40 &lt;/html&gt;   
+
+
+GridViewConfirm.aspx.cs
+
+
+1 using System;   
+2 using System.Data;   
+3 using System.Configuration;   
+4 using System.Collections;   
+5 using System.Web;   
+6 using System.Web.Security;   
+7 using System.Web.UI;   
+8 using System.Web.UI.WebControls;   
+9 using System.Web.UI.WebControls.WebParts;   
+10 using System.Web.UI.HtmlControls;   
+11   
+12 public partial class GridViewConfirm : System.Web.UI.Page   
+13 {   
+14     protected void Page_Load(object sender, EventArgs e)   
+15      {   
+16   
+17      }   
+18     protected void GridView1_RowCreated(object sender, GridViewRowEventArgs e)   
+19      {   
+20  //此是要判断为DataRow才执行,因为GridView有Header,Footer...等   
+21  if (e.Row.RowType == DataControlRowType.DataRow)   
+22   {   
+23      //CommandField使用此方法   
+24((Button)e.Row.Cells[0].Controls[0]).Attributes.Add("onclick", "if(!window.confirm('确定删除吗?'')) return;");   
+25   
+26   
+27      //ButtonField使用此方法   
+28((Button)e.Row.Cells[1].Controls[0]).Attributes.Add("onclick", "if(!window.confirm('确定删除吗?'')) return;");   
+29   
+30   
+31      //TemplateField已经在.aspx使用 OnClientClick="return confirm('确定删除吗?')" 设定了   
+32   }   
+33      }   
+34 }   
+
+ 
+
+
+   
+
+
+   下面贴上OJ该部分源代码：
+
+
+   
+
+
+   //前台
+&lt;asp:GridView ID="GridView1" runat="server" AllowPaging="True" AllowSorting="True"
+     AutoGenerateColumns="False"  OnRowDeleting="GridView1_RowDeleting" DataSourceID="SqlDataSource1"
+     Width="593px" CellPadding="4" ForeColor="#333333" GridLines="None" DataKeyNames="ID"&gt;
+     &lt;RowStyle BackColor="#EFF3FB" /&gt;
+     &lt;Columns&gt;
+  &lt;asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" /&gt;
+  &lt;asp:TemplateField HeaderText="Filename" SortExpression="Filename" 
+      Visible="False"&gt;
+      &lt;EditItemTemplate&gt;
+   &lt;asp:TextBox ID="TextBox1" runat="server" Text='&lt;%# Bind("Filename") %&gt;'&gt;&lt;/asp:TextBox&gt;
+      &lt;/EditItemTemplate&gt;
+      &lt;ItemTemplate&gt;
+   &lt;asp:Label ID="Label1" runat="server" Text='&lt;%# Bind("Filename") %&gt;'&gt;&lt;/asp:Label&gt;
+      &lt;/ItemTemplate&gt;
+  &lt;/asp:TemplateField&gt;
+  &lt;asp:BoundField DataField="Classes" HeaderText="Classes" 
+      SortExpression="Classes" /&gt;
+  &lt;asp:BoundField DataField="UserName" HeaderText="UserName" 
+      SortExpression="UserName" /&gt;
+  &lt;asp:BoundField DataField="AddTime" HeaderText="AddTime" 
+      SortExpression="AddTime" /&gt;
+  &lt;asp:TemplateField HeaderText="删除"&gt;
+      &lt;ItemTemplate&gt;
+   &lt;asp:LinkButton ID="LinkButton1" runat="server" CausesValidation="False" 
+  OnClientClick="return confirm('确定删除吗?')" 
+CommandName="Delete" Text="删除"&gt;&lt;/asp:LinkButton&gt;
+      &lt;/ItemTemplate&gt;
+  &lt;/asp:TemplateField&gt;
+     &lt;/Columns&gt;
+     &lt;FooterStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" /&gt;
+     &lt;PagerStyle BackColor="#2461BF" ForeColor="White" HorizontalAlign="Center" /&gt;
+     &lt;EmptyDataTemplate&gt;
+  暂无此类资源
+     &lt;/EmptyDataTemplate&gt;
+     &lt;SelectedRowStyle BackColor="#D1DDF1" Font-Bold="True" ForeColor="#333333" /&gt;
+     &lt;HeaderStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" /&gt;
+     &lt;EditRowStyle BackColor="#2461BF" /&gt;
+     &lt;AlternatingRowStyle BackColor="White" /&gt;
+ &lt;/asp:GridView&gt; 
+
+
+   
+
+
+   //后台
+ protected void GridView1_RowDeleting(object sender, GridViewDeleteEventArgs e)
+    {
+ //string sqlstr = "delete from 表 where id='" + GridView1.DataKeys[e.RowIndex].Value.ToString() + "'";
+ int algoid = int.Parse(GridView1.DataKeys[e.RowIndex].Value.ToString());
+ AlgorithmBLL algoBLL=new AlgorithmBLL ();
+ new AlgorithmBLL().DeleteByID(algoid);
+ GridView1.DataBind();
+    }

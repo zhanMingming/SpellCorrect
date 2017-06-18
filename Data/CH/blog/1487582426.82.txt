@@ -1,0 +1,60 @@
+C#连接Access和SQL Server数据库using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Data.OleDb;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace Str
+{
+    public partial class Form1 : Form
+    {
+ public Form1()
+ {
+     InitializeComponent();
+
+     /*
+      * connect to Sql Server
+      */
+     string strConnection = "Data Source=ZRQ-PC;";
+     strConnection+="Initial Catalog=master;Integrated Security=True";
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+     objConnection.Close();
+
+     /**************************************************************/
+
+     /*
+      * connect to access table
+      */
+     //string strConnection = "Provider=Microsoft.Jet.OleDb.4.0;";
+     //strConnection += @"Data Source=C:/Users/ZRQ/Documents/STU.accdb";
+     //OleDbConnection objConnection = new OleDbConnection(strConnection);
+     //objConnection.Open();
+     //objConnection.Close();
+
+     /**************************************************************/
+
+     /*
+      *as for connect to Oracle or MySql 等我学了再说吧&hellip;&hellip;(*^__^*) 
+      */
+ }
+    }
+}
+
+
+
+   
+
+
+   其中的简易办法：
+
+
+   
+
+
+   在&ldquo;服务器资源管理器&rdquo;中选择要连接的数据，then看它的属性中Name，copy to strConnection 即可~

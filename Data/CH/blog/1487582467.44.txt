@@ -1,0 +1,102 @@
+关于c++编程思想中文版的一处翻译错误最近一个同学在看c++编程思想中文版，看到内联函数这一章节，有这样一句话：
+
+
+   
+
+
+   1）语言定义规定非内联函数直到类声明结束才赋值。
+
+
+   
+
+
+   同学很不能理解意思，于是问了下我。于是我看了一下上下文：
+
+
+   
+
+
+   这是c++编程思想8.3.2的原文：
+
+
+   8.3.2 赋值顺序
+
+假如我们想象编译器对执行内联做了些什么时，我们可能糊里糊涂地认为存在着比事实上
+更多的限制。特别是，假如一个内联函数对于一个还没有在类里声明的函数进行向前引用，编
+译器就可能不能处理它。
+
+
+   
+
+
+   实例代码：
+
+
+   class forward {
+
+
+    int i;
+
+
+   public:
+
+
+    forward() : i(0) {}
+
+
+    // call to undeclared function:
+
+
+   int f() const {return g() + 1;}
+
+
+   int g() const {return i; }
+
+
+   };
+
+
+   
+
+
+   虽然函数g( )还没有定义，但在函数f( )里对函数g( )进行了调用。这是可行的，因为语言
+定义规定非内联函数直到类声明结束才赋值。
+
+
+
+
+   
+
+
+   
+
+
+   我看了，也百思不得其解。于是打开英文版，对比了一下：
+
+
+   
+
+
+   In f( ), a call is made to g( ), although g( ) has not yet been declared. 
+
+This works because the language definition states that no inline functions in a class shall be evaluated until the closing brace of the class declaration. 
+
+
+
+
+   
+
+
+   我想懂点英文的应该知道正确的翻译了吧： 所有的内联函数必须在类声明结束之处才能求值。
+
+
+   
+
+
+   这样才合乎上下文。而原文的翻译，则是狗屁不通，明显的翻译错误。
+
+
+   
+
+
+   这本书的翻译水准太值得怀疑了，一句普通的英文都翻译不好，强烈质疑！

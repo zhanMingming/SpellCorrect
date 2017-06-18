@@ -1,0 +1,499 @@
+JDK8新特性：使用stream、Comparator和Method Reference实现集合的优雅排序大家对java接口Comparator和Comparable都不陌生，JDK8里面Comparable还和以前一样，没有什么改动；但是Comparator在之前基础上增加了很多static和default方法。本文主要结合JDK的stream编程，学习下Comparator。阅读本文需要一些前置知识，可以参考如下文章。
+
+
+   JDK8新特性：接口的静态方法和默认方法
+
+http://blog.csdn.net/aitangyong/article/details/54134385
+
+
+   
+
+
+
+
+   JDK8新特性：函数式接口@FunctionalInterface的使用说明
+
+
+   http://blog.csdn.net/aitangyong/article/details/54137067
+
+
+   
+
+
+
+
+   JDK8新特性：lambda入门
+
+http://blog.csdn.net/aitangyong/article/details/54317539
+
+
+
+JDK8新特性：使用Method References实现方法复用，简化lambda表达式
+
+http://blog.csdn.net/aitangyong/article/details/54586197
+
+
+
+
+   
+
+
+
+
+   可以使用Stream.sort对集合进行排序，sort有2个重载方法，区别如下。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+   // Student实现Comparable接口,默认按照id升序排列
+public class Student implements Comparable&lt;Student&gt;{
+
+	private int id;
+
+	private int age;
+
+	private String name;
+
+	private Address address;
+
+	public Student(int id, int age, String name, Address address) {
+		this.id = id;
+		this.age = age;
+		this.name = name;
+		this.address = address;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [id=&quot; + id + &quot;, age=&quot; + age + &quot;, name=&quot; + name + &quot;, address=&quot; + address + &quot;]&quot;;
+	}
+
+	@Override
+	public int compareTo(Student o) {
+		return this.id - o.id;
+	}
+
+}
+
+
+   
+
+
+   
+
+
+
+stream().sorted()/Comparator.naturalOrder()/Comparator.reverseOrder()，要求元素必须实现Comparable接口。
+
+
+   import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class TestComparator {
+
+	public static void main(String[] args) {
+		List&lt;Student&gt; students = buildStudents();
+		
+		// 按照默认顺序排序
+		List&lt;Student&gt; ascList1 = students.stream().sorted().collect(Collectors.toList());
+		System.out.println(ascList1);
+		
+		// 按照自然序排序(其实就是默认顺序)
+		List&lt;Student&gt; ascList2 = students.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+		System.out.println(ascList2);
+		
+		// 按照默认顺序的相反顺序排序
+		List&lt;Student&gt; descList = students.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+		System.out.println(descList);
+
+	}
+
+	private static List&lt;Student&gt; buildStudents() {
+		List&lt;Student&gt; students = new ArrayList&lt;&gt;();
+		students.add(new Student(10, 20, &quot;aty&quot;, new Address(&quot;d&quot;)));
+		students.add(new Student(1, 22, &quot;qun&quot;, new Address(&quot;c&quot;)));
+		students.add(new Student(1, 26, &quot;Zen&quot;, new Address(&quot;b&quot;)));
+		students.add(new Student(5, 23, &quot;aty&quot;, new Address(&quot;a&quot;)));
+		return students;
+	}
+
+}
+
+
+
+
+如果Student没有实现Comparable接口，效果如下：
+
+   
+
+
+
+
+   
+
+
+
+
+   接下来测试，都不要求Student实现Comparable接口，这里直接给出Student和Address实体类。
+
+
+   public class Student {
+
+	private int id;
+
+	private int age;
+
+	private String name;
+
+	private Address address;
+
+	public Student(int id, int age, String name, Address address) {
+		this.id = id;
+		this.age = age;
+		this.name = name;
+		this.address = address;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Student [id=&quot; + id + &quot;, age=&quot; + age + &quot;, name=&quot; + name + &quot;, address=&quot; + address + &quot;]&quot;;
+	}
+
+}
+
+   public class Address {
+	private String address;
+
+	public Address(String address) {
+		super();
+		this.address = address;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	@Override
+	public String toString() {
+		return &quot;Address [address=&quot; + address + &quot;]&quot;;
+	}
+	
+
+}
+
+
+   
+
+
+   
+
+
+
+Comparator.comparing(Function keyExtractor)生成1个Comparator对象，要求keyExtractor.apply()返回&#20540;一定要实现Comparable接口。比如下面代码extractIdWay1和extractIdWay2都是等价的，从Student对象中提取id属性，而id是int类型(Integer实现了Comparable)。
+
+
+   import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+public class TestComparator {
+
+	public static void main(String[] args) {
+		List&lt;Student&gt; students = buildStudents();
+
+		// 使用lambda表达式创建Function对象
+		Function&lt;Student, Integer&gt; extractIdWay1 = (student) -&gt; student.getId();
+		
+		// 使用方法引用简化lambda
+		Function&lt;Student, Integer&gt; extractIdWay2 = Student::getId;
+		
+		// Comparator.comparing(Function keyExtractor)
+		Comparator&lt;Student&gt; byId = Comparator.comparing(extractIdWay2);
+		
+		// 升序
+		List&lt;Student&gt; ascList = students.stream().sorted(byId).collect(Collectors.toList());
+		System.out.println(ascList);
+		
+		// 降序
+		List&lt;Student&gt; descList = students.stream().sorted(byId.reversed()).collect(Collectors.toList());
+		System.out.println(descList);
+
+	}
+
+	private static List&lt;Student&gt; buildStudents() {
+		List&lt;Student&gt; students = new ArrayList&lt;&gt;();
+		students.add(new Student(10, 20, &quot;aty&quot;, new Address(&quot;d&quot;)));
+		students.add(new Student(1, 22, &quot;qun&quot;, new Address(&quot;c&quot;)));
+		students.add(new Student(1, 26, &quot;Zen&quot;, new Address(&quot;b&quot;)));
+		students.add(new Student(5, 23, &quot;aty&quot;, new Address(&quot;a&quot;)));
+		return students;
+	}
+
+}
+
+
+   
+
+
+
+由于Student.getAddress()返回的对象没有实现Comparable接口，所以不能通过Comparator.comparing()创建一个Comparator对象。
+
+
+
+
+
+
+   
+
+
+
+
+   如果我们想安装Address(没有实现Comparable接口)排序怎么办呢？使用另一种形式的comparing方法：
+
+
+   
+
+
+
+
+   
+
+
+   import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class TestComparator {
+
+	public static void main(String[] args) {
+		List&lt;Student&gt; students = buildStudents();
+
+		Comparator&lt;Address&gt; cmpAddr = Comparator.comparing(Address::getAddress);
+		Comparator&lt;Student&gt; byAddress = Comparator.comparing(Student::getAddress, cmpAddr);
+		List&lt;Student&gt; sortedAddressList = students.stream().sorted(byAddress).collect(Collectors.toList());
+		System.out.println(sortedAddressList);
+	}
+
+	private static List&lt;Student&gt; buildStudents() {
+		List&lt;Student&gt; students = new ArrayList&lt;&gt;();
+		students.add(new Student(10, 20, &quot;aty&quot;, new Address(&quot;d&quot;)));
+		students.add(new Student(1, 22, &quot;qun&quot;, new Address(&quot;c&quot;)));
+		students.add(new Student(1, 26, &quot;Zen&quot;, new Address(&quot;b&quot;)));
+		students.add(new Student(5, 23, &quot;aty&quot;, new Address(&quot;a&quot;)));
+		return students;
+	}
+
+}
+
+
+   
+
+
+   
+
+
+
+这种形式的comparing()接收2个参数，第一个参数提取要排序的key，第二个参数指定排序的Comparator。自己指定比较器，可以灵活定制比较逻辑。比如，我们想实现字符串不区分大小写比较。
+   //getName()返回String本身已经实现了Comparable,但是我们可以自己传递一个不区分大小写的比较器
+Comparator&lt;Student&gt; byName = Comparator.comparing(Student::getName, String.CASE_INSENSITIVE_ORDER);
+List&lt;Student&gt; sortedNameList = students.stream().sorted(byName).collect(Collectors.toList());
+System.out.println(sortedNameList);
+
+comparingDouble()、comparingLong()、comparingInt()不过是comparing()更具体的版本，使用方式相同。
+   public static void main(String[] args) {
+	List&lt;Student&gt; students = buildStudents();
+
+	Comparator&lt;Student&gt; byAge1 = Comparator.comparingInt(Student::getAge);
+	Comparator&lt;Student&gt; byAge2 = Comparator.comparing(Student::getAge);
+	List&lt;Student&gt; sortedAgeList1 = students.stream().sorted(byAge1).collect(Collectors.toList());
+	List&lt;Student&gt; sortedAgeList2 = students.stream().sorted(byAge2).collect(Collectors.toList());
+	System.out.println(sortedAgeList1);
+	System.out.println(sortedAgeList2);
+}
+
+private static List&lt;Student&gt; buildStudents() {
+	List&lt;Student&gt; students = new ArrayList&lt;&gt;();
+	students.add(new Student(10, 20, &quot;aty&quot;, new Address(&quot;d&quot;)));
+	students.add(new Student(1, 22, &quot;qun&quot;, new Address(&quot;c&quot;)));
+	students.add(new Student(1, 26, &quot;Zen&quot;, new Address(&quot;b&quot;)));
+	students.add(new Student(5, 23, &quot;aty&quot;, new Address(&quot;a&quot;)));
+	return students;
+}
+
+
+Comparator.nullsFirst()和Comparator.nullsLast()，前面我们创建的Student列表中没有null，如果有null的话，上面的代码都会抛异常。而这2个方法就是用来处理null的，一个认为null比所有非null都小，一个认为比所有都大。
+   public class TestComparator {
+
+	public static void main(String[] args) {
+		List&lt;Student&gt; students = buildStudents();
+		Comparator&lt;Student&gt; nullNotAllowed = Comparator.comparing(Student::getId);
+		Comparator&lt;Student&gt; allowNullComparator = Comparator.nullsFirst(nullNotAllowed);
+		
+		// 正常排序
+		List&lt;Student&gt; result1 = students.stream().sorted(allowNullComparator).collect(Collectors.toList());
+		System.out.println(result1);
+		
+		// 抛异常
+		List&lt;Student&gt; result2 = students.stream().sorted(nullNotAllowed).collect(Collectors.toList());
+		System.out.println(result2);
+
+	}
+
+	private static List&lt;Student&gt; buildStudents() {
+		List&lt;Student&gt; students = new ArrayList&lt;&gt;();
+		students.add(new Student(10, 20, &quot;aty&quot;, new Address(&quot;d&quot;)));
+		students.add(new Student(1, 22, &quot;qun&quot;, new Address(&quot;c&quot;)));
+		students.add(new Student(1, 26, &quot;Zen&quot;, new Address(&quot;b&quot;)));
+		students.add(new Student(5, 23, &quot;aty&quot;, new Address(&quot;a&quot;)));
+		students.add(null);
+		return students;
+	}
+
+}
+
+
+
+
+
+至此Comparator的static方法已经介绍完毕，接下来我们看下它的default方法。
+
+   
+
+
+   reversed()前面已经介绍了，返回一个新的比较器(排序顺序相反)
+
+
+   thenComparing()系列方法与comparing()使用方法类&#20284;
+
+
+   
+
+
+
+
+
+
+
+
+   
+
+
+
+
+   如果我们先按照id排序，id相等的话再按照name排序，那么可以这样写。
+
+
+   public static void main(String[] args) {
+	List&lt;Student&gt; students = buildStudents();
+	
+	// id升序
+	Comparator&lt;Student&gt; byIdASC = Comparator.comparing(Student::getId);
+	
+	// named不分区大小写降序
+	Comparator&lt;Student&gt; byNameDESC = Comparator.comparing(Student::getName, String.CASE_INSENSITIVE_ORDER)
+			.reversed();
+
+	// 联合排序
+	Comparator&lt;Student&gt; finalComparator = byIdASC.thenComparing(byNameDESC);
+	
+	List&lt;Student&gt; result = students.stream().sorted(finalComparator).collect(Collectors.toList());
+	System.out.println(result);
+}
+
+private static List&lt;Student&gt; buildStudents() {
+	List&lt;Student&gt; students = new ArrayList&lt;&gt;();
+	students.add(new Student(10, 20, &quot;aty&quot;, new Address(&quot;d&quot;)));
+	students.add(new Student(1, 22, &quot;qun&quot;, new Address(&quot;c&quot;)));
+	students.add(new Student(1, 26, &quot;Zen&quot;, new Address(&quot;b&quot;)));
+	students.add(new Student(5, 23, &quot;aty&quot;, new Address(&quot;a&quot;)));
+	return students;
+}

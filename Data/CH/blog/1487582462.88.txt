@@ -1,0 +1,31 @@
+关于Crystal Reports在64位机器上的运行时问题。有时候会hang住。进程挂起了。
+
+
+   
+
+
+   Crystal Reports默认是不支持64位系统的，因为官方从来没有说明过。因此为了解决这个问题，需要安装一个针对64位的专门的补丁包。
+
+
+   
+
+
+   下载地址： 
+
+
+   
+
+
+   http://resources.businessobjects.com/support/downloads/redistributables/vs_2008/redist/x64/CRRedist2008_x64.msi
+
+
+   
+
+
+   这个是business的官方链接，可靠，免费.
+
+
+   
+
+
+   另外，如果要将老版本的报表移植到Vista或者是windows 7上，也需要更新Crystal Reports到相应的版本。这是我花了两个星期的教训。

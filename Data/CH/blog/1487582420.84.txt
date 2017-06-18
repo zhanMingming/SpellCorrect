@@ -1,0 +1,409 @@
+对话框贴图方法(一)非动态载入图片.
+
+
+   
+
+
+   方法1.先从最简单的开始,用picture 控件来实现.
+
+
+   步骤:
+
+
+   先在资源里Import一张图片,ID为IDB_BITMAP2
+
+
+   然后在对话框上添加一个picture控件,右键点击打开属性,
+
+
+   将type下拉框选择BITMAP,紧跟着下面就出现一个Image下拉框,
+
+
+   拉开就会看到所有已经载入好的图片,
+
+
+   选择你要的图片.运行程序即可看到.
+
+
+   
+
+
+   方法2.通过背景图
+
+
+   同样如上,先载入一张图片,ID为IDB_BITMAP2
+
+
+   TestDlg.h中
+
+
+   CBrush m_brBk;//在public中定义 
+
+
+   
+
+
+   TestDlg.cpp中
+
+
+   
+
+
+   在初始化函数OnInitDialog()中加入:
+
+
+   BOOL CTestDlg::OnInitDialog()
+
+
+   {
+
+
+   CDialog::OnInitDialog();
+
+
+   CBitmap bmp;
+
+
+   bmp.LoadBitmap(IDB_BITMAP2);
+
+
+   m_brBk.CreatePatternBrush(&amp;bmp);
+
+
+   bmp.DeleteObject();
+
+
+   return TRUE;// return TRUEunless you set the focus to a control
+
+
+   }
+
+
+   
+
+
+   在打开类向导,找到WM_CTLCOLOR消息,重载得对应函数OnCtlColor(),添加如下:
+
+
+   HBRUSHCTestDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
+
+
+   {
+
+
+   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+
+   
+
+
+   if (pWnd == this)
+
+
+   {
+
+
+   return m_brBk;
+
+
+   }
+
+
+   return hbr;
+
+
+   }
+
+
+   
+
+
+   (二)动态载入图片.
+
+
+   方法3 图像控件(本例用KoDak 图像编辑控件)
+
+
+   1.首先应该保证系统中有这个控件。注意，它不能单独使用，必须和其他几个控件（特别是Imgcmn.dll）一同使用。如果没有，从别的机器上copy过来即可。这几个文件是Imgadmin.ocx，Imgcmn.dll，Imgedit.ocx，Imgscan.ocx，Imgshl.dll，Imgthumb.ocx，Imgutil.dll，把它们copy到windows/system目录下，然后用regsvr32.exe将它们分别注册。 
+
+
+   2.打开工程,进入资源管理器,在对话框上单击右键，单击Insert Activex control&hellip; 选择Kodak图象编辑控件，大小任意。 
+
+
+   3.在对话框上选中该控件，为其添加变量:m_ctrlPicture。。 
+
+
+   4.在BOOL CTestDlg::OnInitDialog()添加如下:
+
+
+   BOOL CTestDlg::OnInitDialog()
+
+
+   {
+
+
+   CDialog::OnInitDialog();
+
+
+   m_ctrlPicture.SetImage("aa.jpg");//保证图像在工程目录下,也可以写绝对路径
+
+
+   m_ctrlPicture.Display();
+
+
+   return TRUE;// return TRUE unless you set the focus to a control
+
+
+   // EXCEPTION: OCX Property Pages should return FALSE
+
+
+   }
+
+
+   编译运行就OK了,此种方法的好处就是可能针对多种图像格式.
+
+
+   方法4 通过CBitmap,HBITMAP,直接用OnPaint()绘制
+
+
+   首先在CTestDlg类中声明一个变量:CBitmapm_bmp;
+
+
+   然后我们在对话框中加入一个picture 标签,名为IDC_STATIC1
+
+
+   然后:
+
+
+   BOOL CDisplayPic::OnInitDialog() 
+
+
+   {
+
+
+   CDialog::OnInitDialog();
+
+
+   if( m_bmp.m_hObject != NULL )//判断
+
+
+   m_bmp.DeleteObject();
+
+
+   /////////载入图片
+
+
+   HBITMAP hbmp = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), 
+
+
+   "c://aaa.bmp", IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION|LR_LOADFROMFILE);
+
+
+   if( hbmp == NULL ) 
+
+
+   return FALSE;
+
+
+   ///////////////////////该断程序用来取得加载的BMP的信息////////////////////////
+
+
+   m_bmp.Attach( hbmp );
+
+
+   DIBSECTION ds;
+
+
+   BITMAPINFOHEADER &amp;bminfo = ds.dsBmih; 
+
+
+   m_bmp.GetObject( sizeof(ds), &amp;ds );
+
+
+   int cx=bminfo.biWidth;//得到图像宽度
+
+
+   int cy=bminfo.biHeight; //得到图像高度
+
+
+   /////////////////// ////////////////////////////////
+
+
+   /////////////得到了图像的宽度和高度后,我们就可以对图像大小进行适应,即调整控件的大小,让它正好显示一张图片///////////////////////////
+
+
+   CRect rect;
+
+
+   GetDlgItem(IDC_STATIC1)-&gt;GetWindowRect(&amp;rect);
+
+
+   ScreenToClient(&amp;rect);
+
+
+   GetDlgItem(IDC_STATIC1)-&gt;MoveWindow(rect.left,rect.top,cx,cy,true);//调整大小
+
+
+   
+
+
+   return TRUE;// return TRUE unless you set the focus to a control
+
+
+   // EXCEPTION: OCX Property Pages should return FALSE
+
+
+   }
+
+
+   图片加载成功了,标签大小也适应了,下面就是绘制绘制图像了,打开类向导,重载WM_PAINT消息
+
+
+   void CDisplayPic::OnPaint() 
+
+
+   {
+
+
+   //////////////以下三种情况任选一种会是不同效果(只能一种存在)///////////
+
+
+   //CPaintDC dc(this);//若用此句,得到的是对话框的DC,图片将被绘制在对话框上.
+
+
+   CPaintDC dc(GetDlgItem(IDC_STATIC1)); //用此句,得到picture控件的DC,图像将被绘制在控件上
+
+
+   //CDC dc;
+
+
+   //dc.m_hDC=::GetDC(NULL);//若用此两句,得到的是屏幕的DC,图片将被绘制在屏幕上///////////////////////////////////////////////////////
+
+
+   CRect rcclient;
+
+
+   GetDlgItem(IDC_STATIC1)-&gt;GetClientRect(&amp;rcclient);
+
+
+   CDC memdc;
+
+
+   memdc.CreateCompatibleDC(&amp;dc);
+
+
+   CBitmap bitmap;
+
+
+   bitmap.CreateCompatibleBitmap(&amp;dc, rcclient.Width(), rcclient.Height());
+
+
+   memdc.SelectObject( &amp;bitmap );
+
+
+   
+
+
+   CWnd::DefWindowProc(WM_PAINT, (WPARAM)memdc.m_hDC , 0);
+
+
+   
+
+
+   CDC maskdc;
+
+
+   maskdc.CreateCompatibleDC(&amp;dc);
+
+
+   CBitmap maskbitmap;
+
+
+   maskbitmap.CreateBitmap(rcclient.Width(), rcclient.Height(), 1, 1, NULL);
+
+
+   maskdc.SelectObject( &amp;maskbitmap );
+
+
+   maskdc.BitBlt( 0, 0, rcclient.Width(), rcclient.Height(), &amp;memdc, 
+
+
+   rcclient.left, rcclient.top, SRCCOPY);
+
+
+   
+
+
+   CBrush brush;
+
+
+   brush.CreatePatternBrush(&amp;m_bmp);
+
+
+   dc.FillRect(rcclient, &amp;brush);
+
+
+   
+
+
+   
+
+
+   dc.BitBlt(rcclient.left, rcclient.top, rcclient.Width(), rcclient.Height(), 
+
+
+   &amp;memdc, rcclient.left, rcclient.top,SRCPAINT);
+
+
+   brush.DeleteObject();
+
+
+   
+
+
+   // Do not call CDialog::OnPaint() for painting messages
+
+
+   }
+
+
+   
+
+
+   以上四种方法唯有KoDak可以支持多种图像,其它的只支持BMP
+
+
+   
+
+
+   void CMinPathDlg::OnPaint()
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // 用于绘制的设备上下文
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast&lt;WPARAM&gt;(dc.GetSafeHdc()), 0);
+
+		// 使图标在工作区矩形中居中
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&amp;rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// 绘制图标
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
+	CBitmap bitmap;
+	bitmap.LoadBitmapW(IDB_BITMAP1);
+	CDC memDC;
+	CDC *pDC=GetDC();
+	memDC.CreateCompatibleDC(pDC);
+	memDC.SelectObject(bitmap);
+	pDC-&gt;BitBlt(0,0,650,750,&amp;memDC,0,0,SRCCOPY);
+}

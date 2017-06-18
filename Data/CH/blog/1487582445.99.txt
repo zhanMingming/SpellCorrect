@@ -1,0 +1,156 @@
+A Stack or A Queue?Do you know stack and queue? They're both important data structures. A stack is a "first in last out" (FILO) data structure and a queue is a "first in first out" (FIFO) one. 
+
+
+   Here comes the problem: given the order of some integers (it is assumed that the stack and queue are both for integers) going into the structure and coming out of it, please guess what kind of data structure it could be - stack or queue? 
+
+
+   Notice that here we assume that none of the integers are popped out before all the integers are pushed into the structure. 
+
+
+   Input
+
+
+   There are multiple test cases. The first line of input contains an integer T (T &lt;= 100), indicating the number of test cases. Then T test cases follow. 
+
+
+   Each test case contains 3 lines: The first line of each test case contains only one integer N indicating the number of integers (1 &lt;= N &lt;= 100). The second line of each test case contains N integers separated by a space, which are given in the order of going into the structure (that is, the first one is the earliest going in). The third line of each test case also contains N integers separated by a space, whick are given in the order of coming out of the structure (the first one is the earliest coming out). 
+
+
+   Output
+
+
+   For each test case, output your guess in a single line. If the structure can only be a stack, output "stack"; or if the structure can only be a queue, output "queue"; otherwise if the structure can be either a stack or a queue, output "both", or else otherwise output "neither". 
+
+
+   Sample Input
+
+
+   
+
+
+   4
+3
+1 2 3
+3 2 1
+3
+1 2 3
+1 2 3
+3
+1 2 1
+1 2 1
+3
+1 2 3
+2 3 1
+
+
+   
+
+
+   Sample Output
+
+
+   
+
+
+   stack
+queue
+both
+neither
+#include &lt;stdio.h&gt;
+int main(int argc, char *argv[])
+{
+    int T,n;
+    int i,j;
+    int t1,t2;
+    
+    scanf ("%d",&amp;T);
+    while (T--)
+    {
+ int n1[111]={};
+ int n2[111]={};
+ t1=0;t2=0;
+ scanf ("%d",&amp;n);
+ for (i=0;i&lt;n;i++)
+     scanf ("%d",&amp;n1[i]);
+ for (i=0;i&lt;n;i++)
+ {
+     scanf ("%d",&amp;n2[i]);
+     if (n2[i]==n1[i]) 
+				t1++;
+     if (n2[i]==n1[n-1-i])
+				t2++;
+ }
+ if (t1==n&amp;&amp;t2!=n)
+			printf ("queue/n");
+ if (t2==n&amp;&amp;t1!=n)
+			printf ("stack/n");
+ if (t2==n&amp;&amp;t1==n)
+			printf ("both/n");
+ if (t2!=n&amp;&amp;t1!=n)
+			printf ("neither/n");
+ 
+ 
+    }
+    return 0;
+}
+ 
+
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+#include&lt;stack&gt;
+using namespace std;
+
+int i,cases,t,j,m,n,q[1000],s[1000],re[1000],temp;
+bool flagq,flags;
+int main()
+{
+	stack&lt;int&gt; st;
+	queue&lt;int&gt; qu;
+	scanf("%d",&amp;cases);
+	while(cases--)
+	{
+		while(!st.empty())
+			st.pop();
+		while(!qu.empty())
+			qu.pop();
+		memset(q,0,sizeof(q));
+		memset(s,0,sizeof(s));
+		memset(re,0,sizeof(re));
+		flagq=flags=1;
+		scanf("%d",&amp;t);
+		for(i=1;i&lt;=t;i++)
+		{
+			cin&gt;&gt;temp;
+			st.push(temp);
+			qu.push(temp);
+		}
+		for(i=1;i&lt;=t;i++)
+		{
+			s[i]=st.top();
+			st.pop();
+			q[i]=qu.front();
+			qu.pop();
+		}
+		for(i=1;i&lt;=t;i++)
+		{
+			scanf("%d",&amp;re[i]);
+			if(re[i]!=q[i])
+			{
+				flagq=0;
+			}
+			if(re[i]!=s[i])
+			{
+				flags=0;
+			}
+		}
+		if(flags&amp;&amp;!flagq)
+			cout&lt;&lt;"stack"&lt;&lt;endl;
+		else if(flagq&amp;&amp;!flags)
+			cout&lt;&lt;"queue"&lt;&lt;endl;
+		else if(flagq&amp;&amp;flags)
+			cout&lt;&lt;"both"&lt;&lt;endl;
+		else
+			cout&lt;&lt;"neither"&lt;&lt;endl;
+	}
+	return 0;
+}

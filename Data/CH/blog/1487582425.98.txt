@@ -1,0 +1,19 @@
+用DataGirdView控件列出数据库元素集private void Browseuser_Load(object sender, EventArgs e)
+ {
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+     objConnection.Open();
+
+     string sql = "select userid as userid,name as name from judging";
+     SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+     ds = new DataSet();
+     ds.Clear();
+     adp.Fill(ds, "judging");
+     dataGridView1.DataSource=ds. Tables[0].DefaultView;
+     dataGridView1.Refresh();
+     this.judgingTableAdapter.Fill(this.masterDataSet.judging);
+ }
+
+ /**********************************************************************************************/
+ /*至此完成了将数据库judging中的内容全部显示在新form&mdash;&mdash;Browseuser上*/
+ /**********************************************************************************************/

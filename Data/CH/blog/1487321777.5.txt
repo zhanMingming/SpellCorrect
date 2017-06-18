@@ -1,0 +1,189 @@
+递归改非递归的一般方法（二叉树前序的递归改非递归说起）在归纳一般方法前，我们先通过几个例子来说明
+
+
+   
+
+
+   voidpreorder(Node*root,void(*visit)(Node*))
+
+
+   {
+
+
+    if(root !=null)
+
+
+    {
+
+
+    visit(root);
+
+
+    preorder(root-&gt;left_child);
+
+
+    preorder(root-&gt;right_child)
+
+
+    }
+
+
+   }
+
+
+   
+
+
+   
+
+
+   
+
+   第一步；消除尾递归
+
+
+
+
+   
+
+
+   voidpreorder(Node*root,void(*visit)(Node*))
+
+
+   {
+
+
+    while(root !=null)
+
+
+    {
+
+
+    visit(root);
+
+
+   preorder(root-&gt;left_child);
+
+
+   root = root-&gt;right_child;
+
+
+   }
+
+
+   }
+
+
+   
+
+
+   
+
+   第二步；将函数变成每行代码只执行一个操作的形式
+
+
+   
+
+
+   voidpreorder(Node*root,void(*visit)(Node*))
+
+
+   {
+
+
+    while(root !=null)
+
+
+    {
+
+
+    visit(root);
+
+
+
+
+   
+
+    Node *p = root;
+
+
+
+
+   
+
+   p =p-&gt;left_child;
+
+
+    preorder(p,visit);
+
+
+   root = root-&gt;right_child;
+
+
+    }
+
+
+   }
+
+
+   
+
+
+   第三步：引入栈来记忆历史
+
+
+
+
+   voidpreorder(Node*root,void(*visit)(Node*))
+
+
+   {
+
+
+    do
+
+
+    {
+
+
+    while(root !=null) 
+
+
+   {
+
+
+    visit(root);
+
+
+   S.push(root-&gt;right_child); //(1)先记住历史
+
+
+    root =root-&gt;left_child; //(2)在进入循环，一个递归必然是一个循环。
+
+
+    }
+
+
+    }while(!S.empty()&amp;&amp;S.pop(root)
+
+
+   
+
+   }
+
+
+
+
+   
+
+
+   这个博文我是存草稿的，结果在作家协会首页上发出来了，只好赶紧补完，免得被笑话。。
+
+
+   这里面写的还不够好，我的基本思路是通过一种方法来归纳出一种递归改非递归的一般性方法。
+
+
+   
+
+
+   还在思考中。。

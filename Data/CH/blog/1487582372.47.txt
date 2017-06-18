@@ -1,0 +1,44 @@
+matlab进阶摸索篇——彩色图求直方图首先要知道彩色图是没有直方图的，只能在rgb方向分别求直方图在合并一下。
+
+
+   干脆不用这么麻烦，用rgb2gray转到灰度图，再在二维上进行直方图绘制，最后还提供了代码，找出直方图中横坐标（像素&#20540;）为50以下的纵坐标（以此为像素的个数）的和。
+
+
+   
+
+
+   close all
+clear all
+clc
+blockSize=15; %每个block为15个像素
+w0=0.6;      
+t0=0.1;
+% A=200;
+I=imread('D:\Images\pic_loc\1870575550604291415.jpg');
+h = figure;
+set(gcf,'outerposition',get(0,'screensize'));%获得SystemScreenSize 传递给当前图像句柄gcf的outerposition属性
+subplot(221) %表示2（行数）*2（列数）的图像，1代表所画图形的序号
+imshow(I);
+title('Original Image');
+
+
+subplot(222);
+grayI=rgb2gray(I);
+imshow(grayI,[]);
+title('原图像灰度图')
+
+subplot(223);
+imhist(grayI,64);
+
+%统计&lt;50的像素所占的比例
+%%%%%%%%%%%%%%%%%%%%%%
+[COUNT x]=imhist(grayI);
+under_50=0;
+for i=0:50
+    under_50=under_50+COUNT(x==i);
+end
+under_50
+total=size(I,1)*size(I,2)*size(I,3);
+percent=under_50/total
+percent
+%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,189 @@
+Mysql连接的mysql结构我们
+
+在用mysql的c API时，用到最多的就是MYSQL结构了。毫无疑问这个结构是mysql c/c++编程的核心了。
+
+
+   
+
+
+   以下是该结构的定义:
+
+
+   
+
+
+   
+
+
+   typedef struct st_mysql {
+
+
+   NET	net;	                            /* 网络连接参数 */
+
+
+   gptr	connector_fd;	                   /* SSL 连接句柄 */	
+
+
+   char	*host,*user,*passwd,*unix_socket,*server_version,*host_info,*info,*db;  // 连接参数
+
+
+   unsigned int	port,client_flag,server_capabilities;          //连接参数
+
+
+   unsigned int	protocol_version;
+
+
+   unsigned int	field_count;      //列数
+
+
+   unsigned intserver_status;   //
+
+
+   unsigned long thread_id;	       /* Id for connection in server */
+
+
+   my_ulonglong affected_rows;    
+
+
+   my_ulonglong insert_id;	/* id if insert on table with NEXTNR */ 
+
+
+   my_ulonglong extra_info;	/* Used by mysqlshow */
+
+
+   unsigned long packet_length;
+
+
+   enum mysql_status status;
+
+
+   MYSQL_FIELD	*fields;	// the field info
+
+
+   MEM_ROOT	field_alloc;	// the field memory
+
+
+   my_bool	free_me;	/* If free in mysql_close */
+
+
+   my_bool	reconnect;	/* set to 1 if automatic reconnect */
+
+
+   struct st_mysql_options options;	//option
+
+
+   char	   scramble_buff[9];	// ???
+
+
+   struct charset_info_st *charset;	// charset info.
+
+
+   unsigned int server_language;	// server language/
+
+
+   } MYSQL;
+
+
+   
+
+
+   
+
+
+   以下是net的定义，这个结构被用来进行网络读写：
+
+
+   
+
+
+   typedef struct st_net {
+
+
+   Vio* vio;
+
+
+   my_socket fd;					/* For Perl DBI/dbd */
+
+
+   int fcntl;
+
+
+   unsigned char *buff,*buff_end,*write_pos,*read_pos;
+
+
+   char last_error[MYSQL_ERRMSG_SIZE];
+
+
+   unsigned int last_errno,max_packet,timeout,pkt_nr;
+
+
+   unsigned char error;
+
+
+   my_bool return_errno,compress;
+
+
+   my_bool no_send_ok; /* needed if we are doing several
+
+
+    queries in one command ( as in LOAD TABLE ... FROM MASTER ),
+
+
+    and do not want to confuse the client with OK at the wrong time
+
+
+   		   */
+
+
+   unsigned long remain_in_buf,length, buf_length, where_b;
+
+
+   unsigned int *return_status;
+
+
+   unsigned char reading_or_writing;
+
+
+   char save_char;
+
+
+   } NET;
+
+
+   
+
+
+   
+
+
+   
+
+
+   我们在进行mysql连接以及查询时，MYSQL这个结构被用做传送信息的载体。
+
+
+   需要经常用到MYSQL结构的cAPI:
+
+
+   mysql_connect();
+
+
+   mysql_real_connect();
+
+
+   mysql_query();
+
+
+   mysql_store_result();
+
+
+   mysql_use_result();
+
+
+   mysql_error()
+
+
+   
+
+
+   大家有兴趣可以看看这几个函数的实现，会有意想不到的收获！

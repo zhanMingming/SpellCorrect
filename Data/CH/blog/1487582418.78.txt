@@ -1,0 +1,10 @@
+“GridView1”上同时定义了 DataSource 和 DataSourceID。请移除一个定义。解决方案：
+
+
+   去掉出错的那句话的上一句：
+
+
+   
+
+
+   GridView1.DataSource=ds.Tables[0].Defaultview;

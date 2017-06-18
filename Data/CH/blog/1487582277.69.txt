@@ -1,0 +1,609 @@
+opencv 人脸识别 （一）训练样本的处理本文实现基于eigenface的人脸检测与识别。给定一个图像数据库，进行以下步骤：
+
+   
+进行人脸检测，将检测出的人脸存入数据库2对数据库2进行人脸建模在测试集上进行recognition
+
+
+本篇实现第一步：进行人脸检测，将检测出的人脸存入数据库2
+
+   
+
+   
+
+   环境：vs2010+opencv 2.4.6.0
+
+   特征：eigenface
+
+   Input：一个人脸数据库，15个人，每人20个样本（左右）。
+
+   Output：人脸检测，并识别出每张检测到的人脸。
+
+   ===============================
+
+   
+
+   本文完成第一步，数据预处理：自动检测所有文件夹中每个sample中的人脸，作为训练数据。
+
+   Input：一个color文件夹，每个文件夹中有1~N这N个子文件夹，每个子文件夹内有n张包括第n类人的照片，如图。
+
+   
+
+   
+
+   
+
+   最终结果：
+
+   
+
+   核心：face detection（detectAndDraw）
+
+   辅助：截图并保存部分图片(CutImg)，文件夹内图片遍历(read_img)，图片转换成相同大小（normalizeone）
+
+   括号内分别是函数名，下面分别给出代码及说明。
+
+   
+
+   1. 遍历文件夹：CBrowseDir类和CStatDir类（具体见这篇），三个文件如下：
+
+   1.1 BrowseDir.h
+
+   
+
+   #pragma once
+#include &quot;direct.h&quot;
+#include &quot;string.h&quot;
+#include &quot;io.h&quot;
+#include &quot;stdio.h&quot; 
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+using namespace std;
+class CBrowseDir
+{
+protected:
+	char m_szInitDir[_MAX_PATH];
+
+public:
+	CBrowseDir();
+	bool SetInitDir(const char *dir);
+	bool BeginBrowse(const char *filespec);
+	vector&lt;char*&gt; BeginBrowseFilenames(const char *filespec);
+
+protected:
+	bool BrowseDir(const char *dir,const char *filespec);
+	vector&lt;char*&gt; GetDirFilenames(const char *dir,const char *filespec);
+	virtual bool ProcessFile(const char *filename);
+	virtual void ProcessDir(const char *currentdir,const char *parentdir);
+};
+   
+
+   1.2 BrowseDir.cpp
+
+   
+
+   #include &quot;BrowseDir.h&quot;
+#include &quot;direct.h&quot;
+#include &quot;string.h&quot;
+#include &quot;io.h&quot;
+#include &quot;stdio.h&quot; 
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+using namespace std;
+
+CBrowseDir::CBrowseDir()
+{
+	getcwd(m_szInitDir,_MAX_PATH);
+	int len=strlen(m_szInitDir);
+	if (m_szInitDir[len-1] != '\\')
+		strcat(m_szInitDir,&quot;\\&quot;);
+}
+
+bool CBrowseDir::SetInitDir(const char *dir)
+{
+	if (_fullpath(m_szInitDir,dir,_MAX_PATH) == NULL)
+		return false;
+
+	if (_chdir(m_szInitDir) != 0)
+		return false;
+	int len=strlen(m_szInitDir);
+	if (m_szInitDir[len-1] != '\\')
+		strcat(m_szInitDir,&quot;\\&quot;);
+
+	return true;
+}
+
+vector&lt;char*&gt;CBrowseDir:: BeginBrowseFilenames(const char *filespec)
+{
+	ProcessDir(m_szInitDir,NULL);
+	return GetDirFilenames(m_szInitDir,filespec);
+}
+
+bool CBrowseDir::BeginBrowse(const char *filespec)
+{
+	ProcessDir(m_szInitDir,NULL);
+	return BrowseDir(m_szInitDir,filespec);
+}
+
+bool CBrowseDir::BrowseDir(const char *dir,const char *filespec)
+{
+	_chdir(dir);
+	long hFile;
+	_finddata_t fileinfo;
+	if ((hFile=_findfirst(filespec,&amp;fileinfo)) != -1)
+	{
+		do
+		{
+			if (!(fileinfo.attrib &amp; _A_SUBDIR))
+			{
+				char filename[_MAX_PATH];
+				strcpy(filename,dir);
+				strcat(filename,fileinfo.name);
+				cout &lt;&lt; filename &lt;&lt; endl;
+				if (!ProcessFile(filename))
+					return false;
+			}
+		} while (_findnext(hFile,&amp;fileinfo) == 0);
+		_findclose(hFile);
+	}
+	_chdir(dir);
+	if ((hFile=_findfirst(&quot;*.*&quot;,&amp;fileinfo)) != -1)
+	{
+		do
+		{
+			if ((fileinfo.attrib &amp; _A_SUBDIR))
+			{
+				if (strcmp(fileinfo.name,&quot;.&quot;) != 0 &amp;&amp; strcmp
+					(fileinfo.name,&quot;..&quot;) != 0)
+				{
+					char subdir[_MAX_PATH];
+					strcpy(subdir,dir);
+					strcat(subdir,fileinfo.name);
+					strcat(subdir,&quot;\\&quot;);
+					ProcessDir(subdir,dir);
+					if (!BrowseDir(subdir,filespec))
+						return false;
+				}
+			}
+		} while (_findnext(hFile,&amp;fileinfo) == 0);
+		_findclose(hFile);
+	}
+	return true;
+}
+
+vector&lt;char*&gt; CBrowseDir::GetDirFilenames(const char *dir,const char *filespec)
+{
+	_chdir(dir);
+	vector&lt;char*&gt;filename_vec;
+	filename_vec.clear();
+
+	long hFile;
+	_finddata_t fileinfo;
+	if ((hFile=_findfirst(filespec,&amp;fileinfo)) != -1)
+	{
+		do
+		{
+			if (!(fileinfo.attrib &amp; _A_SUBDIR))
+			{
+				char *filename = new char[_MAX_PATH];
+				strcpy(filename,dir);
+				//int st = 0;	while (dir[st++]!='\0');
+				strcat(filename,fileinfo.name); //filename[st]='\0';
+				filename_vec.push_back(filename);
+			}
+		} while (_findnext(hFile,&amp;fileinfo) == 0);
+		_findclose(hFile);
+	}
+	_chdir(dir);
+	if ((hFile=_findfirst(&quot;*.*&quot;,&amp;fileinfo)) != -1)
+	{
+		do
+		{
+			if ((fileinfo.attrib &amp; _A_SUBDIR))
+			{
+				if (strcmp(fileinfo.name,&quot;.&quot;) != 0 &amp;&amp; strcmp
+					(fileinfo.name,&quot;..&quot;) != 0)
+				{
+					char subdir[_MAX_PATH];
+					strcpy(subdir,dir);
+					strcat(subdir,fileinfo.name);
+					strcat(subdir,&quot;\\&quot;);
+					ProcessDir(subdir,dir);
+					return GetDirFilenames(subdir,filespec);
+				}
+			}
+		} while (_findnext(hFile,&amp;fileinfo) == 0);
+		_findclose(hFile);
+	}
+	return filename_vec;
+}
+
+bool CBrowseDir::ProcessFile(const char *filename)
+{
+	return true;
+}
+
+void CBrowseDir::ProcessDir(const char 
+	*currentdir,const char *parentdir)
+{
+}
+
+   
+
+   1.3 StatDir.h
+
+   
+
+   #pragma once
+#include &quot;browsedir.h&quot;
+class CStatDir:public CBrowseDir
+{
+protected:
+	int m_nFileCount;   //保存文件个数
+	int m_nSubdirCount; //保存子目录个数
+
+public:
+	CStatDir()
+	{
+		m_nFileCount=m_nSubdirCount=0;
+	}
+
+	int GetFileCount()
+	{
+		return m_nFileCount;
+	}
+
+	int GetSubdirCount()
+	{
+		return m_nSubdirCount-1;
+	}
+
+protected:
+	virtual bool ProcessFile(const char *filename)
+	{
+		m_nFileCount++;
+		return CBrowseDir::ProcessFile(filename);
+	}
+
+	virtual void ProcessDir
+		(const char *currentdir,const char *parentdir)
+	{
+		m_nSubdirCount++;
+		CBrowseDir::ProcessDir(currentdir,parentdir);
+	}
+};
+
+   
+
+   
+
+   
+2. 辅助函数Prehelper.h, Prehelper.cpp：负责返回文件夹内所有图片（read_img），检测人脸（detectAndDraw并可以在原图中画出），截图（CutImg），提取(DetectandExtract)
+   2.1 Prehelper.h
+
+   
+
+   //preprocessing helper
+//@ Author : Rachel-Zhang
+
+#include &quot;opencv2/core/core.hpp&quot;
+#include &quot;opencv2/highgui/highgui.hpp&quot;
+#include &quot;opencv2/contrib/contrib.hpp&quot;
+#include &lt;cv.h&gt;
+#include &lt;vector&gt;
+#include &lt;utility&gt;
+using namespace cv;
+using namespace std;
+
+void normalizeone(const char* dir,IplImage* standard);
+
+void CutImg(IplImage* src, CvRect rect,IplImage* res);
+
+vector&lt;Rect&gt; detectAndDraw( Mat&amp; img, CascadeClassifier&amp; cascade,
+	CascadeClassifier&amp; nestedCascade,
+	double scale, bool tryflip,bool draw );
+
+IplImage* DetectandExtract(Mat&amp; img, CascadeClassifier&amp; cascade,
+	CascadeClassifier&amp; nestedCascade,
+	double scale, bool tryflip);
+
+int read_img(const string&amp; dir, vector&lt;Mat&gt; &amp;images);
+
+vector&lt;pair&lt;char*,Mat&gt;&gt;  read_img(const string&amp; dir);
+
+   
+
+   
+
+   2.2 Prehelper.cpp
+
+   
+
+   #include &quot;Prehelper.h&quot;
+#include &quot;BrowseDir.h&quot;
+#include &quot;StatDir.h&quot;
+
+#include &lt;opencv2/core/core.hpp&gt;
+#include &lt;opencv2/highgui/highgui.hpp&gt;
+#include &lt;cv.h&gt;
+using namespace cv;
+
+void normalizeone(const char* dir,IplImage* standard)
+{
+	CStatDir statdir;
+	if (!statdir.SetInitDir(dir))
+	{
+		puts(&quot;Dir not exist&quot;);
+		return;
+	}
+	vector&lt;char*&gt;file_vec = statdir.BeginBrowseFilenames(&quot;*.*&quot;);
+	int i;
+	for (i=0;i&lt;file_vec.size();i++)
+	{
+		IplImage* cur_img = cvLoadImage(file_vec[i],CV_LOAD_IMAGE_GRAYSCALE);
+		//IplImage*cur_gray = cvCreateImage(cvGetSize(cur_img),cur_img-&gt;depth,1);
+		cvResize(cur_img,standard,CV_INTER_AREA);
+		//cvCvtColor(standard,cur_gray,CV_RGB2GRAY);
+		// 		cvNamedWindow(&quot;cur_img&quot;,CV_WINDOW_AUTOSIZE);
+		// 		cvNamedWindow(&quot;standard&quot;,CV_WINDOW_AUTOSIZE);
+		// 		cvShowImage(&quot;cur_img&quot;,cur_img);
+		// 		cvShowImage(&quot;standard&quot;,standard);
+		// 		cvWaitKey();
+		cvSaveImage(file_vec[i],cur_img);
+	}
+}
+
+void CutImg(IplImage* src, CvRect rect,IplImage* res)
+{
+	CvSize imgsize;
+	imgsize.height = rect.height;
+	imgsize.width = rect.width;
+	cvSetImageROI(src,rect);
+	cvCopy(src,res);
+	cvResetImageROI(res);
+}
+
+int read_img(const string&amp; dir, vector&lt;Mat&gt; &amp;images)
+{
+	CStatDir statdir;
+	if (!statdir.SetInitDir(dir.c_str()))
+	{
+		cout&lt;&lt;&quot;Direct &quot;&lt;&lt;dir&lt;&lt;&quot;  not exist!&quot;&lt;&lt;endl;
+		return 0;
+	}
+	int cls_id = dir[dir.length()-1]-'0';
+	vector&lt;char*&gt;file_vec = statdir.BeginBrowseFilenames(&quot;*.*&quot;);
+	int i,s = file_vec.size();
+	for (i=0;i&lt;s;i++)
+	{
+		Mat graymat = imread(file_vec[i],0);
+		//graymat.reshape(1,1);//flatten to one row
+		images.push_back(graymat);
+	}
+	return s;
+}
+
+vector&lt;pair&lt;char*,Mat&gt;&gt;  read_img(const string&amp; dir)
+{
+	CStatDir statdir;
+	pair&lt;char*,Mat&gt; pfi;
+	vector&lt;pair&lt;char*,Mat&gt;&gt; Vp;
+	if (!statdir.SetInitDir(dir.c_str()))
+	{
+		cout&lt;&lt;&quot;Direct &quot;&lt;&lt;dir&lt;&lt;&quot;  not exist!&quot;&lt;&lt;endl;
+		return Vp;
+	}
+	int cls_id = dir[dir.length()-1]-'0';
+	vector&lt;char*&gt;file_vec = statdir.BeginBrowseFilenames(&quot;*.*&quot;);
+	int i,s = file_vec.size();
+	for (i=0;i&lt;s;i++)
+	{
+		pfi.first = file_vec[i];
+		pfi.second = imread(file_vec[i]);
+		Vp.push_back(pfi);
+	}
+	return Vp;
+}
+
+vector&lt;Rect&gt; detectAndDraw( Mat&amp; img, CascadeClassifier&amp; cascade,
+	CascadeClassifier&amp; nestedCascade,
+	double scale, bool tryflip, bool draw )
+{
+	int i = 0;
+	double t = 0;
+	vector&lt;Rect&gt; faces, faces2;
+	const static Scalar colors[] =  { CV_RGB(0,0,255),
+		CV_RGB(0,128,255),
+		CV_RGB(0,255,255),
+		CV_RGB(0,255,0),
+		CV_RGB(255,128,0),
+		CV_RGB(255,255,0),
+		CV_RGB(255,0,0),
+		CV_RGB(255,0,255)} ;
+	Mat gray, smallImg( cvRound (img.rows/scale), cvRound(img.cols/scale), CV_8UC1 );
+
+	cvtColor( img, gray, CV_BGR2GRAY );
+	resize( gray, smallImg, smallImg.size(), 0, 0, INTER_LINEAR );
+	equalizeHist( smallImg, smallImg );
+
+	t = (double)cvGetTickCount();
+	cascade.detectMultiScale( smallImg, faces,
+		1.1, 2, 0
+		|CV_HAAR_FIND_BIGGEST_OBJECT
+		//|CV_HAAR_DO_ROUGH_SEARCH
+		//|CV_HAAR_SCALE_IMAGE
+		,
+		Size(30, 30) );
+	if( tryflip )
+	{
+		flip(smallImg, smallImg, 1);
+		cascade.detectMultiScale( smallImg, faces2,
+			1.1, 2, 0
+			|CV_HAAR_FIND_BIGGEST_OBJECT
+			//|CV_HAAR_DO_ROUGH_SEARCH
+			//|CV_HAAR_SCALE_IMAGE
+			,
+			Size(30, 30) );
+		for( vector&lt;Rect&gt;::const_iterator r = faces2.begin(); r != faces2.end(); r++ )
+		{
+			faces.push_back(Rect(smallImg.cols - r-&gt;x - r-&gt;width, r-&gt;y, r-&gt;width, r-&gt;height));
+		}
+	}
+	t = (double)cvGetTickCount() - t;
+	printf( &quot;detection time = %g ms\n&quot;, t/((double)cvGetTickFrequency()*1000.) );
+	if(draw)
+	{
+		for( vector&lt;Rect&gt;::const_iterator r = faces.begin(); r != faces.end(); r++, i++ )
+		{
+			Mat smallImgROI;
+			vector&lt;Rect&gt; nestedObjects;
+			Point center;
+			Scalar color = colors[i%8];
+			int radius;
+
+			double aspect_ratio = (double)r-&gt;width/r-&gt;height;
+			rectangle( img, cvPoint(cvRound(r-&gt;x*scale), cvRound(r-&gt;y*scale)),
+				cvPoint(cvRound((r-&gt;x + r-&gt;width-1)*scale), cvRound((r-&gt;y + r-&gt;height-1)*scale)),
+				color, 3, 8, 0);
+			if( nestedCascade.empty() )
+				continue;
+			smallImgROI = smallImg(*r);
+			nestedCascade.detectMultiScale( smallImgROI, nestedObjects,
+				1.1, 2, 0
+				|CV_HAAR_FIND_BIGGEST_OBJECT
+				//|CV_HAAR_DO_ROUGH_SEARCH
+				//|CV_HAAR_DO_CANNY_PRUNING
+				//|CV_HAAR_SCALE_IMAGE
+				,
+				Size(30, 30) );
+			//draw eyes
+			//  for( vector&lt;Rect&gt;::const_iterator nr = nestedObjects.begin(); nr != nestedObjects.end(); nr++ )
+			//  {
+			//      center.x = cvRound((r-&gt;x + nr-&gt;x + nr-&gt;width*0.5)*scale);
+			//      center.y = cvRound((r-&gt;y + nr-&gt;y + nr-&gt;height*0.5)*scale);
+			//      radius = cvRound((nr-&gt;width + nr-&gt;height)*0.25*scale);
+			//      circle( img, center, radius, color, 3, 8, 0 );
+			//  }
+		}
+		cv::imshow( &quot;result&quot;, img );
+	}
+	return faces;
+}
+
+IplImage* DetectandExtract(Mat&amp; img, CascadeClassifier&amp; cascade,
+	CascadeClassifier&amp; nestedCascade,
+	double scale, bool tryflip)
+{
+	vector&lt;Rect&gt; Rvec = detectAndDraw(img,cascade,nestedCascade,scale,tryflip,0);
+	int i,maxxsize=0,id=-1,area;
+	for (i=0;i&lt;Rvec.size();i++)
+	{
+		area = Rvec[i].width*Rvec[i].height;
+		if(maxxsize&lt;area)
+		{
+			maxxsize = area;
+			id = i;
+		}
+	}
+	IplImage* transimg = cvCloneImage(&amp;(IplImage)img);
+	if(id!=-1)
+	{
+		CvSize imgsize;
+		imgsize.height = Rvec[id].height;
+		imgsize.width = Rvec[id].width;
+		IplImage* res = cvCreateImage(imgsize,transimg-&gt;depth,transimg-&gt;nChannels);
+		CutImg(transimg,Rvec[id],res);
+
+		return res;
+	}
+	return NULL;
+}
+   
+
+   3. 主函数
+
+   
+
+   //Detect.cpp
+//Preprocessing - Detect, Cut and Save
+//@Author : Rachel-Zhang
+
+#include &quot;opencv2/objdetect/objdetect.hpp&quot;
+#include &quot;opencv2/highgui/highgui.hpp&quot;
+#include &quot;opencv2/imgproc/imgproc.hpp&quot;
+
+#include &lt;cctype&gt;
+#include &lt;iostream&gt;
+#include &lt;iterator&gt;
+#include &lt;stdio.h&gt;
+#include &quot;BrowseDir.h&quot;
+#include &quot;StatDir.h&quot;
+#include &quot;Prehelper.h&quot;
+
+using namespace std;
+using namespace cv;
+#define CAM 2
+#define PHO 1
+#define K 5
+
+string cascadeName = &quot;E:/software/opencv2.4.6.0/data/haarcascades/haarcascade_frontalface_alt.xml&quot;;
+string nestedCascadeName = &quot;E:/software/opencv2.4.6.0/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml&quot;;
+
+int main( )
+{
+	CvCapture* capture = 0;
+	Mat frame, frameCopy, image;
+	string inputName;
+	bool tryflip = false;
+	int mode;
+	CascadeClassifier cascade, nestedCascade; 
+	double scale = 1.0;
+	if( !cascade.load( cascadeName ) ||!nestedCascade.load( nestedCascadeName))
+	{
+		cerr &lt;&lt; &quot;ERROR: Could not load classifier cascade or nestedCascade&quot; &lt;&lt; endl;//若出现该问题请去检查cascadeName，可能是opencv版本路径问题
+		return -1;
+	}
+
+// 	printf(&quot;select the mode of detection: \n1: from picture\t 2: from camera\n&quot;);
+// 	scanf(&quot;%d&quot;,&amp;mode);
+	char** pics = (char**) malloc(sizeof*pics);
+
+	/************************************************************************/
+	/*      detect face and save */
+	/************************************************************************/
+	int i,j;
+	cout&lt;&lt;&quot;detect and save...&quot;&lt;&lt;endl;
+	const char dir[256] = &quot;D:\\Face_recognition\\pic\\&quot;; 
+		string cur_dir;
+		char id[5];
+	for(i=1; i&lt;=K; i++)
+	{
+		cur_dir = dir;
+		_itoa(i,id,10);
+		cur_dir.append(&quot;color\\&quot;);
+		cur_dir.append(id);
+		vector&lt;pair&lt;char*,Mat&gt;&gt; imgs=read_img(cur_dir);
+		for(j=0;j&lt;imgs.size();j++)
+		{
+			IplImage* res = DetectandExtract(imgs[j].second,cascade,nestedCascade,scale,tryflip);
+			if(res)
+				cvSaveImage(imgs[j].first,res);
+		}
+	}
+	return 0;
+}
+
+   
+
+   正确的输出就是一系列人脸检测时间，且原文件夹内的图片变成了检测出的人脸（如上面结果图所示）。
+
+   
+
+   
+
+   
+
+   文章所用代码打包链接：http://download.csdn.net/detail/abcjennifer/7047853
+
+   
+
+   关于Computer Vision更多的学习资料将继续更新，敬请关注本博客和新浪微博Rachel Zhang。

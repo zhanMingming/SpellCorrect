@@ -1,0 +1,92 @@
+车道检测问题探究（一）车道特征提取（下）车道检测问题研究了很长时间，本博客以此为主题进行一系列探究，包括别人论文以及实现结果，希望能够和广大计算机视觉研究者共同进步！
+
+
+   本文主要以左右车道检测方法中基于车道侧面连续的曲线拟合方法进行研究。
+
+
+   通常的车道检测方法分两步：（1）特征提取（2）车道几何模型的建立与匹配
+
+
+   首先我们来说说特征提取部分：
+
+
+   特征提取的目的是最大限度地：1.保留可能是车道的pixels2.去掉可能非车道的pixels
+
+
+   车道检测问题探究（一）车道特征提取（上）http://blog.csdn.net/abcjennifer/article/details/7453286
+
+
+
+
+   中已经提到了一种特征提取方法，基于像素光强梯度进行提取，这里我们再介绍另一种方法，基于图像车道宽度进行滤波，并给出tracking算法。
+
+
+   ===========================Feature Extraction===========================
+
+
+   1.基于光强梯度提取
+
+
+   
+
+
+   其中I为灰度图，只有符合该式的像素点(u,v)被留下
+
+
+   2. 基于车道宽度提取
+
+
+   类&#20284;http://blog.csdn.net/abcjennifer/article/details/7453286中提到的，只有长度在[S1,S2]内的线段被留下
+
+
+   3.选取一个线段的重点为feature point
+
+
+   ============================Matching============================
+
+
+
+
+   两条车道间夹得长度称为车道宽度（road width），记为Lhc, 这一步中寻找couples of lane；即寻找一对对的左右车道。
+
+
+   采用平均&#20540;估计法，该步骤目的为找到确定的一组(Uli,Vli),(Uri,Vri);
+
+
+   ============================Tracking============================
+
+
+
+
+   Define:
+
+
+   Ali &amp; Arias left and right accumulator respectively，一旦其超过阈&#20540;，以后就都由另一侧的车道预测左侧车道位置
+
+
+   Amaxas the threshold of Ali &amp; Ari
+
+
+   L as slide window size
+
+
+   [u,v] as 第t-1帧中scan line u 上的feature point 坐标
+
+
+   以左车道第t帧跟踪为例，伪代码如下：
+
+
+   
+
+
+   Initialize Ali=Ari=1;
+Search 在第t帧中[u,v-L] 到[u,v+L]区间内是否有feature point
+if(exist)
+	取一个离[u,v]最近的点作为t帧的跟踪点，Ali=1;
+else
+	if(Ali&lt;Amax)	
+		第t帧的feature point=第t-1帧的feature point，Ali++;
+	else if(Ari&lt;Amax)
+		第t帧的feature point由右车道点-车道宽度给出
+	else 
+		Adjust Parameters and resume from feature extraction

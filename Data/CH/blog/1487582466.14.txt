@@ -1,0 +1,520 @@
+Node.js websocket 使用 socket.io库实现实时聊天室认识websocket
+
+
+   WebSocket protocol 是HTML5一种新的协议。它实现了浏览器与服务器全双工通信(full-duple)。一开始的握手需要借助HTTP请求完成。
+
+
+
+   其实websocket 并不是很依赖Http协议，它也拥有自己的一套协议机制，但在这里我们需要利用的socket.io 需要依赖到http 。 
+
+之前用java jsp写过一个聊天，其实实现逻辑并不难，只是大部分时间都用在UI的设计上，其实现原理就是一个基于websocket的通信，要想做一个好的聊天室，我觉得大部分精力可能更应该花在与用户的视觉层交互上。
+
+
+
+   废话不闲扯，我们先来看一下websocket 与传统的ajax 有什么不同之处。 
+
+在之前，如果我们想要获取到服务器更新的信息，我们可以使用ajax 轮询来完成，然而，这样做的弊端是增大了我们与服务器的交互次数，然而极大部分的交互都是无意义的，因为我们只是做一个询问，如果没有任何新的信息，我们几乎什么都不用做，因此这样会极大的浪费服务器资源和带宽。 
+
+然而使用websocket 会使客户端与服务器建立一个长连接，并且，当服务器有新消息时可以主动推送到客户端，所以我们可以不用一次次的去询问服务器是否有新消息，而是直接由服务器主动推送到客户端，这样在无消息的状态下，客户端不会频繁的去请求服务器。 
+
+使用websocket 的特点在于服务器可以主动推送消息到客户端。
+
+
+
+
+使用socket.io 库实现实时聊天
+
+
+   这也是这篇博文的主题之处。socket.io发布到npm 平台上，我们可以直接用npm 来安装到**当前**node_modules目录下。
+
+
+
+
+
+   npm install socket.io --save 
+
+
+   下面我们就可以直接使用require 方法来将这个模块引入
+
+
+
+
+
+   const socket = require("socket.io");
+
+
+   在创建此websocket 服务器之前，它需要依赖于一个已经创建好的http服务器。
+
+
+
+
+
+   let socketServer = socket.listen(require("http").createServer((req,resp) =&gt; {
+    //返回页面
+    resp.end(require("fs").readFileSync("./socketIOTest1.html"));
+}).listen(9999,"localhost",() =&gt; {console.log("listening");}));
+
+
+   在上述代码中socketIOTest1.html 是在当前目录下的一个html文件，在下面我会贴上详细的代码，这里先稍稍带过。
+
+
+
+   在websocket 服务器对象中有一个connection事件，这个事件在有客户端连接到socket服务器时被触发。下面我们监听这个事件，打印一句话来表示有用户连接。
+
+
+
+
+
+   //监听connection 事件
+socketServer.on("connection",socket =&gt; {
+    console.log("有一用户连接");
+}
+
+
+   上述代码中，callback有一个参数socket为连接到客户端的一个socket端口对象，这个对象有一个message 事件，当客户端有消息推送到服务器时，事件循环会取出这个事件与之对应的回调函数并执行。
+
+
+
+
+
+   socket.on("message",msg =&gt; {
+    console.log(msg);
+});
+
+
+   同时，socket对象还可以监听disconnect 事件，来监听用户断开连接的情况
+
+
+
+
+
+   socket.on("disconnect",() =&gt; {
+    console.log("有一用户退出连接");
+});
+
+
+   因为我们这次的主题是要创建一个能够实时聊天的聊天室，因此光有这些是不够的，我们还需要一个能够与用户交互的客户端。 
+
+下面是我的socketIOTest代码:
+
+
+
+
+
+   &lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;textarea name="" id="content" cols="30" rows="10" &gt;&lt;/textarea&gt;
+    &lt;input id="write" type="text" placeholder="please write content here"&gt;
+    &lt;input id="send" type="button" value="send" /&gt;
+    &lt;script src="./socket.io/socket.io.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+ let send = document.getElementById("send");
+ let write = document.getElementById("write");
+ let content = document.getElementById("content");
+ let socket = io.connect();
+ //发送消息
+ send.onclick = () =&gt; {
+     let msg = write.value;
+     // content.innerHTML = content.value + msg + "\n";
+     socket.send(msg);
+ };
+ //接收到消息
+ socket.on("message",msg =&gt; {
+     console.log("从服务器接收到的消息 ： " + msg);
+     //更新内容
+     content.innerHTML = content.value + msg + "\n";
+ });
+ socket.on("disconnect",() =&gt; {
+     console.log("与服务器断开连接");
+ });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+   在上述代码中，我用script标签引入了一个socket.io.js文件，这个文件不需要另外去下载，而直接引入即可，因为socket.io.js是被包含于socket.io模块中，在上面node的程序代码中，我们通过require方法引入了socket.io模块，因此我们可以直接通过相对路径访问到它。
+
+
+
+
+
+   &lt;script src="./socket.io/socket.io.js"&gt;&lt;/script&gt;
+
+
+   接下来我们就可以在script标签中使用如同服务端的代码。
+
+
+
+
+
+       let socket = io.connect();
+
+
+   使用io.connect()方法连接到websocket服务器，该方法返回一个与连接的服务器与之对应的一个socket端口对象。
+
+
+
+   下面我们同样监听message 和 disconnect事件。
+
+
+
+
+
+   //接收到消息
+socket.on("message",msg =&gt; {
+    console.log("从服务器接收到的消息 ： " + msg);
+    //更新内容
+    content.innerHTML = content.value + msg + "\n";
+});
+socket.on("disconnect",() =&gt; {
+    console.log("与服务器断开连接");
+});
+
+
+   为了更能突出websocket的作用，在html代码中，我只使用了一个textarea标签来显示内容，两个input标签用于发送。 
+
+使用socket对象的send方法就能使消息在服务器与客户端进行消息传递。
+
+
+
+
+websocket群聊实现
+
+
+   现在我们假设一个场景，有u1和u2两个用户，同时连接到服务器，那么我们怎么使他们互相通信呢，实现的方法及其简单。当u1连接到服务器，在服务器中，使用一个map键值对把与u1对应的socket对象进行保存。
+
+
+
+
+
+   //创建一个用于放置用户对象的map
+let map = new Map();
+//用于记录用户数量的变量,并初始化为0
+let userCount = 0;
+//监听connection 事件
+socketServer.on("connection",socket =&gt; {
+    console.log("有一用户连接");
+    map.set(++userCount,socket);
+    //...
+}); 
+
+
+   与此同时，u2也连接上服务器，也由该map把与u2与之对应的socket对象进行储存。 
+
+现在，u1点击了send按钮发送一条消息至服务器，服务器收到消息后遍历map，转发给所有socket对象，实现群聊的实时通信。
+
+
+
+
+
+   socketServer.on("connection",socket =&gt; {
+    console.log("有一用户连接");
+    map.set(++userCount,socket);
+    //监听客户端来的信息
+    socket.on("message",msg =&gt; {
+ //从客户端接收的消息
+ //遍历所有用户
+ map.forEach((value,index,arr) =&gt; {
+     value.send(msg);
+ });
+    });
+}); 
+
+
+   下面我贴上服务端的完整代码，仅供参考
+
+
+
+
+
+   const socket = require("socket.io");
+//创建一个websocket服务器
+let socketServer = socket.listen(require("http").createServer((req,resp) =&gt; {
+    //返回页面
+    resp.end(require("fs").readFileSync("./socketIOTest1.html"));
+}).listen(9999,"localhost",() =&gt; {console.log("listening");}));
+
+//创建一个用于放置用户对象的map
+let map = new Map();
+//用于记录用户数量的变量,并初始化为0
+let userCount = 0;
+
+//监听connection 事件
+socketServer.on("connection",socket =&gt; {
+    console.log("有一用户连接");
+    map.set(++userCount,socket);
+    //监听客户端来的信息
+    socket.on("message",msg =&gt; {
+ //从客户端接收的消息
+ //遍历所有用户
+ map.forEach((value,index,arr) =&gt; {
+     value.send(msg);
+ });
+    });
+    //监听客户端退出情况
+    socket.on("disconnect",() =&gt; {
+ console.log("有一用户退出连接");
+    });
+}); 
+
+
+    
+
+
+
+
+
+
+websocket私聊实现
+
+
+   在说私聊的实现之前，我们首先要找到对于每一个用户的唯一标识，在通常的项目开发中，我们都使用用户的用户名进行标识，每个用户通过注册获得与之对应的用户名。将用户名保存在数据库中利用主键防止重复。
+
+
+
+   实现私聊的方法有很多种，这里我的实现方法是这样的： 
+
+① 当用户连接时，把用户的socket端口对象使用map进行储存，储存的key 为用户的socket对象，value为用户的用户名，写一个方法用于更新客户端列表 
+
+② 用户默认用户名为 &lt;未命名&gt;，指定自定义用户名时，使用socket.emit方法触发服务端的某个事件，遍历map找到与之对应的key，进行value修改 
+
+③ 发送消息时，根据选择列表来指定要发送的人，在服务端，遍历map，找到要发送到的用户名，进行发送，同时更新到自己的聊天框
+
+
+
+   以上就是私聊的简单实现。
+
+
+
+   下面看一下具体代码： 
+
+//Node.js
+
+
+
+   const socket = require("socket.io");
+//创建一个websocket服务器
+let socketServer = socket.listen(require("http").createServer((req,resp) =&gt; {
+    //返回页面
+    resp.end(require("fs").readFileSync("./socketIOTest1.html"));
+}).listen(9999,"localhost",() =&gt; {console.log("listening");}));
+
+//创建一个用于放置用户对象的map
+let map = new Map();
+//用于记录用户数量的变量,并初始化为0
+let userCount = 0;
+//遍历map 
+let scanMap = func =&gt; {
+    try{
+ map.forEach((value,index,arr) =&gt; {
+     func(value,index,arr);
+ });
+    }
+    catch(e){
+ if(e.message == "break"){
+     return;
+ }
+ else{
+     throw e;
+ }
+    }
+}
+
+//通知客户端弹出对话框
+let showDialog = (socket,msg) =&gt; {
+    socket.emit("showDialog",msg);
+}
+
+//更新用户列表
+let updateList = socket =&gt; {
+    let userArr = [];
+    scanMap((value,index) =&gt; {
+ if(value != undefined){
+     userArr.push(value);
+ }
+    });
+    socket.emit("newUser",userArr);
+}
+
+//监听connection 事件
+socketServer.on("connection",socket =&gt; {
+    console.log("有一用户连接");
+    //初始化存储当前socket对象
+    map.set(socket,"&lt;未命名&gt;");
+    //将用户信息写入map
+    socket.on("getUser",user =&gt; {
+ //修改名称
+ map.set(socket,user);
+ scanMap((value,index) =&gt; {
+     updateList(index);
+ });
+    });
+    //通知所有客户端更新列表
+    scanMap((value,index) =&gt; {
+ updateList(index);
+    });
+    //监听客户端来的信息
+    socket.on("message",msg =&gt; {
+ //从客户端接收的消息
+ let sender;
+ //遍历所有用户
+ scanMap((value,index) =&gt; {
+     if(index == socket){
+  sender = value;
+     }
+ });
+ scanMap((value,index) =&gt; {
+     if(msg.person == "all"){
+  index.send(sender + " : " + msg.msg);
+     }
+     else if(msg.person == value){
+  socket.send(sender + " : " +msg.msg);
+  index.send(sender + " : " +msg.msg);
+  throw new Error("break");
+     }
+ });
+    });
+    //监听客户端退出情况
+    socket.on("disconnect",() =&gt; {
+ //用户退出，从map里删除该用户
+ map.set(socket,undefined);
+ //通知所有用户更新列表
+ scanMap((value,index) =&gt; {
+     updateList(index);
+ });
+ console.log("有一用户退出连接");
+    });
+}); 
+
+
+   客户端：
+
+
+
+
+
+   &lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Document&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;textarea name="" id="content" cols="30" rows="10" &gt;&lt;/textarea&gt;
+    &lt;input id="write" type="text" placeholder="please write content here"&gt;
+    &lt;input id="send" type="button" value="send" /&gt;
+    &lt;input type="text" id="user" placeholder="user"&gt;
+    &lt;select style="width: 100px;" size="2" name="" id="userList"&gt;
+ &lt;option value="all"&gt;群聊&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;script src="./socket.io/socket.io.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+ let send = document.getElementById("send");
+ let write = document.getElementById("write");
+ let content = document.getElementById("content");
+ let user = document.getElementById("user");
+ //用户列表
+ let userList = document.getElementById("userList");
+ let socket = io.connect();
+ //判断用户名是否为空
+ let isUserEmpty = () =&gt; {
+     if(user.value == ""){
+  alert("请填写用户名");
+  return false;
+     }
+     else {
+  return true;
+     }
+ }
+ //监听用户名变化
+ let oldUser;
+ user.onblur = () =&gt; {
+     if(isUserEmpty()){
+  //防止重复发射
+  if(oldUser == user.value){return;}
+  oldUser = user.value;
+  socket.emit("getUser",user.value);
+     }
+ }
+ //发送消息
+ send.onclick = () =&gt; {
+     if(isUserEmpty()){
+  let msg = write.value;
+  // content.innerHTML = content.value + msg + "\n";
+  socket.send({msg:msg,person:userList.value});
+     }
+     if(select.value == ""){
+  alert("请选择一个聊天对象");
+     }
+ };
+ //接收到消息
+ socket.on("message",msg =&gt; {
+     console.log("从服务器接收到的消息 ： " + msg);
+     //更新内容
+     content.innerHTML = content.value + msg + "\n";
+ });
+ socket.on("disconnect",() =&gt; {
+     console.log("与服务器断开连接");
+ });
+ //新用户加入聊天室
+ socket.on("newUser",arr =&gt; {
+     userList.innerHTML = "";
+     let all = document.createElement("option");
+     all.innerHTML = "群聊";
+     all.setAttribute("value","all");
+     userList.appendChild(all);
+     //添加新用户
+     arr.forEach((value,index) =&gt; {
+  console.log("value :" + value + "index :" + index);
+  let option = document.createElement("option");
+  option.innerHTML = value;
+  option.setAttribute("value",value);
+  userList.appendChild(option);
+  userList.setAttribute("size",userList.children.length);
+     });
+     //默认选中群聊
+     userList.value = "all";
+ });
+ //接收服务器需要弹出对话框的需求
+ socket.on("showDialog",msg =&gt; {
+     alert(msg);
+ });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+   
+
+
+
+   代码的具体我就不在详细讲解，都标有注释，由于只是用于博文，整体代码没有重构优化，大家看不懂的可以回复我，或者有什么地方错误请指出，我会及时改正。
+
+
+
+   另外在这个聊天室中，当用户刷新频率较快时，websocket会出现伪连接现象。
+
+
+
+   下面附上我的github地址，大家可以下载我的源码进行修改学习，共勉。 
+
+https://github.com/HaoDaWang/chat
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

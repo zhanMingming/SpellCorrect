@@ -1,0 +1,90 @@
+Second-price AuctionDo you know second-price auction? It's very simple but famous. In a second-price auction, each potential buyer privately submits, perhaps in a sealed envelope or over a secure connection, his (or her) bid for the object to the auctioneer. After receiving all the bids, the auctioneer then awards the object to the bidder with the highest bid, and charges him (or her) the amount of the second-highest bid. 
+
+
+   Suppose you're the auctioneer and you have received all the bids, you should decide the winner and the amount of money he (or she) should pay. 
+
+
+   Input
+
+
+   There are multiple test cases. The first line of input contains an integer T(T &lt;= 100), indicating the number of test cases. Then T test cases follow. 
+
+
+   Each test case contains two lines: The first line of each test case contains only one integer N, indicating the number of bidders. (2 &lt;= N &lt;= 100) The second line of each test case contains N integers separated by a space. The i-th integer Pi indicates the i-th bidder's bid. (0 &lt; Pi &lt;= 60000) You may assume that the highest bid is unique. 
+
+
+   Output
+
+
+   For each test case, output a line containing two integers x and y separated by a space. It indicates that the x-th bidder is the winner and the amount of money he (or she) should pay is y. 
+
+
+   Sample Input
+
+
+   
+
+
+   2
+3
+3 2 1
+2
+4 9
+
+
+   
+
+
+   Sample Output
+
+
+   
+
+
+   1 2
+2 4
+
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+int i,j,k,m[105],n,sub;
+int maxn,sec;
+
+struct price
+{
+	int id;
+	int p;
+}pr[110];
+
+int comp(const void *a,const void *b)
+{
+	struct price *aa=(price*)a;
+	struct price *bb=(price*)b;
+	return (bb-&gt;p)-(aa-&gt;p);
+}
+
+int main()
+{
+	scanf("%d",&amp;k);
+	while(k--)
+	{
+		for(i=0;i&lt;110;i++)
+		{
+			pr[i].id=i+1;
+			pr[i].p=0;
+		}
+		
+		maxn=0;
+		sec=0;
+		scanf("%d",&amp;j);
+		for(i=0;i&lt;j;i++)
+		{
+			scanf("%d",&amp;pr[i].p);
+		}
+		qsort(&amp;pr[0],j,sizeof(pr[0]),comp);
+		cout&lt;&lt;pr[0].id&lt;&lt;" "&lt;&lt;pr[1].p&lt;&lt;endl;
+	}
+	return 0;
+}

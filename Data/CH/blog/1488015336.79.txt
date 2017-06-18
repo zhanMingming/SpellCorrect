@@ -1,0 +1,258 @@
+java网络编程(一)：java传统的阻塞IO以及多线程解决方案最近在看一些IO模型相关的东西，被同步IO、异步IO、阻塞IO、非阻塞IO概念弄的有点晕，后面再慢慢学习和领悟。我们以socket IO编程为例子，我用的是JDK1.7.0_80，测试工具用的是SocketTest。我们先学习下最简单、最原始的IO模型，在《Unix网络编程卷》中被称为：blocking IO。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   SingleThreadBlockingIO是我们用java socket编程实现的blocking IO。
+
+
+   import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class SingleThreadBlockingIO {
+
+	public static void main(String[] args) throws Exception{
+		
+		ServerSocket serverSocket = new ServerSocket(8888);
+		
+		while (true)
+ {
+			// 阻塞直到有客户端连接上
+     Socket clientSocket = serverSocket.accept();
+     try
+     {
+     	 process(clientSocket);
+     }
+     catch(Exception e)
+     {
+     	e.printStackTrace();
+     	clientSocket.close();
+     }
+ }
+	}
+	
+	private static void process( Socket clientSocket) throws Exception
+	{
+		System.out.println(&quot;client socket连接:&quot; + clientSocket.getRemoteSocketAddress());
+ BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+ BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+ while(true)
+ {
+ 	// 阻塞直到客户端发送数据
+     String readLine = in.readLine();
+     System.out.println(&quot;来自客户端的消息:&quot; + readLine);
+     if(&quot;end&quot;.equals(readLine))
+     {
+  break;
+     }
+     else
+     {
+     	out.write(&quot;welcome from server.&quot;);
+     	out.newLine();
+     	out.flush();
+     }
+ }
+	}
+}
+
+
+   运行上面这段代码，用SocketTest做以下测试：
+
+
+   1.启动一个SocketTest进程，连接到上面的服务端socket。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   2.可以观察到：服务端socket控制台打印出了下面的信息。
+
+
+   
+
+
+
+
+   3.再启动一个SocketTest进程，连接服务端socket。SocketTest工具并没有提示我们不能连接。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   4.发现服务端控制台，并没有打印出第二个SocketTest的连接信息。也就是时候，第二个SocketTest客户端在等待中。因为服务端socket已经被第一个SocketTest客户端占用，还没有释放，所以无法服务第二个客户端。
+
+
+   
+
+
+
+
+   5.第一个SocketTest客户端发送消息，能够成功收到服务端的消息。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   6.server端能够收到和处理客户端1的消息。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   7.在第二个SocketTest客户端发送消息，可以看到并没有收到服务端的回复。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   8.服务端控制台也没有打印客户端2的消息。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   9.停掉第一个SocketTest客户端，可以看到服务端控制台输出结果如下。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   通过上面的测试步骤，我们可以看到：这种传统的socket，一次只能服务一个客户端，别的客户端都必须排队等候，效率很差，不能用于高并发的场景。
+
+
+   
+
+
+
+
+   为了解决这个问题，我们可以引入多线程，为每个socket客户端单独开辟一个线程。
+
+
+   import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class MultithreadBlockingIO {
+
+	public static void main(String[] args) throws Exception{
+		ServerSocket serverSocket = new ServerSocket(8888);
+		while (true)
+ {
+			final Socket clientSocket = serverSocket.accept();
+			Thread t = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					try {
+						process(clientSocket);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			
+			t.start();
+ }
+	}
+	
+	private static void process( Socket clientSocket) throws Exception
+	{
+ System.out.println(&quot;client socket连接:&quot; + clientSocket.getRemoteSocketAddress());
+ BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+ BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+ while(true)
+ {
+     String readLine = in.readLine();
+     System.out.println(&quot;来自客户端的消息:&quot; + readLine);
+     if(&quot;end&quot;.equals(readLine))
+     {
+  break;
+     }
+     else
+     {
+     	out.write(&quot;welcome from server.&quot;);
+     	out.newLine();
+     	out.flush();
+     }
+ }
+	}
+}
+
+
+可以像测试SingleThreadBlockingIO一样进行测试，可以看到2个SocketTest客户端之间没有影响。也就是说服务能够同时服务多个客户端。
+
+   
+
+
+
+
+   
+
+
+
+
+   了解并发编程都知道：这种为每个客户端分配一个线程的方案，在高并发的场景下仍然不行。因为创建线程是要消耗系统资源的，不能无限制的创建线程，而且线程太多会导致频繁的上下文切换，这些都会影响性能。我们可以使用线程池，创建固定个数的线程，这样不会导致系统因创建太多线程而崩溃，不过如果线程池被沾满，那么后续的客户端socket还是需要排队。正是由于使用了这种blocking IO模型，导致无论怎么做，都不太好。后面我们会慢慢学习其他的IO模型。

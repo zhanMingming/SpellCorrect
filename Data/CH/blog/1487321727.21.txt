@@ -1,0 +1,10 @@
+谷歌排名因素汇总(google ranking factor)分为{页面因素，非页面因素}，{正面因素，负面因素}，两两组合共计4个大类，如下：
+
+
+   参见：
+
+
+   （1）http://www.vaughns-1-pagers.com/internet/google-ranking-factors.htm
+
+
+   （2）http://www.seomoz.org/article/search-ranking-factors#ranking-factors

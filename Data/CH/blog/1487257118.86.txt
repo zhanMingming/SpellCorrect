@@ -1,0 +1,17 @@
+mmap ENOMEM（errno 12） 错误今天触发了一个大坑，发现mmap在映射大量文件的时候，会失败，返回ENOMEM错误。
+
+
+   
+
+
+
+
+   找了一圈，有的说是swap不够，增加了swap也没用，可见不是这个问题。
+
+
+   
+
+
+
+
+   后来看了美军一个文章（http://www.enchantedage.com/node/235），加一个配置即可：echo 1000000 &gt; /proc/sys/vm/max_map_count

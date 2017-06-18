@@ -1,0 +1,123 @@
+嵌入SQL语句嵌入SQL语言:
+
+
+   
+
+
+   我将一个sql链接到数据库，该数据库名为master(系统数据库)
+
+
+   
+
+
+   then 给数据库添加新表，建立三个key：userid(int),name(char(10)),password(char(10))
+
+
+   
+
+
+   在窗体中弄三个textbox控件，分别定义Name属性为userid,name,password;
+
+
+   再来一个button
+
+
+   
+
+
+   以下是Form1.cs中的代码
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Data.OleDb;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using System.Configuration;
+
+namespace Str
+{
+    public partial class Form1 : Form
+    {
+ public Form1()
+ {
+     InitializeComponent();
+ }
+ private void submit_Click(object sender, EventArgs e)
+ {
+
+     /*
+      * connect to Sql Server
+      * 方法一：写在这里
+      */
+     //string strConnection = "Data Source=ZRQ-PC;";
+     //strConnection += "Initial Catalog=master;Integrated Security=True";
+     // SqlConnection objConnection = new SqlConnection(strConnection);
+
+     /*
+      * 方法二：
+      * 这个方法为工程添加了新建项&ldquo;应用程序配置文件&rdquo;
+      * 将上面的那段写在App.config里
+      */
+     string strConnection = ConfigurationSettings.AppSettings["connectionstring"];
+     SqlConnection objConnection = new SqlConnection(strConnection);
+
+     /************************************************************************/
+
+     if (name.Text == "")
+  MessageBox.Show("请输入姓名!", "提示", 0);
+     else
+     {
+  objConnection.Open();
+  SqlCommand cmd = new SqlCommand("select * from judging where userid='" + userid.Text.Trim() + "'", objConnection);
+  /*
+   ***********************************************************************************************
+   *判断是否有重复的ID,ExecuteScalar() return the first column of the first row in the result set.
+   */
+  if (cmd.ExecuteScalar() != null)
+  {
+      MessageBox.Show("ID重复", "提示", 0);
+  }
+  else
+  {
+      string sql = "insert into judging (userid,name,password) values('" + userid.Text.Trim() + "','" + name.Text.Trim() + "','" + password.Text.Trim() + "')";
+      cmd.CommandText = sql;
+      cmd.ExecuteNonQuery();
+      MessageBox.Show("添加成功！");
+  }
+  name.Clear();
+  password.Clear();
+  userid.Clear();
+     }
+     objConnection.Close();
+ }
+    }
+}
+/*
+*另外，在设计页面想设置password这个textbox显示为*：讲passwordchar属性写为*
+*另外，设置submit按钮为默认按钮：在form属性中的acceptbutton写为默认按钮的Name:submit
+*/ 
+
+
+   
+
+
+   以下是.config中的代码：
+
+
+   
+
+
+   &lt;?xml version="1.0" encoding="utf-8" ?&gt;
+
+&lt;configuration&gt;
+  &lt;appSettings&gt;
+    &lt;add key="connectionstring" value="Data Source=ZRQ-PC;Initial Catalog=master;Integrated Security=True;" /&gt;
+  &lt;/appSettings&gt;
+&lt;/configuration&gt;

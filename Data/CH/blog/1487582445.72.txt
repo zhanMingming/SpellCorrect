@@ -1,0 +1,72 @@
+80ers&#39; MemoryI guess most of us are so called 80ers, which means that we were born in the 1980's. This group of people shared a lot of common memories. For example, the Saint Seiya, the YoYo ball, the Super Mario, and so on. Do you still remember these?
+
+
+   Input
+
+
+   There will be ONLY ONE test case.
+
+
+   The test case begins with a positive integer N, (N &lt; 100).Then there will be N lines each containing a single word describing a keyword of the typical 80ers' memories. Each word consists of letters, [a-zA-Z], numbers, [0-9], and the underline, '_'. The length of each word would be no more than 20.Then one line follows with a positive integer K, (K &lt; 100).The last part of the test case will be K lines. The i-th line contains the keywords given by the i-th person and starts with a positive integer Ni. Then there will be Ni words separated by white spaces. Each of these words has no more than 20 characters.All the words are case sensitive.
+
+
+   Output
+
+
+   For each of these K people, you are asked to count the number of typical 80ers' keywords on his/her list and output it in a single line.
+
+
+   Sample Input
+
+
+   4
+Saint_Seiya
+YoYo_ball
+Super_Mario
+HuLuWa
+3
+2 Saint_Seiya TiaoFangZi
+1 KTV
+3 HuLuWa YOYO_BALL YoYo_ball
+
+
+   Sample Output
+
+
+   1
+0
+2
+
+
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+int i,k,j,cases,t,num;
+string str[105],temp;
+int main()
+{
+	int counts=0;
+	scanf("%d",&amp;cases);
+	for(i=1;i&lt;=cases;i++)
+	{
+		cin&gt;&gt;str[i];
+	}
+	scanf("%d",&amp;t);
+	while(t--)
+	{
+		cin&gt;&gt;num;
+		counts=0;
+		while(num--)
+		{
+			cin&gt;&gt;temp;
+			for(i=1;i&lt;=cases;i++)
+			{
+				if(temp==str[i])
+					counts++;
+			}
+		}
+		cout&lt;&lt;counts&lt;&lt;endl;
+	}
+	return 0;
+}

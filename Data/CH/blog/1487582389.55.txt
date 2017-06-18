@@ -1,0 +1,157 @@
+差分约束 模板/*
+根据题意我们可以构建差分约束模型
+但是我们要求起始点和终点距离最远
+这里我们有两种做法：
+1、我们可以添加约束条件 即最后一个点和起始点的距离要&gt;=n
+我们只要二分枚举n，判断是否有负环就好
+2、我们可以只进行一次差分约束就好，这里我们要明白一个东西。就是求最短路的时候，
+   我们求得的值是满足条件约束的最大值，求最长路的时候，我们求得的值是满足条件
+   约束的最小值。就说最短路吧：我们可以这么想。开始的时候，我们初始化为+无穷。
+   我们是不断减小最短路的值来看是否满足约束条件的，所以一旦满足约束条件了，我
+   们也就不再松弛了，这样我们获得的值就是最大的符合约束的值了。最长路也可以这
+   么思考。所以这个题目中我们把最低的点作为原点，距离关系符合x坐标轴关系。所以
+   最终点在原点右边，我们就初始化+无穷，求最短路，得最大值。
+   最终点在原点左边，我们就初始化-无穷，求最长路，得最小值。
+差分约束终于有些清晰了。。心情还好。这个题算是很好解决了吧。法2在时间上是法1的
+三分之一。以下是法2的代码
+*/
+#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+int t,n,d;
+#define maxn 1004
+#define inf 0x3f3f3f3f
+struct Node
+{
+    int id;
+    int val;
+    bool operator&lt;(const Node &amp;nd)const
+    {
+ return val &lt; nd.val;
+    }
+}nd[maxn];
+int flag[maxn],head[maxn],size;
+int que[maxn+10],Count[maxn];
+int dist[maxn];
+int bj;
+struct Edge
+{
+    int v,next;
+    int dis;
+    Edge(){}
+    Edge(int a,int b,int c):v(a),dis(b),next(c){}
+}edge[maxn*3];
+inline void initg()
+{
+    size =0;
+    memset(head,-1,sizeof(head));
+}
+inline void add_edge(int u,int v,int dis)
+{
+    edge[size] = Edge(v,dis,head[u]);
+    head[u] = size++;
+}
+bool SPFA(int s,int k)
+{
+    int i,front,rear,u,v;
+    memset(flag,0,sizeof(flag));
+    memset(Count,0,sizeof(Count));
+    for (i=1;i&lt;=n;i++)
+    {
+ if (k == 1)
+     dist[i] = -inf;
+ else
+     dist[i] = inf;
+    }
+    front = rear = 0;
+    dist[s] = 0;
+    flag[s] = 1;
+    que[rear++] = s;
+    while (front != rear)
+    {
+ u = que[front++];
+ Count[u]++;
+ if (Count[u]&gt;n) return false;
+ if (front &gt;= maxn) front = 0;
+ flag[u] = 0;
+ for (i=head[u];i!=-1;i=edge[i].next)
+ {
+     v = edge[i].v;
+     if ((dist[v] &gt; dist[u] + edge[i].dis &amp;&amp; k == 2) ||
+      (dist[v] &lt; dist[u] + edge[i].dis &amp;&amp; k == 1))
+     {
+  dist[v] = dist[u] + edge[i].dis;
+  if (dist[s]&lt;0)
+      return false;
+  if (!flag[v])
+  {
+      que[rear++] = v;
+      if (rear &gt;= maxn) rear = 0;
+      flag[v] = 1;
+  }
+     }
+ }
+    }
+    return true;
+}
+int main()
+{
+    int i,j,st,ed,mid,ans,tmp;
+    int k1,k2,cs;
+    while (scanf("%d",&amp;t)!=EOF)
+    {
+ cs = 1;
+ while (t--)
+ {
+     scanf("%d%d",&amp;n,&amp;d);
+     for (i=1;i&lt;=n;i++)
+     {
+  scanf("%d",&amp;nd[i].val);
+  nd[i].id = i;
+     }
+     if (n == 1)
+     {
+  printf("Case %d: 0/n",cs++);
+  continue;
+     }
+     sort(nd+1,nd+n+1);
+     if (nd[1].id &gt; nd[n].id) bj = 1;//求最长路
+     else bj = 2;//求最短路
+     initg();
+     for (i=1;i&lt;n;i++)
+     {
+  if (bj == 2)
+  {
+      if (nd[i].id &lt; nd[i+1].id)
+   add_edge(nd[i].id,nd[i+1].id,d);
+      else
+   add_edge(nd[i+1].id,nd[i].id,d);
+  }
+  else
+  {
+      if (nd[i].id &lt; nd[i+1].id)
+   add_edge(nd[i+1].id,nd[i].id,-d);
+      else
+   add_edge(nd[i].id,nd[i+1].id,-d);
+  }
+     }
+     if (bj == 2)
+     {
+  for (i=1;i&lt;n;i++)
+      add_edge(i+1,i,-1);
+     }
+     else
+     {
+  for (i=1;i&lt;n;i++)
+      add_edge(i,i+1,1);
+     }
+     if (SPFA(nd[1].id,bj))
+  printf("Case %d: %d/n",cs++,abs(dist[nd[1].id]-dist[nd[n].id]));
+     else
+  printf("Case %d: -1/n",cs++);
+ }
+    }
+    return 0;
+}

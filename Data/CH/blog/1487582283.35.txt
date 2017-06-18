@@ -1,0 +1,100 @@
+经典统计语言模型HAL, LSA, 与COALS
+
+
+   本文介绍三个经典统计语言模型， HAL，LSA, 与COALS.
+
+
+
+   拍拍脑袋想， 可以怎样表示一个词语？ 
+
+1. 级级递增 
+
+     e.g 表示百合 
+
+     百合&lt;花&lt;植物&lt;物体  
+
+2. 同义词 
+
+   e.g 表示好 
+
+   好， 不错，还行，棒棒哒……
+
+
+
+   这样的representation带来的问题：
+
+
+
+对于形容词， 同义词不能表示程度
+无新词的定义
+主观性
+难以量化词语相似度
+
+
+
+   为了解决这个问题， 1957年， Firth提出了之后统计NLP中的一个常用思想， 用一个词在句中的neighborhood表示该词。具体来说，  
+
+
+
+
+   Hyperspace Analogue to Language method (HAL) 
+
+HAL (Lund &amp; Burgess, 1996）方法可以用一个co-occurrence matrix, 表示任意两个词相关性。如图所示为一个window size=1的co-occurrence matrix结果： 
+
+ 
+
+这里window size 是指计算作用域。 比如window size=5就表示与一个词相邻5个词为作用域， weight随相邻词距离增大，从5到1递减。 根据co-occurrence matrix， 可得每个词有一个vector表示， 然后可以用Euclidean distance的倒数， 或 cosine， 或相关系数表示任意两个词的相似度。  
+
+但这样存在几个问题：
+
+
+随着词汇增多， 矩阵大小增长， 耗存储
+矩阵非常sparse的， 相应分类问题也需要考虑sparse模型。 
+
+
+   于是我们想， 能不能降到低维形成一个dense的co-occurrence matrix X?
+
+
+   Latent Semantic Analysis (LSA) 
+
+LSA (Deerwester et al., 1990; Landauer, Foltz, &amp; Laham, 1998) 中， co-occurrence matrix是word-document矩阵， 表示文档中出现某词的频率，统计后将其进行normalization（可参考entropy normalization），  
+
+ 
+
+用原来的值取log再除以熵。 这样的话， 如果一个词在文档中均匀出现， 则其entropy大， 那么归一化后的weight就比较小了， 表示我们对这些词比较不感兴趣。  
+
+数据预处理之后， 我们对co-occurrence matrix进行SVD分解C=USV^T，取奇异值最大的k维做eigenvalues, 分别取对应的U的k行做word的representing vector，V的k行做document的representing vector。 由于矩阵sparse， 所以即使矩阵很大， svd也不会过慢。
+
+COALS （Rohde et al., 2009） 
+
+在HAL上做了小改动， 将HAL所得co-occurrence matrix进行correlation normalization， 
+
+ 
+
+然后由于负相关的不可靠性， 将所有负相关置零得到新的co-occurrence matrix。 实验证明其数据清洗更好， 且满足高维稀疏性， 可进行快速SVD。 这是文章中的图，聚类效果还不错： 
+
+
+
+
+
+   参考文献： 
+
+1. HAL:   Lund K, Burgess C. Producing high-dimensional semantic spaces from lexical co-occurrence[J]. Behavior Research Methods, Instruments, &amp; Computers, 1996, 28(2): 203-208. 
+
+2. LSA:   Deerwester S C, Dumais S T, Landauer T K, et al. Indexing by latent semantic analysis[J]. JAsIs, 1990, 41(6): 391-407. 
+
+3. COALS:   Douglas L. T. Rohde, Laura M. Gonnerman, and David C. Plaut. 2009. An improved model of semantic similarity based on lexical co-occurrence. Cognitive Science. sumitted.
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

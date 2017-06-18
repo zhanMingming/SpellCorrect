@@ -1,0 +1,128 @@
+POJ 2780A
+
+
+   Time Limit:3000MS Memory Limit:65536KTotal Submit:55 Accepted:15 
+
+
+   Description 
+
+
+   Alice often examines star maps where stars are represented by points in a plane and there is a Cartesian coordinate for each star. Let the Linearity of a star map be the maximum number of stars in a straight line.For example, look at the star map shown on the figure above, the Linearity of this map is 3, because the star 1, star 2, and star 5 are within the same straight line, and there is no straight line that passes 4 stars. You are to write a program to find the Linearity of a star map. 
+
+
+   Input 
+
+
+   Input will contain multiple test cases. Each describes a star map. For each test case, the first line of the input contains the number of stars N (2 &lt;= N &lt;= 1000). The following N lines describe coordinates of stars (two integers X and Y per line separated by a space, 0 &lt;= X, Y &lt;= 1000). There can be only one star at one point of the plane. 
+
+
+   Output 
+
+
+   Output the Linearity of the map in a single line.
+
+
+   Sample Input 
+
+
+   
+
+   5
+0 0
+2 0
+0 2
+1 1
+2 2
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   3
+
+
+
+   
+
+
+   Source 
+
+
+   
+
+
+   错了好几好几次，原因是&hellip;&hellip;哎，应该把i的for循环放在j的外面，被我漏掉了
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;math.h&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+#define INF 1e8
+#define zero 1e-6
+#define M 1001
+int n;
+struct P
+{
+	int x,y;
+	bool operator&lt;(const P a)const
+	{
+		if(a.x==x)
+			return a.y&lt;y;
+		return a.x&lt;x;
+	}
+}point[M];
+double xielv[M*M/2];
+
+double CalA(P a,P b)
+{
+	if(b.x==a.x)
+		return INF;
+	double t=(b.y-a.y)*1.0/(b.x-a.x);
+	return t;
+}
+
+int main()
+{
+	int i,j;
+	while(scanf("%d",&amp;n)!=EOF)
+	{
+		int max=0;
+		for(i=0;i&lt;n;i++)
+			scanf("%d%d",&amp;point[i].x,&amp;point[i].y);
+		sort(point,point+n);
+		int index=0;
+		for(i=0;i&lt;n-1;i++)
+		{
+			index=0;
+			for(j=i+1;j&lt;n;j++)
+			{
+				double t=CalA(point[i],point[j]);
+				xielv[index++]=t;
+			}
+			sort(xielv,xielv+index);
+			int count;
+			for(j=0;j&lt;index-1;j++)
+			{
+				count=2;
+				while(fabs(xielv[j]-xielv[j+1])&lt;=zero)
+				{
+					count++;
+					j++;
+				}
+				max=max&gt;count?max:count;
+			}
+		}
+		printf("%d/n",max);
+	}
+}

@@ -1,0 +1,89 @@
+zoj 3407 Doraemon&#39;s Cake Machinehttp://acm.zju.edu.cn/onlinejudge/showProblem.do?problemCode=3407
+
+
+   
+
+
+   由
+
+
+   x+y+z=m
+
+
+   2x(y+1)+z=n
+
+
+   得
+
+
+   
+
+
+   2xy+2x+m-x-y=n
+
+
+   so 2xy+x-y+m&gt;=xy-x-y+1
+
+
+   
+
+
+   所以枚举x,y到sqrt(n)就好了
+
+
+   
+
+
+   #include&lt;iostream&gt;
+#include&lt;stdio.h&gt;
+#include&lt;math.h&gt;
+using namespace std;
+#define INF 100000000
+int cases,m,n;
+int main()
+{
+	scanf("%d",&amp;cases);
+	while(cases--)
+	{
+		int i,t,x,y,z,ans;
+		bool flag;
+		ans=INF;
+		flag=0;
+		scanf("%d%d",&amp;n,&amp;m);
+		t=(int)sqrt((double)n);
+		if(n&lt;=m)
+		{
+			printf("-1/n");
+			continue;
+		}
+		if(n-m==1)
+		{
+			printf("0/n");
+			continue;
+		}
+
+		//try x
+		y=1;
+		for(x=1;x&lt;=t&amp;&amp;y&gt;=0;x++)
+		{
+			y=(n-m-x)/(2*x-1);
+			z=m-x-y;
+			if(z&gt;=0&amp;&amp;2*x*(y+1)+z==n&amp;&amp;ans&gt;z)
+				ans=z,flag=1;
+		}
+		//try y
+		x=1;
+		for(y=1;y&lt;=t&amp;&amp;x&gt;=0;y++)
+		{
+			x=(n-m+y)/(2*y+1);
+			z=m-x-y;
+			if(z&gt;=0&amp;&amp;2*x*(y+1)+z==n&amp;&amp;ans&gt;z)
+				ans=z,flag=1;
+		}
+		if(!flag) 
+			printf("-1/n");
+		else
+			printf("%d/n",ans);
+	}
+	return 0;
+}

@@ -1,0 +1,42 @@
+算法导论[Exercises 14.2-4]Exercises 14.2-4: ⋆
+
+
+    
+ 
+
+     
+ 
+    
+
+
+   Let * be an associative binary operator, and let a be a field maintained in each node of a red-black tree. Suppose that we want to include in each node x an additional field f such that f[x] = a[x1] * a[x2] * &middot;&middot;&middot; * a[xm], where x1, x2,..., xm is the inorder listing of nodes in the subtree rooted at x. Show that the f fields can be properly updated in O(1) time after a rotation. Modify your argument slightly to show that the size fields in order-statistic trees can be maintained in O(1) time per rotation.
+
+
+   
+
+
+   1)容易得到不变式 f(x) = f(left[x])*a[x]*f(right[x])]
+
+
+   2)在一次反转过程中,无非是a,b,r三个子树的调整,对于三个子树的f域不需要调整,因为不影响他们内部的顺序,
+
+
+   3)对于求B的f域, f(B) = f(b)*a[B]*f(r)
+
+
+   4)求A的f域f(A) = f(a)*a[A]*f(B) 
+
+
+   以上以left-rotate为例,right-roate类似
+
+
+    B A
+
+
+    / / --&gt;/ /
+
+
+    A ra  B
+
+
+   a b b r

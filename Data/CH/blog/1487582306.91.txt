@@ -1,0 +1,240 @@
+PTS(Preemption-Threshold Scheduling)调度策略Preemption-Threshold Scheduling是实时系统调度算法中的一种，本文主要分析Preemption-Threshold
+ Scheduling（PTS）的可调度性，怎样在实时系统中应用PTS进行调度，在最坏条件下PTS如何较传统方法改进efficiency等。
+
+
+   
+
+
+
+
+   
+
+
+PTS在实时系统中的可调度性分析
+
+   
+
+
+   实时分析技术让我们知道一个任务集合是否可调度——也就是所有任务在其deadline内都完成了。这需要每个任务的属性{Ti, Ci, Di}, Ti-执行周期（minimum execution period）, Ci-执行时间，Di-deadline。
+
+
+   
+
+
+
+
+   实时系统内核典型采用优先级驱动的调度算法，调度策略可以是静态or动态的。在fixed-priority调度策略中，运行期内不改变任务优先级，经典静态优先级算法是Rate
+ Monotonic (RM), 
+Deadline Monotonic (DM), 和Audsley的 optimal priority assignment algorithms.而dynamic-priority策略中，相同task的不同jobs（different jobs belonging to same task）可以设置不同优先级，最典型的就是Earliest
+ deadline first (EDF)算法，该算法中，每个job的优先级与其绝对deadline（剩余期限时间）成反比，下面我们讨论这些调度方法的基本可调度试验。
+
+
+   Fixed-priority策略的可调度性分析可以应用level-i busy period分析。定义bound是模拟一个task中所有jobs进行调度的最坏情形，这样的bound产生该task的worst-case response time(WCRT)，用Wi表示，如果每个task的WCRT都不大于其各自的deadline，那么我们可以说整个workload是可调度的。那么一个task的WCRT如何得到呢？
+
+
+   一项任务的WCRT可以考虑成最坏情形下单个job从到达到执行的响应时间。它由两部分组成，①相同or高优先级任务创造中断，②低优先级任务导致它阻塞。在动态优先调度策略中，我们只需要保证cpu的的utilization&lt;=1.
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+PTS分析
+
+   
+
+
+   刚才说到WCRT的两部分，①相同or高优先级任务造成中断，②低优先级任务导致它阻塞；
+
+
+   为什么会有第二项呢 ?
+
+
+   
+
+•Tau1 can preempt Tau2 onlyifpriorityof Tau1 isstrictly greater thanpreemption thresholdof
+ Tau2
+
+
+   如上图所示，每个task有两个priority，one priority to enqueue (nominal priority) , another for preempt (threshold priority)，nominal priority是对自己超越别人而言的，而threshold
+ priority是对别人超越自己而言的。所以只要high priority 的任务的 threshold priority 设置的够低，低优先级任务就可以导致高优先级任务的阻塞。
+
+
+   一项任务Ti的WCRT在这种情况下出现：低优先级任务Tj拥有高preemption-threshold，而Tj出现在Ti之前。这将影响一项任务的最坏开始时间，最坏完成时间和最坏响应时间。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+资源共享问题
+
+在非抢占式系统中不用考虑resource sharing的问题，因为一个task在拥有resource的过程中不会被中断；而PTS的抢占式or半抢占式策略（semi-preemptive
+ scheme）中，执行资源互斥机制，可以阻塞一项任务，直到其所需资源被释放。为此提出了很多资源共享协议：如PIP（priority inheritance protocol），PCP（priority ceiling protocol），SRP(stack resource policy)。PIP协议中指定，如果一个高优先级job（Ta）由于共享资源问题被一个低优先级job(Tb)阻塞了，那么Tb的优先级设置为max(Tb的nominal
+ priority，所有由于Tb享有资源被阻塞的jobs的优先级)，然而PIP不能避免死锁，而且在PIP一个job中可能被阻塞多次。PCP解决了这两个问题，通过给每个resource加入一个priority
+ ceiling（上限）ρk（记为ceil(ρk)）限制了任何job锁定资源的优先级，一个job的优先级只有高于所有它可能需要的资源的priority ceiling时，才进入临界区，这就避免了死锁和多次阻塞。SRP也避免了死锁，它保证一项任务一旦开始就在完成之前不会在优先级方面拼不过而被阻塞（注意这里阻塞block和抢占preempt的区别），一项任务只会被比他更高优先级的任务抢占。但是呢，就算是SRP中也有可能有高优先级的任务被低优先级任务延迟（delay），这是因为低优先级任务可能lock了资源，然后把priority
+ ceiling设置成一个很高的&#20540;，高于高优先级任务的priority，和PCP中相同，这个delay叫做资源阻塞时间（resource blocking time），记为Bri.
+
+
+因此一项任务的blocking time = max（低preemption-level但拥有高preemption-threshold的task造成的blocking time，由于资源共享造成的blocking
+ time）
+
+
+Gai et al.将Stack Resource 机制加入PTS，形成了stack resource policy with preemption threshold(SRPT)，这个系统里可以防止资源共享中的优先级inversion，死锁，并且满足了任务同步化。从实现的角度讲，SRPT实现了多任务共享唯一栈的功能。由于SRPT系统规定一个任务不能因共享的资源被block，所以一个task的preemption
+ level如果不够高的话它就不能开始执行。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+快速存储器问题
+
+
+
+
+
+
+非实时系统中用cache解决快速外部存储问题，但是cache有时（偶尔）会造成丢失问题，而且很难分析丢失何时产生。由于cache丢失多少内容影响一项任务的worst-case
+ execution time (WCET)，从而影响到该任务的workload是否是实时可调度的，因此我们关心这个问题。我们可以用一个小的快速局部存储(Scratchpad
+ memory, or SPM)代替caches，由软件管理，因此所有存储都是可预测的了，这就简化了WCET的计算。
+
+
+
+
+
+
+
+
+
+PTS中令非抢占组享有存储自动变量的一个stack space，目的是保证他们不会互相抢占。换句话说，不能相互抢占的tasks放到一个组里，share same stack space；而可以抢占该任务的的task呢，他们存储在内出的另一个地方，这样就不会造成stack corruption了。另外引入SPM可以让更多data进入快速存储,
+ 随着更多变量移入SPM，程序就跑的更快了（不用置换）。下图是一个自动工具链的分析和code transformation，目的是ARM7构架，作者已经在硬件上实现了（Kang &amp; Dean, 2010）。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+   
+
+
+
+
+   总结：
+
+
+   PTS可以在减少抢占的条件下满足实时系统的deadline，这可以使系统跑得更快，在内容转换上浪费更少时间（比如Cache置换cost更小，工作更effectively），在空间少消耗更少的栈空间，可以让系统共享更快存储。而且可以进行power
+ optimization.
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   Reference：
+
+
+   How PTS benefits embedded systems designs
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   关于实时系统任务调度策略的讨论与交流，敬请关注本博客和新浪微博Sophia_qing。

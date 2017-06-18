@@ -1,0 +1,385 @@
+PKU 2337 判断并输出欧拉回路http://acm.pku.edu.cn/JudgeOnline/problem?id=2337
+
+
+   
+
+Catenyms
+
+
+
+
+
+
+	Time Limit: 1000MS
+
+	Memory Limit: 65536K
+
+
+
+	Total Submissions: 4137
+
+	Accepted: 975
+
+
+
+
+
+
+   Description
+
+A catenym is a pair of words separated by a period such that the last letter of the first word is the same as the last letter of the second. For example, the following are catenyms: 
+
+   dog.gopher
+gopher.rat
+rat.tiger
+aloha.aloha
+arachnid.dog
+A compound catenym is a sequence of three or more words separated by periods such that each adjacent pair of words forms a catenym. For example, aloha.aloha.arachnid.dog.gopher.rat.tiger Given a dictionary of lower case words, you are to find a compound catenym that contains each of the words exactly once.
+
+
+   Input
+
+The first line of standard input contains t, the number of test cases. Each test case begins with 3 &lt;= n &lt;= 1000 - the number of words in the dictionary. n distinct dictionary words follow; each word is a string of between 1 and 20 lowercase letters on a line by itself.
+
+
+   Output
+
+For each test case, output a line giving the lexicographically least compound catenym that contains each dictionary word exactly once. Output "***" if there is no solution. 
+
+
+   Sample Input
+
+
+   2
+6
+aloha
+arachnid
+dog
+gopher
+rat
+tiger
+3
+oak
+maple
+elm
+
+
+   Sample Output
+
+
+   aloha.arachnid.dog.gopher.rat.tiger
+***
+
+
+   Source
+
+Waterloo local 2003.01.25
+
+
+   
+
+
+   
+
+
+   欧拉路径，把每个单词看成一条边，首尾字母看成两个节点，也就是说最多也就26个节点，然后就是最朴素的求欧拉路径算法了，先判断欧拉路径的存在与否在求之，不过这题有个要求，就是要输出字典序最小的路径，这个很简单，只要先把输入进来的单词从小到大排个序再建图就OK了。
+
+
+   
+
+
+   #include &lt;iostream&gt;
+
+
+   using namespace std;
+
+
+   int degree_in[26],degree_out[26],edge_num,edge_order[1005];
+
+
+   bool used[1005];
+
+
+   struct Edge
+
+
+   {
+
+
+    int start,end;
+
+
+    char word[25];
+
+
+   }edges[1005];
+
+
+   int CMP(const void* a,const void* b)
+
+
+   {
+
+
+    Edge *c=(Edge*)a,*d=(Edge*)b;
+
+
+    if(c-&gt;start!=d-&gt;start) return c-&gt;start-d-&gt;start;
+
+
+    else return strcmp(c-&gt;word,d-&gt;word);
+
+
+   }
+
+
+   inline int ABS(int a)
+
+
+   {
+
+
+    if(a&gt;0) return a;
+
+
+    else return -a;
+
+
+   }
+
+
+   int check()//返回起点
+
+
+   {
+
+
+    int cnt1=0,cnt2=0,source;
+
+
+    for(int i=0;i&lt;26;i++)
+
+
+    {
+
+
+    if(ABS(degree_in[i]-degree_out[i])==2) 
+
+
+    return -1;
+
+
+    else if(degree_in[i]-degree_out[i]==1)
+
+
+    cnt1++;
+
+
+    else if(degree_in[i]-degree_out[i]==-1)
+
+
+    {
+
+
+    cnt2++;
+
+
+    source=i;
+
+
+    }
+
+
+    }
+
+
+    if(cnt1&gt;1||cnt2&gt;1) 
+
+
+    return -1;
+
+
+    else if(cnt1==0)
+
+
+    {
+
+
+    for(int i=0;i&lt;26;i++)
+
+
+    if(degree_out[i]) 
+
+
+    return i;
+
+
+    }
+
+
+    else return source;
+
+
+   }
+
+
+   bool solve_dfs(int source,int cnt)
+
+
+   {
+
+
+    if(cnt==edge_num) return true;
+
+
+    for(int i=0;i&lt;edge_num;i++)
+
+
+    {
+
+
+    if(edges[i].start&lt;source||used[i])
+
+
+    continue;
+
+
+    else if(edges[i].start&gt;source)
+
+
+    return false;
+
+
+    used[i]=true;
+
+
+    edge_order[cnt]=i;
+
+
+    if(solve_dfs(edges[i].end,cnt+1)) return true;
+
+
+    used[i]=false;
+
+
+    }
+
+
+    return false;
+
+
+   }
+
+
+   int main()
+
+
+   {
+
+
+    int t;
+
+
+    scanf("%d",&amp;t);
+
+
+    while(t--)
+
+
+    {
+
+
+    memset(degree_out,0,sizeof(degree_out));
+
+
+    memset(degree_in,0,sizeof(degree_in));
+
+
+    scanf("%d",&amp;edge_num);
+
+
+    for(int i=0;i&lt;edge_num;i++)
+
+
+    {
+
+
+    scanf("%s",edges[i].word);
+
+
+    edges[i].start=edges[i].word[0]-'a';
+
+
+    edges[i].end=edges[i].word[strlen(edges[i].word)-1]-'a';
+
+
+    degree_out[edges[i].start]++;
+
+
+    degree_in[edges[i].end]++;
+
+
+    }
+
+
+    int source=check();
+
+
+    if(source==-1)
+
+
+    {
+
+
+    printf("***/n");
+
+
+    continue;
+
+
+    }
+
+
+    qsort(edges,edge_num,sizeof(edges[0]),CMP);
+
+
+    memset(used,0,sizeof(used));
+
+
+    if(!solve_dfs(source,0))
+
+
+    {
+
+
+    printf("***/n");
+
+
+    continue;
+
+
+    }
+
+
+    printf("%s",edges[edge_order[0]].word);
+
+
+    for(int i=1;i&lt;edge_num;i++)
+
+
+    {
+
+
+    printf(".%s",edges[edge_order[i]].word);
+
+
+    }
+
+
+    printf("/n");
+
+
+    }
+
+
+   }

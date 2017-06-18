@@ -1,0 +1,173 @@
+机器人搬重物 acmROBOT机器人搬重物
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:7 Accepted:4 
+
+
+   Description 
+
+
+   机器人移动学会（RMI）现在正尝试用机器人搬运物品。 机器人的形状是一个直径1.6米的球。在试验阶段，机器人被用于在一个储藏室中搬运货物。 储藏室是一个N*M的网格，有些格子为不可移动的障碍。 机器人的中心总是在格点上，当然，机器人必须在最短的时间内把物品搬运到指定的地方。 机器人接受的指令有： 先前移动1步（Creep）； 向前移动2步（Walk）； 向前移动3步（Run）； 向左转（Left）； 向右转（Right）。 每个指令所需要的时间为1秒。请你计算一下机器人完成任务所需的最少时间。
+
+
+   Input 
+
+
+   输入的第一行为两个正整数N,M（N,M&lt;=50）， 下面N行是储藏室的构造，0表示无障碍，1表示有障碍，数字之间用一个空格隔开。 接着一行有四个整数和一个大写字母，分别为起始点和目标点左上角网格的行与列， 起始时的面对方向（东E，南S，西W，北N），数与数，数与字母之间均用一个空格隔开。 终点的面向方向是任意的。
+
+
+   Output 
+
+
+   一个整数，表示机器人完成任务所需的最少时间。 如果无法到达，输出-1。  
+
+
+   Sample Input 
+
+
+   
+
+   9 10
+0 0 0 0 0 0 1 0 0 0
+0 0 0 0 0 0 0 0 1 0
+0 0 0 1 0 0 0 0 0 0
+0 0 1 0 0 0 0 0 0 0
+0 0 0 0 0 0 1 0 0 0
+0 0 0 0 0 1 0 0 0 0
+0 0 0 1 1 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
+1 0 0 0 0 0 0 0 1 0
+7 2 2 7 S
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   12
+
+
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+
+int dx[4]={0,1,0,-1};
+int dy[4]={1,0,-1,0};
+
+int map[56][56],nmap[56][56];
+int m,n,min,bi,bj,ei,ej,d;
+int stp[56][56][56],mins;
+bool p;
+
+int toward(char c)
+{
+	if(c=='E')
+		return 0;
+	if(c=='S')
+		return 1;
+	if(c=='W')
+		return 2;
+	if(c=='N')
+		return 3;
+	return 0;
+}
+
+int main()
+{
+	int i,k,j;
+	scanf("%d%d",&amp;m,&amp;n);
+	for(i=1;i&lt;=m;i++)
+		for(j=1;j&lt;=n;j++)
+			scanf("%d",&amp;map[i][j]);
+	for(i=1;i&lt;=m-1;i++)
+	{
+		for(j=1;j&lt;=n-1;j++)
+		{
+			if(map[i][j]==0&amp;&amp;map[i][j+1]==0&amp;&amp;map[i+1][j]==0&amp;&amp;map[i+1][j+1]==0)	
+				nmap[i][j]=1;
+		}
+	}
+	scanf("%d%d%d%d",&amp;bi,&amp;bj,&amp;ei,&amp;ej);
+	getchar();
+	char ch=getchar();
+	d=toward(ch);
+	///////////////////////////////
+	for(i=0;i&lt;m;i++)
+		for(j=0;j&lt;n;j++)
+			for(k=0;k&lt;4;k++)
+				stp[i][j][k]=10000;
+	////////////////////////////////
+	if(nmap[bi][bj])
+	{
+		stp[bi][bj][d]=0;
+		p=true;
+	}
+	while(p)
+	{
+		p=false;
+		for(i=1;i&lt;m;i++)
+			for(j=1;j&lt;n;j++)
+				for(k=0;k&lt;4;k++)
+					if(nmap[i][j]&amp;&amp;stp[i][j][k]&lt;10000)
+					{
+						if(nmap[i+dx[k]][j+dy[k]])
+						{
+							if(stp[i+dx[k]][j+dy[k]][k]&gt;stp[i][j][k]+1)
+							{
+								stp[i+dx[k]][j+dy[k]][k]=stp[i][j][k]+1;
+								p=true;
+							}
+							if(nmap[i+2*dx[k]][j+2*dy[k]])
+							{
+								if(stp[i+2*dx[k]][j+2*dy[k]][k]&gt;stp[i][j][k]+1)
+								{
+									stp[i+2*dx[k]][j+2*dy[k]][k]=stp[i][j][k]+1;
+									p=true;
+								}
+								if(nmap[i+3*dx[k]][j+3*dy[k]])
+									if(stp[i+3*dx[k]][j+3*dy[k]][k]&gt;stp[i][j][k]+1)
+									{
+										stp[i+3*dx[k]][j+3*dy[k]][k]=stp[i][j][k]+1;
+										p=true;
+									}
+							}
+						}
+						if(stp[i][j][(k+1)%4]&gt;stp[i][j][k]+1)
+						{
+							stp[i][j][(k+1)%4]=stp[i][j][k]+1;
+							p=true;
+						}
+						if(stp[i][j][(k+3)%4]&gt;stp[i][j][k]+1)
+						{
+							stp[i][j][(k+3)%4]=stp[i][j][k]+1;
+							p=true;
+						}
+					}
+	}
+	mins=10000;
+	for(k=0;k&lt;4;k++)
+	{
+		if(mins&gt;stp[ei][ej][k])
+			mins=stp[ei][ej][k];
+	}
+	if(mins==10000)
+	{
+		cout&lt;&lt;"-1"&lt;&lt;endl;
+	}
+	else 
+		cout&lt;&lt;mins&lt;&lt;endl;
+	return 0;
+}

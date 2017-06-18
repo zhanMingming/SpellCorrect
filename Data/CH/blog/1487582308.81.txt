@@ -1,0 +1,263 @@
+LZW压缩算法——简明原理与实现LZW和哈夫曼编码一样，是无损压缩中的一种。该算法通过建立字典，实现字符重用与编码，适用于source中重复率很高的文本压缩。本文首先讲下LZW的编解码原理，然后给出LZW的实现code。
+
+
+   
+
+
+
+
+   *********************原理*********************
+
+
+   编码：
+
+
+   
+
+
+编码0-255用来存储Ascii码为[0,255]的字符，放在字典里。编码从256开始，将出现过的字符计入字典核心思想：利用字符的可重用性，每当往结果输出一个编码，就将一个新的string存入dictionary
+
+   
+
+
+   算法流程：
+
+
+   
+
+
+
+
+   举例：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   解码：
+
+
+   编码的逆过程，若编码是string到int的映射，我们可以将解码过程描述为int到string的映射。
+
+
+   
+
+
+LZW算法的解码无需在编码过程中存储字典（这样太浪费空间了）解码初始化依旧用256个Ascii码，后面每读入一个编码（int），检查其在dictionary中的映射，并不断将新的映射加入字典
+
+   
+
+
+   算法流程：
+
+
+   
+
+
+
+
+   解码的例子建议读者用下面的代码直接调试吧~
+
+
+   
+
+
+
+
+   
+
+
+
+
+   *********************实现*********************
+
+
+   
+
+
+
+
+   我用C&#43;&#43;实现的，Compress和Decompress两个函数分别实现编解码
+
+
+   
+
+
+   /************************************************************************/
+/*	File Name: LZW.cpp
+*		@Function: Lossless Compression
+		@Author: Sophia Zhang 
+		@Create Time: 2012-9-19 10:00
+		@Last Modify: 2012-9-19 11:10
+*/
+/************************************************************************/
+
+#include&quot;iostream&quot;
+#include &quot;map&quot;
+#include &quot;string&quot;
+#include &quot;iterator&quot;
+#include &quot;vector&quot;
+using namespace std;
+
+/************************************************************************/
+/*	Compress Module
+*		input: 
+			str - the string need to be compressed
+			result - compress result
+*/
+/************************************************************************/
+template&lt;typename TypeIterator&gt;
+TypeIterator Compress(string str, TypeIterator result)
+{
+	//Build the dictionary
+	map&lt;string,int&gt;dictionary;
+	int Dictsize=256;
+	for(int i=0;i&lt;Dictsize;i++)
+		dictionary[string(1,i)]=i;
+
+	char z;
+	string S;
+
+	for(string::const_iterator it = str.begin(); it!=str.end(); it++)
+	{
+		 z = *it;
+		
+		 if(dictionary.count(S+z))//can find S
+			 S+=z;
+		 else//S is not in dictionary D
+		 {
+			 *result++ = dictionary[S];	//output pointer (S,D)
+			 dictionary[S+z] = Dictsize++; //add to dictionary
+			 S = z;
+		 }
+	}
+	if(!S.empty())
+		*result++ = dictionary[S];
+	return result;
+}
+
+/************************************************************************/
+/*	Decompress Module
+*		input: 
+			TypeIterator result - compression result, to be decompressed
+*/
+/************************************************************************/
+template&lt;typename TypeIterator&gt;
+string Decompress(TypeIterator result)
+{
+	map&lt;int,string&gt;inv_dictionary;
+	int Dictsize=256;
+	for(int i=0;i&lt;Dictsize;i++)
+		inv_dictionary[i] = string(1,i);
+
+	char z;
+	string S;
+	string entry;
+	string res;
+	Dictsize--;//because the first &quot;Dictsize++&quot; make no sense, it has only one char in [0,255]
+
+	for(TypeIterator::iterator it = result.begin(); it!=result.end(); it++)
+	{
+		int k = *it;
+		if(inv_dictionary.count(k))
+			entry = inv_dictionary[k];
+		else if(k==Dictsize)
+			entry = S+ S[0];
+		else
+			throw &quot;Bad compression code&quot;;
+
+		res += entry;
+		
+		inv_dictionary[Dictsize++] = S + entry[0];
+		S = entry;
+	}
+	return res;
+}
+
+
+int main()
+{
+	typedef vector&lt;int&gt; TypeIterator;
+	TypeIterator compress_res;
+	string S = &quot;the/rain/in/Spain/falls/mainly/on/the/plain&quot;;
+	Compress(S,std::back_inserter(compress_res));
+// 	copy(compress_res.begin(),compress_res.end(),std::ostream_iterator&lt;int&gt;(std::cout,&quot;,&quot;));
+// 	std::cout&lt;&lt;std::endl;
+
+	//output the compressed result
+	for( TypeIterator::iterator it= compress_res.begin(); it!=compress_res.end(); it++)
+		cout&lt;&lt;(*it)&lt;&lt;endl;
+
+	//decompress the compressed result
+	string decompress = Decompress(compress_res);
+	cout&lt;&lt;decompress&lt;&lt;endl;
+}
+
+result：
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   Reference：
+
+
+   1.http://www.stringology.org/DataCompression/lzw-e/index_en.html
+
+
+   2.http://www.dspguide.com/ch27/5.htm
+
+
+   3.http://marknelson.us/1989/10/01/lzw-data-compression/
+
+
+   4.http://www.ccs.neu.edu/home/jnl22/oldsite/cshonor/jeff.html
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   关于Compression更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

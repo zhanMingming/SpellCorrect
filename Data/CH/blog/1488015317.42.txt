@@ -1,0 +1,139 @@
+ionic框架popover组件&lt;ion-popover-view&gt;的滚动问题之前的这篇博客&quot;通过项目中定位的一个问题：学习ionic框架$ionicPopover的使用以及注意事项&quot;介绍了popover组件的基本使用，可以参考这篇文章学习下popover组件的使用。最近项目发现了一个新问题：当popover下面放置很多按钮的时候，手机端上不能显示全部按钮，而且不能滑动。
+
+
+   
+
+
+
+
+   我们项目使用的popover组件模板如下：
+
+
+   &lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+	&lt;ion-popover-view&gt;
+		&lt;div class=&quot;list&quot;&gt;
+			#foreach( $button in $comp.buttons )
+				$builder.render($button)
+			#end
+		&lt;/div&gt;
+    &lt;/ion-popover-view&gt;
+&lt;/script&gt;	
+
+   
+
+
+   
+
+
+
+
+   我们可以用下面这段模拟模拟上面项目中的模板：
+
+
+   &lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+	  &lt;ion-popover-view &gt;
+			&lt;div class=&quot;list&quot;&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			&lt;/div class=&quot;list&quot;&gt;
+ &lt;/ion-popover-view&gt;
+&lt;/script&gt;	
+
+   
+
+
+   
+
+
+
+运行效果如下：
+
+   
+
+
+
+
+
+
+   可以看到：由于popover内容过多，页面根本显示不下，也没有滚动条。
+
+
+   
+
+
+
+
+   解决方案1：使用&lt;ion-content&gt;
+
+
+   &lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+	&lt;ion-popover-view &gt;
+		&lt;ion-content&gt;
+			&lt;div class=&quot;list&quot;&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+			  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+			&lt;/div class=&quot;list&quot;&gt;
+		&lt;/ion-content&gt;
+    &lt;/ion-popover-view&gt;
+&lt;/script&gt;
+
+
+
+
+   
+
+
+   可以看到：能够正常滚动，但是显示效果不好看，popover高度太小。我们可以给&lt;ion-content&gt;设定一个固定的高度，如&lt;ion-content style=&quot;height:500px;&quot;&gt;，显示效果图如下。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   方案2：使用&lt;ion-scroll&gt;
+
+
+   &lt;script id=&quot;my-popover.html&quot; type=&quot;text/ng-template&quot;&gt;
+  &lt;ion-popover-view&gt;
+
+	&lt;ion-scroll  direction=&quot;y&quot; style=&quot;height:500px;&quot;&gt;
+	  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:green;height:100px&quot;&gt;&lt;/div&gt;
+	  &lt;div style=&quot;background-color:red;height:100px&quot;&gt;&lt;/div&gt;
+	&lt;/ion-scroll&gt;
+	
+  &lt;/ion-popover-view&gt;
+&lt;/script&gt;

@@ -1,0 +1,140 @@
+一个简单的例子看明白如何利用window.location.hash实现ajax操作时浏览器的前进/后退功能我们知道JavaScript中很早就提供了window.history对象，利用history对象的forward()、go()、back()方法能够方便实现不同页面之间的前进、后退等这种导航功能。但是AJAX操作，是不能用浏览器的前进和后退按钮进行导航的，因为浏览器并不会将AJAX操作加入到历史记录中。但是借助location.hash，我们能够自己实现AJAX操作的前进和后退。关于window.location.hash的详细介绍和使用方式，可以参考下面这2篇文章。
+
+
+   location.hash详解和 6
+ Things You Should Know About Fragment URLs。
+
+
+   我们需要知道以下2点：
+
+
+   1.如果location.hash发生了变化，那么浏览器地址栏url会发生变化，而且浏览器会产生1个历史记录。
+
+
+   2.如果location.hash发生了变化，会产生一个hashchange事件，我们可以处理这个事件。
+
+
+   
+
+
+   &lt;!DOCTYPE html&gt; 
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot;&gt;
+	&lt;script type=&quot;text/javascript&quot; src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;		
+	&lt;script type=&quot;text/javascript&quot;&gt;		
+	
+		var currentPageIndex = 0;
+				
+		window.onload = function(){
+			currentPageIndex = 0;
+			showPageAtIndex(currentPageIndex);
+			recordHash(currentPageIndex);
+		}
+		
+		// onhashchange可以监控hash变化
+		window.onhashchange=function(){
+			var hash = window.location.hash;
+			
+			var id = parseInt(hash.substr(1));
+			
+			showPageAtIndex(id);
+		};
+				
+		function toNextPageWhenClick()
+		{
+			currentPageIndex++;
+			
+			if(isValidPageIndex(currentPageIndex))
+			{
+				showPageAtIndex(currentPageIndex);
+				recordHash(currentPageIndex);
+			}
+			else
+			{
+				return;
+			}
+		}
+		
+		function showPageAtIndex(id)
+		{
+			$(&quot;div[id!=&quot;+id+&quot;]&quot;).hide();
+			$(&quot;#&quot;+id).show();
+			
+			if(isHomePage(id))
+			{
+				$(&quot;input&quot;).attr(&quot;value&quot;,&quot;current is home page,next page=1&quot;);
+			}
+			else if(isLastPage(id))
+			{
+				$(&quot;input&quot;).attr(&quot;value&quot;,&quot;current page=&quot;+id+&quot;, it is the end.&quot;);
+			}
+			else
+			{
+				$(&quot;input&quot;).attr(&quot;value&quot;,&quot;current page=&quot;+id+&quot;,next page=&quot;+(id+1));
+			}
+		}
+		
+		function isValidPageIndex(id)
+		{
+			return id &lt;= 5;
+		}
+		
+		function isLastPage(id)
+		{
+			return id == 5;
+		}
+		
+		function isHomePage(id)
+		{
+			return id == 0;
+		}
+		
+		// hash改变,浏览器会自动生成一个历史记录
+		function recordHash(id)
+		{
+			window.location.hash=id;
+		}
+	&lt;/script&gt;
+	
+	&lt;style&gt;
+		.navigate{
+			height:100px;
+			width:300px;
+			background-color:#0000ff;
+			display:none;
+		}
+		
+		.home{
+			height:100px;
+			width:300px;
+			background-color:#00ff00;
+			display:none;
+		}
+		
+		.last{
+			height:100px;
+			width:300px;
+			background-color:#ff0000;
+			display:none;
+		}
+	&lt;/style&gt;
+&lt;/head&gt; 
+&lt;body&gt;
+	&lt;input type=&quot;button&quot; value=&quot;&quot; onclick=&quot;toNextPageWhenClick();&quot;&gt;
+	
+	&lt;div class=&quot;home&quot; id=&quot;0&quot;&gt;HOME PAGE&lt;/div&gt;
+	&lt;div class=&quot;navigate&quot; id=&quot;1&quot;&gt;ajax1&lt;/div&gt;
+	&lt;div class=&quot;navigate&quot; id=&quot;2&quot;&gt;ajax2&lt;/div&gt;
+	&lt;div class=&quot;navigate&quot; id=&quot;3&quot;&gt;ajax3&lt;/div&gt;
+	&lt;div class=&quot;navigate&quot; id=&quot;4&quot;&gt;ajax4&lt;/div&gt;
+	&lt;div class=&quot;last&quot; id=&quot;5&quot;&gt;last page&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+   
+
+
+
+在chrome下运行这个html文件，默认显示home page，点击按钮的时候回调到下一个页面(直到最后一个页面为止)。我们可以点击浏览器的前进、后退按钮，实现模拟ajax前进、后退的功能。

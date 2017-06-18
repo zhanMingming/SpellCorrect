@@ -1,0 +1,93 @@
+开源日志系统 - log4cplus (七)首先我们先了解一下log4cplus中嵌入诊断上下文（Nested Diagnostic Context），即NDC。对log系统而言，当输入源可能不止一个，而只有一个输出时，往往需要分辩所要输出消息的来源，比如服务器处理来自不同客户端的消息时就需要作此判断，NDC可以为交错显示的信息打上一个标记(stamp)， 使得辨认工作看起来比较容易些，呵呵。这个标记是线程特有的，利用了线程局部存储机制，称为线程私有数据（Thread-specificData，或TSD）。 看了一下源代码，相关定义如下，包括定义、初始化、获取、设置和清除操作：
+
+   linux pthread
+
+   				# define LOG4CPLUS_THREAD_LOCAL_TYPE pthread_key_t*# define LOG4CPLUS_THREAD_LOCAL_INIT ::log4cplus::thread::createPthreadKey()# define LOG4CPLUS_GET_THREAD_LOCAL_VALUE( key ) pthread_getspecific(*key)# define LOG4CPLUS_SET_THREAD_LOCAL_VALUE( key, value ) pthread_setspecific(*key, value)# define LOG4CPLUS_THREAD_LOCAL_CLEANUP( key ) pthread_key_delete(*key)
+
+   win32
+
+   # define LOG4CPLUS_THREAD_LOCAL_TYPE DWORD# define LOG4CPLUS_THREAD_LOCAL_INIT TlsAlloc()# define LOG4CPLUS_GET_THREAD_LOCAL_VALUE( key ) TlsGetValue(key)# define LOG4CPLUS_SET_THREAD_LOCAL_VALUE( key, value ) / TlsSetValue(key, static_cast(value))# define LOG4CPLUS_THREAD_LOCAL_CLEANUP( key ) TlsFree(key)
+
+   				使用起来比较简单，在某个线程中：
+
+    NDC&amp; ndc = log4cplus::getNDC(); ndc.push("ur ndc string"); LOG4CPLUS_DEBUG(logger, "this is a NDC test");
+
+    ... ...  ndc.pop();  ... ...  LOG4CPLUS_DEBUG(logger, "There should be no NDC..."); ndc.remove(); 当设定输出格式(Layout)为TTCCLayout时，输出如下：
+
+   10-21-04 21:32:58, [3392] DEBUG test  - this is a NDC test10-21-04 21:32:58, [3392] DEBUG test &lt;&gt; - There should be no NDC...
+
+   也可以在自定义的输出格式中使用NDC(用%x) ，比如：
+
+    ... ...  std::string pattern = "NDC:[%x] - %m %n"; std::auto_ptr _layout(new PatternLayout(pattern));
+
+    ... ...  LOG4CPLUS_DEBUG(_logger, "This is the FIRST log message...") NDC&amp; ndc = log4cplus::getNDC(); ndc.push("ur ndc string"); LOG4CPLUS_WARN(_logger, "This is the SECOND log message...") ndc.pop(); ndc.remove();  ... ... 输出如下：
+
+   NDC:[] - This is the FIRST log message...NDC:[ur ndc string] - This is the SECOND log message...
+
+   				另外一种更简单的使用方法是在线程中直接用NDCContextCreator：
+
+    NDCContextCreator _first_ndc("ur ndc string"); LOG4CPLUS_DEBUG(logger, "this is a NDC test") 不必显式地调用push/pop了，而且当出现异常时，能够确保push与pop的调用是匹配的。
+
+    ### 线程 ###
+
+   线程是log4cplus中的副产品， 而且仅作了最基本的实现，使用起来也异常简单，只要且必须要在派生类中重载run函数即可：
+
+   class TestThread : public AbstractThread{public:
+
+    virtual void run();
+
+   };
+
+   				void TestThread::run(){ /* do sth. */ ... ...
+
+   }
+
+   log4cplus的线程没有考虑同步、死锁，有互斥，实现线程切换的小函数挺别致的：
+
+   void log4cplus::thread::yield(){#if defined(LOG4CPLUS_USE_PTHREADS) ::sched_yield();#elif defined(LOG4CPLUS_USE_WIN32_THREADS) ::Sleep(0);#endif}
+
+   				### 套接字 ###
+
+   套接字也是log4cplus中的副产品，在namespace log4cplus::helpers中，实现了C/S方式的日志记录。
+
+   1. 客户端程序需要做的工作：
+
+   /* 定义一个SocketAppender类型的挂接器 */SharedAppenderPtr _append(new SocketAppender(host, 8888, "ServerName"));
+
+   /* 把_append加入到logger中 */Logger::getRoot().addAppender(_append);
+
+   /* SocketAppender类型不需要Layout, 直接调用宏就可以将信息发往loggerServer了 */LOG4CPLUS_INFO(Logger::getRoot(), "This is a test: ")
+
+   				【注】 这里对宏的调用其实是调用了SocketAppender::append，里面有一个数据传输约定，即先发送一个后续数据的总长度，然后再发送实际的数据：
+
+    ... ...
+
+    SocketBuffer buffer = convertToBuffer(event, serverName); SocketBuffer msgBuffer(LOG4CPLUS_MAX_MESSAGE_SIZE);
+
+    msgBuffer.appendSize_t(buffer.getSize()); msgBuffer.appendBuffer(buffer);  ... ...
+
+   				2. 服务器端程序需要做的工作：
+
+   /* 定义一个ServerSocket */ServerSocket serverSocket(port);
+
+   /* 调用accept函数创建一个新的socket与客户端连接 */Socket sock = serverSocket.accept();
+
+   				此后即可用该sock进行数据read/write了,形如：
+
+   SocketBuffer msgSizeBuffer(sizeof(unsigned int));
+
+   if(!clientsock.read(msgSizeBuffer)){ return;}
+
+   unsigned int msgSize = msgSizeBuffer.readInt();
+
+   SocketBuffer buffer(msgSize);
+
+   if(!clientsock.read(buffer)){ return;}
+
+   为了将读到的数据正常显示出来，需要将SocketBuffer存放的内容转换成InternalLoggingEvent格式：
+
+   spi::InternalLoggingEvent event = readFromBuffer(buffer);
+
+   然后输出：Logger logger = Logger::getInstance(event.getLoggerName());logger.callAppenders(event);
+
+   				【注】 read/write是按照阻塞方式实现的，意味着对其调用直到满足了所接收或发送的个数才返回。

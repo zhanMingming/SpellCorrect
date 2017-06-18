@@ -1,0 +1,28 @@
+答索引构造一问发信人: groupon (cool man), 信区: SearchEngineTech标 题: 问一个索引构造问题发信站: 水木社区 (Tue Jul 27 08:42:12 2010), 站内索引构造中支持skip的机制是不是这样的，我自己琢磨不知道对否，求拍
+
+
+   注：其中skip_block和后面压缩部分都是物理上连续的，这里为了图示方便。倒排表的索引部分肯定在内存中的，&lt;term,loc&gt;pair的结构。但由于不同的term的compressed doc list不同，因此在大词和小词求交时代价很大，且倒排表一般都是mmap读取的，因此是物理内存调页到虚存中进行读取的方式，因此可以做一个skip_block,大小为物理内存page size的倍数，compressed doc list中也划分成一个一个segment（也为page size的倍数），每个segment的首个docid不压缩，并存放在skip_block中（每个segment的第一个元素在skip_block中，第二个元素是和这个docid的距离差值），用于求交计算，segment的尾部可能会损失若干bit。这样如果在小词和大词求交可以在大词的segment上整片整片的跳过。长期下来的话，大词的skip_block基本都在内存中不会被换出。粗粗想来，没有实践，不知道是否靠谱，求拍。
+
+
+   
+
+
+   
+
+
+   -----------------------------------------------------------以下是我的答复-------------------------------------------------------------- 
+
+
+   
+
+
+   索引的构造设计可以从下面点出发去考虑comperssion/decompressioncachingparallelismearly termination（pruning)skippingcomperssion可能是混杂的，间距大的情况下可能会用到var-byte Compression这类字节对齐的压缩方法，解压会很快，间距小的情况下一般采用PFOR-DELTA。压缩通常情况下是解压速度快，优先于压缩比高，很多压缩比高的算法并不会在实践中采用。由于是混杂结构，因此索引需要记住使用的压缩算法，通常压缩效果的提升都是在common term中取得的。caching这个问题你考虑得很好，在考虑skipping的情况下能够将其紧凑的存放。另外你提到的warm up cache也是对的，这有助于将compressed doclist载入内存，但往往这样还不够，因为在并发查询的情况下，解压也需要耗时，因此外围还会需要有一层caching来存放解压后的common query的doclist。这也是搜索引擎非常耗资源的一块。cache一般都能做到90%以上的查询直接在cache中获得。parallelism这个问题很复杂，你的设计很好的支持了doclist求交并发。pruning 剪枝这个方面你考虑的不够，在检索时，求交往往不是从头交到尾的，会在一定程度时停下，例如收集到足够的结果，或者余下的结果质量不高等等，因此在索引中要包含丰富的信息，这一点其他人也回复得很多，比如需要有词频，甚至一些必要的上下文信息。skipping 这个有一点你没有考虑，common term 你做了一个skip block，但那些生僻词，不常用词呢，这就没有必要了，因为总是doclist短的去和doclist长的词求交。另外关于doclist分块，有固定大小的分块，也有固定doc数量的分块方式，这个在90年代的论文中都有讨论，各有利弊。固定大小的分块比较容易算偏移，但会有浪费，编译都是字节型的地址。但压缩和解压会有问题，因为分块尾部如何padding会是个麻烦,特别是如果还需要存poslist，那么会更麻烦需要考虑跨块问题，会有很多损耗。固定doc数量的情况下，支持skip的辅助数组得使用bit address，也会有浪费。采用固定doc数量的方法可能更常见。关于这方面比较新的论文：Performance of Compressed Inverted List Caching in Search EnginesUsing Graphics Processors for High Performance IR Query Processing
+
+
+   
+
+
+   原帖如下：http://www.newsmth.net/bbstcon.php?board=SearchEngineTech&amp;gid=25517
+
+
+   有兴趣的朋友可以阅读。

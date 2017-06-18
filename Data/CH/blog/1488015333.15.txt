@@ -1,0 +1,196 @@
+软件设计度量工具structure101学习(四)：complexity的使用与计算度量一个函数(方法)是否复杂，最常用的方法就是计算函数的圈复杂度cyclomatic complexity (CC)，也就是“McCabe’s Metric”。业界CC的threshold一般是15，CC&gt;15的函数被认为是非常复杂的。函数是否复杂的度量已经很成熟了，structure101度量函数是否fat，用的也是CC，临界&#20540;也设置的是15。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   structure101扩展了CC的概念，提出了度量class、leaf package、meta package复杂度的方法。meta package也就是上图中的design复杂度。meta package和leaf package在structure101中区别如下：
+
+
+   
+
+
+
+
+   structure101还有一种度量指标：tangle，这个其实就是循环依赖，对应上图中的Tangled(design)。这些度量指标的默认threshold&#20540;如下，如果有需要我们是可以修改这些默认门限的。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   1.class complexity的计算：
+
+
+   
+
+
+
+
+   可以看到：也是通过依赖来定义复杂度，某个类的复杂度就是这个类中：成员变量和方法之间依赖关系的个数。在Composition视图下，可以清楚的看到这些&#20540;。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   注意：如果想看到类中成员变量和方法直接的依赖关系，必需将granularity设置成detail。因为分析类的内部，很消耗系统资源和时间，所以structure101设置的默认&#20540;是Normal，不会分析类内部的依赖。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   2.leaf package complexity(low-level package)的计算
+
+
+   
+
+
+
+
+   3.high-level package(fat design)的计算
+
+
+   
+
+
+
+
+   4、tangle的计算，这个其实就是循环依赖，不是structure101特有的。
+
+
+   
+
+
+
+
+   structure101会在dependency graph上标记出循环依赖。下面提一个很重要的概念Minimum Feedback Set (MFS)。structure101会在dependency graph上用红色连线标记从，如上图中红色的6、4、1这3条依赖关系。处了依赖图上，在依赖列表中也会用红色的mfs标记出来。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   MFS就是打破一个循环依赖图，最少需要移除的依赖数目。Minimum Feedback Set (MFS). This is the minimum set of dependenciesthat would need to be removed in order to make the graph acyclic(no longer tangled). The edges in the MFS are colored red.
+
+
+   有了MFS，我们就可以计算某个包Tangled的百分比了。比如complexity视图下cache包的Tangled=7.69%。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   这个是怎么计算的呢？首先我们在complexity选中cache包，然后打个tag，切换到composition视图下，查看依赖情况。
+
+
+   
+
+
+
+
+   包的Tangled就是mfs依赖个数/总依赖个数，即9 / (9 &#43; 27 &#43; 3 &#43; 78)，近&#20284;等于7.69%。
+
+
+   
+
+
+
+
+   最后我们结合下complexity视图，看看XS的计算。
+
+
+   
+
+
+
+
+   我们主要看下Items with XS fat表&#26684;中，各个列的含义。
+
+
+   Item：不用说了，简单的很。
+
+
+   Tangled：某个item tangled的百分比，是通过mfs计算出来的，上面已经给出计算公式了。
+
+
+   Fat：某个item实际统计的复杂度&#20540;。
+
+
+   Size：去掉注释和空白行的代码行数。
+
+
+   XS：XS = size * (fat - threshold) / fat。
+
+
+   比如154 * (16 - 15) / 16 约等于9，209 * (20-16) / 20 约等于 52。
+
+
+   
+
+
+
+
+   Fat(design)、Fat(leaf package)、Fat(class)、Fat(method)这4个指标XS计算公式都是一样的。对于Tangled(design)来说，XS = size * tangled。
+
+
+   
+
+
+
+
+   至弄懂了complexity视图的使用，以及XS各个指标的计算原理。也看到Tag重要作用，就是标记一个item，然后方便在切换视图的时候，找起来很方便。
+
+
+   
+
+
+
+
+   参考文章：
+
+
+   XS – A Measure of Structural Over-Complexity 白皮书
+
+
+
+
+   http://www.structure101.com/static-content/pages/resources/documents/XS-MeasurementFramework.pdf

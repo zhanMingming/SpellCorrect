@@ -1,0 +1,417 @@
+Visual Studio 2010编译GaLib2.47的办法(译)使用Visual C&#43;&#43;编译GALib（静态库）
+
+
+
+
+   
+原文：Compiling GALib Using Microsoft Visual C&#43;&#43;
+
+
+   
+另外再多说一句：经过我的多次尝试，发现galib能够编译成dll，在它提供的makefile中提供了编译dll的一些参数，经过一些简单的修改，就可以生成dll，但是生成的dll没有相应的lib（输入库），后来进过一番查证才发现，生成dll中没有一个导出函数，也就是说galib的源码没有提供API导入导出的功能（虽然在&quot;gaconfig.h”提供了&quot;COMPILE_GALIB_AS_DLL”和&quot;USE_GALIB_AS_DLL”两个宏）
+
+
+   
+另外向高人求教两个问题：
+
+
+   
+1、为什么有时候使用相同的编译参数在vc的命令行中出现一大堆莫名其妙的错误，而在VC IDE中则编译正常呢？（所谓的相同基本上就是把VC IDE配置好的工程的那些编译参数拷出来，然后用到vc 编译器的命令行上）
+
+
+   
+2、为什么galib编译出来的release版和debug版大小相差那么悬殊呢？（在我的机器上，ga.lib(17.9M,release)，gad.lib(2.15M,debug)）（已解决★★★）
+
+
+   
+问题2解决方法：在release版，工程“属性”-&gt;“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“优化”-&gt;“全程序优化”选择“否”（默认为“是”），这样设置后编译出来的ga.lib尺寸为1.83M(release)
+
+
+   
+GALibis a software implementation of variousEvolutionary Algorithms, a branch of Artificial Intelligence concerned with finding solutions to complex problems using the principles of natural evolution and selection. This page gives a brief
+ summary of the steps required to compile theGALiblibrary and the provided examples using theMicrosoft Visual C&#43;&#43;development platform.
+
+
+   
+(这段和下一段就不翻译了，简单说一下，GALib是有MIT开发的一个c&#43;&#43;遗传算法库，它是基于BSD协议的，也就是说我们可以免费的使用它，而不用承担什么责任，比GPL、LGPL等协议更加的“自由”，可惜好像停止开发了，最新版本为2.47，不过基本上功能齐全。搜索到这个页面的，估计都是学习过遗传算法的基本知识的，别的废话就不多说了)
+
+
+   
+Note:These instructions should be applicable to the Visual C&#43;&#43; shipped with the express, standard and professional versions of Visual Studio.
+
+
+   
+另外GALib本身也提供了makefile，如果自认为makefile学的还可以的，可以参见galib目录下的readme、makefile.vcpp、makevars.vcpp以及ga目录下的makefile.vcpp、makefile.sources这几个文件（这里只关注windows下的编译过程）。OK，开始干活了！
+
+Prerequisites
+
+GALibversion 247 (download from theGALib website)Microsoft Visual C&#43;&#43;(download the freeExpressedition from theMicrosoft
+ website)
+
+   
+准备
+
+
+   
+ 下载GALib（最新版2.47，下载地址：GALib website）
+
+
+   
+ 安装vc2008/vc2005（express、standard、professional版本均可，其中express版是免费的，可以从Microsoft
+ website下载，目前最新版为VC2008 express sp1）
+
+Step 1: Replace the .C extension on source files with .cpp
+
+   
+第一步：将源文件的文件名后缀由“ .c ”修改成“ .cpp ”(可选)
+
+
+   
+(这一步我感觉可有可无，因为只需要在vc编译中加入编译选项“ /TP ” ，就能保证vc编译器将.c文件编译成c&#43;&#43;代码，参见：工程“属性”-&gt;“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“高级”-&gt;“编译为”，默认选项为编译为C&#43;&#43;代码/TP)
+
+
+   
+Open a command window (Start &gt; Run &gt; cmd.exe) and change to the ga directory within the GALib distribution.
+
+
+   
+Run the following command:
+
+rename *.C *.cpp
+
+
+   
+Change to the examples directory and run the same command.
+
+
+   
+打开命令行（“开始菜单”-&gt;“运行”输入cmd），更换路径到galib所在路径下的ga目录（不会的可以使用“ cd/? ”查看cd命令帮助，或者到网上搜索一下）；例如，galib的路径为“ D:\program\galib247 ”，那么在命令行中输入“ d: ” -&gt;“ cd d:\program\galib247 ”-&gt;“ cd ga ”（这里的过程略微繁琐一些，主要是照顾那些dos命令不熟悉的人，如果高手就无视了哈）
+
+
+   
+运行如下的命令：
+
+
+   
+rename *.c *.cpp
+
+Step 2: Create a Visual C&#43;&#43; Solution
+
+   
+第2步：创建vc的解决方案（solution）
+
+
+   
+Open Visual C&#43;&#43; 2005 and selectNew &gt; Projectfrom theFilemenu.
+
+
+   
+打开Visual C&#43;&#43; 2008，新建工程
+
+
+   
+SelectGeneralunder theVisual C&#43;&#43;node in the list ofProject typeson the left of this dialog.
+
+
+   
+SelectEmpty Projectin the templates panel on the right.
+
+
+   
+Enter a name for the project. In this example, the project name isga
+
+
+   
+Enter or browse to a location for the project. This example assumes the location to be in the subdirectory projects within the GALib distribution directory e.g., C:\galib246.
+
+
+   
+Enter a name for the solution e.g. vcpp2005 and check theCreate directory for solutioncheck box.
+
+
+   
+Once you have created the solution, the top node in the solution explorer should now readSolution 'vcpp2005' (1 project). The projectgashould also be shown directly below this with three empty nodes:Header Files,Resource
+ Files, andSource Files.
+
+
+   
+选择“常规”-&gt;“空项目”，输入工程名称（例如ga），输入或选择解决方案的位置Location（例如“ d:\program\ ”），输入解决方案名称（例如“ galib247 ”），保证“创建解决方案的目录”复选框是选上的，这样一个空的解决方案就创建完成了
+
+
+   
+ps：其实我们也可以稍微偷一下懒，新建一个“ win32项目 ”（并不是“空项目”），然后“应用程序类型”选择“静态库”（不使用预编译头），这样我们就可以使用模板中的一些默认的参数（如“预处理器定义”），而不需要自己手动的填入这些参数了(个人强烈推荐！！！)
+
+Step 3: Importing GALib source and header files to the project
+
+   
+第3步：导入GALib的源文件和头文件到工程中
+
+
+   
+Right-click on theHeader Filesnode and selectAdd &gt; Existing Item.... In the dialog box that opens, browse to the ga directory within the GALib distribution on your system. Enter *.h into theFile nametext box and pressEnter.
+ This will filter the files to only header files. Select all the files usingCtrl&#43;Aand then clickAdd.
+
+
+   
+在“解决方案资源管理器”的工程中，右键“头文件”节点-&gt;“添加”-&gt;“现有项”，弹出“添加现有项”对话框，浏览GALib路径下的ga目录（在本文的例子中为“ d:\program\galib247\ga ”），在“对象名称”编辑框中输入“ *.h ”，然后回车，全选所有的.h文件并添加。
+
+
+   
+Right-click on theSource Filesnode and selectAdd &gt; Existing Item.... In the dialog box that opens, browse to thegadirectory within the GALib distribution on your system. Enter *.cpp to filter the files to only source files. Select
+ all the files usingCtrl&#43;Aand clickAdd.
+
+
+   
+同上，右键“源文件”节点-&gt;“添加”-&gt;“现有项”，弹出“添加现有项”对话框，浏览GALib路径下的ga目录（在本文的例子中为“ d:\program\galib247\ga ”），在“对象名称”编辑框中输入“ *.c ”，然后回车，全选所有的.c文件并添加。
+
+
+   
+
+
+Step 4: Update source code with new file names
+
+   
+第4步：更新源码中的include的源文件名称（可选）
+
+
+   
+（因为在有的文件中包含了.c文件，例如“ #include xxx.c ”。这一步也是可有可无的；同上，只需要添加编译选项“ /TP ”——编译为C&#43;&#43;代码，就不需要修改源文件中include的文件名称了）
+
+
+   
+Because we renamed a number of files inStep 1, we also need to replace any references to these files within the GALib source code itself. SelectReplace in files..from theEditmenu and selectEntire Solutionin theLook
+ in:combo box in the dialog that opens. For each row in the following table, replace the origninal text with the new text:
+
+
+   
+由于我们在第1步，对文件进行了改名（将.c改名为.cpp），我们同样需要将源码中include的源文件改名。在vc2008 IDE中，选择“编辑”菜单-&gt;“查找和替换”-&gt;“在文件中替换”，根据下表中的内容进行替换
+
+
+   
+Original Text(要替换的文本) New Text(替换后的文本) &lt;ga/gatree.c&gt; &lt;ga/gatree.cpp&gt; &lt;ga/gaallele.c&gt; &lt;ga/gaallele.cpp&gt; &lt;ga/galist.c&gt; &lt;ga/galist.cpp&gt; &lt;ga/gatreegenome.c&gt; &lt;ga/gatreegenome.cpp&gt; &lt;ga/ga1darraygenome.c&gt; &lt;ga/ga1darraygenome.cpp&gt; &lt;ga/ga3darraygenome.c&gt; &lt;ga/ga3darraygenome.cpp&gt;
+ &lt;ga/ga2darraygenome.c&gt; &lt;ga/ga2darraygenome.cpp&gt; &lt;ga/galistgenome.c&gt; &lt;ga/galistgenome.cpp&gt;
+
+
+   
+The following replacements are not essential but conform to standard C&#43;&#43; practices:
+
+
+   
+下面的文件替换不是必须的，主要是为了符合C&#43;&#43;标准规范
+
+
+   
+Original Text(要替换的文本) New Text(替换后的文本) &lt;stdio.h&gt; &lt;cstdio&gt; &lt;stdlib.h&gt; &lt;cstdlib&gt; &lt;assert.h&gt; &lt;cassert&gt; &lt;limits.h&gt; &lt;climits&gt; &lt;time.h&gt; &lt;ctime&gt; &lt;math.h&gt; &lt;cmath&gt; &lt;string.h&gt; &lt;cstring&gt;
+
+
+   
+
+
+Step 5: Setting the ga project properties
+
+   
+第5步：设置工程属性（这是重点★★★★★）
+
+
+   
+Select thegaproject in the Solution Explorer and clickPropertiesfrom the Project menu.
+
+
+   
+Set the active configuration toAll Configurationsin the combo box on the top left of this dialog and set the followingConfiguration Properties:
+
+
+   
+右键工程“属性”，将“配置”设置为“所有配置”，然后设置如下属性
+
+GeneralConfiguration Type = Static Library (.lib)Common Language Runtime Support = No Common Language Runtime SupportC/C&#43;&#43; &gt; GeneralAdditional Include Directories = ..\..\..C/C&#43;&#43; &gt; PreprocessorPreprocessor Definitions = _CRT_SECURE_NO_DEPRECATEPrecompiled HeadersCreate/Use Precompiled Headers = Not Using Precompiled HeadersAdvancedCompile As = Compile As C&#43;&#43; Code (/TP)
+
+   
+常规（“配置属性”-&gt;“常规”）
+
+
+   
+ 配置类型 = 静态库（如果按照我上面说的新建一个win32 项目--静态库，则配置类型默认为静态库）
+
+
+   
+ 公共语言运行时支持 = 无公共语言运行时支持（这是默认选项）
+
+
+   
+C/C&#43;&#43;-&gt;常规（“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“常规”）
+
+
+   
+ 附加包含目录 = .. （表示当前工程目录的上一层目录，在本文中，解决方案GALib247位于 “ d:\program\galib247 ”，ga工程位于“ d:\program\galib247\ga ”，galib的源码和头文件位于“ d:\program\galib247\ga ”下，在这里我纯粹是为了简单，将解决方案和工程直接建在galib的源文件目录中，希望不会把大家弄糊涂哈）
+
+
+   
+C/C&#43;&#43;-&gt;预处理器（“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“预处理器”）
+
+
+   
+ 预处理器定义 = _CRT_SECURE_NO_DEPRECATE; COMPILE_GALIB_AS_LIB （这2个预处理器符号可以在makevars.vcpp中找到）
+
+
+   
+C/C&#43;&#43;-&gt;预编译头（“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“预编译头”）
+
+
+   
+ 创建/使用预编译头 = 不使用预编译头（这是默认选项）
+
+
+   
+C/C&#43;&#43;-&gt;高级（“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“高级”）
+
+
+   
+ 编译为 = 编译为C&#43;&#43;代码/TP （★★★★★）
+
+
+   
+注意：“ /TP ”选项有一个小bug，如果大家按照我上面说的操作，不修改文件名称（即不将.c修改为.cpp），那么在导入头文件（.h）和源文件（.C）到工程中后，“ /TP ”是默认选项；如果大家直接开始编译的话，那么会出现一大堆的错误，我猜测是因为编译器仍然是将C文件当做C代码来编译，而不是当做C&#43;&#43;代码来编译，尽管编译器默认选择了“ /TP ”编译选项
+
+
+   
+解决办法：将“配置属性”-&gt;“ C/C&#43;&#43; ”-&gt;“高级”-&gt;“编译为”设置为其它的选项（例如“编译为C代码/TC”），然后再设置为“编译为C&#43;&#43;代码/TP ”，再编译就不会有错误了
+
+
+   
+剩下的就是编译release版和debug版的galib的静态库了，这个应该不要我多说了吧。。。
+
+
+   
+
+
+
+   
+
+
+
+   
+下面的内容主要是讲如何编译运行galib自带的example（这个比较简单，就不多说了，将就着英文看吧）
+
+
+   
+主要是一下两点：
+
+
+   
+1、设置galib的include和lib环境变量，让编译器知道在哪里找galib的头文件和lib
+
+
+   
+2、编译example的时候注意example和galib的运行时编译选项应该是一致的，也就是说如果编译galib使用的是/MT（release），那么example的运行时编译选项也应该是/MT（release）；如果编译galib使用的是/MD（release），那么example对应的也应该是/MD（release）
+
+Step 6: Build the ga project
+
+   
+The default build configuration in MS Visual C&#43;&#43; has debugging enabled. If you don't want to debug the GALib code, selectConfiguration Manager...; from theBuildmenu and change the configuration toReleasein theactive solution
+ configurationcombo box on the top left of the dialog.
+
+
+   
+SelectBuild gafrom the Build menu to build the project.
+
+Step 7: Adding a GALib example project
+
+   
+GALib provides over twenty examples and the following shows how to import one of these as projects into the solution.
+
+
+   
+SelectAdd &gt; New Project...from theFilemenu. SelectVisual C&#43;&#43; &gt; Win32in theProject typeslist on the left.
+
+
+   
+SelectWin32 Console Applicationin theTemplateslist on the right.
+
+
+   
+Enter a project name. This example uses the project nameex1.
+
+
+   
+In the wizard that opens, clickNextto skip the first page.
+
+
+   
+CheckEmpty Projectin theAdditional optionsgroup and un-check thePrecompiled headercheck box.
+
+
+   
+ClickFinishto close the wizard and add the project to the solution.
+
+Step 8: Importing the GALib example source file
+
+   
+Right click on theSource Filesnode under the ex1 project node and clickAdd &gt; Existing Item...;.
+
+
+   
+Browse to the examples directory in the GALib distribution and select ex1.cpp. ClickAdd.
+
+Step 9: Setting the example project properties
+
+   
+Select theex1project in the Solution Explorer and clickPropertiesfrom the Project menu.
+
+
+   
+Set the active configuration toAll Configurationsin the combo box on the top left of this dialog.
+
+
+   
+Set the following property values:
+
+GeneralConfiguration Type = Application (.exe)Common Language Runtime Support = No Common Language Runtime SupportC/C&#43;&#43; &gt; GeneralAdditional Include Directories = ..\..\..C/C&#43;&#43; &gt; Code GenerationRuntime Library = Multi-threaded (/MT)C/C&#43;&#43; &gt; PreprocessorPreprocessor Definitions = _CRT_SECURE_NO_DEPRECATEPrecompiled HeadersCreate/Use Precompiled Headers = Not Using Precompiled HeadersAdvancedCompile As = Compile As C&#43;&#43; Code (/TP)
+Step 10: Setting the example project dependencies
+
+   
+Select theex1project in the Solution Explorer. SelectProject Dependencies...from theProjectmenu.
+
+
+   
+Selectex1in theProjects:combo box at the top of theDependenciestab page.
+
+
+   
+Check thegaproject in theDepend on:list and clickOK.
+
+Step 11: Build the example project
+
+   
+SelectBuild ex1from theBuildmenu.
+
+Step 12: Running the example project
+
+   
+Set the example project as the startup project of the solution by selecting theex1project node in theSolution Explorerand selectingSet As Startup Projectin theProjectmenu.
+
+
+   
+To run the example, selectStart Without Debugging...in theDebugmenu.
+
+
+   
+To run in debugging mode, selectStart Debugging...in theDebugmenu.
+
+Linking problems
+
+   
+One reader has posted some additional comments relating to errors he experienced when linking the example executable with the ga library. These errors were of the form:
+
+Error1error LNK2005:public: void __thiscall std::basic_ios &gt;::clear(int,bool)(?clear@?$basic_ios@DU? $char_traits@D@std@@@std@@QAEXH_N@Z) already defined in ex1.objmsvcprtd.lib
+
+
+   
+The following steps solved this problem for the reader:
+
+
+Inproject properties &gt; Code GenerationsetbothGA library and Ex1 properties to the same Runtime library type (in my case, Multi-threaded Debug (/MTd))InEx1 project properties &gt; Linker &gt; InputsetIgnore specific libraryto MSVCRTD.lib;msvcprtd.lib
+External Links
+The GALib Mailing Listhttp://mailman.mit.edu/mailman/listinfo/galib
+
+原文链接：http://hi.baidu.com/fairysky/item/7af6c8d4b3b90217d80e4426

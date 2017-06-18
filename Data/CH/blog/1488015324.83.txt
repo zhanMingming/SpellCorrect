@@ -1,0 +1,252 @@
+hibernate one-to-many关联查询&lt;set&gt;中使用filter假如有一个College实体和Student实体，两者之间是one-to-many的关系，一个大学可以有多个学生，但是一个学生只能属于一个大学。参考hibernate manual可以很容易的配出一个one-to-many的单向关联。
+
+
+   package onemany.model;
+
+import java.util.Set;
+
+public class College {
+
+	private int id;
+
+	private String name;
+
+	private Set&lt;Student&gt; allStudents;
+
+	.....
+}
+
+   package onemany.model;
+
+public class Student {
+
+	private int sid;
+
+	private String sname;
+
+	......
+}
+
+   
+
+
+   
+
+
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+	&lt;class name=&quot;onemany.model.College&quot; table=&quot;t_association_college&quot;&gt;
+		&lt;id name=&quot;id&quot; column=&quot;cid&quot; type=&quot;int&quot;&gt;
+			&lt;generator class=&quot;native&quot; /&gt;
+		&lt;/id&gt;
+
+		&lt;property name=&quot;name&quot; column=&quot;cname&quot; type=&quot;string&quot; /&gt;
+
+		&lt;!-- set的fetch除了selec|join,还增加了一个subselect选项. subselect,选发出一条sql查询实体对象，再发出一条sql查询关联的实体对象. --&gt;
+		&lt;set name=&quot;allStudents&quot; table=&quot;t_association_student&quot; fetch=&quot;subselect&quot;
+			lazy=&quot;false&quot;&gt;
+			&lt;key column=&quot;college_id&quot; not-null=&quot;true&quot; /&gt;
+			&lt;one-to-many class=&quot;onemany.model.Student&quot; /&gt;
+		&lt;/set&gt;
+	&lt;/class&gt;
+&lt;/hibernate-mapping&gt;
+
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+	&lt;class name=&quot;onemany.model.Student&quot; table=&quot;t_association_student&quot;&gt;
+		&lt;id name=&quot;sid&quot; column=&quot;sid&quot; type=&quot;int&quot;&gt;
+			&lt;generator class=&quot;native&quot; /&gt;
+		&lt;/id&gt;
+
+		&lt;property name=&quot;sname&quot; column=&quot;sname&quot; type=&quot;string&quot; /&gt;
+	&lt;/class&gt;
+	
+&lt;/hibernate-mapping&gt;
+
+   
+
+
+   
+
+
+
+
+   下面这段代码，我们查询出id=2的College，会级联查出该college下面的所有学生。
+
+
+   @Test
+public void testLoad() {
+	Session session = sessionFactory.openSession();
+
+	College college = (College) session.load(College.class, 2);
+
+	System.out.println(&quot;college name is:&quot; + college.getName());
+
+	System.out.println(college.getAllStudents().size());
+
+	session.close();
+}
+
+   
+
+
+
+
+   
+
+
+
+上面这段代码会级联查询所有的学生，但是不能过滤出符合特定条件的学生。我们可以使用filter来过滤。修改java代码很简单，打开filter即可。
+   @Test
+public void testLoad() {
+	Session session = sessionFactory.openSession();
+
+	session.enableFilter(&quot;nameLikeFilter&quot;).setParameter(&quot;name&quot;, &quot;%qun%&quot;);
+
+	College college = (College) session.load(College.class, 2);
+
+	System.out.println(&quot;college name is:&quot; + college.getName());
+
+	System.out.println(college.getAllStudents().size());
+
+	session.close();
+}
+
+   
+
+
+   
+
+
+
+现在我们修改College的实体映射文件如下：
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+	&lt;class name=&quot;onemany.model.College&quot; table=&quot;t_association_college&quot;&gt;
+		&lt;id name=&quot;id&quot; column=&quot;cid&quot; type=&quot;int&quot;&gt;
+			&lt;generator class=&quot;native&quot; /&gt;
+		&lt;/id&gt;
+
+		&lt;property name=&quot;name&quot; column=&quot;cname&quot; type=&quot;string&quot; /&gt;
+
+		&lt;!-- set的fetch除了selec|join,还增加了一个subselect选项. subselect,选发出一条sql查询实体对象，再发出一条sql查询关联的实体对象. --&gt;
+		&lt;set name=&quot;allStudents&quot; table=&quot;t_association_student&quot; fetch=&quot;subselect&quot;
+			lazy=&quot;false&quot;&gt;
+			&lt;key column=&quot;college_id&quot; not-null=&quot;true&quot; /&gt;
+			&lt;one-to-many class=&quot;onemany.model.Student&quot; /&gt;
+			
+			&lt;filter name=&quot;nameLikeFilter&quot;&gt;
+		    &lt;![CDATA[
+		    	sname like :name
+		    ]]&gt;
+			&lt;/filter&gt;
+			
+		&lt;/set&gt;
+	&lt;/class&gt;
+	
+	&lt;filter-def name=&quot;nameLikeFilter&quot;&gt;
+		&lt;filter-param name=&quot;name&quot; type=&quot;string&quot; /&gt;
+	&lt;/filter-def&gt;
+	
+&lt;/hibernate-mapping&gt;
+
+   
+
+
+   
+
+
+
+发出的SQL查询条件如下：可以看到过滤器起作用了。
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+   我们完全是在College.hbm.xml中声明和引用过滤器的，这其实有点不合理。我们是想按照name模糊查询的，但是name的类型到底是什么，其实应该放在Student.hbm.xml中定义。只有自己的实体才知道自己属性的类型。
+
+
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+	&lt;class name=&quot;onemany.model.College&quot; table=&quot;t_association_college&quot;&gt;
+		&lt;id name=&quot;id&quot; column=&quot;cid&quot; type=&quot;int&quot;&gt;
+			&lt;generator class=&quot;native&quot; /&gt;
+		&lt;/id&gt;
+
+		&lt;property name=&quot;name&quot; column=&quot;cname&quot; type=&quot;string&quot; /&gt;
+
+		&lt;!-- set的fetch除了selec|join,还增加了一个subselect选项. subselect,选发出一条sql查询实体对象，再发出一条sql查询关联的实体对象. --&gt;
+		&lt;set name=&quot;allStudents&quot; table=&quot;t_association_student&quot; fetch=&quot;subselect&quot;
+			lazy=&quot;false&quot;&gt;
+			&lt;key column=&quot;college_id&quot; not-null=&quot;true&quot; /&gt;
+			&lt;one-to-many class=&quot;onemany.model.Student&quot; /&gt;
+			
+			&lt;filter name=&quot;nameLikeFilter&quot;&gt;
+		    &lt;![CDATA[
+		    	sname like :name
+		    ]]&gt;
+			&lt;/filter&gt;
+			
+		&lt;/set&gt;
+	&lt;/class&gt;
+	
+&lt;/hibernate-mapping&gt;
+   &lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;!DOCTYPE hibernate-mapping PUBLIC
+ &quot;-//Hibernate/Hibernate Mapping DTD 3.0//EN&quot;
+ &quot;http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd&quot;&gt;
+
+&lt;hibernate-mapping&gt;
+	&lt;class name=&quot;onemany.model.Student&quot; table=&quot;t_association_student&quot;&gt;
+		&lt;id name=&quot;sid&quot; column=&quot;sid&quot; type=&quot;int&quot;&gt;
+			&lt;generator class=&quot;native&quot; /&gt;
+		&lt;/id&gt;
+
+		&lt;property name=&quot;sname&quot; column=&quot;sname&quot; type=&quot;string&quot; /&gt;
+	&lt;/class&gt;
+	
+	&lt;filter-def name=&quot;nameLikeFilter&quot;&gt;
+		&lt;filter-param name=&quot;name&quot; type=&quot;string&quot; /&gt;
+	&lt;/filter-def&gt;
+&lt;/hibernate-mapping&gt;
+
+我们将&lt;filter-def&gt;放在了Student的实体映射文件中，然后在College的实体映射文件&lt;set&gt;中引用过滤器。经过我的验证，这样也是可以的。由此可以看出：&lt;filter-def&gt;是一个全局效果，无论放在哪儿个实体映射文件，效果都是一样的。
+
+   
+
+
+
+
+   有一点需要特别注意：&lt;set&gt;的fetch有3个可选&#20540;：select、join、subselect。如果将fetch设置成join，那么过滤器失效。设置成select和subselect都是可以过滤的。
+
+
+   
+
+
+
+
+   可以看到：虽然是以filter的确实现了关联关系的过滤，但是很麻烦，而且有很大的局限性：fetch不能使用join。如果使用HQL、SQL或者Criteria查询，可以更简单地实现过滤。

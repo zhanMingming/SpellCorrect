@@ -1,0 +1,141 @@
+spring xml读取Properties文件中的加密字段spring的xml配置文件，能够方便地读取properties文件中的&#20540;。
+
+
+   读取单个属性文件：
+
+
+   &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+	&lt;property name=&quot;locations&quot; value=&quot;classpath:password.properties&quot;/&gt;
+&lt;/bean&gt;
+
+   
+
+
+   
+
+
+
+读取多个属性文件：
+   &lt;bean class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;
+	&lt;property name=&quot;locations&quot;&gt;
+		&lt;list&gt;
+			&lt;value&gt;classpath:a1.properties&lt;/value&gt;
+			&lt;value&gt;classpath:a2.properties&lt;/value&gt;
+		&lt;/list&gt;
+	&lt;/property&gt;
+&lt;/bean&gt;
+
+不过spring自带的PropertyPlaceholderConfigurer是将属性文件中的&#20540;原样读出。实际上一般的密码等敏感信息，项目中都会进行加密存储。也就是说properties中存储的是加密后的结果，这样必需解密后才能使用。
+
+   
+
+
+   
+
+
+
+
+   我们可以继承PropertyPlaceholderConfigurer来实现解密：
+
+
+   package net.aty.spring.ioc.password;
+
+import java.util.List;
+
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+
+public class EncryptPropertyPlaceholderConfigurer extends
+		PropertyPlaceholderConfigurer {
+
+	private List&lt;String&gt; encryptPropNames;
+
+	@Override
+	protected String convertProperty(String propertyName, String propertyValue) {
+
+		if (encryptPropNames.contains(propertyName)) {
+			return DESUtil.decrypt(propertyValue);
+		}
+
+		return super.convertProperty(propertyName, propertyValue);
+	}
+
+	public List&lt;String&gt; getEncryptPropNames() {
+		return encryptPropNames;
+	}
+
+	public void setEncryptPropNames(List&lt;String&gt; encryptPropNames) {
+		this.encryptPropNames = encryptPropNames;
+	}
+}
+
+   package net.aty.spring.ioc.password;
+
+import java.io.UnsupportedEncodingException;
+
+import org.springframework.util.Base64Utils;
+
+public class DESUtil {
+
+	public static String encrypt(String src) {
+		try {
+			return Base64Utils.encodeToString(src.getBytes(&quot;UTF-8&quot;));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static String decrypt(String src) {
+		try {
+			return new String(Base64Utils.decodeFromString(src), &quot;UTF-8&quot;);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+	
+	
+	public static void main(String[] args) {
+		System.out.println(encrypt(&quot;aty&quot;));
+		System.out.println(encrypt(&quot;123456&quot;));
+	}
+}
+
+
+对应的properties文件如下：
+   userName = aty
+password = 123456
+
+userName.after.encrypt=YXR5
+password.after.encrypt=MTIzNDU2
+
+
+   
+
+
+
+spring配置文件如下：
+   &lt;bean class=&quot;net.aty.spring.ioc.password.EncryptPropertyPlaceholderConfigurer&quot;&gt;
+	&lt;property name=&quot;encryptPropNames&quot;&gt;
+		&lt;list&gt;
+			&lt;value&gt;userName.after.encrypt&lt;/value&gt;
+			&lt;value&gt;password.after.encrypt&lt;/value&gt;
+		&lt;/list&gt;
+	&lt;/property&gt;
+	&lt;property name=&quot;locations&quot;&gt;
+		&lt;list&gt;
+			&lt;value&gt;classpath:password.properties&lt;/value&gt;
+		&lt;/list&gt;
+	&lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id=&quot;atyBean&quot; class=&quot;net.aty.spring.ioc.password.ShowPasswordBean&quot;&gt;
+	&lt;property name=&quot;name&quot; value=&quot;${userName.after.encrypt}&quot; /&gt;
+	&lt;property name=&quot;password&quot; value=&quot;${password.after.encrypt}&quot; /&gt;
+&lt;/bean&gt;
+
+
+
+如此即可实现解密：

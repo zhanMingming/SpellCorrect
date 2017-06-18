@@ -1,0 +1,316 @@
+guava-retrying重试工具库: 什么时候重试作为一个重试库，首先要解决的问题就是什么时候重试。为了使用guava-retrying，我们需要在pom.xml中加入依赖：
+
+
+   &lt;dependency&gt;
+	&lt;groupId&gt;com.google.guava&lt;/groupId&gt;
+	&lt;artifactId&gt;guava&lt;/artifactId&gt;
+	&lt;version&gt;19.0&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+	&lt;groupId&gt;com.github.rholder&lt;/groupId&gt;
+	&lt;artifactId&gt;guava-retrying&lt;/artifactId&gt;
+	&lt;version&gt;2.0.0&lt;/version&gt;
+&lt;/dependency&gt;
+
+   
+
+
+   
+
+
+
+最常用的就是在方法抛出异常的时候重试，比如网络故障导致的IOException。java异常系统分为：runtime异常，checked异常和error，其中ERROR程序处理不了，不需要管；不过作为学习，我们可以测试下error的情况。下面这段代码我们定义了3个任务：分别抛出runtime异常、checked异常、error。
+   private static Callable&lt;Void&gt; runtimeExceptionTask = new Callable&lt;Void&gt;() {
+	@Override
+	public Void call() throws Exception {
+		System.out.println(&quot;runtime was called.&quot;);
+		throw new NullPointerException(&quot;runtime&quot;);
+	}
+};
+
+private static Callable&lt;Void&gt; checkedExceptionTask = new Callable&lt;Void&gt;() {
+	@Override
+	public Void call() throws Exception {
+		System.out.println(&quot;checked was called.&quot;);
+		throw new IOException(&quot;checked&quot;);
+	}
+};
+
+private static Callable&lt;Void&gt; errorTask = new Callable&lt;Void&gt;() {
+	@Override
+	public Void call() throws Exception {
+		System.out.println(&quot;error was called.&quot;);
+		throw new ThreadDeath();
+	}
+};
+
+   
+
+
+
+
+   
+
+
+
+retryIfException，抛出runtime异常、checked异常时都会重试，但是抛出error不会重试。
+   Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+		.retryIfException() // 抛出异常时重试
+		.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+		.build();
+try {
+	retryer.call(checkedExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(runtimeExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(errorTask);
+} catch (Exception e) {
+
+}
+
+
+
+
+   
+
+
+   
+
+
+
+
+   retryIfRuntimeException只会在抛runtime异常的时候才重试，checked异常和error都不重试。
+
+
+
+
+   Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+		.retryIfRuntimeException() // 抛出runtime异常时重试
+		.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+		.build();
+try {
+	retryer.call(checkedExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(runtimeExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(errorTask);
+} catch (Exception e) {
+
+}
+
+
+
+
+   
+
+
+   可以看到抛出error是不会进行重试的，当然也没有必要重试。不过通过retryIfExceptionOfType也可以在抛出error的时候进行重试。
+
+
+   Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+		.retryIfExceptionOfType(Error.class)// 只在抛出error重试
+		.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+		.build();
+try {
+	retryer.call(errorTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(runtimeExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(checkedExceptionTask);
+} catch (Exception e) {
+
+}
+
+
+
+
+   
+
+
+   
+
+
+
+
+   retryIfExceptionOfType允许我们只在发生特定异常的时候才重试，比如NullPointerException和IllegalStateException都属于runtime异常。
+
+
+   private static Callable&lt;Void&gt; nullPointerExceptionTask = new Callable&lt;Void&gt;() {
+	@Override
+	public Void call() throws Exception {
+		System.out.println(&quot;nullPointerExceptionTask was called.&quot;);
+		throw new NullPointerException();
+	}
+};
+
+private static Callable&lt;Void&gt; illegalStateExceptionTask = new Callable&lt;Void&gt;() {
+	@Override
+	public Void call() throws Exception {
+		System.out.println(&quot;illegalStateExceptionTask was called.&quot;);
+		throw new IllegalStateException();
+	}
+};
+
+
+public static void main(String[] args) {
+	Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+			.retryIfExceptionOfType(IllegalStateException.class)
+			.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+			.build();
+	try {
+		retryer.call(nullPointerExceptionTask);
+	} catch (Exception e) {
+
+	}
+
+	try {
+		retryer.call(illegalStateExceptionTask);
+	} catch (Exception e) {
+
+	}
+}
+
+
+
+
+   
+
+
+   
+
+
+
+
+   如果我们希望NullPointerException和IllegalStateException发生的时候都重试，其余异常不重试，怎么办呢？有2种实现方式：添加多个retryIfExceptionOfType，通过Predicate。
+
+
+   Retryer&lt;Void&gt; retryer = RetryerBuilder.&lt;Void&gt;newBuilder()
+		.retryIfExceptionOfType(IllegalStateException.class)
+		.retryIfExceptionOfType(NullPointerException.class)
+		.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+		.build();
+try {
+	retryer.call(nullPointerExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer.call(illegalStateExceptionTask);
+} catch (Exception e) {
+
+}
+
+System.out.println(&quot;use guava Predicates.&quot;);
+
+Retryer&lt;Void&gt; retryer1 = RetryerBuilder.&lt;Void&gt;newBuilder()
+		.retryIfException(Predicates.or(Predicates.instanceOf(NullPointerException.class),
+				Predicates.instanceOf(IllegalStateException.class)))
+		.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+		.build();
+
+try {
+	retryer1.call(nullPointerExceptionTask);
+} catch (Exception e) {
+
+}
+
+try {
+	retryer1.call(illegalStateExceptionTask);
+} catch (Exception e) {
+
+}
+
+
+
+
+   
+
+
+   上面我们看到了重试条件都是在发生异常的时候，实际上有时候没有发生异常，但是仍然需要重试的场景也是有的，比如返回false我们希望重试，比如返回字符串符合特定&#26684;式我们希望重试，比如返回对象符合某些条件我们希望重试....这个时候我们可以通过retryIfResult实现。通过guava的Predicates，我们可以构建复杂的重试条件。
+
+
+   // 第一次返回false,第二处返回true
+private static Callable&lt;Boolean&gt; booleanTask = new Callable&lt;Boolean&gt;() {
+	private int count = 0;
+
+	@Override
+	public Boolean call() throws Exception {
+		System.out.println(&quot;booleanTask was called.&quot;);
+		if (count == 0) {
+			count++;
+			return false;
+		} else {
+			return true;
+		}
+	}
+};
+
+private static Callable&lt;CharSequence&gt; stringTask = new Callable&lt;CharSequence&gt;() {
+	private int count = 0;
+
+	@Override
+	public CharSequence call() throws Exception {
+		System.out.println(&quot;stringTask was called.&quot;);
+		if (count == 0) {
+			count++;
+			return UUID.randomUUID() + &quot;_error&quot;;
+		} else {
+			return UUID.randomUUID() + &quot;_success&quot;;
+		}
+	}
+};
+
+
+public static void main(String[] args) {
+
+	// 返回false重试
+	Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+			.retryIfResult(Predicates.equalTo(false))
+			.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+			.build();
+	try {
+		retryer.call(booleanTask);
+	} catch (Exception e) {
+
+	}
+
+	System.out.println();
+
+	// 以_error结尾才重试
+	Retryer&lt;CharSequence&gt; retryer1 = RetryerBuilder.&lt;CharSequence&gt;newBuilder()
+			.retryIfResult(Predicates.containsPattern(&quot;_error$&quot;))
+			.withStopStrategy(StopStrategies.stopAfterAttempt(3)) // 重试3次后停止
+			.build();
+	try {
+		retryer1.call(stringTask);
+	} catch (Exception e) {
+
+	}
+
+}

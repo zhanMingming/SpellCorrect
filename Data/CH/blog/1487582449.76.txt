@@ -1,0 +1,172 @@
+hdu 1022 Train Problem I 栈Train Problem I
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)Total Submission(s): 3121Accepted Submission(s): 1148
+Problem Description
+As the new term comes, the Ignatius Train Station is very busy nowadays. A lot of student want to get back to school by train(because the trains in the Ignatius Train Station is the fastest all over the world ^v^). But here comes a problem, there is only one railway where all the trains stop. So all the trains come in from one side and get out from the other side. For this problem, if train A gets into the railway first, and then train B gets into the railway before train A leaves, train A can't leave until train B leaves. The pictures below figure out the problem. Now the problem for you is, there are at most 9 trains in the station, all the trains has an ID(numbered from 1 to n), the trains get into the railway in an order O1, your task is to determine whether the trains can get out in an order O2.
+
+
+   
+Input
+The input contains several test cases. Each test case consists of an integer, the number of trains, and two strings, the order of the trains come in:O1, and the order of the trains leave:O2. The input is terminated by the end of file. More details in the Sample Input.
+
+
+   
+Output
+The output contains a string &quot;No.&quot; if you can't exchange O2 to O1, or you should output a line contains &quot;Yes.&quot;, and then output your way in exchanging the order(you should output &quot;in&quot; for a train getting into the railway, and &quot;out&quot; for a train getting out of the railway). Print a line contains &quot;FINISH&quot; after each test case. More details in the Sample Output.
+
+
+   
+Sample Input
+
+   3 123 321
+3 123 312
+
+
+   
+Sample Output
+
+   Yes.
+in
+in
+in
+out
+out
+out
+FINISH
+No.
+FINISH
+   Hint
+Hint
+ 
+For the first Sample Input, we let train 1 get in, then train 2 and train 3.
+So now train 3 is at the top of the railway, so train 3 can leave first, then train 2 and train 1.
+In the second Sample input, we should let train 3 leave first, so we have to let train 1 get in, then train 2 and train 3.
+Now we can let train 3 leave.
+But after that we can't let train 1 leave before train 2, because train 2 is at the top of the railway at the moment.
+So we output &quot;No.&quot;.
+   
+   
+   设进出两个顺序分别为order1和order2，如果此时栈为空或者当前的栈顶元素不等于order2[i]，就让order1[j]入栈，同时将&quot;in&quot;记录入q队列中。
+   else如果此时栈顶元素等于order2[i],就将此栈顶元素弹出（sk.pop()）,并将&quot;out&quot;记录入q队列。
+   不断进行上面上面两个判断，直到两个数组遍历完，或者在中途中达不到目标顺序，使程序停止。
+   #include&lt;iostream&gt;
+#include&lt;queue&gt;
+#include&lt;stack&gt;
+#include&lt;string&gt;
+using namespace std;
+int n;
+int i,j;
+char order1[12],order2[12];
+void cal()
+{
+	stack&lt;char&gt;sk;
+	queue&lt;string&gt;q;
+	
+	for(i=0,j=0;i&lt;n&amp;&amp;j&lt;=n;)
+	{
+		if(sk.empty()||sk.top()!=order2[i])
+		{
+			if(j==n)
+			{
+				cout&lt;&lt;&quot;No./nFINISH&quot;&lt;&lt;endl;
+				return;
+			}
+			sk.push(order1[j++]);
+			q.push(&quot;in&quot;);
+		}
+		else
+		{
+			sk.pop();
+			q.push(&quot;out&quot;);
+			i++;
+		}
+	}
+	
+	cout&lt;&lt;&quot;Yes.&quot;&lt;&lt;endl;
+	string ch;
+	while(!q.empty())
+	{
+		ch=q.front();
+		cout&lt;&lt;ch&lt;&lt;endl;
+		q.pop();
+	}
+	cout&lt;&lt;&quot;FINISH&quot;&lt;&lt;endl;
+}
+int main()
+{	
+	while(cin&gt;&gt;n)
+	{
+		cin&gt;&gt;order1&gt;&gt;order2;
+		cal();
+	}
+	return 0;
+} 
+   
+
+   上面代码较为简略了，后来又写了一次，下面代码比较清晰：
+   
+
+   
+   #include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include&quot;functional&quot;
+#include&lt;memory.h&gt;
+#include&lt;vector&gt;
+#include&quot;numeric&quot;
+#include&quot;algorithm&quot;
+using namespace std;
+#define min(a,b)a&gt;b?b:a
+#define N 12
+#define IN 0
+#define OUT 1
+char o1[N],o2[N];
+int seq[N*2];
+int idx;
+
+int cal(int n)
+{
+	int c1=0,c2=0;
+	vector&lt;char&gt; V;
+	//V.push_back(o1[c1++]);
+	while(c1&lt;=n)
+	{
+		while(!V.empty()&amp;&amp;V.back()==o2[c2])
+		{
+			V.pop_back();
+			seq[idx++]=OUT;
+			c2++;
+		}
+		while((V.empty()||V.back()!=o2[c2])&amp;&amp;c1&lt;=n)
+		{
+			V.push_back(o1[c1]);
+			seq[idx++]=IN;
+			c1++;
+		}		
+	}
+	if(c2&lt;n)
+		return false;
+	return true;
+}
+
+int main()
+{
+	int n;
+	while(cin&gt;&gt;n)
+	{
+		idx=0;
+		cin&gt;&gt;o1&gt;&gt;o2;
+		if(cal(n))
+		{
+			cout&lt;&lt;&quot;Yes.&quot;&lt;&lt;endl;
+			for(int i=0;i&lt;n*2;i++)
+			if(seq[i]==IN)
+				cout&lt;&lt;&quot;in&quot;&lt;&lt;endl;
+			else
+				cout&lt;&lt;&quot;out&quot;&lt;&lt;endl;
+		}
+		else
+			cout&lt;&lt;&quot;No.&quot;&lt;&lt;endl;
+		cout&lt;&lt;&quot;FINISH&quot;&lt;&lt;endl;
+	}
+	return 0;
+}

@@ -1,0 +1,83 @@
+求帧差yuv player弄个出来的帧差效果很差，看不清，改成bmp再弄会好很多：
+
+
+   多亏钱建大师帮忙，留底以后大家省的写了！
+
+
+   代码如下
+
+
+   //**********************************************************************		
+//@2011/7/21 10:05:21
+//@Author: 钱建 &amp; 张睿卿
+//**********************************************************************
+
+#include&quot;iostream&quot;
+#include &quot;highgui.h&quot;
+#include &lt;conio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;math.h&quot;
+#include &quot;cv.h&quot;
+#include &quot;highgui.h&quot;
+#include &quot;cxcore.h&quot;
+using namespace std;
+
+int Width;
+int Height;
+int T;
+IplImage* IplImageFrameSub;
+unsigned char *templast,*tempcur,*temp2y;
+CvScalar s,s1;
+
+void FD()
+{
+	int i,j;
+
+	IplImage *file_input_src1=cvLoadImage(&quot;C:\\Users\\Zrq\\Desktop\\c1.bmp&quot;,1);
+	IplImage *file_input_src2=cvLoadImage(&quot;C:\\Users\\Zrq\\Desktop\\c2.bmp&quot;,1);
+
+	Width=min(file_input_src1-&gt;width,file_input_src2-&gt;width);
+	Height=min(file_input_src1-&gt;height,file_input_src2-&gt;height);
+
+	templast=(unsigned char*)malloc(Height *Width*3/2*sizeof(unsigned char*));
+	tempcur=(unsigned char*)malloc(Height *Width*3/2*sizeof(unsigned char*));
+	temp2y=(unsigned char*)malloc(Height *Width*3/2*sizeof(unsigned char*));
+IplImageFrameSub=cvCloneImage(file_input_src1);
+
+	for (i=0; i&lt;Height; i++)
+		for (j=0; j&lt;Width; j++)
+		{
+			s=cvGet2D(file_input_src1,i,j);
+			templast[i*Width+j]=unsigned char(s.val[0]);
+			s=cvGet2D(file_input_src2,i,j);
+			tempcur[i*Width+j]=unsigned char(s.val[0]);
+		}
+		cout&lt;&lt;&quot;Load Succeed!&quot;&lt;&lt;endl;
+
+		for (j=0; j&lt;Height; j++)
+			for (i=0; i&lt;Width; i++)
+			{
+				temp2y[j*Width+i]=((abs(templast[j*Width+i]-tempcur[j*Width+i]))&lt;=T ? 0: 255);
+			}
+
+			for (j = 0;j &lt; Height;j++)
+				for(i = 0;i &lt; Width;i++)
+					templast[j*Width+i] = tempcur[j * Width + i];
+
+			cout&lt;&lt;&quot;Begin Save BMP&quot;&lt;&lt;endl;
+			for (j=0; j&lt;Height; j++)
+				for (i=0; i&lt;Width; i++)
+				{
+					s1.val[0]=temp2y[j*Width+i];
+					cvSet2D(IplImageFrameSub,j,i,s1);
+				}
+				cout&lt;&lt;&quot;OK!&quot;&lt;&lt;endl;
+				cvSaveImage(&quot;D:\\数字图象处理\\MVD-break61(帧差1).bmp&quot;,IplImageFrameSub);
+}
+
+void main()
+{
+	cout&lt;&lt;&quot;input T&quot;&lt;&lt;endl;
+	cin&gt;&gt;T;
+	FD();
+}

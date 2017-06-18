@@ -1,0 +1,112 @@
+恶魔城 acm恶魔城
+
+时间限制(普通/Java):1000MS/3000MS     运行内存限制:65536KByte总提交:137      测试通过:37
+
+
+
+   描述
+
+
+   
+
+   上帝需要创造一位战士去消灭撒旦，这位战士必须要穿过恶魔城才能与撒旦决斗。恶魔城内有M条连接N个路口（从1到N编号）的街道，每一条街道都是单向的（也就是说你不能逆着该街道指定的方向走），并且在城内无论怎么走都不可能走回原来走过的地方。开始的时候，战士的生命力（HP）为INITHP、站在１号路口，而撒旦在第N号路口等待着他。每一条街道上都有许多魔鬼，但是也有一些街道已经被上帝派去的天使占领了。当战士经过连接i号向j号路口的街道时，如果占领该街道的是恶魔，那么他的HP先加倍然后减少L[i,j]，我们记为A[i,j]=-L[i,j]；如果占领该街道的是天使，那么他的HP就会先加倍然后增加L[i,j]，我们记为A[i,j]=+L[i,j]；如果该街道不存在，那么A[i,j]=0。如果某一时刻战士的HP&lt;=0，那么他会死亡。因为这个战士将非常无敌，当他见到撒旦的时候只要还活着，就能一口气把撒旦消灭，所以上帝不希望让他的INITHP过高。
+
+
+   任务：给定N，A[1..N,1..N]，求最小的INITHP，使这个战士能够活着见到撒旦。
+
+
+
+
+   
+
+
+   输入
+
+
+   文件第一行有一个正整数N（3 &le; N &le; 100），下面跟着的第i行第j个数为A[i,j]（绝对值不超过10000的整数）。
+
+
+   输出
+
+
+   输出所求最小的INITHP。
+
+
+   样例输入
+
+
+   40-40-100030000-140000
+
+
+   样例输出
+
+
+   4
+
+
+   题目来源
+
+
+   OIBH NOIP模拟赛
+
+
+   #include &lt;iostream&gt;
+using namespace std;
+
+int n;
+int map[101][101];  
+bool used[101];
+int hp;  
+bool flag; 
+int ans;
+void dfs(int now) 
+{
+	int i,temp;  
+	if (flag==false) 
+		for (i=1;i&lt;=n;i++)
+			if (used[i]==false &amp;&amp; map[now][i]!=0) 
+			{
+				used[i]=true;   
+				temp=hp;
+				hp=(hp*2+map[now][i]);
+				if(hp&gt;=10000)
+					flag=true;
+				else if (i!=n &amp;&amp; hp&gt;0)
+					dfs(i);
+				else if (i==n &amp;&amp; hp&gt;0)
+					flag=true;     
+				hp=temp; 
+				used[i]=false;
+			}
+}
+
+void solve() 
+{
+	int mid,low=1,top=10000;
+	for (;top&gt;=low;) 
+	{
+		mid=int((top+low)/2); 
+		hp=mid;   
+		flag=false;  
+		memset(used,false,sizeof(used));
+		dfs(1);  
+		if (flag==true)
+		{
+			ans=mid;
+			top=mid-1;
+		}
+		else low=mid+1;
+	}
+}
+int main()
+{
+	memset(map,0,sizeof(map));
+	cin&gt;&gt;n;
+	int i,j;      
+	for (i=1;i&lt;=n;i++)
+		for (j=1;j&lt;=n;j++)
+			cin &gt;&gt;map[i][j];
+	solve();
+	cout &lt;&lt;ans&lt;&lt;endl;
+	return 0;
+}

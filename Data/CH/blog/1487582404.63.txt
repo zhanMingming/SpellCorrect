@@ -1,0 +1,95 @@
+hdu 3482  Good Serial Inc.Good Serial Inc.
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 288Accepted Submission(s): 128
+
+Problem Description
+
+Good Serial Inc. (GSI) produces integer sequences with length N, in which every element is an integer in range [1, M].They call a sequence S is good if the sequence has the following property: for every substring of S with length M, i.e., S[i -&gt; i+m-1], all the elements in the substring are the same or all the elements are distinct(different from each other).The company GIS is designed to produce good sequences. But how many different good sequences are there? Since the answer will be very large, just output the result after module 987654321.
+
+
+
+
+   
+
+Input
+
+There are several cases. For each case, there is a line with two integers N, and M ( 1 &le; N &le; 1000000, 1 &le; M &le; 1000000 ).The input ends up with two negative numbers, which should not be processed as a case.
+
+
+
+
+   
+
+Output
+
+Print the number of different good sequences module 987654321 in a line for each case.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   4 4
+3 5
+-1 -1
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   28
+125
+被诓了一下！= =！m&gt;n的时候就相当于没条件，即pow(m,n)
+#include&lt;iostream&gt;
+using namespace std;
+#define M 987654321
+int n,m;
+
+__int64 deal(int m,int n)
+{
+	int i,j;
+	__int64 ans=1;
+
+	if(m==1)
+		return 1;
+	if(n&gt;=m)
+	{
+		if(m==2)
+		{
+			for(i=1;i&lt;=n;i++)
+				ans=ans*m%M;
+		}
+		else//return A(m,m)+m
+		{
+			for(i=1;i&lt;=m;i++)
+				ans=(ans*i)%M;
+			ans+=m;
+		}
+		return ans;
+	}
+	else if(n&lt;m)
+	{
+		for(i=1;i&lt;=n;i++)
+			ans=ans*m%M;
+		return ans;
+	}
+}
+
+int main()
+{
+	while(scanf("%d%d",&amp;n,&amp;m)!=EOF&amp;&amp;!(n==-1&amp;&amp;m==-1))
+	{
+		printf("%I64d/n",deal(m,n));
+	}
+}

@@ -1,0 +1,241 @@
+Residual Networks &lt;2015 ICCV, ImageNet 图像分类Top1&gt;本文介绍一下2015 ImageNet中分类任务的冠军——MSRA何凯明团队的Residual Networks。实际上，MSRA是今年Imagenet的大赢家，不单在分类任务，MSRA还用residual networks赢了 ImageNet的detection, localization, 以及COCO数据集上的detection和segmentation, 那本文就简单分析下Residual Networks。
+
+
+
+   目录 
+
+———————————— 
+
+1. Motivation 
+
+2. 网络结构 
+
+3. 实验结果 
+
+4. 重要reference
+
+
+
+
+1. Motivation
+
+
+   作者首先抛出了这个问题， 深度神经网络是不是越深越好。 
+
+照我们一般的经验，只要网络不训飞（也就是最早在LSTM中提出的vanishing/exploding problem），而且不过拟合， 那应该是越深越好。
+
+
+
+   但是有这么个情况，网络加深了， accuracy却下降了，称这种情况为degradation。如下图所示(详见[1])： 
+
+
+ 
+
+
+ 
+
+Cifar-10 上的training/testing error. 网络从20层加到56层，error却上升了。 
+
+ 
+
+按理说我们有一个shallow net，在不过拟合的情况下再往深加几层怎么说也不会比shallow的结果差，所以degradation说明不是所有网络都那么容易优化，这篇文章的motivation就是通过“deep residual network“解决degradation问题。
+   
+
+
+
+   
+
+
+
+2. 网络结构
+
+
+  
+   Shortcut Connections
+
+
+
+
+   其实本文想法和Highway networks（Jurgen Schmidhuber的文章）非常相似， 就连要解决的问题（degradation）都一样。Highway networks一文借用LSTM中gate的概念，除了正常的非线性映射H（x, Wh）外，还设置了一条从x直接到y的通路，以T(x, Wt)作为gate来把握两者之间的权重，如下公式所示： 
+
+
+ 
+
+y=H(x,WH)⋅T(x,WT)+x⋅(1−T(x,WT))y = H(x, W_H)\cdot T(x, W_T) + x\cdot (1-T(x, W_T)) 
+
+ 
+
+
+ 
+
+shortcut原意指捷径，在这里就表示越层连接，就比如上面Highway networks里从x直接到y的连接。其实早在googleNet的inception层中就有这种表示： 
+
+ 
+
+ 
+
+ 
+
+
+
+   
+
+
+
+   Residual Networks一文中，作者将Highway network中的含参加权连接变为固定加权连接，即 
+
+
+ 
+
+y=H(x,WH)⋅WT+xy = H(x, W_H) \cdot W_T + x 
+
+ 
+
+
+
+   
+
+
+
+  
+   Residual Learning
+
+
+
+
+   至此，我们一直没有提及residual networks中residual的含义。那这个“残差“指什么呢？我们想： 
+
+如果能用几层网络去逼近一个复杂的非线性映射H(x)，那么同样可以用这几层网络去逼近它的residual function：F(x)=H(x)−xF(x) = H(x) - x，但我们“猜想“优化residual mapping要比直接优化H(x)简单。
+
+
+
+   推荐读者们还是看一下本文最后列出的这篇reference paper，本文中作者说与Highway  network相比的优势在于：
+
+
+
+
+
+
+  x
+  Highway Network
+  Residual Network
+  评论
+
+
+
+
+  gate参数
+  有参数变量WTW_T
+  没参数，定死的, 方便和没有residual的网络比较
+  算不上优势，参数少又data-independent，结果肯定不会是最优的，文章实验部分也对比了效果，确实是带参数的error更小，但是WTW_T这个变量与解决degradation问题无关
+
+
+
+  关门？
+  有可能关门(T(x,WT)=0T(x,W_T)=0）
+  不会关门
+  T(x,WT)∈[0,1]T(x,W_T)\in [0,1], 但一般不会为0
+
+
+
+
+
+   
+ 
+
+所以说这个比较还是比较牵强。。anyway，人家讲个故事也是不容易了。 
+
+
+
+
+
+
+  
+   34层 residual network
+
+
+
+
+   网络构建思路：基本保持各层complexity不变，也就是哪层down－sampling了，就把filter数＊2， 网络太大，此处不贴了，大家看paper去吧， paper中画了一个34层全卷积网络， 没有了后面的几层fc，难怪说152层的网络比16-19层VGG的计算量还低。
+
+
+
+   这里再讲下文章中讲实现部分的 tricks：
+
+
+
+图片resize：短边长random.randint(256,480)
+裁剪：224＊224随机采样，含水平翻转
+减均值
+标准颜色扩充[2]
+conv和activation间加batch normalization[3] 
+
+ 帮助解决vanishing/exploding问题
+minibatch-size:256
+learning-rate: 初始0.1, error平了lr就除以10
+weight decay：0.0001
+momentum：0.9
+没用dropout[3]
+
+
+
+   其实看下来都是挺常规的方法。
+
+
+
+   
+
+
+
+3. 实验结果
+
+
+
+   34层与18层网络比较：训练过程中， 
+
+34层plain net（不带residual function）比18层plain net的error大 
+
+34层residual net（不带residual function）比18层residual net的error小，更比34层plain net小了3.5%(top1) 
+
+18层residual net比18层plain net收敛快
+
+
+   Residual function的设置：  
+
+A）在H(x)与x维度不同时， 用0充填补足 
+
+B） 在H(x)与x维度不同时， 带WTW_T 
+
+C）任何shortcut都带WTW_T 
+
+loss效果： A&gt;B&gt;C 
+
+
+
+
+
+
+4. 重要reference
+
+
+   [1]. Highway Networks 
+
+[2]. ImageNet Classification with Deep Convolutional Neural Networks 
+
+[3]. Batch Normalization 
+
+[4]. VGG
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

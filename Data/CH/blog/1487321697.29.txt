@@ -1,0 +1,205 @@
+五分钟法则(five minute rules)1987年，Jim Gray和Gianfranco Putzolu推出了著名的5分钟法则[Gray 1987]，他们通过内存，硬盘的性能以及当时的成本，给出了这样的公式：BreakEvenIntervalinSeconds = 
+
+
+   (PagesPerMBofRAM /AccessesPerSecondPerDisk) &times; (PricePerDiskDrive /PricePerMBofRAM)。并由该公式得到了5分钟左右的近似值，因此做出这样的判断，如果一个数据的访问周期在5分钟以内则存放在内存中，否则应该存放在硬盘中。其中：
+
+
+   PagesPerMBofRAM：表示内存每兆字节的Page数，如果page size = 4KB，则该值为1MB/(4KB/page) = 256 page/MB。
+
+
+   AccessesPerSecondPerDisk：每块磁盘每秒支持的最大IO请求数，如下表所示为250Page/(Second*Disk)。
+
+
+   (PagesPerMBofRAM /AccessesPerSecondPerDisk)：表示1兆的空间通过磁盘访问的方式所需要的秒数。256/200 = 1.25(Second*Disk)/MB，表示1兆字节需要1.25个盘秒来完成（类似工作任务按人月来做单位）。
+
+
+   PricePerDiskDrive：表示一块磁盘的成本，如下表所示为48$/disk。
+
+
+   PricePerMBofRAM：表示每兆内存的代价，如下表所示为50$/(2048)=0.024$/MB。
+
+
+   PricePerDiskDrive/ PricePerMBofRAM:表示用来买磁盘的钱可以买多少兆内存。48/0.024=2000MB /disk。
+
+
+   (PagesPerMBofRAM /AccessesPerSecondPerDisk)* (PricePerDiskDrive/ PricePerMBofRAM):表示用磁盘读取的耗费时间界限，2000MB *1.25=2500second，合41min。如果一条数据的访问周期低于41分钟，则应该放在内存中，否则应该放在磁盘中。
+
+
+   对于这个公式我们可以这样理解。
+
+
+   1MB 永久存放在内存中的代价是0.024$/MB，1MB数据使用一次相当于花0.024$换来的。
+
+
+   1MB 存放在硬盘中的代价是 1.25 (second*disk)/MB *48($/disk) / 1个访问周期 = 1.25 *48/2500= 0.024$，1MB数据放在硬盘中，2500秒访问一次，花0.024$。
+
+
+   如果访问周期小于2500秒，放在硬盘中的代价大，周期大于5100秒，放在硬盘中就赚了。
+
+
+   不难计算，如果将固态磁盘看作内存，则可得到48/(780/(32*1024))*(256/200)/60=43分钟。如果将固态硬盘看作硬盘，则可得到780/(50/(2*1024))*(256/35000)/60=4分钟，这是对5分钟法则的很好的近似。另外修改每页的大小，也可以近似得到5分钟这个值，请读者自行计算，[Goetz Graefe 2008]对该问题在2008年做了回顾，得到的结论是：5分钟法则在提出的20年后依然有效，但分化出两个5分钟法则，一个是把闪存看做硬盘，内存和闪存之间依然保持了5分钟法则，另外一个是在更大的page size情况下，闪存和硬盘依然保持了5分钟法则。并且对内存和磁盘的分界时间预测在未来的20是年将会达到5小时左右。
+
+
+   下表数据来自amazon.com, [Intel flash],仅作举例之用。
+
+
+   
+
+
+
+
+
+
+   项目
+
+
+
+
+   内存（现代某服务器单颗内存）
+
+
+
+
+   固态硬盘（Intel某SSD）
+
+
+
+
+   硬盘(希捷某服务器硬盘)
+
+
+
+
+
+
+   价格
+
+
+
+
+   50$
+
+
+
+
+   780$
+
+
+
+
+   48$
+
+
+
+
+
+
+   容量
+
+
+
+
+   2G
+
+
+
+
+   32G
+
+
+
+
+   500G
+
+
+
+
+
+
+   其他
+
+
+
+
+   服务器一般至少8个以上的内存插槽。
+
+
+
+
+   固态硬盘因品牌不同价格差异较大。
+
+
+   4KBpage情况下，35000(IOPS)
+
+
+   
+
+
+
+
+   4KBpage情况下，200次IO/second
+
+
+
+
+
+
+   备注
+
+
+
+
+   
+
+
+
+
+   SSD读和写差距较大。举例使用的读取的IOPS来进行计算。
+
+
+
+
+   这里的每秒IO表示随机读写的情况，顺序读写一般可达30000次左右。可以使用HD tune，Iometer等工具进行测试。
+
+
+
+
+
+
+   在工作中实际接触的服务器可以支持最大单核16G内存，64个扩展槽，达到1TB的内存，但在举例过程中，仅考虑基本情况。有兴趣的读者可以根据工作环境的服务器情况做相应计算，看看得出的结果。
+
+
+   
+
+
+   五分钟法则有哪些具体的应用呢？搜索引擎的索引非常巨大，每次上线过程都要经过很多步骤，其中一条叫做cache warming，即对那些常用的查询词，人工的对索引系统发起一次查询，使得在硬盘中的索引能够&ldquo;上浮&rdquo;到内存中，这样在下一次真实用户来查询时，无需磁盘读取，而直接从内存中读出，那么将多少常用词载入到内存中呢？什么样的查询频率的数据值得载入内存中呢？
+
+
+   
+
+
+   事实上，计算机硬件发展到今天，CPU是最快速的，内存的发展次之，最慢的是磁盘，因此体系架构也需要考虑硬件发展的现状，结合五分钟法则和运营成本的考虑，查询频率达到一定频繁程度的查询词的倒排表可以放到内存中，否则应该放在内存中，一般那些诸如电话号码查询，邮编，生僻姓名的查询词通常都在磁盘中，而常用的娱乐明星的姓名，影视歌曲等查询词的倒排表都被事先载入了内存。
+
+
+   
+
+
+   除此之外，五分钟法则还可以用来根据业务需要，来指导硬件采购，一些数据库提供商往往能够通过一些科学方法来为客户的实际业务需要来配置最优的服务器。
+
+
+   
+
+
+   【推荐阅读】
+
+
+   
+
+
+   [Goetz Graefe 2008] The Five-Minute Rule 20 Years Later, Communications of the ACM Vol. 52 No. 7, Pages 48-59 ,http://cacm.acm.org/magazines/2009/7/32091-the-five-minute-rule-20-years-later/fulltext
+
+
+   
+
+
+   [Gray 1987]Gray, Jim; Putzolu, Gianfranco R. (1987), "The 5 Minute Rule for Trading Memory for Disk Accesses and The 10 Byte Rule for Trading Memory for CPU Time", Proceedings of the ACM SIGMOD Conference, pp.395&ndash;398

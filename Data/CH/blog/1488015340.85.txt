@@ -1,0 +1,203 @@
+javascript中关键字in以及循环for...in的使用和注意事项写这篇文章，是因为在学习prototypejs库中方法Object.extend()和Class.create()，看这篇指导[tutorial on classes and inheritance]的时候，对于什么能够继承，什么不能继承产生了一些困惑。比如下面这段代码，cap对象既没有smile方法，也没有cry方法。
+
+
+   &lt;html&gt;
+&lt;head&gt;
+	&lt;script  src=&quot;prototype-1.7.3.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;	
+// 创建一个Person类
+var Person = Class.create();
+
+// 给类的原型增加方法
+Person.prototype.smile = function(){alert(&quot;smile&quot;);};
+
+// 给类(也是对象)本身增加方法
+Person.cry = function(){alert(&quot;cry&quot;);};
+
+var bruce = new Person();
+bruce.smile();//smile
+//bruce.cry();//error cry() doesn&#39;t exsit in bruce object.
+
+
+var Captain = Class.create();
+
+// 试图继承
+Object.extend(Captain, Person);
+
+Captain.cry();// cry
+// Captain.smile(); // error
+
+
+var cap  =new Captain();
+// cap.cry();// error
+//cap.smile();// error
+
+	&lt;/script&gt;
+&lt;/head&gt;
+&lt;/html&gt;在看源码class.js和object.js的时候，发现extend方法使用到了javascript的for...in，发现自己对于这个东西并不是太熟悉，这里记录下。
+
+
+
+
+   
+
+
+   1. in是javascript中的一个操作符，用来判断某个属性是否属于某个对象，可以是对象的自身的属性，也可以是通过prototype继承的属性。
+
+
+   function demoFunc()
+{
+
+}
+
+var point = {x:1, y:2}; 
+
+console.log(&quot;x in point is: &quot; + (&quot;x&quot; in point));//true
+console.log(&quot;toString in point is: &quot; + (&quot;toString&quot; in point));//true
+console.log(&quot;hasOwnProperty in point is: &quot; + (&quot;hasOwnProperty&quot; in point));//true
+
+demoFunc.addtional = &quot;test&quot;;
+console.log(&quot;call in demoFunc is: &quot; + (&quot;call&quot; in demoFunc));//true
+console.log(&quot;length in demoFunc is: &quot; + (&quot;length&quot; in demoFunc));//true
+console.log(&quot;addtional in demoFunc is: &quot; + (&quot;addtional&quot; in demoFunc));//true
+
+   
+
+
+   
+
+
+
+2.in作用于数组的时候，需要用数字形式的索引名称，而不是数组元素的&#20540;(数组固有属性除外，如length)。
+   var chars = new Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;);
+console.log(&quot;0 in chars is: &quot; + (0 in chars));//true
+console.log(&quot;0 in chars is: &quot; + (&quot;0&quot; in chars));//true
+console.log(&quot;3 in chars is: &quot; + (3 in chars));//true
+console.log(&quot;6 in chars is: &quot; + (6 in chars));//true
+console.log(&quot;length in chars is: &quot; + (&quot;length&quot; in chars));//true
+console.log(&quot;c in chars is: &quot; + (&quot;c&quot; in chars));//false
+
+3.如果你使用delete操作符删除了一个属性，再次用in检查时，会返回false；如果你把一个属性&#20540;设为undefined，但是没有使用delete操作符，使用in检查，会返回true。
+   var point = {x:1, y:2};
+var chars = new Array(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;);
+
+delete point.x;
+point.y = undefined;
+
+delete chars[0];
+chars[1] = undefined;
+
+console.log(&quot;x in point is: &quot; + (&quot;x&quot; in point));//false
+console.log(&quot;y in point is: &quot; + (&quot;y&quot; in point));//true
+console.log(&quot;0 in chars is: &quot; + (&quot;0&quot; in chars));//false
+console.log(&quot;1 in chars is: &quot; + (&quot;1&quot; in chars));//true
+
+   
+
+
+
+
+
+in的上面3种用法很简单，实际上也没有什么用，in最主要还是用于for...in循环中，用来枚举对象的属性和方法。for...in可以用来遍历数组和对象。
+   var point = {x:1, y:2};
+point.say = function(){};
+
+Object.prototype.pIn= 1;
+
+for(var key in point)
+{
+	console.log(key);// x y say pIn
+}当for...in枚举对象的时候，会将对象自身的属性(方法其实也是属性)，以及从原型中继承的属性都遍历出来。如果只想遍历对象自身的属性，那么可以使用hasOwnProperty方法来做一个判断。
+   var point = {x:1, y:2};
+point.say = function(){};
+
+Object.prototype.pIn= 1;
+
+for(var key in point)
+{
+	if(Object.prototype.hasOwnProperty.call(point, key))
+	{
+		console.log(key);// x y say pIn
+	}
+}
+
+for...in也可以用来遍历数组，跟遍历对象没有什么差别，除了数组的key是0 1 2...数字。
+   var numbers = [&quot;a&quot;,&quot;b&quot;,&quot;c&quot;,&quot;d&quot;]; 
+Array.prototype.aty = &quot;903&quot;; 
+for(var key in numbers){ 
+	console.log(key);// 0 1 2 3 aty
+}
+
+实际上for...in主要就是用来枚举对象的属性，不过也存在着一定的陷阱，实际使用需要小心才是。上面我们可以看到，如果是在原型中新增属性或者方法，for...in在各种浏览器下面表现是一致的：会将原型中新增的属性和方法遍历出来。但是如果我们试图覆盖JS原型中的方法，for...in在各个浏览器下的表现会有差异。这一点需要特别注意。
+   var obj = {
+	name:&quot;jack&quot;,
+    getName:function(){return this.name},
+    toString:function(){return &quot;I&#39;m jack.&quot;}
+}
+
+for(var atr in obj) {
+    console.log(atr);
+} 我们覆盖了内置的toString()，输出结果是什么样子的呢？
+
+   1、IE6/7/8 下和没有重写toString一样，仍然只输出name,getName。
+
+2、IE9/Firefox/Chrome/Opera/Safari下则输出name,getName,toString。
+
+
+
+有时我们为了兼容ES5或后续版本，会在不支持ES5的浏览器上（IE6/7/8）去扩展内置构造器的原型，这时for in在各浏览器中就不同了。
+
+
+   if (!Function.prototype.bind)
+{
+    Function.prototype.bind = function(scope) {
+ var fn = this
+ return function () {
+     fn.apply(scope, arguments)
+ }
+    }
+}
+
+function greet(name) {  
+    alert(this.greet + &#39;, &#39; + name)
+}
+
+for (var n in greet)
+    console.log(n);
+}
+
+   IE6/7/8输出了bind，其它浏览器则无。因为现代浏览器中bind是原生支持的，for in不到，IE6/7/8则是给Function.prototype添加了bind。我们可以看到，修改javascript内置函数的原型是一件比较危险的事情。
+
+
+   
+
+
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   参考文章：
+
+
+   http://www.cnblogs.com/onlywujun/p/3513451.html
+
+
+
+
+   http://www.jb51.net/article/44028.htm

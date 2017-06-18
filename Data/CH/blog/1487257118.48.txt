@@ -1,0 +1,91 @@
+linode的网卡丢失问题解决了（终极解法）这次的惊魂让我提高很多，先说提高，再说故事经过。文章可能有点乱，大家包涵。
+
+
+   1）linode还有一种可以ssh上去的方式
+
+
+      第一步ssh pennyliang@lish-tokyo.linode.com  然后在提示中输入密码（其中pennyliang是linode的用户名，lish-tokyo.linode.com表示东京机房）其他几个机房依次是：lish-tokyo.linode.com lish-fremont.linode.comlish-dallas.linode.comlish-atlanta.linode.comlish-newark.linode.comlish-london.linode.com
+
+
+   
+
+
+      第二步 选择云主机的代号 比如我这台机器是linode720306
+
+
+   
+
+
+
+
+      第三步 输入root账号名密码
+
+
+   
+
+
+
+
+   2）linode一个vps的硬盘容量可以创建多个多个disk，可以安装多个linux发行版，比如启动的这个发行版可以把其他disk 也mount进来，这需要修改Edit Configuration Profile 在管理界面上找到。如下图
+
+
+      
+
+       
+
+
+   3）线上机器的运营数据和代码本地必须有一份，否则会非常被动，我的前端代码独一份在线上机器上，以及一个实时算的一个model也在这台机器上，一旦毁了恢复难度太大了。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   昨天linode东京机房出现了重大故障，一大批机器被DDos攻击，我的所有机器都中枪了，然后linode工程师让我等待恢复，结果除了pullword机器，其他机器都恢复了，pullword连接不上，然后linode工程师让我用lish的方式连主机，结果发现网卡丢了，eth0 missing，结果想了很多办法也不行。很神奇。后来我快速在达拉斯机房恢复了pullword服务。今天继续和linode工程师解决问题。
+
+
+   
+
+
+
+
+   其实我的核心诉求不是恢复这台机器，而是需要抢救重要数据，linode工程师在掌握了这个信息后，教我一招resuce的方法，我看了下风险很大不适合，我提出是否可以build一台新机器，然后把这个硬盘mount上去，他们说可以直接在本机build一个新linux，但是我之前创建的时候把磁盘用完了，没法build。他们又告诉我可以缩小原来的磁盘，我按照指示把原来的磁盘缩小了，空出的空间build了一个新的linux发行版。然后发现之前的disk没有了。接下来修改了Configuration Profile把这个老磁盘也搞进去，这一步很关键，如下图。再启动机器的时候就有了这块盘，数据就都找回来了。
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   下面是和linode工程师交互的全部记录，我的英语很烂，大家主要看意思，图很大，大家复制到window画板里面看。

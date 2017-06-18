@@ -1,0 +1,140 @@
+熟练使用java的Enum、EnumSet、EnumMap对java枚举一直没有系统学习过，之前就是用枚举来替代接口中的常量，今天看到同事写的一段代码使用了EnumSet，不是特别熟悉。于是重新学习了Enum、EnumSet、EnumMap。
+
+
+   
+
+
+
+
+   首先看下最基本的枚举使用场景：
+
+
+   public enum EnumColor
+{
+    RED, GREEN, PINK, YELLOW, BLACK
+}
+   // 所有枚举类默认继承java.lang.Enum
+System.out.println(EnumColor.class.getSuperclass() == Enum.class); //true
+
+// 枚举常量的名字
+System.out.println(EnumColor.GREEN.name());//GREEN
+System.out.println(EnumColor.RED.name());//RED
+
+// 枚举常量的顺序,从0开始
+System.out.println(EnumColor.GREEN.ordinal());//1
+System.out.println(EnumColor.RED.ordinal());//0
+
+
+// 通过字符生成枚举对象实例,字符串必须是枚举类中定义的名字,否则抛异常
+EnumColor instance = Enum.valueOf(EnumColor.class, &quot;GREEN&quot;);
+System.out.println(instance == EnumColor.GREEN);//true
+
+// 通过字符生成枚举对象实例,字符串必须是枚举类中定义的名字,否则抛异常
+EnumColor instance2 = EnumColor.valueOf(&quot;GREEN&quot;);
+System.out.println(instance2 == EnumColor.GREEN);//true
+
+   
+
+
+   
+
+
+
+
+
+如果我们想获取EnumColor类的所有枚举实例，那么有2种方式：
+   // 返回数组
+EnumColor[] values  = EnumColor.values();
+for(EnumColor each : values)
+{
+	System.out.println(each);
+}
+
+// 返回EnumSet
+EnumSet&lt;EnumColor&gt; allSet = EnumSet.allOf(EnumColor.class);
+for(EnumColor each : allSet)
+{
+	System.out.println(each);
+}
+
+   
+
+
+
+
+   
+
+
+
+使用EnumSet可以获取某个范围的枚举实例：
+   EnumSet&lt;EnumColor&gt; partialSet = EnumSet.range(EnumColor.PINK, EnumColor.BLACK);
+System.out.println(partialSet);// [PINK, YELLOW, BLACK]
+
+
+   
+
+
+   
+
+
+
+EnumMap其实和HashMap差不多，不过使用EnumMap效率更高。
+   EnumMap&lt;EnumColor, String&gt; errMsgMap = new EnumMap&lt;EnumColor, String&gt;(EnumColor.class);
+errMsgMap.put(EnumColor.GREEN, &quot;2,4,6&quot;);
+errMsgMap.put(EnumColor.RED, &quot;1,7&quot;);
+for (Map.Entry&lt;EnumColor, String&gt; entry : errMsgMap.entrySet()) {
+	System.out.println(entry.getValue() + &quot; &quot; + entry.getKey().name());
+}
+
+
+
+使用枚举我们可以定义构造函数，可以为枚举类添加属性和方法。
+   public enum EnumColorWithConsrutor{
+    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLOW(&quot;黄色&quot;, 4);
+
+    private String name;
+
+    private int index;
+
+    // 构造函数，枚举类型只能为私有
+    EnumColor(String name, int index) {
+ this.name = name;
+ this.index = index;
+    }
+	
+	public String getName() {
+ return this.name;
+    }
+	
+	public void setName(String name) {
+ this.name = name;
+    }
+}
+
+
+
+由于枚举类默认继承java.lang.Enum，所以不能在继承别的类，但是可以实现别的接口。
+   public enum EnumColorComplex implements Runnable {
+    RED(&quot;红色&quot;, 1),
+    GREEN(&quot;绿色&quot;, 2),
+    BLANK(&quot;白色&quot;, 3),
+    YELLOW(&quot;黄色&quot;, 4);
+
+    private String name;
+
+    private int index;
+
+    // 构造函数，枚举类型只能为私有
+    EnumColor(String name, int index) {
+ this.name = name;
+ this.index = index;
+    }
+
+    public String getName() {
+ return this.name;
+    }
+
+    public void run() {
+ System.out.println(this.name());
+    }
+}

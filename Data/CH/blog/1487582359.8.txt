@@ -1,0 +1,176 @@
+浙大计算机研究生复试上机考试-2005年-A+BA &#43; B
+Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 65536/32768 K (Java/Others)
+
+Total Submission(s): 7340Accepted Submission(s): 4142
+
+
+
+
+
+
+Problem Description
+
+
+读入两个小于100的正整数A和B,计算A&#43;B.
+
+需要注意的是:A和B的每一位数字由对应的英文单词给出.
+
+
+
+
+
+
+
+
+
+Input
+
+
+测试输入包含若干测试用例,每个测试用例占一行,&#26684;式为&quot;A &#43; B =&quot;,相邻两字符串有一个空&#26684;间隔.当A和B同时为0时输入结束,相应的结果不要输出.
+
+
+
+
+
+
+
+
+
+Output
+
+
+对每个测试用例输出1行,即A&#43;B的&#20540;.
+
+
+
+
+
+
+
+
+
+Sample Input
+
+
+
+   one &#43; two =
+three four &#43; five six =
+zero seven &#43; eight nine =
+zero &#43; zero =
+
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   3
+90
+96
+
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生复试上机考试-2005年
+
+
+
+
+
+
+
+
+
+
+
+
+
+   #include &quot;iostream&quot;  
+#include &quot;stdio.h&quot;  
+#include &quot;math.h&quot;  
+#include &quot;vector&quot;  
+#include &quot;queue&quot;  
+#include &quot;memory.h&quot;  
+#include &quot;algorithm&quot;  
+#include &quot;string&quot;  
+using namespace std;  
+#define max(a,b) a&gt;b?a:b
+#define min(a,b) a&lt;b?a:b
+
+int Num(char *str,int *i)
+{
+    int tmp;
+    switch(str[(*i)])
+    {
+     case 'z':
+  tmp=0;break;
+     case 'o':
+   tmp= 1;break;
+     case 't':
+   if(str[(*i)+1]=='w') tmp= 2;
+   if(str[(*i)+1]=='h') tmp= 3;
+   if(str[(*i)+1]=='e') tmp= 10;break;
+     case 'f':
+   if(str[(*i)+1]=='o')tmp= 4;
+   if(str[(*i)+1]=='i')tmp= 5;break;
+     case 's':
+   if(str[(*i)+1]=='i')tmp= 6;
+   if(str[(*i)+1]=='e')tmp= 7;break;
+     case 'e':
+   tmp= 8;break;
+     case 'n' :
+   tmp= 9;break;
+    }
+    while(str[++(*i)]!=' ');
+    return tmp;
+}
+
+int Trans(char *str,int s,int e)
+{
+    int x=0,i=s,blankpos=-1,tmp;
+    while(str[i]==' ')
+i++;
+    tmp=Num(str,&amp;i);
+    while((str[i]==' '||str[i]=='=')&amp;&amp;i&lt;=e)
+i++;
+    if(i&lt;e)
+    {
+ tmp*=10;
+ tmp+=Num(str,&amp;i);
+    }
+    return tmp;
+}
+
+int main()
+{
+    int x;
+    char exp[40],num1[20],num2[20];
+    while(gets(exp))
+    {
+int i,j;
+for(i=0;i&lt;strlen(exp);i++)
+{
+    if(exp[i]=='+')
+break;
+}
+int x1=Trans(exp,0,i-1);
+int x2=Trans(exp,i+1,strlen(exp)-1);
+if(!x1&amp;&amp;!x2)
+   break;    
+printf(&quot;%d\n&quot;,x1+x2);
+    }
+}

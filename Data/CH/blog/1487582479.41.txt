@@ -1,0 +1,157 @@
+关于information Passing(信息传递)Information Passing
+
+
+   
+
+
+   Programmer to Team Leader:
+
+
+   
+
+
+   "We can't do this proposed project. **CANNOT**. It will involve a major design change and no one in our team knows the
+
+
+   
+
+
+   design of this legacy system. And above that, nobody in our company knows the language in which this application has been
+
+
+   
+
+
+   written. So even if somebody wants to work on it, they can't. If you ask my personal opinion, the company should never take
+
+
+   
+
+
+   these type of projects."
+
+
+   
+
+
+   Team Leader to Project Manager:
+
+
+   
+
+
+   "This project will involve a design change. Currently, we don't have any staff with experience in this type of work. Also,
+
+
+   
+
+
+   the language is unfamiliar to us, so we will have to arrange for some training if we take this project. In my personal
+
+
+   
+
+
+   opinion, we are not ready to take on a project of this nature."
+
+
+   
+
+
+   Project Manager to 1st Level Manager:
+
+
+   
+
+
+   "This project involves a design change in the system and we don't have much experience in that area. Also, not many people
+
+
+   
+
+
+   in our company are appropriately trained for it. In my personal opinion, we might be able to do the project but we would
+
+
+   
+
+
+   need more time than usual to complete it."
+
+
+   
+
+
+   1st Level Manager to Senior Level Manager:
+
+
+   
+
+
+   "This project involves design re-engineering. We have some people who have worked in this area and others who know the
+
+
+   
+
+
+   implementation language. So they can train other people. In my personal opinion we should take this project, but with
+
+
+   
+
+
+   caution."
+
+
+   
+
+
+   Senior Level Manager to CEO:
+
+
+   
+
+
+   "This project will demonstrate to the industry our capabilities in remodeling the design of a complete legacy system. We
+
+
+   
+
+
+   have all the necessary skills and people to execute this project successfully. Some people have already given in-house
+
+
+   
+
+
+   training in this area to other staff members. In my personal opinion, we should not let this project slip by us under any
+
+
+   
+
+
+   circumstances."
+
+
+   
+
+
+   CEO to Client:
+
+
+   
+
+
+   "This is the type of project in which our company specializes. We have executed many projects of the same nature for many
+
+
+   
+
+
+   large clients. Trust me when I say that we are the most competent firm in the industry for doing this kind of work. It is my
+
+
+   
+
+
+   personal opinion that we can execute this project successfully and well within the given time frame."

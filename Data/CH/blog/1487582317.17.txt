@@ -1,0 +1,122 @@
+追踪Google I/O动向——Google I/O 2012 有哪些亮点？Android 4.1 Jellybean-
+ 延续甜品店式命名规则
+
+
+   
+
+
+
+
+
+
+亮点基本上就是一个Google Now。有些像 Siri，整合了自然语言搜索和 Siri 式的应答，可以告诉你附近的餐馆、比赛的比分、公共交通的行程等，大多整合了
+ Google 自家的服务。
+
+
+
+
+
+
+
+
+
+
+Nexus 7- 与华硕合作的 7 英寸平板：
+
+
+
+4 核 CPU、12 核 GPU，1280 x 800 分辨率的 HD 显示屏幕，集成 NFC；
+起价199美元（8 GB），7 月中旬发货；
+
+
+
+
+
+   
+
+
+   Nexus Q-
+ 这是啥？
+
+
+   
+
+
+
+
+   
+
+Nexus Q 是一个类&#20284;媒体中心的物件，图中球体下部的线会一闪一闪，可以从 Youtube 和 Google Play 上直接下载内容，在不同设备上分享内容也很方便。今天开始在 Play 上以 299 美元的价&#26684;开始接受预定。
+
+
+
+
+
+
+
+
+
+
+Google&#43;推出了平板电脑应用，Android 和 iOS 都会有。
+
+
+
+
+
+
+
+
+
+
+Google Glass- 开发者版本开始预订
+
+
+
+
+
+在 Vic Gundotra 的 Google&#43; 展示还正在进行的时候，一身黑衣，戴着 Google Glass 的 Sergey Brin 突然走上台，开始了一段从 1 英里上空开始的 Google Glass 演示。
+
+
+
+
+
+
+整个过程大概是：从几个极限运动员和 Sergey 通过各自佩戴的 Google Glass 开始一次 Google&#43; Hangouts 起，观众可以通过屏幕看到极限运动员的 Google Glass 视角。他们从空中跳下，使用 wingsuit 滑翔后开伞，最终降落在预先设定的目标屋顶，再通过花式自行车和从楼上沿着绳索滑下的不可模仿的专业人士，最终交接了一些东西到了会场中的
+ Sergey Brin 处。
+
+
+
+
+
+
+其实还满刺激的。Google Style
+
+
+
+Project Glass Live Demo At Google IO
+
+
+
+   
+
+
+   Google Glass 会发布一个开发者预览版本（Google Glass Explorer Edition），预订价&#26684; 1500 美元，明年发货。
+
+
+   
+
+
+
+
+
+另外，按照惯例，Google I/O 参会者，每人都会得到一部 Galaxy Nexus、Nexus 7 和 Nexus Q。
+
+
+
+
+
+
+----------
+
+
+资料、图片来自 The Verge 及 Google I/O 的直播

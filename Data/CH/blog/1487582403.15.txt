@@ -1,0 +1,195 @@
+单调队列的应用Sliding Window
+
+
+
+
+
+
+	Time Limit: 12000MS
+
+	Memory Limit: 65536K
+
+
+
+	Total Submissions: 13366
+
+	Accepted: 3708
+
+
+
+Case Time Limit: 5000MS
+
+
+
+
+
+
+   Description
+
+An array of size n &le; 106 is given to you. There is a sliding window of size k which is moving from the very left of the array to the very right. You can only see the k numbers in the window. Each time the sliding window moves rightwards by one position. Following is an example: The array is [13-1-35367], and k is 3. 
+
+
+
+Window positionMinimum valueMaximum value
+
+
+
+	[13-1]-35367
+-1
+3
+
+
+
+	1[3-1-3]5367
+-3
+3
+
+
+
+	13[-1-35]367
+-3
+5
+
+
+
+	13-1[-353]67
+-3
+5
+
+
+
+	13-1-3[536]7
+3
+6
+
+
+
+	13-1-35[367]
+3
+7
+
+
+
+
+   Your task is to determine the maximum and minimum values in the sliding window at each position.
+
+
+
+
+   Input
+
+The input consists of two lines. The first line contains two integers n and k which are the lengths of the array and the sliding window. There are n integers in the second line. 
+
+
+   Output
+
+There are two lines in the output. The first line gives the minimum values in the window at each position, from left to right, respectively. The second line gives the maximum values. 
+
+
+   Sample Input
+
+
+   8 3
+1 3 -1 -3 5 3 6 7
+
+
+   Sample Output
+
+
+   -1 -3 -3 -3 3 3
+3 3 5 5 6 7
+
+
+   单调队列指一个队列中的所有的数符合单调性（单调增或单调减），在信息学竞赛的一些题目上应用，会减少时间复杂度
+
+   开两个队列，一个维护最大值，一个维护最小值。下面叙述最大队列，最小队列的方法类似。 
+
+   最大队列保证队列中各个元素大小单调递减（注意，不是单调不上升），同时每个元素的下标单调递增。这样便保证队首元素最大，而且更新的时候队首永远是当前最大。因此，这个队列需要在两头都可以进行删除，在队尾插入。
+
+   维护方法：在每次插入的时候，先判断队尾元素，如果不比待插入元素大就删除，不断删除队尾直到队尾元素大于待插入元素或者队空。删除的时候，判断队首，如果队首元素下标小于当前段左边界就删除，不断删除队首直到队首元素下标大于等于当前段左边界（注意：这时队列肯定不为空），队首元素就是当前段的最优解。
+
+   #include&lt;algorithm&gt;
+#include&lt;iostream&gt;
+using namespace std;
+int a[1000011];//数组数据
+int Q[1000011];//队列
+int I[1000011];//I[i]表示队列中的Q[i]在数组中的下标
+int OutMin[1000011];//最小值
+int OutMax[1000011];//最大值
+int n,k;
+void GetMin(int k)
+{
+    int i;
+    int head=1;
+    int tail=0;
+    for(i=1;i&lt;k;++i)
+    {
+ while(head &lt;=tail &amp;&amp; Q[tail]&gt;a[i])
+     tail--;
+ tail++;
+ Q[tail]=a[i];
+ I[tail]=i;
+    }
+    for(i=k;i&lt;=n;++i)
+    {
+ while(head &lt;=tail &amp;&amp; Q[tail]&gt;a[i])
+     tail--;
+ tail++;
+ Q[tail]=a[i];
+ I[tail]=i; 
+ while(I[head]&lt;=i-k)
+     head++;
+ OutMin[i-k]    = Q[head];
+    }
+
+}
+void GetMax()
+{
+    int i;
+    int head=1;
+    int tail=0;
+    for(i=1;i&lt;k;++i)
+    {
+ while(head &lt;=tail &amp;&amp; Q[tail]&lt;a[i])
+     tail--;
+ tail++;
+ Q[tail]=a[i];
+ I[tail]=i;
+    }
+    for(i=k;i&lt;=n;++i)
+    {
+ 
+ while(head &lt;=tail &amp;&amp; Q[tail]&lt;a[i])
+     tail--;
+ tail++;
+ Q[tail]=a[i];
+ I[tail]=i;
+ while(I[head]&lt;=i-k)
+     head++;
+ OutMax[i-k]=Q[head];
+    }
+
+}
+int main()
+{
+    int i;
+    scanf("%d%d",&amp;n,&amp;k);
+    if(k&gt;n)
+ k=n;
+    for(i=1;i&lt;=n;++i)
+    {
+ scanf("%d",&amp;a[i]);
+    }
+    GetMin();
+    GetMax();
+    for(i=0;i&lt;=(n-k);++i)
+    {
+ printf("%d%c", OutMin[i], (i &lt; n - k) ? ' ' : '/n'); 
+
+    }
+    for(i=0;i&lt;=(n-k);++i)
+    {
+ printf("%d%c", OutMax[i], (i &lt; n - k) ? ' ' : '/n'); 
+    }
+    return 0;
+}

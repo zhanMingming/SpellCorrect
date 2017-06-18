@@ -1,0 +1,43 @@
+c++向mysql写入或读取中文工作中需要向mysql插入和读写中文数据，这个问题起初比较棘手，经过一段时间的investigate，顺利的解决了。
+
+
+   以下是解决办法：
+
+
+   
+
+
+   1. 设置mysql服务器的字符集，是的mysql服务器的默认字符集为UTF8;
+
+
+   
+
+
+   2. 设置表或列的字符集，最好使用UTF8编码，可以同时支持中英文。
+
+
+   
+
+
+   3. 连接后，调用接口int mysql_set_character_set(MYSQL *mysql, char *csname)，该函数为当前连接设置默认的字符集。
+
+
+    注意的是，只有mysql 5.0.7及以上版本支持该函数。低版本的话，可以用set names &lt;character setname&gt;语句来代替。
+
+
+   
+
+
+   4.向mysql读写的时候，把字符串都转为utf8编码。英文的utf8编码和ansi是一样的，中文的会有区别。
+
+
+   
+
+
+   以上就是我的解决方案，如有问题，请联系本人&lt;bicheng.gui@gmail.com&gt;.
+
+
+   
+
+
+   该文章为原创。转贴请注明！

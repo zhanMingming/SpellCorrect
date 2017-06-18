@@ -1,0 +1,72 @@
+考虑virtual函数之外的其他选择——effective c++学习笔记这篇文章围绕这个一个简单的问题：
+
+
+   为游戏的人物设定一个继承体系，人物的健康状态可能会发生变化，则需要为人物计算他们的健康指数：
+
+
+   最明白的一个方案是将创建一个virtual
+函数int
+healthValue（），用来计算健康指数。
+
+
+   下面的其他的替代方案：
+
+
+   1、
+由no-virtual interface 手法实现的template method模式
+
+
+   healthValue仍然为public接口。当却不再是virtual。然后它调用private（protected） virtual函数dohealthValue()。derived classes继承并实现这个函数。
+
+
+   也就是：以public no-virtual函数包裹较低访问性（private或protected）的virtual函数。
+
+
+   这个方案的优点是能够在dohealthValue()之前和之后进行一些操作。
+
+
+   2、
+由Function Pointer 实现的Strategy模式
+
+
+   通过构造函数传入一个计算健康指数函数的指针，计算时直接调用这个函数。
+
+
+   优点：
+
+
+   1）
+同一类型的不同的人可以有不同的健康计算函数。
+
+
+   2）
+可以在运行期更改健康计算函数。
+
+
+   缺点：继承体系外部的函数无法访问内部成员。解决这个问题可能会降低类的封装性。
+
+
+   3、
+由tr1::funtion完成strategy模式
+
+
+   tr1::funtion可以包括任何可调用物：函数指针，函数对象，成员函数指针。在调用时，它也会完成隐式的类型转换。
+
+
+   这样，它带来的灵活性就是可以接受与目标签名式兼容的可调用物。
+
+
+   对于成员函数指针，往往多需要输入一个参数：this指针。可以通过tr1::bind函数来将转化为和签名式兼容的类型。
+
+
+   这个方案其实有点复杂，而且包含了隐式类型转换。
+
+
+   4、
+古典的strategy模式
+
+
+   分离另一个继承体系：dohealthValueFun，这个体系和人物体系存在对于关系。
+
+
+   优点是熟悉设计模式的人都比较容易识别，而且很容易添加健康算法。

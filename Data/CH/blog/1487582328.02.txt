@@ -1,0 +1,117 @@
+MFC单文档(SDI)转换成多文档(MDI)解决方案由VC6.0自动生成的单文档和多文档工程存在着细微的区别，那么怎样将一个自动生成的单文档工程转换成为一个多文档工程呢？这个问题虽然比较简单，稍微细心一点的人都可以自己搞定。在这里，我为大家提供一个比较常见的修改方法，没有什么技术含量，还请大家多提意见！
+
+
+   
+
+
+
+   
+第一步：修改字符串表
+
+添加新项ID为IDR_MYTEST，&#20540;为：
+
+/nTest/nTest/n/n/nTest.Document/nTest Document
+
+
+   
+
+
+
+   
+第二步：修改app的InitInstance()方法
+
+
+   
+CMultiDocTemplate* pDocTemplate;
+
+pDocTemplate = new CMultiDocTemplate(
+
+IDR_MYECG, //工程名
+
+RUNTIME_CLASS(CEcgDoc),
+
+RUNTIME_CLASS(CChildFrame), // custom MDI child frame
+
+RUNTIME_CLASS(CEcgView));
+
+AddDocTemplate(pDocTemplate);
+
+
+   
+// create main MDI Frame window
+
+CMainFrame* pMainFrame = new CMainFrame;
+
+if (!pMainFrame-&gt;LoadFrame(IDR_MAINFRAME))
+
+return FALSE;
+
+m_pMainWnd = pMainFrame;
+
+
+   
+
+
+
+   
+第三步：修改CMainFrame，它几乎和SDI版本完全一样，除了它是CMDIFrameWnd而不是CFrameWnd派生出来的。
+
+
+   
+头文件中：
+
+
+   
+class CMainFrame : publicCMDIFrameWnd
+
+
+   
+
+
+
+   
+cpp文件中：
+
+
+   
+IMPLEMENT_DYNCREATE(CMainFrame,CMDIFrameWnd)
+
+
+   
+BEGIN_MESSAGE_MAP(CMainFrame,CMDIFrameWnd)
+
+
+   
+
+
+
+   
+其它的地方的CFrameWnd也都得改过来。
+
+
+   
+
+
+第四步：添加派生自CMDIChildWnd的子框架类。
+
+ 用户可以通过在PreCreateWindow()函数中添加代码方便的控制子框架窗口的属性。也可以映射消息和重载其他的虚拟函数。
+
+
+   
+
+
+
+   
+具体代码我就不贴出来了，大家可以直接从一个生成的MDI工程中直接将其拷贝过来。
+
+
+   
+
+
+
+   
+OK,over!
+
+
+   
+---------Origin:http://blog.csdn.net/wirror800/article/details/3930773

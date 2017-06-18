@@ -1,0 +1,13 @@
+MongoDB,Redis,Tokyo Cabinet,BerkeleyDB之性能比较今天搜了一篇文章《NoSQL Solution: Evaluation and Comparison: MongoDB vs Redis, Tokyo Cabinet, and Berkeley DB 》很巧有中文翻译版，写的很详实，其中作者对MongoDB，推崇备至，但插入2亿条数据需要几个小时，看到这一点我更有信心了，我近1个月刚写了一个数据库的雏形，目前在笔记本电脑上1G内存的虚拟机上，插入2亿条数据只需数十秒。 
+
+
+    因为这是我目前的研究方向，还不便做过多透露，等完成后，我会分享出来。这篇文章写得不错，可能有一些人需要采用这些存储tools，和我的需求不同，所以本文主要目的还是推荐阅读。 
+
+
+   
+
+
+   推荐阅读：
+
+
+   中文译文：http://hi.baidu.com/shepherdnewage/blog/item/95f0c182e57d902f67096edc.html原文：http://perfectmarket.com/blog/not_only_nosql_review_solution_evaluation_guide_chart

@@ -1,0 +1,7 @@
+锦标赛排序树到底是满二叉树还是完全二叉树（Tournament Tree is FBT or CBT?)锦标赛排序中，Tree是什么结构（）？A，满二叉树(full binary tree, FBT)B，完全二叉树(complete binary tree, CBT)比如这样一个序列 a1,a2,a3,a4,a5,则tournament tree是如果是A m7 m5 m6 m1 m2 m3 m4a1 a2 a3 a4 a5 b1 b2 b3b表示黑户，硬憋出的节点（the most loser)，m表示比赛支持这个观点的有很多，比如http://graduate.bjfu.edu.cn/uploadfile/20051031161858742.doc包括很多知名教材。如果是B m1 m2 m3 m4 a1 a2 a3a4 a5n个结点的锦标赛排序树，只需n-1个内结点，不需黑户。我一直认为是A，怎么现在有很多教材都支持B，到底锦标赛排序是什么东西？http://atlanta.postech.ac.kr/cs233/lecture/lecture10.ppt找了个国外的PPT和我看法一致，难道是有些教材错了？还是锦标赛排序这两种都是对的？
+
+
+   以下是在小百合讨论的一些内容
+
+
+   http://bbs.nju.edu.cn/vd30198/bbscon?board=Algorithm&amp;file=M.1254891775.A&amp;num=11332

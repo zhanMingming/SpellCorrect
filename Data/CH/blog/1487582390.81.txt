@@ -1,0 +1,10 @@
+验证Textbox输入1.只能输入数字： private void textBox1_KeyPress(object sender, KeyPressEventArgs e) { if (!(((e.KeyChar &gt;= '0') &amp;&amp; (e.KeyChar &lt;= '9')) || e.KeyChar &lt;= 31)) { if (e.KeyChar == '.') { e.Handled = true; } else e.Handled = true; } else { if (e.KeyChar &lt;= 31) { e.Handled = false; } else if ((e.KeyChar &gt;= '0') &amp;&amp; (e.KeyChar &lt;= '9')) { if (((TextBox)sender).Text.ToString() != "") { if (Convert.ToDouble(((TextBox)sender).Text) == 0) { if (((TextBox)sender).Text.Trim().IndexOf('.') &gt; -1) { e.Handled = false; } else { e.Handled = true; } } } else { e.Handled = false; } } } }2.只能输入小数private void textBox2_KeyPress(object sender, KeyPressEventArgs e) { if (!(((e.KeyChar &gt;= '0') &amp;&amp; (e.KeyChar &lt;= '9')) || e.KeyChar &lt;= 31)) { if (e.KeyChar == '.') { if (((TextBox)sender).Text.Trim().IndexOf('.') &gt; -1 || ((TextBox)sender).Text.Trim() == "") e.Handled = true; } else e.Handled = true; } else { if (e.KeyChar &lt;= 31) { e.Handled = false; } else if ((e.KeyChar &gt;= '0') &amp;&amp; (e.KeyChar &lt;= '9')) { if (((TextBox)sender).Text.ToString() != "") { if (Convert.ToDouble(((TextBox)sender).Text) == 0) { if (((TextBox)sender).Text.Trim().IndexOf('.') &gt; -1) { e.Handled = false; } else { e.Handled = true; } } } else { e.Handled = false; } } } }3.单引号用"`"来代替： private void textBox3_KeyPress(object sender, KeyPressEventArgs e) { if (e.KeyChar == Convert.ToChar("'")) { ((TextBox)sender).Text = ((TextBox)sender).Text + "`"; ((TextBox)sender).SelectionStart = Convert.ToInt32(((TextBox)sender).Text.Length); e.Handled = true; } }
+
+
+   
+
+
+   
+
+
+   转载自http://www.cnblogs.com/MFxxk/archive/2009/07/22/1528645.html

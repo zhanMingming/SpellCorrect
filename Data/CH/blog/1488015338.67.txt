@@ -1,0 +1,113 @@
+(一)页面中引入seajs以及模块的加载和启动本文转载自官网上&quot;模块的加载启动#260&quot;这篇文章，seajs官网上的文档都是中文的，大部分写的也很清楚，看看就能上手了。这里之所以转载官网文档，一个是因为自己在学习阶段，自己手动敲一遍印象会更深，一个是因为GitHub访问比较慢，所以放在自己的博客，以后看着方便点。
+
+
+   
+
+
+
+
+   Sea.js 是一个模块加载器，模块加载器需要实现两个基本功能：
+
+
+   1.实现模块定义规范，这是模块系统的基础。
+
+2.模块系统的启动与运行。
+
+
+
+
+   
+
+
+模块系统的启动
+
+
+
+
+
+有了define等模块定义规范的实现，我们可以开发出很多模块。但光有一堆模块不管用，我们还得让它们能跑起来。seajs中模块的启动是通过seajs.use(id, callback?)实现的。
+   &lt;script src=&quot;path/to/sea.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  seajs.use(&#39;./main&#39;);
+&lt;/script&gt;
+
+
+   
+
+
+   通过 use 方法，可以在页面中加载任意模块：
+
+
+   // 加载模块 main，并在加载完成时，执行指定回调
+seajs.use(&#39;./main&#39;, function(main) {
+  main.init();
+});
+
+use 方法还可以一次加载多个模块：
+   // 并行加载模块 a 和模块 b，并在都加载完成时，执行指定回调
+seajs.use([&#39;./a&#39;, &#39;./b&#39;], function(a, b) {
+  a.init();
+  b.init();
+});callback 参数可选，省略时，表示无需回调。
+
+
+
+
+   
+
+sea.js 的引入
+
+
+
+
+
+
+在调用 seajs.use 之前，需要先引入 sea.js 文件，推荐直接使用 script 标签同步引入：
+
+
+
+
+
+   &lt;script src=&quot;path/to/sea.js&quot; id=&quot;seajsnode&quot;&gt;&lt;/script&gt;1.seajs.use 理论上只用于加载启动，不应该出现在 define 中的模块代码里。在模块代码里需要异步加载其他模块时，推荐使用 require.async 方法。
+
+
+
+
+
+
+
+2.引入 sea.js 时，可以把 sea.js 与其他文件打包在一起，可提前合并好，或利用 combo 服务动态合并。无论哪一种方式，为了让 sea.js 内部能快速获取到自身路径，推荐手动加上 id 属性：
+
+
+
+
+
+
+
+
+
+加上 seajsnode &#20540;，可以让 sea.js 接获取到自身路径，而不需要通过其他机制去自动获取。这对性能和稳定性会有一定提升，推荐默认都加上。
+
+
+
+
+
+
+与 DOM ready 的关系
+
+
+
+
+
+
+注意：seajs.use 与 DOM ready 事件没有任何关系。如果某些操作要确保在 DOM ready 后执行，需要使用 jquery 等类库来保证，比如：
+
+
+
+
+
+   seajs.use([&#39;jquery&#39;, &#39;./main&#39;], function($, main) {
+  $(document).ready(function() {
+    main.init();
+  });
+});

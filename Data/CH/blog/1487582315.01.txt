@@ -1,0 +1,5 @@
+eclipse调试错误No source available for &quot;_dl_debug_state() 解决方案eclipse调试的时候有时会遇到错误：No source available for &quot;_dl_debug_state() “或gdbinit: No such file or directory.
+
+   很奇怪设置了断点但是F11就是总显示上面的错误，怎么办呢？
+
+   这可能是由于gdb进行升级造成的或者程序入口不明确，解决方案：按F8(Resume)，连续按直到跳入代码内部断点处，如果还不行，那么只能再看下更改gdb版本是否可行了。

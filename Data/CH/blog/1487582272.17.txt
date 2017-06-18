@@ -1,0 +1,38 @@
+php如何显示错误信息php默认不打印错误，如需打印，
+
+
+
+   vi $PHP_HOME/etc/php.ini, 修改以下几项：
+
+
+
+
+
+   display_errors = On
+error_reporting = E_ALL &amp; ~E_NOTICE
+
+
+   如果有设error_log变量，注释掉输出到error_log这句话就可以将错误直接显示在terminal了
+
+
+
+   然后重启php：
+
+
+
+
+
+   $PHP_HOME/sbin/php-fpm start
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

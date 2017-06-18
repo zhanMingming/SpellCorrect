@@ -1,0 +1,355 @@
+Java NIO学习：缓冲区使用InputStream读取文件内容的时候，我们都是用字节数组进行批量读取的，而不是一个一个字节的读。NIO中的缓冲区其实就和传统IO中的字节数组一样，都是为了提高IO性能。NIO里面为每种基本数据类型都提供了对应的缓冲区对象，如ByteBuffer、ShortBuffer、CharBuffer、IntBuffer、LongBuffer、FloatBuffer、DoubleBuffer。这几种缓冲区对象使用方式基本是一样的，这里以ByteBuffer为例学习下NIO中的缓冲区。
+
+1.创建缓冲区
+
+只能通过ByteBuffer类的静态方法allocate、allocateDirect或者wrap方法来创建ByteBuffer对象。
+
+
+
+   // 创建一个容量capacity是10的字节缓冲区(使用的是java堆内存)
+ByteBuffer buffer1 = ByteBuffer.allocate(10);
+
+// 创建一个容量capacity是20的字节缓冲区(使用的是堆外内存)
+ByteBuffer buffer2 = ByteBuffer.allocateDirect(20);
+
+// 通过已有的字节数组创建缓冲区(缓冲区和字节数组共用同一块内存)
+byte[] bytes = new byte[40];
+ByteBuffer buffer3 = ByteBuffer.wrap(bytes, 0, bytes.length);
+
+这里组要注意一点：使用字节数组创建的缓冲区，与字节数组共用同一块内存。The new buffer will be backed by the given byte array;that is, modifications to the buffer will cause the array to be modified and vice versa(反之亦然)。
+
+
+
+   byte[] bytes = new byte[4];
+ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+buffer.putInt(0x12345678);
+// [18, 52, 86, 120]
+System.out.println(Arrays.toString(bytes));
+
+bytes[0] = 1;
+
+// 1
+buffer.flip();
+System.out.println(buffer.get());
+
+2.Buffer的capacity、position和limit
+
+
+
+缓冲区本质上是一块可以写入数据，然后可以从中读取数据的内存。这块内存被包装成Buffer对象，并提供了一组方法，用来方便的访问该块内存。为了理解Buffer的工作原理，需要熟悉它的三个属性：capacity、position和limit。
+
+
+
+
+
+
+
+
+
+capacity：
+
+
+
+
+作为一个内存块，Buffer有一个固定的大小，叫“capacity”，在创建缓冲区的时候指定。你只能往里写capacity个byte、long，char等类型。一旦Buffer满了，需要将其清空（通过读数据或者清除数据）才能继续写数据往里写数据。
+
+
+
+
+
+
+
+
+
+position：
+
+
+当你写数据到Buffer中时，position表示当前的位置。初始的position&#20540;为0.当一个byte、long等数据写到Buffer后， position会向前移动到下一个可插入数据的Buffer单元。position最大可为capacity – 1。当读取数据时，也是从某个特定位置读。当将Buffer从写模式切换到读模式，position会被重置为0. 当从Buffer的position处读取数据时，position向前移动到下一个可读的位置。也就是说：position就是读取或者写入数据的当前位置。
+
+
+
+
+
+
+
+
+
+limit：
+
+
+在写模式下，Buffer的limit表示你最多能往Buffer里写多少数据。 写模式下，limit等于Buffer的capacity。当切换Buffer到读模式时， limit表示你最多能读到多少数据。因此，当切换Buffer到读模式时，limit会被设置成写模式下的position&#20540;。换句话说，你能读到之前写入的所有数据（limit被设置成已写数据的数量，这个&#20540;在写模式下就是position）。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.Buffer的读模式和写模式
+
+刚创建的Buffer对象，处于写模式，这个很好理解，只有先写入数据，然后才能从中读取数据。
+
+
+
+
+
+   // 分配一块缓存区(写模式),因为只有先写入数据,才能读出数据
+ByteBuffer buffer = ByteBuffer.allocate(64);
+
+// 写模式下capacity == limit
+System.out.println(buffer.capacity());// 64
+System.out.println(buffer.limit());// 64
+System.out.println(buffer.position()); // 0
+
+buffer.putInt(12);
+
+// 写模式下,limit等于capacity
+System.out.println(buffer.capacity());// 64
+System.out.println(buffer.limit());// 64
+System.out.println(buffer.position());// 4
+
+写完数据之后，必须要将缓冲区切换到读模式下，才能读取数据。
+
+
+
+   ByteBuffer buffer = ByteBuffer.allocate(64);
+buffer.putInt(1);
+buffer.putInt(2);
+buffer.putInt(3);
+buffer.putInt(4);
+
+// flip切换到读模式
+buffer.flip();
+
+// 读模式下,limit含义是已经写入的字节数
+System.out.println(buffer.position());//0
+System.out.println(buffer.limit());//16
+System.out.println(buffer.capacity());//64
+
+System.out.println(buffer.getInt());//1
+System.out.println(buffer.getInt());//2
+
+//每次get只改变position
+System.out.println(buffer.position());//8
+System.out.println(buffer.limit());//16
+System.out.println(buffer.capacity());//64
+
+如果读取完数据后，还需要继续向缓冲区写数据怎么办呢?再次调用flip()?不行，flip只是从写模式切换到读模式。可以使用clear()，这个方法会将position设置成0，limit设置成capacity。
+
+
+
+   ByteBuffer buffer = ByteBuffer.allocate(64);
+buffer.putInt(1);
+buffer.putInt(2);
+
+buffer.flip();
+System.out.println(buffer.getInt());
+System.out.println(buffer.getInt());
+
+// 重新切换到写
+buffer.clear();
+buffer.putInt(3);
+buffer.putInt(4);
+
+buffer.flip();
+System.out.println(buffer.getInt());
+System.out.println(buffer.getInt());
+
+4.向buffer写数据
+
+
+
+向buffer中写入数据有2种方式，一种是通过buffer对象的put()方法，一种是通过NIO中的channel写入。
+
+
+
+   ByteBuffer buffer = ByteBuffer.allocate(64);
+
+// 在index=10处写入一个int
+buffer.putInt(10, 1);
+
+// 在指定位置写入数据,不会改变postion
+System.out.println(buffer.position());//0
+
+// 在当前位置写入,会改变position
+buffer.putInt(22);
+
+System.out.println(buffer.position());//4
+
+
+
+
+
+
+
+
+   RandomAccessFile aFile = new RandomAccessFile(&quot;url.txt&quot;, &quot;r&quot;);
+FileChannel inChannel = aFile.getChannel();
+
+ByteBuffer buffer = ByteBuffer.allocate(20);
+
+// read data into buffer from channel
+int readBytes = inChannel.read(buffer); 
+
+aFile.close();
+
+5.从buffer读数据
+
+和写操作类&#20284;，读操作也有2种方式：从Buffer读取数据到Channel；使用get()方法从Buffer中读取数据。
+
+
+
+   RandomAccessFile aFile = new RandomAccessFile(&quot;demo.txt&quot;, &quot;rw&quot;);
+FileChannel outChannel = aFile.getChannel();
+
+ByteBuffer buffer = ByteBuffer.allocate(20);
+buffer.putChar(&#39;a&#39;);
+buffer.putChar(&#39;b&#39;);
+buffer.putChar(&#39;c&#39;);
+buffer.putChar(&#39;d&#39;);
+
+// 缓冲区数据写入文件
+buffer.flip();
+outChannel.write(buffer);
+
+aFile.close();
+
+6.rewind()
+
+
+
+Buffer.rewind()将position设回0，不改变limit，所以可以重读Buffer中的所有数据。
+
+
+
+
+
+   ByteBuffer buffer = ByteBuffer.allocate(64);
+
+buffer.putInt(1234);
+
+// position是4
+System.out.println(buffer.getInt()); // 0
+
+// position是0
+buffer.rewind();
+System.out.println(buffer.getInt());// 1234
+
+// rewind可以实现重复读取
+buffer.rewind();
+System.out.println(buffer.getInt());// 1234
+
+7.clear()与compact()方法
+
+
+
+
+
+一旦读完Buffer中的数据，需要让Buffer准备好再次被写入。可以通过clear()或compact()方法来完成。如果调用的是clear()方法，position将被设回0，limit被设置成 capacity的&#20540;。换句话说，Buffer 被清空了。Buffer中的数据并未清除，只是这些标记告诉我们可以从哪里开始往Buffer里写数据。如果Buffer中有一些未读的数据，调用clear()方法，数据将“被遗忘”，意味着不再有任何标记会告诉你哪些数据被读过，哪些还没有。如果Buffer中仍有未读的数据，且后续还需要这些数据，但是此时想要先先写些数据，那么使用compact()方法。compact()方法将所有未读的数据拷贝到Buffer起始处。然后将position设到最后一个未读元素正后面。limit属性依然像clear()方法一样，设置成capacity。现在Buffer准备好写数据了，但是不会覆盖未读的数据。
+
+
+
+
+
+   ByteBuffer buffer = ByteBuffer.allocate(26);
+for(char i = &#39;a&#39; ; i &lt;= &#39;z&#39;; i++)
+{
+	buffer.put((byte)i);
+}
+
+buffer.flip();
+
+System.out.println((char)buffer.get());//a
+System.out.println((char)buffer.get());//b
+
+buffer.compact();
+
+buffer.put((byte)&#39;A&#39;);
+buffer.put((byte)&#39;B&#39;);
+
+
+buffer.flip();
+System.out.println((char)buffer.get());//c
+System.out.println((char)buffer.get());//d
+
+System.out.println((char)buffer.get(24));//A
+System.out.println((char)buffer.get(25));//B
+
+
+
+
+8.mark()与reset()
+
+通过调用Buffer.mark()方法，可以标记Buffer中的一个特定position。之后可以通过调用Buffer.reset()方法恢复到这个position。这2个函数源码如下：
+
+
+
+
+
+   public final Buffer mark() {
+	mark = position;
+	return this;
+}
+
+public final Buffer reset() {
+    int m = mark;
+	if (m &lt; 0)
+	    throw new InvalidMarkException();
+	position = m;
+	return this;
+}
+
+上面就是缓冲区的一些基本用法了，下面我们使用NIO中的缓存区，完成文件的读写操作，看下如何使用上面的API。
+
+
+
+
+
+   public static void copyFile(String srcPath, String destPath)
+			throws Exception
+{
+	RandomAccessFile srcFile = new RandomAccessFile(srcPath, &quot;r&quot;);
+	FileChannel inputChannel = srcFile.getChannel();
+
+	ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+	RandomAccessFile destFile = new RandomAccessFile(destPath, &quot;rw&quot;);
+	FileChannel outputChannel = destFile.getChannel();
+
+	while (inputChannel.read(buffer) != -1)
+	{
+		// prepare for read
+		buffer.flip();
+
+		// write data into channel
+		outputChannel.write(buffer);
+		
+		// prepare for next write
+		buffer.clear();
+	}
+
+	srcFile.close();
+	destFile.close();
+}
+
+
+
+
+
+
+参考文章：
+
+
+Java NIO系列教程（三） Buffer

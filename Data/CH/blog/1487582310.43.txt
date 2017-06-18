@@ -1,0 +1,53 @@
+多台笔记本同时上网方法这几天出去开会，两个人带了一台电脑可发愁了，这里给出用笔记本作为ap，实现多台电脑同时上网功能的方法。
+
+
+   实现环境：两台win7旗舰版
+
+
+   
+
+
+
+
+   1. 选择一台笔记本做ap，用该电脑连接网线，能够成功上网
+
+
+   2.cmd-&gt;以管理员身份运行
+
+
+   3. 输入netsh wlan set hostednetwork mode=allow ssid=netname key=password，成功
+
+
+   4. 网络-&gt;属性-&gt;更改适配器-&gt;有线连接-&gt;共享-&gt;无线网络连接2
+
+
+   
+
+
+
+
+   5. 回到cmd，输入netsh wlan start hostednetwork，成功
+
+
+   
+
+
+
+
+   至此，无线网络已建立好，名为netname，访问网络的密码为password，对应上文中的设置。
+
+
+   接下来，另一台笔记本开启无线应该就可以搜索到名为netname的网络了。
+
+
+   
+
+
+
+
+   不过呢，这种方法每次关机后无线网络关闭，开机后需要重新运行一下两句话，建议各位把这两句话保存好，每次运行，或者建立成.bat文件。
+
+
+   netsh wlan set hostednetwork mode=allow ssid=tanmin key=dashijie
+
+netsh wlan start hostednetwork

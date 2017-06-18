@@ -1,0 +1,16 @@
+搜索引擎早期重要论文推荐系列【8】《Implementation of a Modern Web Search Engine Cluster》本文发表于2003年，在纽约石溪大学Tzi-cker Chiueh教授负责下，耗时3年完成的一个搜索引擎原型，以此原型诞生了一些重要论文，本文是其中最重要的一篇概述论文，其中对方方面面都有阐述和介绍，包括流水线，自行开发的集群通信机制Information Service（IS）等等。其中给出的一些参考数据非常有价值。 
+
+
+    Yuntis的源代码可以在【1】中找到，但目前已经无法下载，有兴趣的朋友可以和作者Maxim Lifantsev联系索要。
+
+
+    可惜的是Yuntis并没有掀起什么风浪，虽然自称是现代搜索引擎，但由于靠经费资助，而没有实际收入来源，没有坚持多久就被搁置了，除了贡献这些论文以外，并没有实际的价值。IS的基本想法和2005年诞生的Hadoop基本一致，但无论从先进性还是商业性都差距很大，Yuntis在搜索引擎行业的知名度也非常有限，滚入了历史的洪流之中。
+
+
+    
+
+
+   论文下载：http://www.ecsl.cs.sunysb.edu/tr/TR136.pdf
+
+
+   【1】http://www.ecsl.cs.sunysb.edu/yuntis/

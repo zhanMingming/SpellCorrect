@@ -1,0 +1,556 @@
+MFC多文档中opencv处理图像打开、保存需要在C**Doc和C**View中进行相应修改
+
+
+   
+
+
+
+
+   图像打开：
+
+
+   Doc.cpp中：
+
+
+   
+
+
+   BOOL CCVMFCDoc::Load(IplImage** pp, LPCTSTR csFilename)
+{
+	IplImage* pImg=NULL;
+
+	pImg = cvLoadImage(csFilename,-1);      //  读图像文件(DSCV)
+	if (!pImg) return(false);
+	cvFlip(pImg);      //  与 DIB 像素结构一致
+	if (*pp) {
+		cvReleaseImage(pp);
+	}
+	(*pp)=pImg;
+	m_Display=0;
+	return(true);
+}
+
+
+   BOOL CCVMFCDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+	if(!CDocument::OnOpenDocument(lpszPathName))	return false;
+	Load(&amp;pImg,lpszPathName);
+	if(pImg) return true;
+	return false;
+}
+
+图像保存：
+
+   
+
+
+   
+
+
+   1.Doc.cpp中
+
+
+   
+
+
+   BOOL CCVMFCDoc::Save(LPCTSTR csFilename, IplImage* pImg)
+{
+	int   bl;
+	cvFlip(pImg);      //  恢复原 OpenCV 位图结构
+	bl=cvSaveImage(csFilename,pImg); //  图像存盘
+	return(bl);
+}
+
+   
+
+
+   2.View.cpp中
+
+
+   
+
+
+   
+
+
+   void CCVMFCView::OnFileSaveAs()//图像保存
+{
+	CFileDialog dlg(false,&quot;*.bmp&quot;,&quot;Test.bmp&quot;,OFN_HIDEREADONLY |OFN_OVERWRITEPROMPT,&quot;保存为(*.bmp)|*.bmp|所有文件(*.*)|*.*||&quot;);
+	CString strPath(&quot;&quot;);
+	if(dlg.DoModal()==IDOK)
+	{
+		cvFlip(workImg);
+		strPath=dlg.GetPathName();
+		cvSaveImage(strPath,workImg);
+		cvFlip(workImg);
+	}
+}
+
+
+
+
+   
+
+
+   
+
+
+   
+
+
+
+
+   整体代码如下：
+
+
+   
+
+
+   
+   // CVMFCDoc.h : CCVMFCDoc 类的接口
+//@Author:ZrqSophia
+//@2012-3-2
+
+
+#pragma once
+
+
+class CCVMFCDoc : public CDocument
+{
+protected: // 仅从序列化创建
+	CCVMFCDoc();
+	DECLARE_DYNCREATE(CCVMFCDoc)
+
+// 属性
+public:
+
+// 操作
+public:
+
+// 重写
+public:
+	virtual BOOL OnNewDocument();
+	virtual void Serialize(CArchive&amp; ar);
+
+// 实现
+public:
+	virtual ~CCVMFCDoc();
+#ifdef _DEBUG
+	virtual void AssertValid() const;
+	virtual void Dump(CDumpContext&amp; dc) const;
+#endif
+
+protected:
+
+// 生成的消息映射函数
+protected:
+	DECLARE_MESSAGE_MAP()
+public:
+	IplImage* pImg;
+	int m_Display;
+	BOOL Load(IplImage** pp, LPCTSTR csFilename);
+	BOOL Save(LPCTSTR csFilename, IplImage* pImg);
+	BOOL OnOpenDocument(LPCTSTR lpszPathName);
+};
+
+
+
+   // CVMFCDoc.cpp : CCVMFCDoc 类的实现
+//Author:ZrqSophia
+//2012-3-2
+
+#include &quot;stdafx.h&quot;
+#include &quot;CVMFC.h&quot;
+
+#include &quot;CVMFCDoc.h&quot;
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// CCVMFCDoc
+
+IMPLEMENT_DYNCREATE(CCVMFCDoc, CDocument)
+
+BEGIN_MESSAGE_MAP(CCVMFCDoc, CDocument)
+END_MESSAGE_MAP()
+
+
+// CCVMFCDoc 构造/析构
+
+CCVMFCDoc::CCVMFCDoc()
+: pImg(NULL)
+, m_Display(0)
+{
+	// TODO: 在此添加一次性构造代码
+
+}
+
+CCVMFCDoc::~CCVMFCDoc()
+{
+}
+
+BOOL CCVMFCDoc::OnNewDocument()
+{
+	if (!CDocument::OnNewDocument())
+		return FALSE;
+
+	// TODO: 在此添加重新初始化代码
+	// (SDI 文档将重用该文档)
+
+	return TRUE;
+}
+
+
+
+
+// CCVMFCDoc 序列化
+
+void CCVMFCDoc::Serialize(CArchive&amp; ar)
+{
+	if (ar.IsStoring())
+	{
+		// TODO: 在此添加存储代码
+	}
+	else
+	{
+		// TODO: 在此添加加载代码
+	}
+}
+
+
+// CCVMFCDoc 诊断
+
+#ifdef _DEBUG
+void CCVMFCDoc::AssertValid() const
+{
+	CDocument::AssertValid();
+}
+
+void CCVMFCDoc::Dump(CDumpContext&amp; dc) const
+{
+	CDocument::Dump(dc);
+}
+#endif //_DEBUG
+
+
+// CCVMFCDoc 命令
+
+BOOL CCVMFCDoc::Load(IplImage** pp, LPCTSTR csFilename)
+{
+	IplImage* pImg=NULL;
+
+	pImg = cvLoadImage(csFilename,-1);      //  读图像文件(DSCV)
+	if (!pImg) return(false);
+	cvFlip(pImg);      //  与 DIB 像素结构一致
+	if (*pp) {
+		cvReleaseImage(pp);
+	}
+	(*pp)=pImg;
+	m_Display=0;
+	return(true);
+}
+
+BOOL CCVMFCDoc::Save(LPCTSTR csFilename, IplImage* pImg)
+{
+	int   bl;
+	cvFlip(pImg);      //  恢复原 OpenCV 位图结构
+	bl=cvSaveImage(csFilename,pImg); //  图像存盘
+	return(bl);
+}
+
+BOOL CCVMFCDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+	if(!CDocument::OnOpenDocument(lpszPathName))	return false;
+	Load(&amp;pImg,lpszPathName);
+	if(pImg) return true;
+	return false;
+}
+
+
+
+   // CVMFCView.h : CCVMFCView 类的接口
+//@Author:Zrqsophia
+//@2012-3-2
+
+#pragma once
+
+
+class CCVMFCView : public CScrollView
+{
+protected: // 仅从序列化创建
+	CCVMFCView();
+	DECLARE_DYNCREATE(CCVMFCView)
+
+// 属性
+public:
+	CCVMFCDoc* GetDocument() const;
+
+// 操作
+public:
+
+// 重写
+public:
+	virtual void OnDraw(CDC* pDC);  // 重写以绘制该视图
+	virtual BOOL PreCreateWindow(CREATESTRUCT&amp; cs);
+protected:
+	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
+	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+
+// 实现
+public:
+	virtual ~CCVMFCView();
+#ifdef _DEBUG
+	virtual void AssertValid() const;
+	virtual void Dump(CDumpContext&amp; dc) const;
+#endif
+
+protected:
+	IplImage* saveImg;
+	IplImage* workImg;
+
+	LPBITMAPINFO m_lpBmi;
+
+	int     m_CaptFlag;
+	int     m_dibFlag;
+	int     m_SaveFlag;
+	int     m_ImageType;
+// 生成的消息映射函数
+protected:
+	afx_msg void OnFilePrintPreview();
+	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+	DECLARE_MESSAGE_MAP()
+public:
+	virtual void OnInitialUpdate();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnFileSaveAs();
+	afx_msg void OnColorImageRefresh();
+};
+
+#ifndef _DEBUG  // CVMFCView.cpp 中的调试版本
+inline CCVMFCDoc* CCVMFCView::GetDocument() const
+   { return reinterpret_cast&lt;CCVMFCDoc*&gt;(m_pDocument); }
+#endif
+
+
+   // CVMFCView.cpp : CCVMFCView 类的实现
+//@Author:ZrqSophia
+//@2012-3-2
+
+#include &quot;stdafx.h&quot;
+#include &quot;CVMFC.h&quot;
+
+#include &quot;CVMFCDoc.h&quot;
+#include &quot;CVMFCView.h&quot;
+#include &quot;resource.h&quot;
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// CCVMFCView
+
+IMPLEMENT_DYNCREATE(CCVMFCView, CScrollView)
+
+BEGIN_MESSAGE_MAP(CCVMFCView, CScrollView)
+	// 标准打印命令
+	ON_COMMAND(ID_FILE_PRINT, CScrollView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, CScrollView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CScrollView::OnFilePrintPreview)
+	ON_WM_SIZE()
+	ON_COMMAND(ID_FILE_SAVE_AS, &amp;CCVMFCView::OnFileSaveAs)
+	ON_COMMAND(ID_COLOR_IMAGE_REFRESH, &amp;CCVMFCView::OnColorImageRefresh)
+END_MESSAGE_MAP()
+
+// CCVMFCView 构造/析构
+
+CFile fCapture;
+CFileException eCapture;
+char pbuf[20];
+int  captSetFlag=0;
+
+CCVMFCView::CCVMFCView()
+{
+	// TODO: 在此处添加构造代码
+	saveImg    = NULL;
+	workImg    = NULL;
+
+	m_lpBmi    = 0;
+
+	m_CaptFlag = 0;
+	m_dibFlag  = 0;
+	m_ImageType= 0;
+
+	CSize sizeTotal;
+	sizeTotal.cx = sizeTotal.cy = 100;
+	SetScrollSizes(MM_TEXT, sizeTotal);
+}
+
+CCVMFCView::~CCVMFCView()
+{
+	if (saveImg)
+		cvReleaseImage(&amp;saveImg);    //  释放位图
+	if (workImg)
+		cvReleaseImage(&amp;workImg);
+
+	if (m_lpBmi)
+		free(m_lpBmi); //  释放位图信息
+}
+
+BOOL CCVMFCView::PreCreateWindow(CREATESTRUCT&amp; cs)
+{
+	// TODO: 在此处通过修改
+	//  CREATESTRUCT cs 来修改窗口类或样式
+
+	return CScrollView::PreCreateWindow(cs);
+}
+
+// CCVMFCView 绘制
+
+void CCVMFCView::OnDraw(CDC* pDC)
+{
+	CCVMFCDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	// TODO: 在此处为本机数据添加绘制代码
+	if(pDoc-&gt;pImg)
+	{
+		if(pDoc-&gt;m_Display==0)
+		{
+			imageClone(pDoc-&gt;pImg,&amp;saveImg);
+			m_dibFlag=imageClone(saveImg,&amp;workImg);
+
+			m_ImageType=imageType(workImg);
+			m_SaveFlag=m_ImageType;
+			pDoc-&gt;m_Display=1;
+		}
+	}
+
+	if (m_dibFlag) {   //  DIB 结构改变
+		if (m_lpBmi)
+			free(m_lpBmi);
+		m_lpBmi=CtreateMapInfo(workImg,m_dibFlag);
+		m_dibFlag=0;
+
+		CSize sizeTotal;
+		sizeTotal=CSize(workImg-&gt;width,workImg-&gt;height);
+		SetScrollSizes(MM_TEXT,sizeTotal);
+	}
+
+	char* pBits;
+	if(workImg)
+		pBits=workImg-&gt;imageData;
+
+	if(workImg)
+		StretchDIBits(pDC-&gt;m_hDC,
+		0,0,workImg-&gt;width,workImg-&gt;height,
+		0,0,workImg-&gt;width,workImg-&gt;height,
+		pBits,m_lpBmi,DIB_RGB_COLORS,SRCCOPY);
+}
+
+
+// CCVMFCView 打印
+
+
+void CCVMFCView::OnFilePrintPreview()
+{
+	AFXPrintPreview(this);
+}
+
+BOOL CCVMFCView::OnPreparePrinting(CPrintInfo* pInfo)
+{
+	// 默认准备
+	return DoPreparePrinting(pInfo);
+}
+
+void CCVMFCView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+{
+	// TODO: 添加额外的打印前进行的初始化过程
+}
+
+void CCVMFCView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+{
+	// TODO: 添加打印后进行的清理过程
+}
+
+void CCVMFCView::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	ClientToScreen(&amp;point);
+	OnContextMenu(this, point);
+}
+
+void CCVMFCView::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+	theApp.GetContextMenuManager()-&gt;ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
+}
+
+
+// CCVMFCView 诊断
+
+#ifdef _DEBUG
+void CCVMFCView::AssertValid() const
+{
+	CScrollView::AssertValid();
+}
+
+void CCVMFCView::Dump(CDumpContext&amp; dc) const
+{
+	CScrollView::Dump(dc);
+}
+
+CCVMFCDoc* CCVMFCView::GetDocument() const // 非调试版本是内联的
+{
+	ASSERT(m_pDocument-&gt;IsKindOf(RUNTIME_CLASS(CCVMFCDoc)));
+	return (CCVMFCDoc*)m_pDocument;
+}
+#endif //_DEBUG
+
+
+// CCVMFCView 消息处理程序
+
+void CCVMFCView::OnInitialUpdate()
+{
+	CScrollView::OnInitialUpdate();
+
+	CSize sizeTotal;
+	// TODO: calculate the total size of this view
+	sizeTotal.cx = sizeTotal.cy = 100;
+	SetScrollSizes(MM_TEXT, sizeTotal);
+}
+
+void CCVMFCView::OnSize(UINT nType, int cx, int cy)
+{
+	CScrollView::OnSize(nType, cx, cy);
+
+	if (workImg) {     //  刷新窗口画面
+		CSize  sizeTotal;
+		sizeTotal = CSize(workImg-&gt;width,workImg-&gt;height);
+		SetScrollSizes(MM_TEXT, sizeTotal);   //  设置滚动条
+	}
+}
+
+void CCVMFCView::OnFileSaveAs()
+{
+	CFileDialog dlg(false,&quot;*.bmp&quot;,&quot;Test.bmp&quot;,OFN_HIDEREADONLY |OFN_OVERWRITEPROMPT,&quot;保存为(*.bmp)|*.bmp|所有文件(*.*)|*.*||&quot;);
+	CString strPath(&quot;&quot;);
+	if(dlg.DoModal()==IDOK)
+	{
+		cvFlip(workImg);
+		strPath=dlg.GetPathName();
+		cvSaveImage(strPath,workImg);
+		cvFlip(workImg);
+	}
+}
+void CCVMFCView::OnColorImageRefresh()
+{
+	CCVMFCDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc-&gt;m_Display=0;
+	Invalidate();
+}

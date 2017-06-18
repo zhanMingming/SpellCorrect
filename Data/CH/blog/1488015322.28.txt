@@ -1,0 +1,301 @@
+使用JSR365规范构建J2EE websocket服务端和客户端应用JSR365是java制定的websocket编程规范，属于Java EE 7的一部分。下面这段描述摘录自官网对JSR365的说明:
+
+
+   JSR 356, Java API for WebSocket, specifies the API that Java developers can use when they want to integrate WebSockets into their applications—both on the server side as well as on the Java client side. Every implementation of the WebSocket protocol that claims to be compliant with JSR 356 must implement this API. As a consequence, developers can write their WebSocket-based applications independent of the underlying WebSocket implementation. This is a huge benefit, because it prevents a vendor-lock and allows for more choices and freedom of libraries and application servers.
+
+JSR 356 is a part of the upcoming Java EE 7 standard; hence, all Java EE 7–compliant application servers will have an implementation of the WebSocket protocol that adheres to the JSR 356 standard. Once they are established, WebSocket client and server peers are symmetrical. The difference between a client API and a server API is, therefore, minimal. JSR 356 defines a Java client API as well, which is a subset of the full API required in Java EE 7.
+
+websocket和socket一样，既有客户端编程，也有服务端编程，JSR365制定了websocket客户端和服务端编程常用的API。我的另一篇文章介绍了使用Tomcat自己的websocket也能够实现web推送，但是那篇文章中的代码只能运行在tomcat容器。我们使用JSR365编写的websocket程序，能够在所有web容器中运行，只要这个容器实现了J2EE
+ 7规范。我使用的是Tomcat7.0.62，这个版本的Tomcat实现了J2EE 7规范。
+
+   
+
+
+
+
+   为了使用JSR365，我们需要在pom.xml加入编译期的依赖：
+
+
+   &lt;dependency&gt;
+	&lt;groupId&gt;javax.websocket&lt;/groupId&gt;
+	&lt;artifactId&gt;javax.websocket-api&lt;/artifactId&gt;
+	&lt;version&gt;1.1&lt;/version&gt;
+	&lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;
+
+
+
+
+   
+
+
+   Tomcat等web容器自带的有JSR365的API，这个很JSP/Servlet是一样的，我们的web项目只是编译期需要这个依赖，运行的时候并不需要。
+
+
+   
+
+
+
+
+   JSR365编程可以参考这篇文章，下面我们以interface-driven风&#26684;为例，编写一个websocket服务端程序。
+
+
+   package net.aty.javawebsocket;
+
+import javax.websocket.CloseReason;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+
+@ServerEndpoint(&quot;/websocket&quot;)
+public class MyOwnEndpoint extends Endpoint {
+
+	@Override
+	public void onOpen(Session session, EndpointConfig config) {
+		System.out.println(&quot;websocket connection is opened.&quot;);
+		session.addMessageHandler(new MyMessageListener(session));
+	}
+
+	@Override
+	public void onClose(Session session, CloseReason closeReason) {
+		System.out.println(&quot;websocket connection is closed.&quot; + closeReason);
+	}
+
+	@Override
+	public void onError(Session session, Throwable thr) {
+		System.out.println(&quot;websocket connection is error.&quot; + thr);
+	}
+}
+
+   package net.aty.javawebsocket;
+
+import java.io.IOException;
+import java.util.Set;
+
+import javax.websocket.MessageHandler;
+import javax.websocket.Session;
+
+public class MyMessageListener implements MessageHandler.Whole&lt;String&gt; {
+
+	private Session session;
+
+	public MyMessageListener(Session session) {
+		this.session = session;
+	}
+
+	@Override
+	public void onMessage(String message) {
+
+		System.out.println(&quot;i receive a message=&quot; + message);
+
+		Set&lt;Session&gt; openSessions = session.getOpenSessions();
+
+		for (Session each : openSessions) {
+			try {
+				each.getBasicRemote().sendText(message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+}
+
+
+   
+
+
+
+Endpoint负责建立websocket连接，MessageHandler负责处理通过websocket发送的消息。上面代码我们在Endpoint打开连接的时候，注册MessageHandler；在MessageHandler中，将接收到的消息广播发送给所有websocket客户端。
+
+   
+
+
+
+
+   现在我们看下websocket客户端编程，我们使用Chrome浏览器，chrome支持HTML5 Websocket规范。
+
+
+   &lt;script&gt;
+	var socket = new WebSocket(&#39;ws://localhost:8080/JavaWebsocket/websocket&#39;);
+
+	socket.onopen = function(event) {
+		console.log(&quot;onopen:&quot; + event.data);
+	};
+
+	socket.onmessage = function(event) {
+		console.log(&quot;onmessage:&quot; + event.data);
+	};
+
+	socket.onclose = function(event) {
+		console.log(&quot;onclose:&quot; + event.data);
+	};
+
+	socket.onerror = function(event) {
+		console.log(&quot;onerror:&quot; + event.data);
+	};
+	
+	function send()
+	{
+		socket.send(document.getElementById(&quot;content&quot;).value);
+	}
+&lt;/script&gt;
+
+&lt;body&gt;
+
+	&lt;textarea rows=&quot;5&quot; cols=&quot;100&quot; id=&quot;content&quot;&gt;&lt;/textarea&gt;
+
+	&lt;input type=&quot;button&quot; value=&quot;send&quot; onclick=&quot;send()&quot; /&gt;
+&lt;/body&gt;
+
+
+   
+
+
+   
+
+
+
+启动tomcat后，通过chrome浏览器访问http://localhost:8080/JavaWebsocket/index.html，打开2个客户端，可以看到2个客户端都能够收到彼此发送的消息。
+
+   
+
+
+
+
+
+
+
+上面我们使用JSR365编写了服务端websocket，并放在了JSR365的实现Tomcat7中运行；客户端编程使用的是Chrome浏览器。下面我们用JSR365客户端编程：
+
+
+   package net.aty.javawebsocket.client;
+
+import javax.websocket.ClientEndpoint;
+import javax.websocket.CloseReason;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.Session;
+
+@ClientEndpoint
+public class MyClientEndpoint extends Endpoint {
+
+	@Override
+	public void onOpen(Session session, EndpointConfig config) {
+		System.out.println(&quot;websocket connection is opened.&quot;);
+		session.addMessageHandler(new MyClientMessageListener());
+	}
+
+	@Override
+	public void onClose(Session session, CloseReason closeReason) {
+		System.out.println(&quot;websocket connection is closed.&quot; + closeReason);
+	}
+
+	@Override
+	public void onError(Session session, Throwable thr) {
+		System.out.println(&quot;websocket connection is error.&quot; + thr);
+	}
+
+}
+
+   package net.aty.javawebsocket.client;
+
+import javax.websocket.MessageHandler;
+
+public class MyClientMessageListener implements MessageHandler.Whole&lt;String&gt; {
+
+	@Override
+	public void onMessage(String message) {
+		System.out.println(&quot;i receive a message=&quot; + message);
+	}
+}
+
+
+   
+
+
+   
+
+
+
+可以看到这和websocket服务端编程很像，差别在于MyClientEndpoint只负责建立与websocket服务端的连接：
+   The main difference between @ClientEndpoint and a ServerEndpoint is that the ClientEndpoint does not accept a path value element, because it is not listening to incoming requests.
+
+   服务端的MessageHandler接收到消息后需要将消息广播发送给所有客户端，而客户端的MessageHandler只是处理自己的消息即可。
+
+
+   
+
+
+
+
+   现在websocket编程结束了，同服务端编程一样，JSR365仅仅是一个规范。服务端websocket我们使用的是实现者Tomcat，现在我们需要挑选websocket client的实现者。在maven仓库搜索websocket，可以找到很多的实现者。
+
+
+   
+
+
+
+
+
+
+   我选用的客户端实现者是jetty，在pom.xml中加入：
+
+
+   &lt;dependency&gt;
+	&lt;groupId&gt;org.eclipse.jetty.websocket&lt;/groupId&gt;
+	&lt;artifactId&gt;javax-websocket-client-impl&lt;/artifactId&gt;
+	&lt;version&gt;9.2.14.v20151106&lt;/version&gt;
+&lt;/dependency&gt;
+
+
+
+
+   
+
+
+   下面是我们使用jetty实现的，websocket客户端的测试代码：
+
+
+   package net.aty.javawebsocket.client;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URI;
+
+import javax.websocket.ContainerProvider;
+import javax.websocket.Session;
+import javax.websocket.WebSocketContainer;
+
+public class TestUseJetty {
+
+	public static void main(String[] args) throws Exception {
+		WebSocketContainer container = ContainerProvider
+				.getWebSocketContainer();
+
+		Session session = container.connectToServer(MyClientEndpoint.class,
+				new URI(&quot;ws://localhost:8080/JavaWebsocket/websocket&quot;));
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+		while (true) {
+			String input = br.readLine();
+
+			if (input.equals(&quot;exit&quot;)) {
+				break;
+			}
+			session.getBasicRemote().sendText(input);
+		}
+	}
+}
+
+
+   
+
+
+   
+
+
+
+运行效果如下：可以看到java main和chrome都能够收到彼此发送的消息。

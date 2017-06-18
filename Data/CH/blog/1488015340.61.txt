@@ -1,0 +1,290 @@
+学习prototypejs中的继承实现机制(一): Object.extend()、Class.create()、Class#addMethods()的使用同underscore.js库一样，prototypejs也提供了丰富的工具方法来操作javascript内置对象(Array，Function，Object)等。工具方法不做过多介绍，自己去看就好，这里主要关注下prototypejs继承的实现机制。我使用的是prototype-1.7.3.js，我们看一段有趣的代码：
+
+
+   var Animal = Class.create({
+      initialize: function(name, sound) {
+ this.name  = name;
+ this.sound = sound;
+      },
+  
+      speak: function() {
+ console.log(&quot;in Animal=&quot;+this.name + &quot; says: &quot; + this.sound + &quot;!&quot;);
+      }
+    });
+	
+var Dog = Class.create(Animal, {
+	initialize: function($super, name) {
+		$super(name, &#39;dog-sound&#39;);
+	},
+	speak: function($super){
+		$super();
+		console.log(&quot;Haha in Dog.&quot;);
+	}
+});
+
+var oneDog = new Dog(&quot;aty&#39;s dog&quot;);
+oneDog.speak();
+// output:
+// in Animal=aty&#39;s dog says: dog-sound!
+// Haha in Dog.是不是和java中的继承有点像，我们居然可以使用$super来调用父类中的方法。不过有些差别：java中可以使用super调用父类中的任何公开的方法，但是在prototypejs里面$super只是一个方法，不是父对象。我们先研究下，prototypejs是如何做到$super，后面再看我们能不能改造它，让$super更像java中的super关键字。
+
+   
+
+
+   
+
+
+
+
+   简单说下prototypejs中的Object.extend()，功能其实和jQuery库中的$.extend()，underscore库_.extend()功能很类&#20284;，用来将一个对象上的属性和方法拷贝到另一个对象上。只不过jQuery将extend函数挂在了$对象上，underscore将extend挂在了_对象上，而prototypejs则将它挂在了Object对象上，这些类库都没有修改js内置函数的原型。看下prototypejs中object.js的注释:
+
+
+    Because it is dangerous and invasive to augment `Object.prototype` (i.e.,
+ add instance methods to objects), all these methods are static methods that
+ take an [[Object]] as their first parameter.
+
+   
+
+
+
+
+   知乎上的这篇文章讨论了“为什么不要直接在Object.prototype上定义方法?”。所以prototypejs也并没有修改Object.prototype，而是将Object相关的方法挂在了Object函数上。我们知道javascript中函数其实也是对象，也能添加自定义的方法或者属性。下面这段代码是完全正确的，prototypejs库也是采用了类&#20284;的方法，扩展了Object(这个既是函数，又是对象的东西)。
+
+
+   Object.plus = function(a,b){return a + b;};
+Object.owner = &quot;aty&quot;;
+alert(Object.owner);
+alert(Object.plus(1,2));
+
+
+   下面我们来看下Class.create()这个API的使用，主要是看懂API文档中的三段话：
+
+
+   第一段：
+
+
+   Class.create creates a class and returns a constructor function for instances of the class. Calling the constructor function (typically as part of a new statement) will invoke the class&#39;s initialize method.这个so easy，不过还是补充一段代码一看就懂了。
+   var Base = Class.create({
+	initialize : function(){
+		console.log(&quot;i will be invoked when call new Base&quot;);
+		for(var i = 0; i&lt;arguments.length;i++)
+		{
+			console.log((i+1)+ &quot; param=&quot;+arguments[i]);
+		}
+		
+	}
+});
+
+new Base(&quot;a&quot;,1);
+
+
+
+第二段：这个主要介绍create()函数参数的，有点复杂，我们慢慢分解。
+   Class.create accepts two kinds of arguments. If the first argument is a Class, it&#39;s used as the new class&#39;s superclass, and all its methods are inherited. Otherwise, any arguments passed are treated as objects, and their methods are copied over (&quot;mixed in&quot;) as instance methods of the new class.
+
+
+   
+
+
+   先看下面这段代码，会报错：Uncaught TypeError: Cannot read property 'push' of undefined。
+
+
+   
+
+
+   // javascript中所谓的类就是函数
+function MyParent(id)
+{
+	this.id = id;
+}
+
+MyParent.funcA = function(){
+	console.log(&quot;funcA in object&quot;);
+}
+
+MyParent.prototype.funcB = function(){
+	console.log(&quot;funcA in prototype&quot;);
+}
+
+var MyChild = Class.create(MyParent,{
+	funcC : function(name){
+		console.log(&quot;&quot;);
+	}
+});我们自己创建了一个javascript类MyParent，希望用Class.create()实现继承，但是prototypejs却报错了。我们看class.js的一段源代码:
+    function create() {
+    var parent = null, properties = $A(arguments);
+	//判断第一个参数是否是函数(也就是类)
+    if (Object.isFunction(properties[0]))
+      parent = properties.shift();
+
+    function klass() {
+      this.initialize.apply(this, arguments);
+    }
+
+    Object.extend(klass, Class.Methods);
+    klass.superclass = parent;
+    klass.subclasses = [];
+
+	// 如果第一个参数是函数，会直接读取subclasses等属性
+    if (parent) {
+      subclass.prototype = parent.prototype;
+      klass.prototype = new subclass;
+      parent.subclasses.push(klass);
+    }
+	......
+}很显然第一个参数是函数，那么prototypejs就会读取它的subclasses等属性。很显然我们自定义的函数是没有subclasses属性的，而Class.create()返回的函数是有这些属性的。这提示我们：create()第一个参数如果是函数，那么必须要是Class.create()返回的函数，不能是我们自定义的函数。比如下面这段代码就不会报错了：
+   // create的第一个参数不是函数
+var MyBase = Class.create({
+		hi:function(){console.log(&quot;hi&quot;);}
+	});
+
+// 第一参数是Class.create()的返回值
+var MyChild = Class.create(MyBase,{
+		funcC : function(name){
+			console.log(&quot;right&quot;);
+		}
+});
+
+new MyChild().hi();
+new MyChild().funcC();
+
+我们再看一下create()第一个参数是objec时，会有什么效果。
+   var obj = {};
+	
+var AfterMixIn = Class.create(obj, {id:&quot;123&quot;,name:&quot;aty&quot;},{
+	funcC : function(name){
+		console.log(&quot;name=&quot;+name);
+	}
+});
+
+console.log(obj.id);//undefined
+
+var newObject = new AfterMixIn(); 
+
+newObject.funcC(&quot;aty&quot;);//name=aty
+
+console.log(&quot;id=&quot; + newObject.id);//id=123
+
+//error: afterMixIn.funcC is not a function
+AfterMixIn.funcC(&quot;aty&quot;);输出结果已经放在上面的代码注释里了，可以看到：create()并不会修改第一个参数obj，而是返回了一个新函数(prototypejs中的类)AfterMixIn。类AfterMixIn(既是javascript中的函数，也是对象)本身并没有增加属性id、name和方法funcC，必需通过创建AfterMixIn类的对象来访问这些属性和方法。
+
+   
+
+
+   
+
+
+
+
+   上面这段代码稍微修改下，在chrome下debug，可以看到这些新增的id、name、funcC其实是存储在AfterMixIn这个函数的原型中的。
+
+
+   var AfterMixIn = Class.create({}, {id:&quot;123&quot;,name:&quot;aty&quot;},{
+	funcC : function(name){
+		console.log(&quot;name=&quot;+name);
+	}
+});
+
+var newObject1 = new AfterMixIn(); 
+var newObject2 = new AfterMixIn(); 
+console.log(&quot;id in newObject1=&quot;+newObject1.id);//123
+console.log(&quot;id in newObject2=&quot;+newObject2.id);//123
+
+AfterMixIn.prototype.id=&quot;update&quot;;
+
+console.log(&quot;id in newObject1=&quot;+newObject1.id);//update
+console.log(&quot;id in newObject2=&quot;+newObject2.id);//update
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+第三段：主要讲$super怎么使用的，本文刚开始的代码就使用了$super，这个很容易不再赘述。
+   If a subclass overrides an instance method declared in a superclass, the subclass&#39;s method can still access the original method. To do so, declare the subclass&#39;s method as normal, but insert $super as the first argument. This makes $super available as a method for use within the function.
+
+我们接着看下Class#addMethods()这个API的使用，它的功能很简单“To extend a class after it has been defined”。
+   var Animal = Class.create({
+	initialize:function(name){
+		this.name = name;
+	}
+	
+});
+
+var Person = Class.create(Animal,{
+	say : function(msg){
+		console.log(this.name + &quot; say &#39;&quot; + msg + &quot;&#39;!&quot;);
+	}
+});
+	
+
+var po = new Person(&quot;aty&quot;);
+
+Person.addMethods({
+	smile : function(msg){
+		console.log(this.name + &quot; smile &#39;&quot; + msg + &quot;&#39;!&quot;);
+	}
+});
+
+Person.prototype.anotherSmile = function(msg){
+	console.log(this.name + &quot; anotherSmile &#39;&quot; + msg + &quot;&#39;!&quot;);
+}
+	 
+po.smile(&quot;learn is happy.&quot;);
+po.anotherSmile(&quot;learn is happy.&quot;);简单吧，Class#addMethods()其实就是将方法加入到了函数的原型中，被该构造函数创建的所有对象共享。
+
+
+
+至此应该知道怎么使用Object.extend()、Class.create()、Class#addMethods()了。现在看官方的“Defining classes and inheritance”这篇tutorial文章应该不陌生了。tutorial里面还提到了一个问题，需要关注：
+   var Logger = Class.create({
+	  initialize: function() { },
+	  log: [],
+	  write: function(message) {
+		this.log.push(message);
+	  }
+});
+    
+var logger = new Logger;
+logger.write(&#39;foo&#39;);
+logger.write(&#39;bar&#39;);
+
+
+var another = new Logger();
+console.log(another.log);//[&quot;foo&quot;, &quot;bar&quot;]
+
+我们知道这些属性和方法都是放在javascript函数的prototype中的，会被构造函数创建的所有对象共享。由于javascript中原型读写的不对等性，会导致js也区分基本数据类型和引用数据类型。和上面代码类&#20284;，下面这段代码就不会有问题，不同Logger对象的count么有影响。
+
+   
+
+
+   var Logger = Class.create({
+  initialize: function() { },
+  count: 0,
+  write: function(message) {
+    this.log.push(message);
+  }
+});
+    
+var logger = new Logger;
+logger.count++;
+logger.count++;
+console.log(logger.count);//2
+
+var another = new Logger();
+console.log(another.count);//0
+
+如果你对于javascript原型的读写不等性、原型的copy-on-write不太理解，可以看下我的另外2篇文章。
+
+   
+
+
+   javascript原型的修改与重写(覆盖)差别
+
+javascript读取和修改原型特别需要注意的事儿，因为原型的读写不具有对等性

@@ -1,0 +1,150 @@
+Kth LargestKth Largest
+
+
+   
+
+
+   Totalsubmit: 970  Accepted: 168  
+
+
+
+
+
+   Description
+
+
+   There are two sequences A and B with N (1&lt;=N&lt;=10000) elements each. All of the elements are positive integers. Given C=A*B, where '*' representing Cartesian product, c = a*b, where c belonging to C, a belonging to A and b belonging to B. Your job is to find the K'th largest element in C, where K begins with 1.
+
+
+   Input
+
+
+   Input file contains multiple test cases. The first line is the number of test cases. There are three lines in each test case. The first line of each case contains two integers N and K, then the second line represents elements in A and the following line represents elements in B. All integers are positive and no more than 10000. K may be more than 10000.
+
+
+   Output
+
+
+   For each case output the K'th largest number.
+
+
+   Sample Input
+
+
+   22 13 45 62 32 14 8
+
+
+   Sample Output
+
+
+   248
+
+
+
+
+
+
+
+
+
+	Submit
+
+
+
+
+   
+
+
+   
+
+
+   二分套二分，详细思路见注释
+
+
+   /*
+思路：
+left=a[0]*b[0];
+right=a[n-1]*b[n-1];
+mid=(left+right)/2;
+while(left&lt;=right)
+{
+	if(solve(mid))
+		right=mid-1;
+	else
+		left=mid+1;
+}
+
+bool solve(mid)//判断&lt;=mid的个数是否比m（要求值）大
+{
+	t=how many numbers smaller than mid;
+	//how to calculate t:
+	for(i=0;i&lt;n-1;i++)
+	{
+		int l=0;
+		int r=n-1;
+		while(l&lt;=r)
+		{
+			int mm=(l+r)/2;
+			if(a[i]*b[mm]&gt;mid)
+				r=mm-1;
+			else
+				l=mm+1;
+		}
+		t+=l;
+		if(t&gt;m)
+			break;
+	}
+	m=need m numbers smaller than mid;
+	if(t&lt;m)//mid 小了
+		return false;
+	else//mid 大了
+		return true;
+}*/
+#include &lt;iostream&gt; 
+#include &lt;cstdio&gt; 
+using namespace std; 
+
+const int N = 10005; 
+int A[N], B[N]; 
+int main(void) 
+{ 
+	int n, m, cas; 
+	scanf("%d", &amp;cas); 
+	while (cas--) 
+	{ 
+		scanf("%d%d", &amp;n, &amp;m); 
+		for (int i = 0; i &lt; n; ++i)    
+			scanf("%d", A + i); 
+		for (int i = 0; i &lt; n; ++i)
+			scanf("%d", B + i); 
+		sort(A, A + n); 
+		sort(B, B + n); 
+		int l = A[0] * B[0], r = A[n - 1] * B[n - 1]; 
+		m = n * n - m + 1; 
+		while (l &lt;= r) 
+		{ 
+			int mid = (l + r) &gt;&gt; 1; //num_k
+			int lt = 0; 
+			for (int i = 0; i &lt; n; ++i) 
+			{ 
+				int a = 0, b = n - 1; 
+				while (a &lt;= b)
+				{ 
+					int c = (a + b) &gt;&gt; 1; 
+					int t = A[i] * B[c]; 
+					if (t &gt; mid)//mid is num_k
+						b = c - 1; 
+					else a = c + 1; 
+				} 
+				lt += a; 
+				if (lt &gt; m)   
+					break; 
+			} 
+			if (lt &gt;= m)//lt or m  represents how many numbers smaller than m		
+				r = mid - 1; 
+			else l = mid + 1; 
+		} 
+		printf("%d/n", l); 
+	} 
+	return 0;  
+}

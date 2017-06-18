@@ -1,0 +1,109 @@
+二叉树的遍历 非递归 C实现——先序遍历篇用两种方法先序遍历
+
+   1. 访问根-根节点入栈-若有左孩子，访问，入栈；若无，回到父节点（top）找右孩子访问右孩子；循环入栈
+
+
+   2. 循环 每次访问根节点-右孩子压栈-访问左孩子
+
+
+
+
+   原理：先序遍历：根左右，所以访问根-把右孩子压栈-先访问左孩子
+
+
+   我倾向于方法二，思路很清晰
+
+
+   
+
+
+   
+
+
+   #include &lt;iostream&gt;
+#include &quot;stack&quot;
+using namespace std;
+
+struct TNode
+{
+	TNode *left;
+	TNode *right;
+	int data;
+};
+
+TNode *Root;
+void Visit(TNode *cur)
+{
+	cout&lt;&lt;cur-&gt;data&lt;&lt;endl;
+}
+
+void preOrder1(TNode* root)//METHOD 1
+{
+	stack&lt;TNode*&gt; S;
+	while ((root != NULL) || !S.empty())
+	{
+		if (root != NULL)
+		{
+			Visit(root);
+			S.push(root); //先访问，再入栈 
+			root = root-&gt;left; // 依次访问左子树 
+		}
+		else
+		{
+			root = S.top();     // 回溯至父亲节点 
+			S.pop();
+			root = root-&gt;right;
+		}
+	}
+}
+
+stack&lt;TNode*&gt; ST2;
+void preOrder2(TNode *root)//METHOD 2
+{
+	ST2.push(root);
+	while(!ST2.empty())
+	{
+		if(root!=NULL)
+		{
+			Visit(root);
+			if(root-&gt;right!=NULL)
+				ST2.push(root-&gt;right);
+			root=root-&gt;left;
+		}
+		else
+		{
+			root=ST2.top();
+			ST2.pop();
+		}
+	}
+}
+
+void InitTree(TNode *root)
+{
+	root-&gt;data=1;
+	TNode* tree[10];
+
+	for (int i=0;i&lt;7;i++)
+	{
+		tree[i]=(TNode*) malloc(sizeof(TNode*));
+		tree[i]-&gt;data=i;
+		tree[i]-&gt;left=tree[i]-&gt;right=NULL;
+	}
+
+	tree[4]-&gt;right=tree[6];
+	tree[1]-&gt;left=tree[3];
+	tree[1]-&gt;right=tree[4];
+	tree[2]-&gt;left=tree[5];
+	tree[0]-&gt;left=tree[1];
+	tree[0]-&gt;right=tree[2];
+
+	Root=tree[0];
+}
+
+void main()
+{
+	Root=(TNode*) malloc(sizeof(TNode*));
+	InitTree(Root);
+	//preOrder1(Root);
+	preOrder2(Root);
+}

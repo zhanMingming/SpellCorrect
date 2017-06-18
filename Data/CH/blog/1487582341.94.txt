@@ -1,0 +1,107 @@
+Opencv 图像增强算法 图像检测结果本code通过直方图变换增强了图像对比度，实现了单通道图像增强。将图像灰度阈&#20540;拉伸到0-255，图像检测结果见底部
+
+
+   Keywords: 图像增强 增强对比度 直方图变换
+
+
+   
+
+
+   int ImageStretchByHistogram(IplImage *src1,IplImage *dst1)
+/*************************************************
+Function:      通过直方图变换进行图像增强，将图像灰度的域值拉伸到0-255
+src1: 单通道灰度图像    
+dst1:同样大小的单通道灰度图像 
+*************************************************/
+{
+	assert(src1-&gt;width==dst1-&gt;width);
+	double p[256],p1[256],num[256];
+	
+	memset(p,0,sizeof(p));
+	memset(p1,0,sizeof(p1));
+	memset(num,0,sizeof(num));
+	int height=src1-&gt;height;
+	int width=src1-&gt;width;
+	long wMulh = height * width;
+	
+	//statistics
+	for(int x=0;x&lt;src1-&gt;width;x++)
+	{
+		for(int y=0;y&lt;src1-&gt; height;y++){
+			uchar v=((uchar*)(src1-&gt;imageData + src1-&gt;widthStep*y))[x];
+				num[v]++;
+		}
+	}
+	//calculate probability
+	for(int i=0;i&lt;256;i++)
+	{
+		p[i]=num[i]/wMulh;
+	}
+
+	//p1[i]=sum(p[j]);	j&lt;=i;
+	for(int i=0;i&lt;256;i++)
+	{
+		for(int k=0;k&lt;=i;k++)
+			p1[i]+=p[k];
+	}
+
+	// histogram transformation
+	for(int x=0;x&lt;src1-&gt;width;x++)
+	{
+		for(int y=0;y&lt;src1-&gt; height;y++){
+			uchar v=((uchar*)(src1-&gt;imageData + src1-&gt;widthStep*y))[x];
+				((uchar*)(dst1-&gt;imageData + dst1-&gt;widthStep*y))[x]= p1[v]*255+0.5;     
+		}
+	}
+	return 0;
+}
+
+void CCVMFCView::OnImageAdjustContrast()
+{
+	if(workImg-&gt;nChannels&gt;1)
+		OnColorToGray();
+	Invalidate();
+	dst=cvCreateImage(cvGetSize(workImg),workImg-&gt;depth,workImg-&gt;nChannels);
+	ImageStretchByHistogram(workImg,dst);
+	m_dibFlag=imageReplace(dst,&amp;workImg);
+	Invalidate();
+}
+
+
+Experiment Result:
+
+   
+
+
+   
+
+
+                   原图灰度化
+
+
+
+
+   
+
+
+
+
+                     检测结果1
+
+
+
+
+   
+
+
+
+
+                   灰度化并增强对比度
+
+
+   
+
+
+
+
+                    检测结果2

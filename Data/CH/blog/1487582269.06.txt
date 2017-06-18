@@ -1,0 +1,356 @@
+python多线程threading本文通过 4个example 介绍python中多线程package —— threading的常用用法， 包括调用多线程， 同步队列类Queue， Ctrl+c结束多线程。
+
+
+
+
+
+   example1. 
+
+
+
+   调用10个线程， 分别打印0~4， 每打印一个数pause一秒钟。
+
+
+
+   code如下所示， 在test()函数中用threading.Thread建立10个线程； 
+
+一种方法是不要将这些线程设置为守护线程，如code所示； 
+
+一种方法是设置守护线程（ setDeamon(True)），并用join（）让程序等所有线程结束了再退出（即去掉code中的注释）； 
+
+
+
+
+
+
+   #/*********************************************************************
+# *-
+# * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
+# *-
+# *********************************************************************
+#-
+#-
+#-
+#/**
+# * @file b.py
+# * @author zhangruiqing01(com@baidu.com)
+# * @date 2015/10/28 20:12:33
+# * @brief-
+# *--
+# **/
+#
+
+import time
+import threading
+
+def printf(i):
+    for x in xrange(5):
+ time.sleep(1)
+ print i,
+
+def test():
+    thread_list = []
+    for i in xrange(10):
+ sthread = threading.Thread(target = printf, args = str(i))
+# sthread.setDaemon(True)
+ sthread.start()
+ thread_list.append(sthread)
+#    for i in xrange(10):
+# thread_list[i].join()
+
+
+if __name__ == '__main__':
+    test()
+
+
+   结果： 
+
+ 
+
+$python b.py  
+
+0 1 2 3 4 5 6 7 8 9 2 1 0 4 5 6 7 3 8 9 1 2 0 5 6 7 4 3 8 9 2 1 0 6 7 4 3 5 8 9 1 0 2 7 4 635 8 9 
+
+
+
+
+
+   
+
+
+
+
+
+
+   example2. 
+
+
+
+   调用10个守护线程（每个守护线程的timeout时间为1s）， 分别打印0~4， 每打印一个数pause x秒钟， x为0~4之间的randint值。
+
+
+
+   
+
+
+
+
+   #/***************************************************************************
+# *-
+# * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
+# *-
+# **************************************************************************/
+#-
+#-
+#-
+#/**
+# * @file c.py
+# * @author zhangruiqing01(com@baidu.com)
+# * @date 2015/10/28 20:15:33
+# * @brief-
+# *--
+# **/
+#
+
+import time
+import threading
+import random
+
+def printf(i):
+    randtime = random.randint(1,5)
+    for x in xrange(5):
+ time.sleep(randtime)
+ print "T" + str(i), randtime # print T&lt;threadid&gt; randtime
+
+def test():
+    thread_list = []
+    for i in xrange(10):
+ sthread = threading.Thread(target = printf, args = str(i))
+ sthread.setDaemon(True)
+ sthread.start()
+ thread_list.append(sthread)
+    for i in xrange(10):
+ thread_list[i].join(1)
+
+
+if __name__ == '__main__':
+    test()
+
+
+   结果：
+
+
+
+   
+ 
+
+ 
+
+
+   
+
+
+
+   从图中可见，在运行的这10s中， pause x秒的thread被打印了[10/x]次。
+
+
+
+   
+
+
+
+
+
+
+   example3.
+
+
+
+   引入Queue， 带同步功能（enqueue和dequeue不用手动加锁）的queue类。
+
+
+
+   在下面的code中，proc函数处理一个thread的操作：  
+
+    1. dequeue 一个队头元素 
+
+    2. enqueue 5个threadid 
+
+    3. 重复执行两次步骤2（epoch&lt;2）
+
+
+
+   这里注意proc函数中的最后Q.task_done()表示一个任务（一个dequeue的元素）已经结束；test( )中最后的Q.join()为等待队列为空才退出程序。
+
+
+
+   
+
+
+
+
+   #/***************************************************************************
+# *-
+# * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
+# *-
+# **************************************************************************/
+#-
+#-
+#-
+#/**
+# * @file d.py
+# * @author zhangruiqing01(com@baidu.com)
+# * @date 2015/10/28 20:22:33
+# * @brief-
+# *--
+# **/
+#
+
+import time
+import threading
+import random
+import Queue
+
+Q = Queue.Queue()
+
+def proc(threadid, epoch):
+    while True:
+ time.sleep(1)
+ try:
+     ele = Q.get()
+     print 'Thread ' + str(threadid) + ' get element ' + str(ele)
+ except Queue.Empty:
+     print 'Thread ' + str(threadid) + ' get empty queue'
+     continue
+ if int(epoch) &lt; 2:
+     for i in xrange(5):
+  Q.put(threadid)
+     epoch = int(epoch) + 1
+
+ Q.task_done()
+
+
+def test():
+    Q.put(1)
+    thread_list = []
+    for i in xrange(3):
+ args = [str(i), str(0)]
+ sthread = threading.Thread(target = proc, args = args)
+ sthread.setDaemon(True)
+ sthread.start()
+ thread_list.append(sthread)
+    Q.join()
+
+
+if __name__ == '__main__':
+    test()
+
+
+
+   结果：
+
+
+
+   PS：最开始get到的1是在test（）中put进去的；
+
+
+
+   
+ 
+
+ 
+
+
+   
+
+
+
+   
+
+
+
+
+
+
+   example4.
+
+
+
+   程序接收ctrl + c后退出。程序每个thread打印100次threadid，直到ctrl+c退出。
+
+
+
+   PS： 更好的设计是在try，except后加finally块， 做到即便不ctrl+c也可以正常退出，就留给大家下面练习吧~ 
+
+
+
+
+
+
+   #/***************************************************************************
+# *-
+# * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
+# *-
+# **************************************************************************/
+#-
+#-
+#-
+#/**
+# * @file a.py
+# * @author zhangruiqing01(com@baidu.com)
+# * @date 2015/10/28 20:06:33
+# * @brief-
+# *--
+# **/
+#
+
+import time
+import threading
+
+def printf(i):
+    for x in xrange(100):
+ time.sleep(1)
+ print i,
+
+def test():
+    for i in xrange(10):
+ sthread = threading.Thread(target = printf, args = str(i))
+ sthread.setDaemon(True)
+ sthread.start()
+    try:
+ while 1:
+     time.sleep(1)
+    except KeyboardInterrupt:
+ print 'exit'
+
+
+
+if __name__ == '__main__':
+    test()
+
+
+   运行结果：
+
+
+
+   
+ 
+
+ 
+
+
+   
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

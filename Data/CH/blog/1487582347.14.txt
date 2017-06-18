@@ -1,0 +1,144 @@
+SIFT特征提取-应用篇SIFT特征具有缩放、旋转特征不变性，下载了大牛的matlab版SIFT特征提取代码，解释如下：
+
+   1.调用方法：
+
+   将文件加入matlab目录后，在主程序中有两种操作：
+
+   op1：寻找图像中的Sift特征：
+
+   
+
+   [image, descrips, locs] = sift('scene.pgm'); 
+showkeys(image, locs);
+   
+op2：对两幅图中的SIFT特征进行匹配：
+   
+
+   
+
+   match('scene.pgm','book.pgm');
+   
+
+   
+
+   由于scene和book两图中有相同的一本书，但orientation和size都不同，可以发现所得结果中Sift特征检测结果非常好。
+
+   
+
+   2.代码下载地址：
+
+   
+
+   http://www.cs.ubc.ca/~lowe/keypoints/
+   3.想用自己的图片进行调用：
+   
+   i1=imread('D:\Images\New\Cars\image_0001.jpg');
+i2=imread('D:\Images\New\Cars\image_0076.jpg');
+i11=rgb2gray(i1);
+i22=rgb2gray(i2);
+imwrite(i11,'v1.jpg','quality',80);
+imwrite(i22,'v2.jpg','quality',80);
+match('v1.jpg','v2.jpg');
+   experiment results:
+   
+
+   scene
+   
+
+   book
+
+   
+
+   compare result
+
+   EXP2:
+
+   
+
+   
+
+   
+
+   C代码：
+
+   
+   // FeatureDetector.cpp : Defines the entry point for the console application.
+//
+
+#include &quot;stdafx.h&quot;
+#include &quot;highgui.h&quot;
+#include &quot;cv.h&quot;
+#include &quot;vector&quot;
+#include &quot;opencv\cxcore.hpp&quot;
+#include &quot;iostream&quot;
+#include &quot;opencv.hpp&quot;
+#include &quot;nonfree.hpp&quot;
+#include &quot;showhelper.h&quot;
+
+using namespace cv;
+using namespace std;
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	//Load Image 
+	Mat c_src1 =  imread( &quot;..\\Images\\3.jpg&quot;);
+	Mat c_src2 = imread(&quot;..\\Images\\4.jpg&quot;);
+	Mat src1 = imread( &quot;..\\Images\\3.jpg&quot;, CV_LOAD_IMAGE_GRAYSCALE);
+	Mat src2 = imread( &quot;..\\Images\\4.jpg&quot;, CV_LOAD_IMAGE_GRAYSCALE);
+	if( !src1.data || !src2.data )
+	{ std::cout&lt;&lt; &quot; --(!) Error reading images &quot; &lt;&lt; std::endl; return -1; }
+
+	//sift feature detect
+	SiftFeatureDetector detector;
+	std::vector&lt;KeyPoint&gt; kp1, kp2;
+
+	detector.detect( src1, kp1 );
+	detector.detect( src2, kp2 );
+	SiftDescriptorExtractor extractor;
+	Mat des1,des2;//descriptor
+	extractor.compute(src1,kp1,des1);
+	extractor.compute(src2,kp2,des2);	
+	Mat res1,res2; 
+	int drawmode = DrawMatchesFlags::DRAW_RICH_KEYPOINTS;
+	drawKeypoints(c_src1,kp1,res1,Scalar::all(-1),drawmode);//在内存中画出特征点
+	drawKeypoints(c_src2,kp2,res2,Scalar::all(-1),drawmode);
+	cout&lt;&lt;&quot;size of description of Img1: &quot;&lt;&lt;kp1.size()&lt;&lt;endl;
+	cout&lt;&lt;&quot;size of description of Img2: &quot;&lt;&lt;kp2.size()&lt;&lt;endl;
+
+	BFMatcher matcher(NORM_L2);
+	vector&lt;DMatch&gt; matches;
+	matcher.match(des1,des2,matches);
+	Mat img_match;
+	drawMatches(src1,kp1,src2,kp2,matches,img_match);//,Scalar::all(-1),Scalar::all(-1),vector&lt;char&gt;(),drawmode);
+	cout&lt;&lt;&quot;number of matched points: &quot;&lt;&lt;matches.size()&lt;&lt;endl;
+	imshow(&quot;matches&quot;,img_match);
+	cvWaitKey();
+	cvDestroyAllWindows();
+
+	return 0;
+}
+
+
+   Python代码：
+
+   http://blog.csdn.net/abcjennifer/article/details/7639681
+
+   
+
+   
+
+   关于sift的其他讲解:
+
+   
+
+   http://blog.csdn.net/abcjennifer/article/details/7639681
+
+   http://blog.csdn.net/abcjennifer/article/details/7372880
+
+   http://blog.csdn.net/abcjennifer/article/details/7365882
+
+   
+
+   
+
+   关于computer vision的更多讨论与交流，敬请关注本博客和新浪微博Sophia_qing。

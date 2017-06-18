@@ -1,0 +1,110 @@
+Rectangles  dpRectangles
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 194Accepted Submission(s): 76
+
+Problem Description
+
+A rectangle in the Cartesian plane is speci ed by a pair of coordinates (x1 , y1) and (x2 , y2) indicating its lower-left and upper-right corners, respectively (where x1 &le; x2 and y1 &le; y2). Given a pair of rectangles,A = ((xA1 , yA1 ), (xA2 ,yA2 )) and B = ((xB1 , yB1 ), (xB2 , yB2 )), we write A &le; B (i.e., A "precedes" B), if xA2 &lt; xB1 and yA2 &lt; yB1 :In this problem, you are given a collection of rectangles located in the two-dimension Euclidean plane. Find the length L of the longest sequence of rectangles (A1,A2,&hellip;,AL) from this collection such that A1 &le; A2 &le; &hellip; &le; AL.
+
+
+
+
+   
+
+Input
+
+The input fi le will contain multiple test cases. Each test case will begin with a line containing a single integer n (where 1 &le; n &le; 1000), indicating the number of input rectangles. The next n lines each contain four integers xi1 ,yi1 ,xi2 ,yi2 (where -1000000 &le; xi1 &le; xi2 &le; 1000000, -1000000 &le; yi1 &le; yi2 &le; 1000000, and 1 &le; i &le; n), indicating the lower left and upper right corners of a rectangle. The end-of-file is denoted by asingle line containing the integer 0.
+
+
+
+
+   
+
+Output
+
+For each input test case, print a single integer indicating the length of the longest chain.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   3
+1 5 2 8
+3 -1 5 4
+10 10 20 20
+2
+2 1 4 5
+6 5 8 10
+0
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   2
+1
+#include&lt;iostream&gt;
+using namespace std;
+int n;
+#define M 1010
+#define INF 100000000
+int len[M];
+int max;
+int longest=0;
+struct RECTANGLE
+{
+	int x1,y1,x2,y2;
+}rec[M];
+
+int comp(const void *a,const void *b)
+{
+	struct RECTANGLE *aa=(struct RECTANGLE*)a;
+	struct RECTANGLE *bb=(struct RECTANGLE*)b;
+	if(aa-&gt;x1!=bb-&gt;x1)
+		return aa-&gt;x2-bb-&gt;x2;
+	return aa-&gt;y2-bb-&gt;y2;
+}
+
+void dp(int n)
+{
+	int i,j,max;
+	for(i=0;i&lt;n;i++) 
+	{
+		max = 1;
+		len[i] = 1;
+		for(j=0;j&lt;i;j++)
+		{
+			if(rec[j].x2&lt;rec[i].x1&amp;&amp;rec[j].y2&lt;rec[i].y1)
+				max=len[j]+1;
+			if(len[i]&lt;max)
+				len[i]=max;
+		}
+		if(len[i]&gt;longest)
+			longest=len[i];
+	}
+	printf("%d/n", longest);
+}
+
+int main()
+{
+	while(cin&gt;&gt;n&amp;&amp;n)
+	{
+		longest=0;
+		for(int i=0;i&lt;n;i++)
+			cin&gt;&gt;rec[i].x1&gt;&gt;rec[i].y1&gt;&gt;rec[i].x2&gt;&gt;rec[i].y2;
+		qsort(rec,n,sizeof(RECTANGLE),comp);
+		dp(n);
+	}
+}

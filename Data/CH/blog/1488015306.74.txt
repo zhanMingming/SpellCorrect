@@ -1,0 +1,157 @@
+Guava Cache之Cache接口1、通过put或putAll手动向Cache中添加数据，guava不缓存value是null的key。我们可以在系统启动的时候，就将某些数据手动放入缓存中，这样就可以避免系统启动后，第一个用户访问缓存不能命中的情况。
+
+
+   public static void testPut() {
+	Cache&lt;String, String&gt; cache = CacheBuilder.newBuilder().maximumSize(3).recordStats().build();
+
+	// 通过put或者putAll手动将数据添加到缓存
+	cache.put(&quot;id&quot;, &quot;10&quot;);
+
+	Map&lt;String, String&gt; batch = new HashMap&lt;&gt;();
+	cache.put(&quot;name&quot;, &quot;aty&quot;);
+	cache.put(&quot;addr&quot;, &quot;sz&quot;);
+	cache.putAll(batch);
+
+	// 数量超出最大限制,会导致guava清除之前的数据,evictionCount增加1
+	// 手动添加缓存数据,不会影响其他缓存统计指标值
+	cache.put(&quot;new&quot;, &quot;replace&quot;);
+	System.out.println(cache.stats());
+
+	// 不接受null
+	try {
+		cache.put(&quot;a&quot;, null);
+
+	} catch (NullPointerException e) {
+
+	}
+}
+
+   
+
+
+   
+
+
+
+2、通过getIfPresent/getAllPresent/get读取缓存中的数据。
+   public static void testGet() throws Exception {
+	Cache&lt;String, String&gt; cache = CacheBuilder.newBuilder().recordStats().build();
+	cache.put(&quot;name&quot;, &quot;aty&quot;);
+	// 缓存未命中missCount加1
+	System.out.println(cache.getIfPresent(&quot;s&quot;) == null);
+	System.out.println(cache.stats());
+
+	// 缓存命中hitCount加1
+	System.out.println(cache.getIfPresent(&quot;name&quot;) != null);
+	System.out.println(cache.stats());
+
+
+	// Callable.call()不能返回null,否则guava报异常
+	Callable&lt;String&gt; callable = new Callable&lt;String&gt;() {
+		@Override
+		public String call() throws Exception {
+			Thread.sleep(2000);
+			return &quot;demo&quot;;
+		}
+	};
+
+	// 使用guava Stopwatch计时
+	Stopwatch watch = Stopwatch.createStarted();
+	cache.get(&quot;a&quot;, callable);
+	watch.stop();
+
+	// 缓存不存在missCount加1,调用时间也会增加到totalLoadTime
+	System.out.println(cache.stats());
+
+	// 大致2s 可以证明: guava cache是在调用者的线程中执行callable任务的
+	System.out.println(&quot;elapse time=&quot; + watch.elapsed(TimeUnit.MILLISECONDS));
+}
+
+3、如果明确知道某些缓存无用，我们可以通过invalidate/invalidateAll删除
+   public static void testDelete() {
+	Cache&lt;String, String&gt; cache = CacheBuilder.newBuilder().recordStats().build();
+	cache.put(&quot;a&quot;, &quot;aty&quot;);
+	cache.put(&quot;b&quot;, &quot;aty&quot;);
+	cache.put(&quot;c&quot;, &quot;aty&quot;);
+	cache.put(&quot;d&quot;, &quot;aty&quot;);
+
+
+	// 单个删除
+	cache.invalidate(&quot;a&quot;);
+	System.out.println(cache.stats());
+	System.out.println(cache.size()); // 3
+
+	// 批量删除
+	cache.invalidateAll(Arrays.asList(&quot;b&quot;, &quot;c&quot;));
+	System.out.println(cache.stats());
+	System.out.println(cache.size()); // 1
+
+	// 清除所有
+	cache.invalidateAll();
+	System.out.println(cache.stats());
+	System.out.println(cache.size()); // 0
+}
+
+   
+
+
+   
+
+
+
+4、通过调用cleanUp执行缓存清理操作，比如删除过期的key。
+   public static void testCleanup() throws Exception {
+	Cache&lt;String, String&gt; cache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.SECONDS).build();
+	cache.put(&quot;a&quot;, &quot;a&quot;);
+
+	// 睡眠2s让缓存过期
+	Thread.sleep(2000);
+
+	System.out.println(cache.size()); // 缓存大小仍然是1,因为调用这个方法不会触发缓存清除
+	System.out.println(cache.getIfPresent(&quot;a&quot;) == null);// 调用get/put会触发缓存清除
+
+
+	Cache&lt;String, String&gt; cache2 = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.SECONDS).build();
+	cache2.put(&quot;a&quot;, &quot;a&quot;);
+
+	// 睡眠2s让缓存过期
+	Thread.sleep(2000);
+	cache2.cleanUp();// 手动触发缓存清除动作
+	System.out.println(cache2.size()); // 0
+}
+
+5、通过asMap可以拿到Cache底层使用的数据接口，通过这个map也可以添加或删除cache中的数据。通过map获取数据，不会影响缓存统计；通过map添加数据，可能会影响evictionCount。虽然可以对这个map进行迭代，不过有可能会出现获取到&#20540;是null的情况。
+   public static void testAsMap() throws Exception {
+	Cache&lt;String, String&gt; cache = CacheBuilder.newBuilder().build();
+	cache.put(&quot;a&quot;, &quot;a&quot;);
+	cache.put(&quot;b&quot;, &quot;b&quot;);
+	cache.put(&quot;c&quot;, &quot;c&quot;);
+
+	// 通过底层map得到iterator,以便后面遍历
+	Iterator&lt;String&gt; iterator = cache.asMap().keySet().iterator();
+
+	// 1.启动一个线程进入睡眠状态
+	Thread thread = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(60 * 60 * 1000);
+			} catch (InterruptedException e) {
+				cache.invalidate(&quot;b&quot;);
+			}
+		}
+	});
+	thread.start();
+
+
+	while (iterator.hasNext()) {
+		String key = iterator.next();
+		if (key.equals(&quot;b&quot;)) {
+			thread.interrupt(); // 唤醒睡眠的线程,模拟线程的交替执行
+			Thread.sleep(100); // 让唤醒的线程执行完(清除缓存数据)
+		}
+
+		System.out.println(&quot;key=&quot; + key + &quot;,value=&quot; + cache.getIfPresent(key));
+	}
+
+}

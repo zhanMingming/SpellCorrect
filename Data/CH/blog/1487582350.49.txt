@@ -1,0 +1,32 @@
+opencv实现图像邻域均值滤波、中值滤波、高斯滤波void CCVMFCView::OnBlurSmooth()//邻域均值滤波
+{
+	IplImage* in;
+	in = workImg;
+	IplImage* out = cvCreateImage(cvGetSize(in),IPL_DEPTH_8U,workImg-&gt;nChannels); 
+	cvSmooth(in,out,CV_BLUR,3,workImg-&gt;nChannels);  //  简单平均
+	m_dibFlag=imageReplace(out,&amp;workImg); 
+
+	Invalidate();
+}
+
+
+   void CCVMFCView::OnMedianSmooth()
+{
+	IplImage* in = workImg;
+	IplImage* out = cvCreateImage(cvGetSize(in),
+		IPL_DEPTH_8U,workImg-&gt;nChannels); 
+	cvSmooth(in,out,CV_MEDIAN,3,workImg-&gt;nChannels);  //  中值滤波
+	m_dibFlag=imageReplace(out,&amp;workImg);
+
+	Invalidate();
+}
+
+
+   void CCVMFCView::OnGaussSmooth()
+{
+	IplImage* in = workImg;
+	IplImage* out = cvCreateImage(cvGetSize(in),IPL_DEPTH_8U,workImg-&gt;nChannels);   //  建立辅助位图
+	cvSmooth(in,out,CV_GAUSSIAN,3,workImg-&gt;nChannels);  //  Gauss 平滑
+	m_dibFlag=imageReplace(out,&amp;workImg);   //  输出处理结果
+	Invalidate();
+}

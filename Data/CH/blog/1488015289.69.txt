@@ -1,0 +1,300 @@
+JDK8新特性：使用Method References实现方法复用，简化lambda表达式之前的文章已经介绍了函数式接口与lambda表达式，这篇文章主要学习下方法引用。使用方法引用，可以减少lambda表达式的书写，在Stream API中很常用。
+
+
+   一段代码对比下lambda与静态方法引用：
+
+
+   List&lt;Integer&gt; ids = Arrays.asList(1, 2, 5, 4, 3);
+// 使用lambda表达式
+Comparator&lt;Integer&gt; comparator1 = (a, b) -&gt; a - b;
+// 使用静态方法引用
+Comparator&lt;Integer&gt; comparator2 = Integer::compare;
+List&lt;Integer&gt; sorted1 = ids.stream().sorted(comparator1).collect(Collectors.toList());
+List&lt;Integer&gt; sorted2 = ids.stream().sorted(comparator2).collect(Collectors.toList());
+
+System.out.println(ids);// [1, 2, 5, 4, 3]
+System.out.println(sorted1); // [1, 2, 3, 4, 5]
+System.out.println(sorted2); // [1, 2, 3, 4, 5]我们想实现整数list的排序，使用lambda我们还得自己编写一个Comparator对象(虽然也很简单)，实际上JDK类库已经提供了类&#20284;的实现，我们通过Integer::compare就可以引用已经存在的方法。
+
+   
+
+
+   
+
+
+
+
+   JDK8中的方法引用分成4类：静态方法引用、实例方法引用、构造方法引用、以静态方式引用实例方法。
+
+
+   
+
+
+
+
+   (1).静态方法引用
+
+
+
+
+   &#26684;式：ClassName::staticMethodName，比如：
+
+
+   String::valueOf  等价于lambda表达式 (s) -&gt; String.valueOf(s)
+
+
+   Math::pow     等价于lambda表达式 (x, y) -&gt; Math.pow(x, y)
+
+
+   @FunctionalInterface
+public interface MyInterface {
+
+    public double calculate(double a, double b);
+
+}
+   // 静态方法引用pow
+MyInterface ins1 = Math::pow;
+System.out.println(ins1.calculate(2, 4) == 16);
+
+// 静态方法引用max
+MyInterface ins2 = Math::max;
+System.out.println(ins2.calculate(2, 4) == 4);
+
+   
+
+
+
+
+   可以看到我们定义的函数式接口MyInterface，必须要与其引用的静态方法，具有同样的返回&#20540;和入参。
+
+
+
+
+
+
+
+
+   (2).实例方法引用
+
+
+
+
+   &#26684;式：instanceReference::methodName，比如：
+
+
+   str::toString 等价于lambda表达式 () -&gt; str.toString()
+
+
+   str::concat  等价于lambda表达式 (another) -&gt; str.concat(another)
+
+
+   @FunctionalInterface
+public interface MyInterface {
+    // 与String.concat()同样的入参和返回值
+    public String transform(String input);
+}
+   String content = &quot;abc&quot;;
+// 引用String类的实例方法
+MyInterface ins1 = content::concat;
+System.out.println(ins1.transform(&quot;def&quot;));// abcdef可以看到我们实现的效果：定义一个函数式接口，它的方法与原始的concat拥有同样的参数类型和返回&#20540;，相当于是给concat重新命名。
+
+
+
+
+
+(3).构造方法引用
+
+
+   
+
+
+   &#26684;式：ClassName::new，如果ClassName有多个构造函数，那么JDK会自动根据函数式接口的方法声明来决定到底使用哪儿一个构造函数。
+
+
+   public class Target {
+
+    public int attr = 0;
+
+    public Target() {
+
+    }
+
+    public Target(int b) {
+ this.attr = b;
+    }
+}
+   @FunctionalInterface
+public interface MyInterface {
+    public Target create(int value);
+}
+   MyInterface ins = Target::new;
+Target t = ins.create(1); // 可以自动推断使用的构造函数
+System.out.println(t.attr);// 1
+
+   
+
+
+
+
+   
+
+
+
+数组的构造函数与之类&#20284;，不过是构造函数有个参数(数组长度)。
+   @FunctionalInterface
+public interface MyInterface {
+    public int[] create(int length);
+}
+   MyInterface ins = int[]::new;
+int[] array = ins.create(10);
+System.out.println(array.length);// 10
+
+   
+
+
+   
+
+
+
+
+
+(4).以静态方式引用实例方法
+
+   不知道叫什么名字才合适，姑且这么叫吧。静态方法引用和类型上的实例方法引用拥有一样的语法，编译器会根据实际情况做出决定。
+
+
+   &#26684;式：ClassName::instanceMethod，比如：
+
+
+   String::toString 等价于lambda表达式 (String s) -&gt; s.toString()
+
+
+
+
+   Lambda的第一个参数会成为调用实例方法的对象。
+
+
+   public class Target {
+
+    private int attr = 0;
+
+    public Target(int attr) {
+ this.attr = attr;
+    }
+
+    public int compareTo(Target another) {
+ return this.attr - another.attr;
+    }
+
+    public static int compare(Target one, Target another) {
+ return one.attr - another.attr;
+    }
+}
+   // 函数式接口:实现Target对象比较
+@FunctionalInterface
+public interface MyInterface {
+    public int compare(Target one, Target another);
+}
+   Target target1 = new Target(10);
+Target target2 = new Target(100);
+
+// 引用实例方法
+MyInterface ins1 = Target::compare;
+System.out.println(ins1.compare(target1, target2));// -90
+
+// 引用静态方法
+MyInterface ins2 = Target::compare;
+System.out.println(ins2.compare(target1, target2));// -90
+
+   
+
+
+   
+
+
+
+
+   最后给个例子，看下方法引用的威力：
+
+
+   public class Person {
+
+    private String name;
+    
+    private Date birthday;
+
+    public Person(String name, Date birthday) {
+ this.name = name;
+ this.birthday = birthday;
+    }
+
+    public Date getBirthday() {
+ return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+ this.birthday = birthday;
+    }
+
+    @Override
+    public String toString() {
+ return &quot;Person{&quot; +
+  &quot;name='&quot; + name + '\'' +
+  &quot;, birthday=&quot; + birthday +
+  '}';
+    }
+}
+   List&lt;Person&gt; persons = new ArrayList&lt;&gt;();
+persons.add(new Person(&quot;c&quot;, &quot;2017-01-01&quot;));
+persons.add(new Person(&quot;b&quot;, &quot;2016-01-01&quot;));
+persons.add(new Person(&quot;a&quot;, &quot;2015-01-01&quot;));
+
+现在我们想对persons集合按照name排序：
+   // 方式1
+Collections.sort(persons, new Comparator&lt;Person&gt;() {
+	@Override
+	public int compare(Person o1, Person o2) {
+		return o1.getName().compareTo(o2.getName());
+	}
+});
+System.out.println(persons);方式一是比较传统的做法，自己实现一个Comparator比较器。
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   // 方式2
+Collections.sort(persons, (o1, o2)-&gt;o1.getName().compareTo(o2.getName()));
+System.out.println(persons);方式2使用了lambda表达式
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   // 方式3
+Collections.sort(persons, Comparator.comparing(Person::getName));
+System.out.println(persons);方式3使用了方法引用，可以复用比较逻辑，不用自己实现Comparator。
+
+   
+
+
+   
+
+
+
+
+   参考文章：https://my.oschina.net/luoyezhuifeng/blog/801343

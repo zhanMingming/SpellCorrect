@@ -1,0 +1,153 @@
+asp.net平台上连接数据库今天纠结了一上午的问题，于下午3点12分尘埃落定！
+
+
+   事情是这样的：
+
+
+   作为一个里程碑记录下吧，也算是我第一次将asp.net与数据库结合，并完成从软件编程到web的过渡。
+
+
+   在此感谢今天为我解决问题的&ldquo;杀手&rdquo;（也称老道），还有以前为我解决问题的大队、御风、华哥等牛...
+
+
+   
+
+
+
+
+   言归正传，本文介绍一下怎样在asp.net平台上连接数据库：（C#编写的软件连接数据库见前几篇）
+
+
+   using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Data.OleDb;
+using System.Data.SqlClient;
+using System.Runtime.InteropServices;
+using System.Configuration;
+using System.Web.UI.WebControls;
+using System.Web.Services.Description;
+
+public partial class _Default : System.Web.UI.Page
+{
+    static DataSet ds;
+    int index;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+ //set mode of textbox2 as password
+ //在asp.net中设置textbox 属性为password (C#中是passwordchar = &hellip;&hellip;)
+ TextBox2.TextMode = TextBoxMode.Password ;
+
+ //count the num of user,as we can add the new user with index++(as id)
+ string strConnection = ConfigurationManager.AppSettings["Str.Properties.Settings.masterConnectionString"].ToString();
+ SqlConnection objConnection = new SqlConnection(strConnection);
+ objConnection.Open();
+ string sql = "count user num";
+ sql="select userid as userid,name as name from judging";
+ SqlDataAdapter adp = new SqlDataAdapter(sql, objConnection);
+ ds = new DataSet();
+ ds.Clear();
+ adp.Fill(ds, "judging");
+ index = ds.Tables[0].Rows.Count+1;
+    }
+  
+    //Register function
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+ /******************method 1*******************/
+ //string strConnection = "Data Source=ZRQ-PC;";
+ //strConnection += "Initial Catalog=master;Integrated Security=True";
+ //SqlConnection objConnection = new SqlConnection(strConnection);
+
+
+ /******************method 2-&gt;web config 中用&lt;/connectionStrings&gt;*******************/
+ /*ConfigurationManager.ConnectionStrings是用来读取配置文件web.config中&lt;connectionStrings&gt;&lt;/connectionStrings&gt;
+ ConfigurationManager.ConnectionStrings["MyConnection"].ConnectionString是来读取&lt;connectionStrings&gt;&lt;/connectionStrings&gt;内部name为MyConnection的connectionString内容的
+ */
+ // string strConnection = ConfigurationManager.ConnectionStrings["Str.Properties.Settings.masterConnectionString"].ConnectionString;
+ //SqlConnection objConnection = new SqlConnection(strConnection);
+
+ /******************method 3-&gt;web config 中用&lt;/appSettings&gt;*******************/
+ string strConnection = ConfigurationManager.AppSettings["Str.Properties.Settings.masterConnectionString"].ToString();
+ SqlConnection objConnection = new SqlConnection(strConnection);
+
+ objConnection.Open();
+ SqlCommand cmd = new SqlCommand("select * from judging where userid='" + TextBox1.Text.Trim() + "'", objConnection);
+ string sql = "insert into judging (userid,name,password) values('" + (index++) + "','" + TextBox1.Text.Trim() + "','" + TextBox2.Text.Trim() + "')";
+ cmd.CommandText = sql;
+ cmd.ExecuteNonQuery();
+    }
+    
+    //login function
+    protected void Button2_Click(object sender, EventArgs e)
+    {
+ string strConnection = ConfigurationManager.AppSettings["Str.Properties.Settings.masterConnectionString"].ToString();
+ SqlConnection objConnection = new SqlConnection(strConnection);
+ objConnection.Open();
+ SqlCommand cmd = new SqlCommand("select * from judging where name='" + TextBox1.Text.Trim() + "'", objConnection);
+ string sql="select * from judging where name='"+TextBox1.Text+"'and password='"+TextBox2.Text+"'";
+ cmd.CommandText = sql;
+ /*
+  ***********************************************************************************************
+  *判断是否有此ID,ExecuteScalar() return the first column of the first row in the result set.
+  */
+ if (cmd.ExecuteScalar() == null)//无此用户
+ {
+     // MessageBox.Show("用户名输入错误", "提示", 0);
+     Response.Write("用户名输入错误");
+ }
+ else
+ {
+     Response.Write("Welcome to "+TextBox1.Text );
+ }
+    }
+}
+ 
+
+
+   
+
+
+   &lt;!--web.config--&gt;
+
+&lt;?xml version="1.0"?&gt;
+&lt;!-- 
+    注意: 除了手动编辑此文件以外，您还可以使用 
+    Web 管理工具来配置应用程序的设置。可以使用 Visual Studio 中的
+     &ldquo;网站&rdquo;-&gt;&ldquo;Asp.Net 配置&rdquo;选项。
+    设置和注释的完整列表在 
+    machine.config.comments 中，该文件通常位于 
+    /Windows/Microsoft.Net/Framework/v2.x/Config 中
+--&gt;
+&lt;configuration&gt;
+  &lt;configSections&gt;
+    &lt;sectionGroup name="system.web.extensions" type="System.Web.Configuration.SystemWebExtensionsSectionGroup, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35"&gt;
+      &lt;sectionGroup name="scripting" type="System.Web.Configuration.ScriptingSectionGroup, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35"&gt;
+ &lt;section name="scriptResourceHandler" type="System.Web.Configuration.ScriptingScriptResourceHandlerSection, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" allowDefinition="MachineToApplication"/&gt;
+ &lt;sectionGroup name="webServices" type="System.Web.Configuration.ScriptingWebServicesSectionGroup, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35"&gt;
+   &lt;section name="jsonSerialization" type="System.Web.Configuration.ScriptingJsonSerializationSection, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" allowDefinition="Everywhere"/&gt;
+   &lt;section name="profileService" type="System.Web.Configuration.ScriptingProfileServiceSection, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" allowDefinition="MachineToApplication"/&gt;
+   &lt;section name="authenticationService" type="System.Web.Configuration.ScriptingAuthenticationServiceSection, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" allowDefinition="MachineToApplication"/&gt;
+   &lt;section name="roleService" type="System.Web.Configuration.ScriptingRoleServiceSection, System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" allowDefinition="MachineToApplication"/&gt;
+ &lt;/sectionGroup&gt;
+      &lt;/sectionGroup&gt;
+    &lt;/sectionGroup&gt;
+  &lt;/configSections&gt;
+ &lt;!-- /******************method 2-&gt;web config 中用&lt;/appSettings&gt;*******************/--&gt;
+  &lt;appSettings&gt;
+    &lt;add key="Str.Properties.Settings.masterConnectionString" value="Data Source=ZRQ-PC;Initial Catalog=master;Integrated Security=True"/&gt;
+  &lt;/appSettings&gt;
+
+  &lt;!-- /******************method 3-&gt;web config 中用&lt;/connectionStrings&gt;*******************/--&gt;
+  &lt;connectionStrings&gt;
+    &lt;!--
+  &lt;add name="Str.Properties.Settings.masterConnectionString" connectionString="Data Source=ZRQ-PC;Initial Catalog=master;Integrated Security=True"
+      providerName="System.Data.SqlClient" /&gt;
+      --&gt;
+&lt;/connectionStrings&gt;
+  &lt;system.web&gt;
+    &hellip;&hellip;

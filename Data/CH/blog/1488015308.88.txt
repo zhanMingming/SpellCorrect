@@ -1,0 +1,162 @@
+spring容器初始化时候遇到的死锁问题最近启动spring项目的时候遇到一个死锁问题，使用jstack获取线程堆栈的时候，可以看到2个线程出现了死锁：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   DefaultSingletonBeanRegistry.getSingleton()源码如下，可以看到这个方法需要对singletonObjects加锁
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   第二处xxx.subject.core.cache.DataLocalcacheInit.afterPropertiesSet源码如下：
+
+
+   
+
+
+
+
+   可以看到：这个bean在初始化的时候，会开启线程，调用另外一个bean的initData()方法从数据库加载数据。等数据加载完毕，DataLocalcacheInit这个bean的初始化才算完成。
+
+
+   
+
+
+
+
+   通过上面的堆栈可以看出：spring容器在初始化bean的时候，会对singletonObjects对象加锁；我们自己在afterPropertiesSet()方法中开启了一个线程，最终也会触发spring加载另外的bean。第一个线程(初始化spring的main线程)还没有释放锁，第二个线程(自己开启的线程)，也需要获取singletonObjects对象锁，这样就出现了死锁。表现出来的现象就是：spring容器卡在那里，不能完成所有bean的初始化。
+
+
+   
+
+
+
+
+   来看一段例子，这个例子和我们项目中实际代码很相&#20284;。FirstBean调用ConfigHelper中的方法：
+
+
+   public class FirstBean implements InitializingBean {
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+ System.out.println(&quot;first bean is initializing....&quot;);
+
+ BlockingQueue queue = new ArrayBlockingQueue(10);
+ Thread thread = new Thread() {
+
+     @Override
+     public void run() {
+  ConfigHelper.doSomething();
+  queue.add(1);
+     }
+ };
+
+ thread.start();
+
+ queue.take();
+ System.out.println(&quot;first get data....&quot;);
+
+    }
+}
+
+ConfigHelper代码如下：通过BeanFactory获取到另外一个bean
+   public class ConfigHelper implements BeanFactoryAware {
+    private static BeanFactory factory;
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+ this.factory = beanFactory;
+    }
+
+    public static void doSomething()
+    {
+ SecondBean bean = (SecondBean)factory.getBean(&quot;second&quot;);
+ bean.say();
+    }
+}
+
+   
+
+
+
+
+   
+
+
+
+SecondBean代码很简单如下：
+   public class SecondBean {
+
+    public void say() {
+ System.out.println(&quot;SecondBean....&quot;);
+    }
+}
+
+
+
+
+   
+
+
+   spring配置文件和启动代码如下，运行可以发现出现死锁：
+
+
+   &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+
+
+    &lt;bean id=&quot;config&quot; class=&quot;net.aty.spring.deadlock.ConfigHelper&quot;&gt;&lt;/bean&gt;
+    &lt;bean id=&quot;first&quot; class=&quot;net.aty.spring.deadlock.FirstBean&quot;&gt;&lt;/bean&gt;
+    &lt;bean id=&quot;second&quot; class=&quot;net.aty.spring.deadlock.SecondBean&quot;&gt;&lt;/bean&gt;
+
+&lt;/beans&gt;
+   public class Main {
+    public static void main(String[] args) {
+ ApplicationContext context = new FileSystemXmlApplicationContext(
+  &quot;src/main/java/net/aty/spring/deadlock/deadlock.xml&quot;);// 加载 spring 配置文件
+
+    }
+}
+
+
+
+spring初始化的时候，如果我们在spring提供的一些扩展点处(BeanFactoryAware/InitializingBean等)，开启线程去获取bean，很容器出现死锁。因为spring初始化单例bean(大多数bean都是单例的)会加锁。如果初始化1个bean的时候，还没有释放锁，另一个线程再次触发spring加载bean，就会出现死锁。
+
+   
+
+
+   
+
+
+
+
+   解决上面的问题很简单：FirstBean逻辑上是依赖于ConfigHelper和SecondBean的，但是我们却并没有显示地告诉spring这种逻辑关系。spring初始化FirstBean的时候，进入afterPropertiesSet()，这个方法开启了线程会触发另外2个bean的加载。我们只要显示地告诉spring这种依赖关系，让spring先加载ConfigHelper和SecondBean就可以了。
+
+
+   &lt;bean id=&quot;config&quot; class=&quot;net.aty.spring.deadlock.ConfigHelper&quot; depends-on=&quot;second&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;first&quot; class=&quot;net.aty.spring.deadlock.FirstBean&quot; depends-on=&quot;config&quot;&gt;&lt;/bean&gt;
+&lt;bean id=&quot;second&quot; class=&quot;net.aty.spring.deadlock.SecondBean&quot;&gt;&lt;/bean&gt;

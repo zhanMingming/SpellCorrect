@@ -1,0 +1,103 @@
+SeinfeldSeinfeld
+
+   Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)Total Submission(s): 284Accepted Submission(s): 173
+
+Problem Description
+
+I&rsquo;m out of stories. For years I&rsquo;ve been writing stories, some rather silly, just to make simple problems look difficult and complex problems look easy. But, alas, not for this one.You&rsquo;re given a non empty string made in its entirety from opening and closing braces. Your task is to find the minimum number of &ldquo;operations&rdquo; needed to make the string stable. The definition for being stable is as follows:1. An empty string is stable.2. If S is stable, then {S} is also stable.3. If S and T are both stable, then ST (the concatenation of the two) is also stable.All of these strings are stable: {}, {}{}, and {{}{}}; But none of these: }{, {{}{, nor {}{.The only operation allowed on the string is to replace an opening brace with a closing brace, or visa-versa.
+
+
+
+
+   
+
+Input
+
+Your program will be tested on one or more data sets. Each data set is described on a single line. The line is a non-empty string of opening and closing braces and nothing else. No string has more than 2000 braces. All sequences are of even length.The last line of the input is made of one or more &rsquo;-&rsquo; (minus signs.)
+
+
+
+
+   
+
+Output
+
+For each test case, print the following line:k. NWhere k is the test case number (starting at one,) and N is the minimum number of operations needed to convert the given string into a balanced one.Note: There is a blank space before N.
+
+
+
+
+   
+
+Sample Input
+
+
+
+   }{
+{}{}{}
+{{{}
+---
+
+
+
+
+
+
+   
+
+Sample Output
+
+
+
+   1. 2
+2. 0
+3. 1
+
+
+
+栈的模拟，#include&lt;stdio.h&gt;
+#include&lt;stack&gt;
+
+using namespace std;
+
+char ch[1008];
+
+
+int main()
+{
+    int i,m,t=0;
+    char r,l;
+    stack&lt;char&gt;s;
+
+    while(scanf("%s",ch)!=EOF)
+    {
+ if(ch[0]=='-') break;
+
+ for(i=0;ch[i]!='/0';i++)
+ {
+     if(ch[i]=='}')
+     {
+  if(!s.empty()&amp;&amp;s.top()=='{')
+  s.pop();
+  else s.push(ch[i]);
+     }
+     else s.push(ch[i]);
+ }
+ m=0;
+ while(!s.empty())
+ {
+      r=s.top();//最后一个
+      s.pop();
+      l=s.top();//倒数第二个
+      s.pop();
+
+     // printf("%c%c/n",l,r);
+      
+      if(r=='{') m++;
+      if(l=='}') m++;
+ }
+ printf("%d. %d/n",++t,m);
+    }
+
+    return 0;
+}

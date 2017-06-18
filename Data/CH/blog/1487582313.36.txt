@@ -1,0 +1,325 @@
+C++矩阵处理工具——Eigen最近和一些朋友讨论到了C&#43;&#43;中数学工具的问题，以前总是很2地自己写矩阵运算，或者有时候在matlab里计算了一些数据再往C程序里倒，唉~想想那些年，我们白写的代码啊……人家早已封装好了！首先推荐几个可以在C&#43;&#43;中调用的数学平台：eigen、bias、lapack、svd、CMatrix，本文着重eigen做以讲解，希望对各位有所帮助。
+
+
+   下面是本文主线，主要围绕下面几点进行讲解：
+
+
+   **********************************************************************************************
+
+
+
+
+   Eigen是什么？
+
+
+   Eigen3哪里下载？
+
+
+   Eigen3的配置
+
+
+   Eigen3 样例代码有没有？
+
+
+   去哪里更深入学习？
+
+
+   **********************************************************************************************
+
+
+   Eigen是什么？
+
+
+   Eigen是C&#43;&#43;中可以用来调用并进行矩阵计算的一个库，里面封装了一些类，需要的头文件和功能如下：
+
+
+   
+
+
+
+
+   Eigen的主页上有一些更详细的Eigen介绍。
+
+
+   
+
+
+
+
+   Eigen3哪里下载？
+
+
+   这里是我下好的，这里是官网主页，请自行下载，是个code包，不用安装。
+
+
+   
+
+
+
+
+   Eigen的配置
+
+
+   
+
+
+
+
+   直接上图了，附加包含目录那里填上你放Eigen文件夹的位置即可。
+
+
+   
+
+
+
+
+   Eigen的样例代码有没有？
+
+
+   当然有，这篇文章重点就是这里！
+
+
+   以下是我整理的一些常用操作，基本的矩阵运算就在下面了，算是个入门吧~主要分以下几部分：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   建议大家放到编译环境里去看，因为我这里有一些region的东西，编译器下更方便看~
+
+
+   
+
+
+   #include &lt;iostream&gt;
+#include &lt;Eigen/Dense&gt;
+
+//using Eigen::MatrixXd;
+using namespace Eigen;
+using namespace Eigen::internal;
+using namespace Eigen::Architecture;
+
+using namespace std;
+
+
+int main()
+{
+
+#pragma region one_d_object
+
+	cout&lt;&lt;&quot;*******************1D-object****************&quot;&lt;&lt;endl;
+
+	Vector4d v1;
+	v1&lt;&lt; 1,2,3,4;
+	cout&lt;&lt;&quot;v1=\n&quot;&lt;&lt;v1&lt;&lt;endl;
+
+	VectorXd v2(3);
+	v2&lt;&lt;1,2,3;
+	cout&lt;&lt;&quot;v2=\n&quot;&lt;&lt;v2&lt;&lt;endl;
+
+	Array4i v3;
+	v3&lt;&lt;1,2,3,4;
+	cout&lt;&lt;&quot;v3=\n&quot;&lt;&lt;v3&lt;&lt;endl;
+
+	ArrayXf v4(3);
+	v4&lt;&lt;1,2,3;
+	cout&lt;&lt;&quot;v4=\n&quot;&lt;&lt;v4&lt;&lt;endl;
+
+#pragma endregion
+
+#pragma region two_d_object
+	
+	cout&lt;&lt;&quot;*******************2D-object****************&quot;&lt;&lt;endl;
+	//2D objects:
+	MatrixXd m(2,2);
+
+	//method 1
+	m(0,0) = 3;
+	m(1,0) = 2.5;
+	m(0,1) = -1;
+	m(1,1) = m(1,0) + m(0,1);
+
+	//method 2
+	m&lt;&lt;3,-1,
+		2.5,-1.5;
+	cout &lt;&lt;&quot;m=\n&quot;&lt;&lt; m &lt;&lt; endl;
+
+#pragma endregion
+
+#pragma region Comma_initializer
+
+	cout&lt;&lt;&quot;*******************Initialization****************&quot;&lt;&lt;endl;
+
+	int rows=5;
+	int cols=5;
+	MatrixXf m1(rows,cols);
+	m1&lt;&lt;( Matrix3f()&lt;&lt;1,2,3,4,5,6,7,8,9 ).finished(),
+		MatrixXf::Zero(3,cols-3),
+		MatrixXf::Zero(rows-3,3),
+		MatrixXf::Identity(rows-3,cols-3);
+	cout&lt;&lt;&quot;m1=\n&quot;&lt;&lt;m1&lt;&lt;endl;
+
+#pragma endregion
+
+#pragma region Runtime_info
+	
+	cout&lt;&lt;&quot;*******************Runtime Info****************&quot;&lt;&lt;endl;
+
+	MatrixXf m2(5,4);
+	m2&lt;&lt;MatrixXf::Identity(5,4);
+	cout&lt;&lt;&quot;m2=\n&quot;&lt;&lt;m2&lt;&lt;endl;
+
+	MatrixXf m3;
+	m3=m1*m2;
+	cout&lt;&lt;&quot;m3.rows()=&quot;&lt;&lt;m3.rows()&lt;&lt;&quot;  ;  &quot;
+		     &lt;&lt;&quot;m3.cols()=&quot;&lt;&lt; m3.cols()&lt;&lt;endl;
+	
+	cout&lt;&lt;&quot;m3=\n&quot;&lt;&lt;m3&lt;&lt;endl;
+
+#pragma endregion
+	
+#pragma region Resizing
+	
+	cout&lt;&lt;&quot;*******************Resizing****************&quot;&lt;&lt;endl;
+
+	//1D-resize	
+	v1.resize(4);
+	cout&lt;&lt;&quot;Recover v1 to 4*1 array : v1=\n&quot;&lt;&lt;v1&lt;&lt;endl;
+
+	//2D-resize
+	m.resize(2,3);
+	m.resize(Eigen::NoChange, 3);
+	m.resizeLike(m2);
+	m.resize(2,2);
+	
+#pragma endregion
+
+#pragma region Coeff_access
+	
+	cout&lt;&lt;&quot;*******************Coefficient access****************&quot;&lt;&lt;endl;
+
+	float tx=v1(1);
+	tx=m1(1,1);
+	cout&lt;&lt;endl;
+
+#pragma endregion
+
+#pragma  region Predefined_matrix
+
+	cout&lt;&lt;&quot;*******************Predefined Matrix****************&quot;&lt;&lt;endl;
+
+	//1D-object
+	typedef  Matrix3f   FixedXD;
+	FixedXD x;
+	
+	x=FixedXD::Zero();
+	x=FixedXD::Ones();
+	x=FixedXD::Constant(tx);//tx is the value
+	x=FixedXD::Random();
+	cout&lt;&lt;&quot;x=\n&quot;&lt;&lt;x&lt;&lt;endl;
+
+	typedef ArrayXf Dynamic1D;
+	//或者 typedef VectorXf Dynamic1D
+	int size=3;
+	Dynamic1D xx;
+	xx=Dynamic1D::Zero(size);
+	xx=Dynamic1D::Ones(size);
+	xx=Dynamic1D::Constant(size,tx);
+	xx=Dynamic1D::Random(size);
+	cout&lt;&lt;&quot;xx=\n&quot;&lt;&lt;x&lt;&lt;endl;
+
+	//2D-object
+	typedef MatrixXf Dynamic2D;
+	Dynamic2D y;
+	y=Dynamic2D::Zero(rows,cols);
+	y=Dynamic2D::Ones(rows,cols);
+	y=Dynamic2D::Constant(rows,cols,tx);//tx is the value
+	y=Dynamic2D::Random(rows,cols);
+
+#pragma endregion
+
+#pragma region Arithmetic_Operators
+
+	cout&lt;&lt;&quot;******************* Arithmetic_Operators****************&quot;&lt;&lt;endl;
+
+	//add &amp; sub
+	MatrixXf m4(5,4);
+	MatrixXf m5;
+	m4=m2+m3;
+	m3-=m2;
+
+	//product
+	m3=m1*m2;
+ 
+	//transposition
+	m5=m4.transpose();
+	//m5=m.adjoint();//伴随矩阵	
+	
+	//dot product
+	double xtt;
+	cout&lt;&lt;&quot;v1=\n&quot;&lt;&lt;v1&lt;&lt;endl;
+	v2.resize(4);
+	v2&lt;&lt;VectorXd::Ones(4);
+	cout&lt;&lt;&quot;v2=\n&quot;&lt;&lt;v2&lt;&lt;endl;
+
+	cout&lt;&lt;&quot;*************dot product*************&quot;&lt;&lt;endl;
+	xtt=v1.dot(v2);
+	cout&lt;&lt;&quot;v1.*v2=&quot;&lt;&lt;xtt&lt;&lt;endl;
+
+	//vector norm
+
+	cout&lt;&lt;&quot;*************matrix norm*************&quot;&lt;&lt;endl;
+	xtt=v1.norm();
+	cout&lt;&lt;&quot;norm of v1=&quot;&lt;&lt;xtt&lt;&lt;endl;
+	xtt=v1.squaredNorm();
+	cout&lt;&lt;&quot;SquareNorm of v1=&quot;&lt;&lt;xtt&lt;&lt;endl;
+
+#pragma endregion
+
+cout&lt;&lt;endl;
+}
+
+
+
+
+
+   
+
+
+   
+
+
+
+
+
+
+
+   
+
+
+   去哪里更深入学习？
+
+
+   Please refer toEigen中的类及函数、Eigen的官方教程，和一些教程上的相关内容。
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   关于编程工具的更多讨论或建议，请继续关注本博客和新浪微博Sophia_qing.

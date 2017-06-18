@@ -1,0 +1,155 @@
+程序设计上机题2# include &lt;iostream&gt; // cin , cout
+
+# include &lt;string&gt; // string
+
+using namespace std;
+
+
+
+
+
+class Fans
+
+{
+
+    public:
+
+    virtual void say_jiayou()=0;
+
+    virtual char* country()=0;
+
+};
+
+class Spanish : public Fans
+
+{
+
+    public:
+
+    void say_jiayou()
+
+    {
+
+        cout&lt;&lt;&quot;animo&quot;&lt;&lt;endl;
+
+    }
+
+    char* country()
+
+    {
+
+        return &quot;Spanish&quot;;
+
+    }
+
+};
+
+class French : public Fans
+
+{
+
+    public:
+
+    void say_jiayou()
+
+    {
+
+        cout&lt;&lt;&quot;bon courage&quot;&lt;&lt;endl;
+
+    }
+
+    char* country()
+
+    {
+
+        return &quot;French&quot;;
+
+    }
+
+};
+
+class Portuguese : public Fans
+
+{
+
+    public:
+
+    void say_jiayou()
+
+    {
+
+        cout&lt;&lt;&quot;ole&quot;&lt;&lt;endl;
+
+    }
+
+    char* country()
+
+    {
+
+        return &quot;Portuguese&quot;;
+
+    }
+
+};
+
+void action ( Fans&amp; somebody )
+
+{
+
+    somebody.say_jiayou();
+
+}
+
+static ostream&amp; operator&lt;&lt;(ostream&amp; os,Fans* fans)
+
+{
+
+    os&lt;&lt;fans-&gt;country()&lt;&lt;endl;
+
+    return os;
+
+
+   }
+
+
+   int main ()
+
+{
+
+    Spanish s1;
+
+    French s2;
+
+    Portuguese s3;
+
+    action (s1 );
+
+    action (s2 );
+
+    action (s3 );
+
+
+
+
+
+    Fans * fan_list [] = {&amp;s1 , &amp;s2 , &amp;s3 };
+
+    for (int i=0; i &lt; sizeof(fan_list)/sizeof(Fans*); i&#43;&#43;)
+
+        cout &lt;&lt;i&lt;&lt;&quot;\t&quot;&lt;&lt;fan_list[i];
+
+
+
+    //string file_name ;
+
+    //cin &gt;&gt; file_name ;
+
+    //Paper paper ;
+
+    //paper.load(&quot;paper.txt&quot;);
+
+    //s1.say_or_sing (&amp; paper );
+
+    return 0;
+
+}

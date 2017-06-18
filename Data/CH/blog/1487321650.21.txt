@@ -1,0 +1,146 @@
+十个题目1）写一个函数将一个小数转化为分数形式，深度优化，并解释这种优化的原因
+
+
+     例如f(0.3333333)=1/3 f(1.6666666)=5/3
+
+
+   
+
+
+
+
+   2) 两个集合，集合内分别由100亿个整数（64位整数），存在部分整数相同，写一段代码，找出这两个集合相同的元素，即集合交集。（注意：集合(set)的科学定义是不允许重复的，这里可以看做一个group,就是一个容纳数字的容器，允许重复）
+
+
+     例如SET_A={1,1,1,2,2,20,21,4,5,7...}
+
+
+        SET_B={2,4,5,...}
+
+
+        SET_A∩SET_B={2,4,5....}
+
+
+     做深度优化，并解释这种优化的原因，如果集合A和集合B的元素均为浮点数（64位浮点数），怎么处理？
+
+
+   
+
+
+
+
+   3)求解两个矩阵相乘， 矩阵大小为百万行*百万维，做深度优化，并解释这种优化的原因
+
+
+     例如 1 2 3  *  1  1 = 6  4
+
+
+           2 1 3    1  0   6  5 
+
+
+                    1  1
+
+
+   4)在10亿个英文句子（按行存储）的语料中，任意输入一个语素片段（至少3个英文字母），找出全部包含这段语素片段的句子。
+
+
+     例如
+
+
+     i have lunch
+
+
+     good morning
+
+
+     hi teacher
+
+
+     testing...
+
+
+     输入ing
+
+
+     返回
+
+
+     good morning
+
+
+     testing
+
+
+   
+
+
+   5)写一段大内存拷贝的代码（拷贝数量超过1G），做深度优化，并和memcpy比较速度。
+
+
+   
+
+
+
+
+   6)写一段大内存赋&#20540;的代码（清零数量超过1G），做深度优化，并和memset比较速度。
+
+
+
+
+   
+
+
+
+
+   7)写一段代码证明linux在等待临界区信号量上是排队的。
+
+
+    例如
+
+
+     time1： thread1 enter critical section
+
+
+     time2： thread2 wait critical section
+
+
+     time3:  thread3 wait critical section
+
+
+     time4:  thread4 wait critical section
+
+
+     time5: thread1 release critical section
+
+
+     time6: here must wake up thread2 because thead2 is the first waiter
+
+
+    时序上：最旧&lt;time1&lt;tim2&lt;...&lt;time6&lt;最新
+
+
+    写一段代码证明这个观点是正确的，或者是错误的
+
+
+   
+
+
+
+
+   8）lock-free，wait-free是什么意思？写一段lock-free的ring buffer或者queue的代码。
+
+
+   
+
+
+
+
+   9）写一段外排序代码，对100亿个浮点数进行排序，内存限制使用1GB，并作深度优化。
+
+
+   
+
+
+
+
+   10）找出一个单机上支持100亿key-value查询的key value store，做库速度或者查询速度（冷启动，热启动，单线程，并发）比THUIRDB快。任意一个指标能快即可。

@@ -1,0 +1,3 @@
+NS2学习笔记$ns duplex-link-op $n2 $n3 queuePos 0.5#此命令用于设置在NAM中显示的队列方向#经测试，发现：
+# queuePos 0.5表示包从上到下进入队列# queuePos 0表示包从右到左进入队列# queuePos 1表示包从左到右进入队列# queuePos 1.5表示包从下到上进入队列# queuePos 2==queuePos 0
+# 因此queuePos N表示包进入队列时的角度，角度=（N×π）% 2π

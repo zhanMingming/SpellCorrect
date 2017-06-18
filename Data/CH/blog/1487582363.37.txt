@@ -1,0 +1,155 @@
+哈夫曼树题目描述：
+
+   
+哈夫曼树，第一行输入一个数n，表示叶结点的个数。需要用这些叶结点生成哈夫曼树，根据哈夫曼树的概念，这些结点有权&#20540;，即weight，题目需要输出所有结点的&#20540;与权&#20540;的乘积之和。
+
+
+
+
+输入：
+
+   
+输入有多组数据。
+
+每组第一行输入一个数n，接着输入n个叶节点（叶节点权&#20540;不超过100，2&lt;=n&lt;=1000）。
+
+
+
+
+输出：
+
+   
+输出权&#20540;。
+
+
+
+
+样例输入：
+
+   5  
+1 2 2 5 9
+
+
+
+样例输出：
+
+   37
+
+
+
+提示：
+
+
+
+来源：
+
+   2010年北京邮电大学计算机研究生机试真题
+
+
+   
+
+
+
+
+   这题目拿上来想法太多了，搞得没细想就开始做，得以下经验：
+
+
+   1. 遇到树类问题，最好不用优先队列而是用数组模拟，因为优先队列操作对象比较方便，而操作指针不方便。
+
+
+   2. 树中指针问题。若queue设计为queue&lt;Tree*&gt; Q，则Tree *r=Q.top(); Q.pop();后，r的内容会变为现在Q.top()的内容。所以尽量不在队列中用指针。
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+int n;
+
+struct Tree
+{
+	struct Tree *l,*r;
+	int x;
+	bool leaf;
+	bool used;
+	Tree()
+	{
+		l=r=NULL;
+		used=false;
+	}
+};
+
+Tree *Q[10010];
+int cnt;
+
+int Dfs(Tree *r,int level)
+{
+	if(r-&gt;leaf)
+		return r-&gt;x*level;
+	return Dfs(r-&gt;l,level+1)+Dfs(r-&gt;r,level+1);
+}
+
+Tree* Select(bool *emptyflag)
+{
+	int minn=100*1001;//n&lt;=100,每个数的权值&lt;=1000,所以队列Q中每个节点的x&lt;=100*1000
+	int k=-1;
+	for(int i=0;i&lt;cnt;i++)
+		if(!Q[i]-&gt;used&amp;&amp;Q[i]-&gt;x&lt;minn)
+		{
+			minn=Q[i]-&gt;x;
+			k=i;
+		}
+		if(k!=-1){
+			Q[k]-&gt;used=true;
+			return Q[k];}
+		else{
+			*emptyflag=true;
+			return NULL;}
+}
+
+int main()
+{
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF)
+	{
+		int i,j,x;
+		Tree *temp,*q1,*q2;
+		cnt=0;
+		for(i=0;i&lt;n;i++)
+		{
+			scanf(&quot;%d&quot;,&amp;x);
+			q1=new Tree;
+			q1-&gt;x=x;
+			q1-&gt;leaf=true;
+			Q[cnt++]=q1;
+		}
+		if(n==1)
+		{
+			printf(&quot;%d\n&quot;,x);
+			continue;
+		}
+
+		bool empty=false;
+		while(true)
+		{
+			q1=Select(&amp;empty);
+			q2=Select(&amp;empty);
+			if(empty)
+				break;
+
+			temp=new Tree;
+			temp-&gt;l=q1;	
+			temp-&gt;r=q2;
+			temp-&gt;leaf=false;
+			temp-&gt;x=q1-&gt;x+q2-&gt;x;
+			Q[cnt++]=temp;
+		}
+
+		printf(&quot;%d\n&quot;,Dfs(q1,0));
+	}
+}

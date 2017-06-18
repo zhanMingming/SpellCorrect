@@ -1,0 +1,95 @@
+Camera Calibration 相机标定1° 什么是相机标定（What is Camera Calibration?）
+
+找到影响图像成像过程的内部相机参数：
+
+图像中心（不是width/2, height/2）
+
+焦距长度
+
+
+
+   行像素和列像素的比例因子
+
+
+   
+
+
+
+
+   扭曲factor
+
+
+   
+
+
+
+镜片扭曲
+
+
+
+   
+
+
+   
+
+
+
+
+
+2° 动机
+
+Camera Calibration 用于
+
+重构真实世界模型：Virtual L.A. project
+
+与世界交互：e.g.机器人
+
+
+
+
+
+如上图所示，估计红色与蓝色两个点的几何投影
+
+
+
+
+
+3° 图像的行列比例（Scaling of Rows and Columns in Image）
+
+相机像素不是完全符合正方形
+
+相机输出可能模糊为近&#20284;&#20540;（NTSC）
+
+图像可能从数据卡上获得 ·A/D转换器采样NTSC信号
+
+相机-&gt;NTSC信号-&gt;转换为数字信号-&gt;显示器上显示
+
+
+
+
+
+4° 混合透镜成像（Compound Lens Imaging）
+
+单透镜系统在其周围部分会造成图像扭曲（image distort）
+
+混合透镜可以用于减少彩色效应和针垫效应
+
+
+
+
+
+普通摄像机的相机图像平面
+
+
+
+
+
+对同样的针孔摄像机(pinhole camera)，相机图像平面(camera image plane)不同
+
+
+
+
+
+5° 相机标定目标
+
+将所拍摄图像在三维坐标系中找到对应位置

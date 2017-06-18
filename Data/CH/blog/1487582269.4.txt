@@ -1,0 +1,253 @@
+C++调用python本文以实例code讲解 C++ 调用 python 的方法。 
+
+
+ 
+
+本文在util.h中实现三个函数：
+ 
+
+    1. init_log: 用google log(glog)初始化log 
+
+    2. exe_command: 由 C++ 执行 shell code 
+
+    3. exe_py: C++调用python文件
+
+
+
+
+
+   Code:
+
+
+
+   Python:
+
+
+
+
+
+   def pr(args):
+    for arg in args:
+ print arg
+
+
+   
+ 
+
+C++: 
+
+include/util.h:
+
+
+
+   /*************************************************************************** 
+ *-    
+ * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved      
+ *-    
+ **************************************************************************/ 
+-      
+-      
+-      
+/**    
+ * @file util.h      
+ * @author zhangruiqing01(zhangruiqing01@baidu.com)     
+ * @date 2015/10/24 02:17:56
+ * @version $Revision$-     
+ * @brief-    
+ *  i  
+ **/   
+
+
+
+#ifndef  __UTIL_H_   
+#define  __UTIL_H_   
+
+#include "glog/logging.h"   
+#include &lt;string&gt;    
+#include &lt;vector&gt;    
+
+#define PYTHON_LIB_PATH "~/.jumbo/lib/python2.7" 
+#define PYTHON_BIN_PATH "~/.jumbo/bin/python2.7" 
+
+// initial log
+void init_log(const char* argv);   
+
+// exe shell command 
+char* exe_command(const char* cmd);
+
+// exe python command
+void exe_py(  
+ const std::string module_name,    
+ const std::string func_name,      
+ const std::vector&lt;std::string&gt;&amp; args);   
+
+
+
+   
+ 
+
+src/util.cpp:
+
+
+
+
+
+   /***************************************************************************     
+ *- 
+ * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved   
+ *- 
+ **************************************************************************/     
+-   
+-   
+-   
+/** 
+ * @file src/util.cpp    
+ * @author zhangruiqing01(zhangruiqing01@baidu.com)  
+ * @date 2015/10/24 02:12:34    
+ * @version $Revision$-  
+ * @brief- 
+ *--
+ **/
+
+#include "util.h" 
+#include &lt;stdio.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;Python.h&gt;      
+#define MAX_LENGTH 2048  
+
+void init_log(const char* argv){
+    if (!getenv("GLOG_logtostderr")) { 
+   google::LogToStderr();
+    }      
+    google::InstallFailureSignalHandler();    
+    google::InitGoogleLogging(argv);   
+    LOG(INFO) &lt;&lt; "Create Log successfully";   
+}   
+
+char* exe_command(const char* cmd){    
+    FILE* fres;   
+    if ((fres = popen(cmd, "r")) != NULL){    
+ char* buf_res = (char*) malloc(MAX_LENGTH);  
+ fread(buf_res, MAX_LENGTH, 1, fres);  
+ buf_res[strlen(buf_res) - 3] = '\0';  
+ //buf_res 
+ fprintf(stderr, "------------\nEXE RESULT: %s\n------------\n", buf_res);
+ pclose(fres);    
+ return buf_res;  
+    }      
+    else{  
+ LOG(FATAL) &lt;&lt; "Failed to execute '" &lt;&lt; cmd &lt;&lt; "'";  
+    }      
+}     
+
+void exe_py(
+ const std::string module_name,  
+ const std::string func_name,    
+ const std::vector&lt;std::string&gt;&amp; args){ 
+    std::string args_str = "";   
+    for(auto&amp; arg : args){
+ args_str += arg + ",";   
+    }
+
+    std::string cmd = "LD_LIBRARY_PATH=" +     
+ std::string(PYTHON_LIB_PATH) + ":" + "$LD_LIBRARY_PATH " +  
+ std::string(PYTHON_BIN_PATH) +  
+ " -c 'import sys\n" +    
+ "sys.path.append(\"pyfiles\")\n" +     
+ "import " + module_name + "\n" +
+ "ret = " + module_name + "." + func_name + "([" +    
+ args_str + "])'"; 
+    LOG(INFO) &lt;&lt; "exec command: "&lt;&lt; cmd;
+    char* res = exe_command(cmd.c_str());      
+}
+
+
+
+   
+ 
+
+main.cpp:
+
+
+
+
+
+   /***************************************************************************  
+ *-     
+ * Copyright (c) 2015 Baidu.com, Inc. All Rights Reserved
+ *-     
+ **************************************************************************/  
+-
+-
+-
+/**     
+ * @file src/util.cpp 
+ * @author zhangruiqing01(zhangruiqing01@baidu.com)      
+ * @date 2015/10/23 10:41:23 
+ * @version $Revision$-      
+ * @brief-     
+ *--    
+ **/    
+
+#include &lt;stdio.h&gt;    
+#include &lt;vector&gt;     
+#include &lt;string&gt;     
+#include &lt;util.h&gt;     
+#include &lt;iostream&gt;   
+
+int main(int argc, char* argv[]){   
+    //initial log     
+    init_log(argv[0]);
+
+    char cmd[100]="echo 'abc'";     
+    char* res = exe_command(cmd);   
+
+    std::string arg_v[] = {"1"};    
+    std::vector&lt;std::string&gt;py_args(arg_v, arg_v + sizeof(arg_v)/sizeof(arg_v[0]));  
+    exe_py("printargs", "pr", py_args);    
+
+
+
+   注意其中的Makefile文件：
+
+
+
+需要include python.h 所在目录，即python的include目录
+C++编译参数加入-std=c++11： 
+
+CXXFLAGS(‘-g -pipe -W -Wall -fPIC -std=c++11’)
+include glog所在目录
+
+
+
+
+
+   最后看一下本文中程序的结构：  
+
+
+ 
+
+ 
+
+
+   
+
+
+
+   执行结果： 
+
+
+
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

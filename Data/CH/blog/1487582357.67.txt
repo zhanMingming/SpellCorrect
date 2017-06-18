@@ -1,0 +1,65 @@
+openCv 图像顺时针、逆时针旋转通过下面这个函数调用
+
+
+   Rotate90(workImg,270);
+//顺时针旋转
+
+
+
+
+   Rotate90(workImg,90);
+//逆时针旋转
+
+
+   实现，其实用该函数旋转任意度数对正方形图都ok，只是长方形图旋转后会有拉伸部分，不好掌握新图的长宽。
+
+
+   
+   void Rotate90(IplImage *workImg,int angle)
+{
+	int opt = 0;//  1: 加缩放   0: 仅旋转
+	double factor;     //  缩放因子
+	IplImage *pImage;
+	IplImage *pImgRotation = NULL;
+
+	pImage = workImg;
+	pImgRotation = cvCloneImage(workImg);
+
+	angle=-angle;
+
+	//  创建 M 矩阵
+	float m[6];
+	//      Matrix m looks like:
+	//      [ m0  m1  m2 ] ----&gt; [ a11  a12  b1 ]
+	//      [ m3  m4  m5 ] ----&gt; [ a21  a22  b2 ]
+
+	CvMat M = cvMat(2,3,CV_32F,m);
+	int w = workImg-&gt;height;
+	int h = workImg-&gt;width;
+
+	if (opt) factor = (cos(angle*CV_PI/180.)+1.0)*2;
+	else factor = 1;
+
+	m[0] = (float)(factor*cos(-angle*CV_PI/180.));
+	m[1] = (float)(factor*sin(-angle*CV_PI/180.));
+	m[3] = -m[1];
+	m[4] =  m[0];
+	//  将旋转中心移至图像中心
+	m[2] = w*0.5f;
+	m[5] = h*0.5f;
+
+	//---------------------------------------------------------
+	//  dst(x,y) = A * src(x,y) + b
+	cvZero(pImgRotation);
+	cvGetQuadrangleSubPix(pImage,pImgRotation,&amp;M);
+	//---------------------------------------------------------
+
+	cvNamedWindow(&quot;Rotation Image&quot;);
+	cvFlip(pImgRotation);
+	cvShowImage(&quot;Rotation Image&quot;,pImgRotation);
+
+	cvReleaseImage( &amp;pImgRotation );
+	cvWaitKey(0);
+
+	cvDestroyWindow(&quot;Rotation Image&quot;);
+}

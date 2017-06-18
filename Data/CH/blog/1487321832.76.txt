@@ -1,0 +1,4 @@
+GDB调试例子11　#include 2 3　static char buff [256]; 4　static char* string; 5　int main () 6　{ 7　　　printf (&quot;Please input a string: &quot;); 8　　　gets (string);　　 9　　 printf (&quot;/nYour string is: %s/n&quot;, string); 10 } 
+
+
+   上面这个程序非常简单，其目的是接受用户的输入，然后将用户的输入打印出来。该程序使用了一个未经过初始化的字符串地址 string，因此，编译并运行之后，将出现 Segment Fault 错误： $ gcc -o bugging -g bugging.c $ ./bugging Please input a string: asfd Segmentation fault (core dumped) 为了查找该程序中出现的问题，我们利用 gdb，并按如下的步骤进行： 1．运行 gdb bugging 命令，装入 bugging 可执行文件； 2．执行装入的 bugging 命令 run； 3．使用 where 命令查看程序出错的地方； 4．利用 list 命令查看调用 gets 函数附近的代码； 5．唯一能够导致 gets 函数出错的因素就是变量 string。用print命令查看 string 的值； 6．在 gdb 中，我们可以直接修改变量的值，只要将 string 取一个合法的指针值就可以了，为此，我们在第8行处设置断点 break 8； 7．程序重新运行到第 8行处停止，这时，我们可以用 set variable 命令修改 string 的取值； 例如:set variable string = (char*)malloc(100)8．然后继续运行，将看到正确的程序运行结果。

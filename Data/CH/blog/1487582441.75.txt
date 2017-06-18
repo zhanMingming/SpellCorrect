@@ -1,0 +1,164 @@
+Anniversary partyProblem B 
+Time Limit : 2000/1000ms (Java/Other)Memory Limit : 65536/32768K (Java/Other)
+Total Submission(s) : 5Accepted Submission(s) : 2
+Font: <span onclick="function onclick()
+{
+ProFont('Times New Roman')
+}">Times New Roman | <span onclick="function onclick()
+{
+ProFont('Verdana')
+}">Verdana | <span onclick="function onclick()
+{
+ProFont('Georgia')
+}">Georgia 
+Font Size: <span onclick="function onclick()
+{
+ProFontAdd(-1)
+}">&larr; <span onclick="function onclick()
+{
+ProFontAdd(1)
+}">&rarr;
+<h3 onclick="function onclick()
+{
+ObjFolder('procon')
+}">Problem Description
+There is going to be a party to celebrate the 80-th Anniversary of the Ural State University. The University has a hierarchical structure of employees. It means that the supervisor relation forms a tree rooted at the rector V. E. Tretyakov. In order to make the party funny for every one, the rector does not want both an employee and his or her immediate supervisor to be present. The personnel office has evaluated conviviality of each employee, so everyone has some number (rating) attached to him or her. Your task is to make a list of guests with the maximal possible sum of guests' conviviality ratings.
+
+<h3 onclick="function onclick()
+{
+ObjFolder('proinput')
+}">Input
+Employees are numbered from 1 to N. A first line of input contains a number N. 1 &lt;= N &lt;= 6 000. Each of the subsequent N lines contains the conviviality rating of the corresponding employee. Conviviality rating is an integer number in a range from -128 to 127. After that go T lines that describe a supervisor relation tree. Each line of the tree specification has the form: L K It means that the K-th employee is an immediate supervisor of the L-th employee. Input is ended with the line 0 0 
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prooutput')
+}">Output
+Output should contain the maximal sum of guests' ratings.
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosamplein')
+}">Sample Input
+
+
+   7
+1
+1
+1
+1
+1
+1
+1
+1 3
+2 3
+6 4
+7 4
+4 5
+3 5
+0 0
+
+
+
+<h3 onclick="function onclick()
+{
+ObjFolder('prosampleout')
+}">Sample Output
+
+
+   5
+
+   树状DP问题：
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define M 6010
+struct point
+{
+	int d,v;
+}a[M];
+
+struct edgte
+{
+	int a,b;
+}s[M];
+
+int d[M][2],link[M];
+
+int main()
+{
+	int n,m,i,k,j,l;
+	while(scanf("%d",&amp;n)!=EOF&amp;&amp;n)
+	{
+		for(i=1;i&lt;=n;i++)
+		{
+			scanf("%d",&amp;a[i].v);
+			a[i].d=0;
+			d[i][0]=0;
+			d[i][1]=a[i].v;
+		}
+		i=1;
+		while(1)
+		{
+			scanf("%d%d",&amp;j,&amp;k);
+
+			if(j==0&amp;&amp;k==0)
+				break;
+			s[i].a=j;
+			s[i].b=k;
+			a[j].d++;
+			a[k].d++;
+			link[i]=i+1;
+			i++;
+		}
+		link[n-1]=1;
+		if(n==1)
+		{
+			printf("%d/n",a[1].v&gt;=0?a[1].v:0);
+			continue;
+		}
+		i=n-1;
+		int max=0;
+		int p1,p2;
+		while(i!=link[i])
+		{
+			j=link[i];
+			if(a[s[j].a].d==1||a[s[j].b].d==1)
+			{
+				if(a[s[j].a].d==1)
+				{					
+					p1=s[j].b;
+					p2=s[j].a;
+				}
+				else
+				{
+					p1=s[j].a;
+					p2=s[j].b;
+				}
+				if(d[p2][0]&gt;0)
+				{
+					d[p1][1]+=d[p2][0];
+				}
+				int temp=d[p2][0]&gt;d[p2][1]?d[p2][0]:d[p2][1];
+				if(temp&gt;0)
+					d[p1][0]+=temp;
+				a[p1].d--;
+				a[p2].d--;
+				
+				link[i]=link[j];
+			}
+			else
+				i=link[i];
+		}
+		
+		p2=s[i].a;
+		p1=s[i].b;
+		int t1=d[p1][1]+d[p2][0];
+		int t2=d[p1][0]+d[p2][0];
+		t2=t2&gt;t1?t2:t1;
+		t1=d[p1][0]+d[p2][1];
+		
+		max=t2&gt;t1?t2:t1;
+		cout&lt;&lt;max&lt;&lt;endl;
+	}
+}

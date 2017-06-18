@@ -1,0 +1,303 @@
+在线视频如何盈利[转techcrunch]这篇文章内容全面，而且很多引用都给了链接，看得出写这篇文章的人很用心：
+
+
+   
+
+
+   有几个重要观点，简单罗列一下：
+
+
+   
+
+
+   现状：在线视频发展很快，流量增长很快，但利润很薄
+
+
+   
+
+
+   危机：视频的竞争核心是内容，但内容同质化太严重，很容易形成winner-take-all game（赢家通吃）的局面。
+
+
+   
+
+
+   观点1：广告总是追逐用户焦点的
+
+
+   Advertisers Follow Audiences&hellip;
+
+
+   Ex-Disney CEO Michael Eisner doesn&rsquo;t pretend to know how the industry is going to play out, but he&rsquo;s got no doubts what the end result will be: &ldquo;I don&rsquo;t know if the growth in content made for the Internet will be evolutionary or revolutionary, but it can&rsquo;t not happen: a death march has been going on for other media who are in trouble because there is a more efficient way to share content around the world with the Internet.&rdquo;
+
+
+   迪斯尼前CEO，Michael Eisner ，深刻地理解这个行业的终局，毫无疑问的指出：&ldquo;我不能确认来自互联网的内容是否会成为革命或者是革新，但是有一点是必须的(can't not happern)：相比互联网媒体其他媒体无疑是一场死亡行军(death march)，因为互联网在内容分享分享方面的效率具有强大优势。
+
+
+   
+
+
+   观点2：商业模式亟待开发
+
+
+   Business Models Take Time to Develop
+
+
+   Eisner made his fortune in television. One VC who&rsquo;s made his online has another opinion. In Fred Wilson&rsquo;s influential 2005 post &ldquo;The Future of Media (aka Please Take My RSS Feed)&rdquo;, he suggests to:
+
+
+   1 &ndash; Microchunk it &ndash; Reduce the content to its simplest form.2 &ndash; Free it &ndash; Put it out there without walls around it or strings on it.3 &ndash; Syndicate it &ndash; Let anyone take it and run with it.4 &ndash; Monetize it &ndash; Put the monetization and tracking systems into the microchunk.
+
+
+   
+
+
+   
+
+
+   观点3：视频将无处不在
+
+
+   1）维基百科将会推出视频维基内容。
+
+
+   2）商业网站Zappos将会让用户提交视频体验。
+
+
+   Video will be Everywhere: on all Websites
+
+
+   Video on the Web is no longer just about entertainment. It is also about marketing, instruction, and conveying information of all kinds.
+
+
+
+Content bellwether Wikipedia announced it will be rolling out videos soon enough.
+e-Commerce leader Zappos encourages users to submit their video experiences which increase sales 6% to 30%. In 2010, it will create 50,000 videos.
+It won&rsquo;t be long before organizations feature their accountants, lawyers, management, VCs in videos too.
+
+
+
+
+   观点4：视频广告模式
+
+
+   Pre-rolls：插播广告的一种，前插广告
+
+
+   mid rolls：插播广告的一种，中部广告
+
+
+   post-rolls：插播广告的一种，后插广告
+
+
+   display banner ：banner广告，围绕视频周边的广告
+
+
+   插播类广告比较传统，容易被客户接受，但干扰用户，展现广告停留时间长，对用户影响小。
+
+
+   
+
+
+
+文中也提到了，在英国视频广告的市场已经超过了电视广告的市场份额。
+
+
+
+以下是原文：
+
+How To Make Money In Online Video
+
+
+by Guest Author on February 7, 2010 
+
+
+
+
+
+   
+
+
+   Editor&rsquo;s note: This is the fourth in a series of posts by guest writer Ashkan Karbasfrooshan.Previously, he wrote about the State of Online Video, 12 Surprising Things Holding Back Online Video Advertising, and Context is King: How Videos Are Found And Consumed Online. In part 4 today, he examines where he thinks the sweet spot is for making money in onljne video. Karbasfrooshan is the founder and CEO of WatchMojo.
+
+
+   In Search of Profits
+
+
+   Ten years ago, web companies didn&rsquo;t generate much revenue. These days, web companies are some of the most profitable around. Online video is where the Web was ten years ago: in investment mode as video companies that are generating high revenue are not necessarily the most profitable.
+
+
+   Are those companies suffering low margins because they&rsquo;re investing in the future or are they fundamentally lower-margin businesses?
+
+
+   Ad Networks Are Low Margin Businesses
+
+
+   This week, video ad network Brightroll raised $10 million from Scale Venture Partners. Ad networks aggregate audiences and sell ads to marketers, sharing the proceeds with publishers/producers. Scale&rsquo;s Rob Theis&rsquo; argues: &ldquo;the most strategic Internet investments are those that compete not with other Internet businesses, but with the much larger amount of money still being spent offline.&rdquo;
+
+
+   Brightroll&rsquo;s CEO Tod Sacerdoti added: &ldquo;I think by this time next year the majority of the top five to ten video properties by any measure will be aggregator networks. The best example for this is display advertising.&rdquo; Indeed, networks have an unmatched ability to scale but can also crash to the ground awfully fast.
+
+
+   The low margin is the least of their problems; differentiation and defensibility are. Blue Lithium and Right Media hit jackpots by selling to Yahoo! But those who didn&rsquo;t sell (Tribal Fusion, Valueclick) suddenly found themselves under pressure from search advertising on performance and video on branding.
+
+
+   Content Networks Have Little Differentiation
+
+
+   Similarly, aggregators gather videos from content providers, sharing ad revenues. iFilm (sold to Viacom, renamed Spike), Guba, Grouper (sold to SONY, renamed Crackle), Revver, YouTube (sold to Google), Veoh, DailyMotion, Metacafe, Viddler, blip.tv, are all vying for content, audiences and dollars.
+
+
+   YouTube is master of this domain. Hulu is giving YouTube a run for its money, but the business model is anything but certain and its long term exit strategy is murky (Disney, News Corp. and NBC Universal/Comcast are shareholders but also competitors).
+
+
+   Ultimately, ad and content networks operate in a high-risk, winner-take-all game. For publishers, it&rsquo;s a lower risk world. Consider the two acquisitions News Corp. made in 2005: Rupert Murdoch paid more for IGN ($650M) than for MySpace ($580 million), but MySpace&rsquo;s subsequent growth made him look like a genius (for a while). Today, MySpace is searching for its raison d&rsquo;etre while IGN treks along as an unstoppable force in its sphere.
+
+
+   The Myth of Hyper Distribution?
+
+
+   In online video, producers are agnostic to distribution channel or platform. To reduce risk, they diversify distribution, but the jury&rsquo;s out on whether hyper distribution bears fruit. Hyper distribution refers to syndicating one&rsquo;s content as broadly as possible with little or no restrictions.
+
+
+   When it comes to generating revenues, is hyper-distribution wise? Not according to Chris Pirillo, a prosumer video producer who leverages video to promote his empire but only counts YouTube as a commercial platform: &ldquo;YouTube offers the largest audiences and generates most the revenue. If you&rsquo;re not YouTube, you have challenges in creating value for content producers&rdquo;. If that changes, look out for Freewheel, which according to CEO Doug Knopper allows &ldquo;media companies and content owners to be able to monetize their video libraries across multiple channels and devices&rdquo;.
+
+
+   Advertisers Follow Audiences&hellip;
+
+
+   Ex-Disney CEO Michael Eisner doesn&rsquo;t pretend to know how the industry is going to play out, but he&rsquo;s got no doubts what the end result will be: &ldquo;I don&rsquo;t know if the growth in content made for the Internet will be evolutionary or revolutionary, but it can&rsquo;t not happen: a death march has been going on for other media who are in trouble because there is a more efficient way to share content around the world with the Internet.&rdquo;
+
+
+   Business Models Take Time to Develop
+
+
+   Eisner made his fortune in television. One VC who&rsquo;s made his online has another opinion. In Fred Wilson&rsquo;s influential 2005 post &ldquo;The Future of Media (aka Please Take My RSS Feed)&rdquo;, he suggests to:
+
+
+   1 &ndash; Microchunk it &ndash; Reduce the content to its simplest form.2 &ndash; Free it &ndash; Put it out there without walls around it or strings on it.3 &ndash; Syndicate it &ndash; Let anyone take it and run with it.4 &ndash; Monetize it &ndash; Put the monetization and tracking systems into the microchunk.
+
+
+   In theory, in the future when video streams monetize the way search queries have (whereby a search query is always associated with some kind of paid listing) then perhaps Wilson&rsquo;s thesis will prove right. But in practice, at least in the five years that have passed since the post, it&rsquo;s been a recipe for financial disaster.
+
+
+   Hyper distribution is great for promotional purposes but not necessarily for commercial purposes. Marketers do pay more attention as an audience grows, but they also pay a premium for scarcity and exclusivity.
+
+
+   This is the fundamental conundrum facing new media producers who rely on hyper-distribution to build brands and audiences but who weaken their pricing power and ability to secure guaranteed dollars by giving away their videos. This can work if you can build ad-supported businesses, but that takes time and money.
+
+
+   Today, a few new media producers have managed to build ad-supported businesses, namely Revision3 and Next New Networks. But between the two, they have raised over $30 million in venture capital. Most producers don&rsquo;t have that luxury. For those others, I recommend creating content that other media companies will pay for, to buy them enough time to build a syndication business and eventually, a fully ad-supported business which commands the large ad dollars.
+
+
+   
+
+
+   An imperfect but useful analogy I use is the banking model, where retail, corporate and investment banking fees can create a large business.
+
+
+   This diversified strategy provides:
+
+
+a safe income stream: licensing, like retail banking, provides a recurring and non-volatile revenue base.
+a growth business: syndication, like corporate banking, requires other companies in the ecosystem to do well. This can provide higher CPM rates by placing content in the right context.
+a wildly lucrative stream: advertising, like investment banking, takes time to develop, is speculative and seasonal, and risks drying up abruptly. Notice how advertising revenue spikes each fourth quarter, for example.
+
+
+   The reason why I place content producers in the highest Profitability circle over time in the first chart above is because only they can build such a business. (The Profitability Index represented in the chart takes into account operating margins and total return on investment, including likelihood of a liquidity event). And, yes, I am completely biased, since this is the kind of business I am trying to build with WatchMojo. Aggregators and networks are solely advertising based businesses; just ask YouTube who generated $10,000 in a paid model test, even though it can generate billions in simpler ways. Video advertising will be a bigger business, but not necessarily a higher-margin business.
+
+
+   Video will be Everywhere: on all Websites
+
+
+   Video on the Web is no longer just about entertainment. It is also about marketing, instruction, and conveying information of all kinds.
+
+
+Content bellwether Wikipedia announced it will be rolling out videos soon enough.
+e-Commerce leader Zappos encourages users to submit their video experiences which increase sales 6% to 30%. In 2010, it will create 50,000 videos.
+It won&rsquo;t be long before organizations feature their accountants, lawyers, management, VCs in videos too.
+
+
+   Video will be Everywhere: in Ads
+
+
+   Videos won&rsquo;t simply be on all websites; video ads will converge with rich media and display banners. Publishers and ad networks will swap out low yield ad placements for videos that sell at a premium. Rupert Murdoch is right to say that there isn&rsquo;t enough advertising to make all publishing online profitable, but if you insert a video-enabled ad where a display banner exists today, maybe it will become more profitable, as video rates tend to generate a tenfold premium over display banners. Of course, the flip side of that argument is that if video ad inventory lost all scarcity as display banners have, then it rates would also see a steep drop.
+
+
+   Video is the Anti-Search
+
+
+   Google&rsquo;s dominance of the Web today stems from a perfect storm. Search benefitted from low expectations. Whereas Google&rsquo;s competitors threw in the towel to focus on portaldom (or outright handed them the business), online video companies&rsquo; war chests seemingly have no bottom as they wage the war for the online audience.
+
+
+   With YouTube being a unit of Google, it&rsquo;s hard to compete being a pure video aggregator. Those who have tried are flailing badly. Yet video&rsquo;s expectations have always been high and will only get higher.
+
+
+   History Repeats Itself
+
+
+   Video will follow search in two ways though.
+
+
+   Search is software and Google is the only successful ad-supported technology company. Video is media, which has a natural disposition to embrace ad-supported models. As such, advertising will monetize video streams. In fact, as large ad agencies and marketers shift online, they&rsquo;ll embrace branding campaigns and push video advertising could eventually top search advertising. Once that starts, online advertising will surpass television, it&rsquo;s already happened in the UK.
+
+
+   Search for The Leading Ad Format
+
+
+   Everyone agrees that video advertising will be huge but what will the prevailing ad format be?
+
+
+   Stakeholders are obsessed with finding the ad format likely to follow television&rsquo;s 30-second ad spot and search&rsquo;s paid listings.
+
+
+   What might lead the way?
+
+
+   Pre-rolls are the equivalent of pop-ups (and mid/post rolls the equivalent of pop-unders) in that users hate them, but unlike pop-ups, I actually think pre-rolls won&rsquo;t disappear, mainly because
+
+
+They&rsquo;re the most in-demand ad format (according to Brightroll CEO Tod Sacerdoti)
+It is easier to include a pre-roll when you&rsquo;re syndicating to other websites and platforms (says blip.tv co-founder Dina Kaplan)
+But largely because they&rsquo;ll get more user-friendly: the 30-second ad will make way for 5-10 second interactive pre-rolls (SpotXchange CEO Michael Shehan).
+
+
+   However, there will always be properties which will forego pre-roll revenue to improve the user experience in order to build audiences, and all else being equal users will migrate to those sites. So I&rsquo;m not sure the pre-roll will remain all that ubiquitous. The other problem with pre-rolls is lack of attention. When a pre-roll starts, I tune out and look for my headphones or go grab a coffee.
+
+
+   That&rsquo;s why I like the contextual display banner (and not necessarily the companion banner). A companion banner comes bundled with the video pre-roll, but sits alongside the video A contextual banner comes without the pre-roll. Whereas most banners disappear quickly next to text with one downward scroll of the mouse, alongside a video player, that banner becomes quite valuable and top-of-mind since people are just staring at the video.
+
+
+   We&rsquo;ve also seen the rise (and fall) of overlays, which is basically an expanded Picture-in-Picture (PIP) format; we know how that fared.
+
+
+   Of course, content producers are also salivating over branded content (more than product integration and product placement, the brand becomes central to the story) or outright sponsorships.
+
+
+   Finally, there&rsquo;s the Web&rsquo;s favorite offspring: the viral video. Viral video is not an ad format, of course, but it is not quite branded content nor is it supported by ads. As these become more common, achieving success with content alone becomes a sure-fire recipe for failure. All content will need to be supported by a media buy or some kind of promotional push. After all, on TV you spend millions creating an ad but you need to buy media spots to promote it. It&rsquo;s not going to be that different online. Yes, it&rsquo;s a meritocracy, but it&rsquo;s a loud, cluttered one.
+
+
+   KISS: Keep It Simple Stupid
+
+
+   There won&rsquo;t be a single dominant ad format but the holy grail will prove simpler than expected. It always does. 
+
+
+   Remember Don Lapre&rsquo;s infomercials? He would go on and on about placing &ldquo;Tiny Classified Ads&rdquo; in newspapers. I never thought much of those ads until Google&rsquo;s adoption of (essentially) little text ads next to search results led to their explosive growth.
+
+
+   Sometimes in business, the solution is simpler than you can imagine.
+
+
+
+
+   
+
+
+   
+
+
+   
+
+
+   推荐阅读：http://www.techcrunch.com/2010/02/07/how-to-make-money-online-video/

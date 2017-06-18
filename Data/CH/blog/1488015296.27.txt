@@ -1,0 +1,52 @@
+使用requireJS的shim参数，完成jquery插件的加载没有requireJS框架之前，如果我们想使用jquery框架，会在HTML页面中通过&lt;script&gt;标签加载，这个时候jquery框架生成全局变量$和jQuery等全局变量。如果项目中引用了requireJS框架，采用模块化的方式加载jquery，那么jquery不会再添加全局变量$和jQuery。现在问题来了，虽然jquery框架已经开始支持AMD规范，但是jquery的众多插件还是不支持AMD，仍然像以前一样需要使用全局变量$。jquery插件大多都是如下结构：
+
+
+   (function( $, undefined ) {
+
+})( jQuery );
+
+   
+
+
+   如果我们项目中使用了jquery插件，但是jquery框架是通过requireJS加载的（不会添加全局变量$），那怎么完成jquery插件的加载呢？使用传统的方，在HTML页面中通过&lt;script&gt;加载jquery插件，肯定是不行的。这个时候我们需要使用到
+
+
+   requireJS的shim参数，来完成jquery插件的加载。下面我们以加载jquery-ui的slider插件为例：
+
+
+   requirejs.config({
+	shim: {
+ &#39;jquery.ui.core&#39;: [&#39;jquery&#39;],
+ &#39;jquery.ui.widget&#39;: [&#39;jquery&#39;],
+ &#39;jquery.ui.mouse&#39;: [&#39;jquery&#39;],
+ &#39;jquery.ui.slider&#39;:[&#39;jquery&#39;]
+    },
+	paths : {
+		jquery : &#39;jquery-2.1.1/jquery&#39;,
+		domReady : &#39;require-2.1.11/domReady&#39;,
+		&#39;jquery.ui.core&#39; : &#39;jquery-ui-1.10.4/development-bundle/ui/jquery.ui.core&#39;,
+		&#39;jquery.ui.widget&#39; : &#39;jquery-ui-1.10.4/development-bundle/ui/jquery.ui.widget&#39;,
+		&#39;jquery.ui.mouse&#39; : &#39;jquery-ui-1.10.4/development-bundle/ui/jquery.ui.mouse&#39;,
+		&#39;jquery.ui.slider&#39; : &#39;jquery-ui-1.10.4/development-bundle/ui/jquery.ui.slider&#39;
+	}
+});
+
+
+		
+require([ &#39;jquery&#39;, &#39;domReady&#39;,&#39;jquery.ui.core&#39;,&#39;jquery.ui.widget&#39;,&#39;jquery.ui.mouse&#39;,&#39;jquery.ui.slider&#39;],
+		function($) {
+			
+			$(&quot;#slider&quot; ).slider({
+			     value:0,
+			     min: 0,
+			     max: 4,
+			     step: 1,
+			     slide: function( event, ui ) {}	   
+			});		
+								
+		});
+
+   
+
+
+   在path参数中，我们设置了模块名称(可以随意指定)和js文件路径的映射，然后在shim参数中，指定了模块名称和它的依赖数组，上面我们的jquery插件只依赖于jquery框架。通过这种方式，就可以使用requireJS完成jquery和其插件的加载，不会有全局变量污染问题。

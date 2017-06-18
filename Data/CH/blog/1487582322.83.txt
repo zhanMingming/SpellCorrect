@@ -1,0 +1,73 @@
+计算二进制数中1的个数本文提供了三种方法，分别计算一个数的二进制表示中1的个数。方法和解释分别见Count1, Count2, Count3函数。
+
+   只有Count1不能满足负数要求（会死循环进去），其他两个都可以操作32b以内正负数。
+
+   Count1：每次将x末位与1相与，看最后以为是否为1, 然后将x右移
+
+   Count2：将变量y从1开始与x相与，然后每次将y左移，和上个方法类似
+
+   Count3：每次将x&amp;=(x-1)可以将最右边一个1变为0;
+
+   该方法应用：e.g. 如何用一个语句判断一个整数是不是2的整数次幂？
+
+   #define Is2P(x) x&amp;(x-1)?0:1
+
+   
+
+   /********************/
+//@Discription: Count the number of '1' in binary number
+//@Author: Rachel Zhang
+//@Create Date:2012-5-22
+/********************/
+
+#include&quot;stdio.h&quot;
+
+int Count1(int x)
+{
+	int c=0;
+	while(x)
+	{
+		c+=x&amp;1;
+		x&gt;&gt;=1;
+	}
+	return c;
+}
+//Bug：当x=0x80000000(negative)时,x&gt;&gt;1要保证还是负数，因此不是0x40000000,而是=0xc0000000
+//i.e. input -2147483648(0x80000000),x&gt;&gt;1=-107374124(0xc0000000),而非2^30(0x40000000)
+//这样最后会出现0xff导致死循环
+
+int Count2(int x)
+{
+	int c=0;
+	unsigned int y=1;
+	while(y)
+	{
+		c+=x&amp;y?1:0;
+		y&lt;&lt;=1;
+	}
+	return c;
+}
+//Problem:不知道x的位数，会造成一些冗余运算，不过没关系，32位pc最多运算32次嘛
+//不是问题的问题
+
+int Count3(int x)
+{
+	int c=0;
+	while(x)
+	{
+		x&amp;=x-1;
+		c++;
+	}
+	return c;
+}
+
+int main()
+{
+	int x;
+	while(scanf(&quot;%d&quot;,&amp;x)!=EOF)
+	{
+		printf(&quot;%d\n%d\n%d\n&quot;,Count1(x),Count2(x),Count3(x));
+	}
+	return 0;
+}
+源题目出处：http://zhedahht.blog.163.com/blog/static/25411174200731844235261/

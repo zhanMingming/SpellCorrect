@@ -1,0 +1,117 @@
+如何对窗体进行打印预览 (Visual C#)MSDN上抄下来的&hellip;&hellip;
+
+
+   
+
+
+   如何：对窗体进行打印预览
+ 
+
+ 
+
+
+
+Visual C# 语言概念
+
+如何：对窗体进行打印预览 (Visual C#)
+
+
+
+
+   
+
+
+   此示例说明如何对当前窗体进行打印预览的副本。
+
+示例
+
+    [System.Runtime.InteropServices.DllImport(&quot;gdi32.dll&quot;)]
+ public static extern long BitBlt(IntPtr hdcDest, int nXDest, int nYDest, int nWidth, int nHeight, IntPtr hdcSrc, int nXSrc, int nYSrc, int dwRop);
+ private Bitmap memoryImage;
+ private void CaptureScreen()
+ {
+     Graphics mygraphics = this.CreateGraphics();
+     Size s = this.Size;
+     memoryImage = new Bitmap(s.Width, s.Height, mygraphics);
+     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
+     IntPtr dc1 = mygraphics.GetHdc();
+     IntPtr dc2 = memoryGraphics.GetHdc();
+     BitBlt(dc2, 0, 0, this.ClientRectangle.Width, this.ClientRectangle.Height, dc1, 0, 0, 13369376);
+     mygraphics.ReleaseHdc(dc1);
+     memoryGraphics.ReleaseHdc(dc2);
+ }
+ private void printDocument1_PrintPage(System.Object sender, System.Drawing.Printing.PrintPageEventArgs e)
+ {
+     e.Graphics.DrawImage(memoryImage, 0, 0);
+ }
+ private void printButton_Click(System.Object sender, System.EventArgs e)
+ {
+     CaptureScreen();
+     printPreviewDialog1.Show();
+ }
+
+编译代码
+
+
+   此示例需要：  
+
+
+
+
+   名为 printDocument1 且包含 PrintPage 事件处理程序的 PrintDocument
+ 组件。
+
+
+(上一条也就是)
+this.printDocument1.PrintPage+=new System.Drawing.Printing.PrintPageEventHandler(printDocument1_PrintPage);
+
+
+   一个名为 printPreviewDialog1 的 PrintPreviewDialog
+ 组件，并将其 Document 属性设置为 printDocument1。
+
+
+
+
+   名为 printButton 且包含 Click 事件处理程序的 Button
+。
+
+
+
+
+   该示例代码替换现有的事件处理程序。单击 printButton 时会显示窗体的打印预览。
+
+
+
+可靠编程
+
+
+   以下情况可能会导致异常：  
+
+
+
+
+   您没有访问该打印机的权限。
+
+
+
+
+   您没有使用非托管代码的权限。
+
+
+
+
+   没有安装打印机。
+
+
+
+
+   该&ldquo;打印预览&rdquo;对话框以前曾被释放。在关闭&ldquo;打印预览&rdquo;对话框后会出现该情况。
+
+
+
+
+
+安全
+
+
+   为了运行此示例，您必须具有执行非托管代码和访问打印机的权限。

@@ -1,0 +1,21 @@
+将一个数据库中的表复制到另一个数据库当然，可以用sql提供的可视化&hellip;&hellip;解决掉
+
+
+   
+
+
+   下面是脚本方法：
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   use你要用的数据库goifexists(selectnamefromsysobjectswheretype='u'id=object_id('表名'))droptable表名gouse源库goselect*into目的库.dbo.表名from表名go

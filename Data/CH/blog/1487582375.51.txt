@@ -1,0 +1,70 @@
+sql2005数据库连接不上，错误:233/错误:18452(图解)数据库连接不上，只能以&ldquo;Windows身份验证&rdquo;进入，想用密码认证方式(&ldquo;SQL Server身份验证&rdquo;)进入是吗？请往下看
+
+
+   
+
+
+   出现的错误如图所示：
+
+
+    
+
+
+   
+
+
+   
+
+
+   解决办法：
+
+
+   (1)先以&ldquo;Windows身份认证&rdquo;进入数据库，然后在你数据库主机名处右键点&ldquo;属性&rdquo;
+
+
+   
+
+
+   
+
+
+   (2)点击&ldquo;安全性&rdquo;--&gt;&ldquo;SQL Sever 和Windows身份验证模式(S)&rdquo;--&gt;&ldquo;确认&rdquo;，会提示&ldquo;直到重新启动Sql sever...&rdquo;。
+
+
+   
+
+
+   
+
+
+   (3)这一步请切记要看完！
+
+
+   接着下去要重新启动数据库，记住不是单单关掉数据库重开，而是要你做如下操作来&ldquo;重新启动&rdquo;数据库。如图所示
+
+
+   
+
+
+   
+
+
+   
+
+
+   (4)搞定，重新连接数据库，现在你可以用&ldquo;SQL Server身份验证&rdquo;进入数据库了。
+
+
+   
+
+
+   谢谢大家~~
+
+
+   
+
+
+   
+
+
+   备注：转自http://cwh567pn.blog.163.com/blog/static/134585752201032495450529/

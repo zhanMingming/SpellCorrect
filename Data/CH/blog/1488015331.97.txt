@@ -1,0 +1,92 @@
+软件设计度量工具inFusion(一)：inFusion的基本概念之前我们学习了jDepend和structure101设计度量工具，能够帮助监视软件设计的质量。今天介绍一款更强大的工具：intooitus公司的inFusion工具。inFusion工具是一个基于对软件代码的扫描分析，得出子系统与子系统、模块与模块、类与类之间的关系，再根据这些关系推出是否有软件架构设计缺陷，并指导软件重构的工具。inFusion把质量模型(QM）的高层内容和底层的代码度量联系起来。通过对底层的代码扫描度量，根据代码度量&#20540;推出设计缺陷（DF）。再根据设计缺陷（DF）推出QM（质量模型）的高层属性（扩展性，维护性、可重用性、可理解性），从而得出代码质量的一个总体概况。同时工具针对每个设计缺陷(DF)给出修改建议，帮助软件重构，从而提供了从软件设计缺陷检测到重构的一整套完整解决方案。
+
+
+   
+
+
+
+
+   下面先介绍inFusion中几个很重要的概念：Metrics、Design Flaw、Design property、Quality model、QDI。
+
+
+   Metrics：
+
+
+   软件度量(mertics)是从源代码中得出的软件直接参数，比如代码行数(LOC)、函数的扇入扇出(FANOUT)、不稳定因数(IF)、抽象类的个数(NOAC)、类的个数(NOC)、函数调用的深度层次等各种指标。也就是说：metrics是inFusion中最底层、最基本的数据，是根据我们的源代码计算出来的一些很客观的数据。
+
+
+
+
+   
+
+
+
+
+   Design Flaw：
+
+
+
+
+   Martin Fowler的《Refactoring - Improving the Design of Existing Code》和Arthur J. Riel的《Object-Oriented Design Heuristics》中提到了代码坏味道的概念，这就是inFusion中的设计缺陷。设计缺陷，体现了软件设计中不合理的地方，意味着低的软件质量，意味着软件不易维护，容易产生BUG。
+
+
+
+
+   
+
+
+
+
+   Design property：
+
+
+
+
+   设计属性(Design property)比质量属性(Quality model)低一个层次，也更为具体。设计属性(Design property)分为以下6方面：代码规模与复杂度(Size and Complexity)、封装性(Encapsulation)、耦合(Coupling)、内聚性(Cohesion)、继承性(Hierarchies)、测试性(Testing)。
+
+
+
+
+   
+
+
+
+
+   Quality model：
+
+
+
+
+   该模型聚焦于评价软件维护能力，把软件质量分解为4个方面的质量属性(Quality attribute)：可读性(Understandability)、可扩展性(Changeability)、可重用性(Reusability)、可测试性(Testability)。
+
+
+   
+
+
+
+
+   QDI：
+
+
+   质量缺陷指数(Qualiti Deficit Index)，是通过质量缺陷模型计算出来的，展示系统归一化和总的质量缺陷指数。总的QDI是设计缺陷×权重的累加&#20540;，和系统的规模大小有关，不代表系统的好坏。归一化的QDI是一个标准&#20540;，可以对比参考。归一化质量缺陷指数，是1000行代码的缺陷指数。
+
+
+   
+
+
+
+
+   下图展示了质量模型和设计属性：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   上面几个概念的关系如下：

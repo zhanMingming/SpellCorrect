@@ -1,0 +1,148 @@
+c++ new操作符的重载<!--
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:普通表格;
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+-->
+
+   关于c++ new操作符的重载
+
+
+
+   你知道c++ 
+的new
+操作符和operator new
+的区别么？也许你还会问，他们有区别吗？
+
+
+   
+
+
+
+   当你写下面这样的代码时，
+
+
+   string *pa = new string(&quot;memory managerment&quot;);
+
+
+
+   你使用的是new
+操作符，这个操作符和sizeof
+一样，是c++
+语言级别支持的。你不能改变它的语义，它做的事情总是不变的：分配足够的内存以容纳对象，然后调用构造函数初始化上一步所分配的内存。New
+操作符总是做这两件事情，你不能改变它的行为。
+
+
+   
+
+
+
+   你所能改变的只是第一步的行为，如何为对象分配RAW
+内存。operator
+new 
+函数用来为对象分配原始内存。New
+操作符的第一步调用的就是operator new
+。你可以重载这个函数。它的原型如下：
+
+
+   Void* operator new(size_t size);
+
+
+
+   函数的返回值是void*, 
+因为这个函数返回的是指针。这个指针指向原生的，为初始化的内存。其语义就像malloc
+。实际上它内部调用的就是malloc
+。参数size
+指定待分配的内存大小。你可以在重载的时候加上额外的参数，但是第一个参数类型必须是size_t.
+
+
+
+   绝大多数情况下，你不需要调用operator new,
+万一你需要调用它，调用的格式是这样的：
+
+
+   Void* rawmemory = operator new(sizeof(string));
+
+
+
+   函数operator new
+将返回一个指针，指向一块足够容纳一个string
+对象的内存。
+
+
+   就像malloc
+一样，operator new
+的唯一的职责就是分配内存，它对构造函数一无所知。把operator new
+返回的未初始化的指针构造成一个对象是new
+操作符的工作。当你的编译器遇到以下的代码时：
+
+
+   string *pa = new string(&quot;memory managerment&quot;);
+
+
+
+   它生成的伪代码类以如下：
+
+
+   Void* memory = operator new(sizeof(string));
+
+
+
+   call string::string(&quot;memory managerment&quot;) on
+memory
+；
+
+
+   string* Pa = static_cast&lt;string*&gt;(memory); 
+
+
+
+   
+
+
+
+   第二布包含了构造函数的调用。这是你的编译器调用的。那么你不紧会问，程序员可以手动调用构造函数吗？答案是否定的。但是编译器同时给你提供了另外一个折中，是你可以达到这个目的。
+
+
+   需要说明的是，在一个已存在的对象上调用构造函数是没有任何意义的。因为构造函数用来初始化对象。但是有时候有一些内存已经被分配但是尚未初始化，你需要在这些内存中构造一个对象。你可以使用operator new
+函数的一个特殊版本。一个术语叫 placement new 
+的函数来做这件事情。
+
+
+   回到前面那个字符串的例子，我们可以这样使用placement new
+：
+
+
+   Void* memory = operator new(sizeof(string));
+
+
+
+   String* pa = new (memory) string(&quot;memory
+managerment&quot;);
+
+
+
+   
+
+
+
+   以上两句就相当于new 
+操作符所做的事情了。
+
+
+   这就是operator new
+和placement new
+的全部秘密。一般的来说，你不需要重载和显式调用这两个函数。

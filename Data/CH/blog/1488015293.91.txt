@@ -1,0 +1,92 @@
+guava-retrying重试工具库: RetryListener当发生重试之后，假如我们需要做一些额外的处理动作，比如发个告警邮件啥的，那么可以使用RetryListener。每次重试之后，guava-retrying会自动回调我们注册的监听。可以注册多个RetryListener，会按照注册顺序依次调用。
+
+
+   
+   import com.github.rholder.retry.Attempt;
+import com.github.rholder.retry.RetryListener;
+
+import java.util.concurrent.ExecutionException;
+
+public class MyRetryListener&lt;Boolean&gt; implements RetryListener {
+
+    @Override
+    public &lt;Boolean&gt; void onRetry(Attempt&lt;Boolean&gt; attempt) {
+
+ // 第几次重试,(注意:第一次重试其实是第一次调用)
+ System.out.print(&quot;[retry]time=&quot; + attempt.getAttemptNumber());
+
+ // 距离第一次重试的延迟
+ System.out.print(&quot;,delay=&quot; + attempt.getDelaySinceFirstAttempt());
+
+ // 重试结果: 是异常终止, 还是正常返回
+ System.out.print(&quot;,hasException=&quot; + attempt.hasException());
+ System.out.print(&quot;,hasResult=&quot; + attempt.hasResult());
+
+ // 是什么原因导致异常
+ if (attempt.hasException()) {
+     System.out.print(&quot;,causeBy=&quot; + attempt.getExceptionCause().toString());
+ } else {
+     // 正常返回时的结果
+     System.out.print(&quot;,result=&quot; + attempt.getResult());
+ }
+
+ // bad practice: 增加了额外的异常处理代码
+ try {
+     Boolean result = attempt.get();
+     System.out.print(&quot;,rude get=&quot; + result);
+ } catch (ExecutionException e) {
+     System.err.println(&quot;this attempt produce exception.&quot; + e.getCause().toString());
+ }
+
+ System.out.println();
+    }
+}
+
+
+
+
+
+
+   
+   public class TestRetryListener {
+
+    private static Callable&lt;Boolean&gt; maySuccessTask = new Callable&lt;Boolean&gt;() {
+ private int times = 0;
+ @Override
+ public Boolean call() throws Exception {
+     System.out.println(&quot;called&quot;);
+     times++;
+
+     if (times == 1) {
+  throw new NullPointerException();
+     } else if (times == 2) {
+  return false;
+     } else {
+  return true;
+     }
+ }
+    };
+
+
+    public static void main(String[] args) throws Exception {
+ // 异常或者返回false都继续重试
+ // 每秒重试一次
+ // 最多重试5次
+ // 允许添加多个RetryListener
+ Retryer&lt;Boolean&gt; retryer = RetryerBuilder.&lt;Boolean&gt;newBuilder()
+  .retryIfResult(Predicates.equalTo(false))
+  .retryIfException()
+  .withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
+  .withStopStrategy(StopStrategies.stopAfterAttempt(5))
+  .withRetryListener(new MyRetryListener&lt;&gt;())
+  .withRetryListener(new MyRetryListener&lt;&gt;())
+  .build();
+
+ try {
+     retryer.call(maySuccessTask);
+ } catch (Exception e) {
+     System.err.println(&quot;still failed after retry.&quot;);
+     e.printStackTrace();
+ }
+    }
+}

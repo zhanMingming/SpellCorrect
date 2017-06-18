@@ -1,0 +1,113 @@
+The culture of Statistic Learning在MIT 150周年庆的Brains, Minds, and Machines研讨会上，Prof. Noam Chomsky发表了一个观点，他的大概意思是有很多语言模型采用统计的方法建模，有些取得了成功，但他觉得大多数是失败的，他觉得应该更多重视简洁的，公式化的理论，而非这些统计上的结论，正如下文中他所言：
+
+
+Prof. Noam Chomsky
+
+It's true there's been a lot of work on trying to apply statistical models to various linguistic problems. I think there have been some successes, but a lot of failures. There is a notion of success ... which I think is novel in the history of science. It interprets success as approximating unanalyzed data.
+
+
+   
+
+   
+
+   
+
+   
+
+   Peter Norvig
+
+   
+
+   对此，Peter Norvig(Director of google research)给出了反对的回应，并写了一篇长文进行论证。主要从以下几个层面出发进行讨论：
+
+   
+What did Chomsky mean, and is he right?What is a statistical model?How successful are statistical language models?Is there anything like their notion of success in the history of science?What doesn't Chomsky like about statistical models?原文见Peter Norvig主页上的链接。
+   
+
+   
+
+   
+
+   
+
+   
+
+   本文总结了他反对Chomsky的几个我认为比较impressive的论点：
+
+   
+中心思想：Norvig 反对 Chomsky认为的 统计方法不靠谱观点
+1. 一个马尔科夫模型不能很好地模拟一个language model，和一个简洁的无概率树模型不能描述一个语言一样。所以统计模型要和那些简洁的理论相结合。
+   
+
+   
+
+   
+2. 统计模型并不意味着全是概率的东西。总体来讲，统计模型有三个类型：①、数学模型：数学函数表示输入输出的关系（可以由回归得出），如y=ax+b②、概率模型：用概率分布表示的随机变量可能值p(x,y)③、训练模型：用数据及训练可能的模型，然后选择最好的一个model。
+   
+
+   
+
+   
+
+   3. Chomsky之前的10年，Claude Shannon 提出了基于word的马尔科夫链。如果字母表中有10^5个字符，采用二阶马尔科夫链（即n-gram,n=3）,那么参数空间即为(10^5)^3, 得到这10^15个参数的唯一可行途径就是统计，然后平滑其中的0项。另外，万有引力定律
+ 
+
+   
+
+   和理想气体法则
+
+   
+
+   
+
+   都是统计的结果。
+
+   
+
+   
+
+   
+
+   
+
+   4. Statistic Learning的应用：
+
+   搜索引擎、语音识别、机器翻译、消除语言二义性都是完全（100%）基于概率模型或者training model的，另外还有parsing中最成功的也是采用概率模型。
+
+   
+
+   
+
+   
+
+   
+
+   5. Statistic Learning 的两个Culture：
+
+   Leo Breiman (statistician, 1928–2005)在2001年的paperStatistical Modeling: The Two Cultures中提到，统计模型有两个派别，data modeling culture&amp;algorithmic modeling culture：
+
+   
+
+   ①data modeling culture（98%的统计学者同意）
+
+   在我们的认知模型中，存在着一个底层的，simple的模型，只不过还没被我们发现，而这个工作需要统计学者们（或者其他专家）去做，去选择模型。
+
+   
+
+   ②algorithmic modeling culture（2%的统计学者和一些神经科学研究者、生物信息研究者同意）
+
+   人类认知模型（也包括语言模型什么的）很复杂，需要用支持向量机（SVM）啦，boosting decision tree啦，还有deep belief network(DBN)啦这样的东西来把一些简单模型组合出来或者进行训练。
+
+   
+
+   
+
+   最后呢，说说自己的看法，我其实比较倾向于第二个culture，也就是Chomsky强烈反对的这个，他认为这种统计模型相当模糊，我们需要一个简单有效的方案。但是人的认知系统非常复杂（至少IBM用了5300亿个神经元和137万亿个神经突触搭建了神经芯片的原型），需要通过统计学习方法进行学习和组合，直到有一天或许，注意是或许，可以发现原来就是那么简单的一个模型可以拟合啊，那时候才能用一个简洁的数学公式去表达。
+
+   
+
+   
+
+   
+
+   关于Machine Learning更多的学习资料与相关讨论将继续更新，敬请关注本博客和新浪微博Rachel_Zhang。

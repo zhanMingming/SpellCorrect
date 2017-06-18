@@ -1,0 +1,56 @@
+AngularJS scope的一个特性：刷新子scope的时候,也会刷新父scope;反之亦然最近在开发项目的时候，发现了AngularJS一个很好玩的特性。我们知道AngularJS的scope存在父子关系，当我们通过scope.$apply()手动刷新子作用域的时候，父作用域也会被刷新；反过来也是如此。
+
+
+   
+
+
+   &lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; ng-app&gt;
+	&lt;head&gt;
+	   &lt;meta charset=&quot;utf-8&quot;&gt;
+	   &lt;title&gt;ng-model&lt;/title&gt;
+	   &lt;script src=&quot;angular-1.2.25.js&quot;&gt;&lt;/script&gt;
+	   &lt;script&gt;
+			var outerScope = null;
+			var innerScope = null;
+			function outerController($scope)
+			{
+				outerScope = $scope;
+				outerScope.out = &quot;out&quot;;		
+			}
+			
+			function innerController($scope)
+			{
+				innerScope = $scope;
+				innerScope.in = &quot;in&quot;;		
+			}
+			
+			function outerFunc()
+			{
+				innerScope.in = &quot;parent&quot;;
+				outerScope.out = &quot;parent&quot;;
+				// 刷新父scope
+				outerScope.$apply();
+			}
+			
+			function innerFunc()
+			{	
+				innerScope.in = &quot;child&quot;;
+				outerScope.out = &quot;child&quot;;
+				// 刷新子scope
+				innerScope.$apply();
+			}
+	   &lt;/script&gt; 
+	&lt;/head&gt;
+	
+	&lt;body ng-controller=&quot;outerController&quot;&gt;
+			{{out}}
+		&lt;button onclick=&quot;outerFunc();&quot;&gt;outerFunc&lt;/button&gt;
+		
+		&lt;div ng-controller=&quot;innerController&quot;&gt;
+			{{in}}
+			&lt;button onclick=&quot;innerFunc();&quot;&gt;innerFunc&lt;/button&gt;
+		&lt;/div&gt;
+	&lt;/body&gt;
+	
+&lt;/html&gt;

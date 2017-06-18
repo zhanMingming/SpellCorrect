@@ -1,0 +1,283 @@
+DirectShow SDK编译中易出现的问题由于需要进行视频采集，昨天开始搜索资料，发现现在流行的是DirectShow来进行开发，昨天下载安装了个DirectX 9.0 SDK，于是痛苦的配置旅程开始了。现在我们来重温一下这个痛苦的历程吧。先介绍下我的配置吧：
+
+
+   
+Microsoft DirectX 9.0 SDK &#43; Microsoft Visual Stiduo 2005
+
+
+   
+我的Microsoft DirectX 9.0 SDK 安装在D盘根目录，进入这个目录D:\DXSDK\Samples\C&#43;&#43;\DirectShow\Capture里面有几个项目文件，我们拿AMCap这个项目来用，首先我们拷贝一个副本AMCap1（为了保险起见！），要想看看AMCap最终的运行效果，我们可以进入这个目录：D:\DXSDK\Samples\C&#43;&#43;\DirectShow\Bin第一个应该就是它了，相信你能找到的（就是那个叫AMCap.exe的！）
+
+
+   
+用Microsoft Visual Stiduo 2005打开工程，可能需要转换下，转换就是了，先什么也别做，开始编译工程（默认的配置管理器中的活动解决方案配置为Debug Unicode，活动解决方案平台是Win32），我得到了下面的错误：
+
+
+
+
+
+
+   amcap.cpp
+
+C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\include\winnt.h(222) : error C2146: syntax error : missing ';' before identifier 'PVOID64'
+
+C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\include\winnt.h(222) : error C4430: missing type specifier - int assumed. Note: C&#43;&#43; does not support default-int
+
+C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\include\winnt.h(5940) : error C2146: syntax error : missing ';' before identifier 'Buffer'
+
+C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\include\winnt.h(5940) : error C4430: missing type specifier - int assumed. Note: C&#43;&#43; does not support default-int
+
+C:\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\include\winnt.h(5940) : error C4430: missing type specifier - int assumed. Note: C&#43;&#43; does not support default-int
+
+d:\DXSDK\include\uuids.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+
+.\amcap.cpp(2787) : error C2065: 'i' : undeclared identifier
+
+
+
+
+
+
+
+双击输出窗口中的错误到错误发生处，上图中蓝色部分第一个错误的解决办法是在winnt.h文件中将（附1）
+
+
+typedefvoid*PVOID;
+
+typedefvoid*POINTER_64 PVOID64;
+
+
+
+修改为
+
+
+
+   #definePOINTER_64 __ptr64//加上这一行
+
+typedefvoid*PVOID;
+
+typedefvoid*POINTER_64 PVOID64;
+
+
+
+
+
+
+   对于第二个错误改成：int i 就可以了。
+
+
+   修改完错误继续编译，发现编译已经没有错误了，只有一些警告，可以不去管它，但是有这样的一个错误：
+
+
+
+
+   LINK : fatal error LNK1104: 无法打开文件“..\..\baseclasses\debug_unicode\strmbasd.lib”
+
+
+
+
+
+看错误的意思是缺少了一个库文件，于是在网上找了一下，原来需要先编译baseclasses，打开你的dx的sdk安装目录，本例为：
+
+D:\DX90SDK\Samples\C&#43;&#43;\DirectShow\
+
+这里就有一个叫baseclasses的工程，为安全起见，请先备份此工程，然后打开该工程。转换后开始编译，我们收到了下面的错误：
+
+
+
+
+   .\wxdebug.cpp(567) : error C4430: missing type specifier - int assumed. Note: C&#43;&#43; does not support default-int
+
+.\winutil.cpp(2104) : error C2065: 'Count' : undeclared identifier
+
+.\winutil.cpp(2106) : error C2228: left of '.peRed' must have class/struct/union
+
+.\winutil.cpp(2106) : error C2228: left of '.peRed' must have class/struct/union
+
+.\winutil.cpp(2107) : error C2228: left of '.peGreen' must have class/struct/union
+
+.\winutil.cpp(2107) : error C2228: left of '.peGreen' must have class/struct/union
+
+.\winutil.cpp(2108) : error C2228: left of '.peBlue' must have class/struct/union
+
+.\winutil.cpp(2108) : error C2228: left of '.peBlue' must have class/struct/union
+
+.\winutil.cpp(2124) : error C2228: left of '.peFlags' must have class/struct/union
+
+.\outputq.cpp(664) : error C2065: 'iDone' : undeclared identifier
+
+
+
+
+
+真正需要解决的是上面蓝色部分的三个错误，我们现在来开始解决（这里我们还是直接修改代码吧，通过修改配置也可以完成【附2】不过我们一会还需要编译其他三个版本，为了免去后面还要继续设置，这里直接通过修改代码解决）。
+
+对于前一个错误
+
+
+
+
+   //将
+
+staticg_dwLastRefresh=0;
+
+//修改为
+
+intstaticg_dwLastRefresh=0;
+
+
+
+
+
+第二个错误【附3】，在Count前面加上int就可以了（修改后编译后面还会出现类&#20284;的错误，照这样修改就是了！）
+
+第三个错误，在出错的文件中会看到下面的代码，修改办法一并在下面列出，注释里有说明。
+
+
+
+
+    LONG iLost=0;
+
+ LONG iDone=0;//这是我们修改的地方，加入这一行代码
+
+for(longiDone=0;
+
+ iDone&lt;nSamples||(m_nBatched!=0&amp;&amp;m_bSendAnyway);
+
+ ) {
+
+
+
+//pragma message (REMIND(&quot;Implement threshold scheme&quot;))
+
+ ASSERT(m_nBatched&lt;m_lBatchSize);
+
+if(iDone&lt;nSamples) {
+
+ m_ppSamples[m_nBatched&#43;&#43;]=ppSamples[iDone&#43;&#43;];
+
+ }
+
+if(m_nBatched==m_lBatchSize||
+
+ nSamples==0&amp;&amp;(m_bSendAnyway||!m_bBatchExact)) {
+
+ LONG nDone;
+
+ DbgLog((LOG_TRACE,4, TEXT(&quot;Batching %d samples&quot;),
+
+ m_nBatched));
+
+
+
+if(m_hr==S_OK) {
+
+ m_hr=m_pInputPin-&gt;ReceiveMultiple(m_ppSamples,
+
+ m_nBatched,
+
+&amp;nDone);
+
+ }else{
+
+ nDone=0;
+
+ }
+
+ iLost&#43;=m_nBatched-nDone;
+
+for(LONG i=0; i&lt;m_nBatched; i&#43;&#43;) {
+
+ m_ppSamples[i]-&gt;Release();
+
+ }
+
+ m_nBatched=0;
+
+ }
+
+ }
+
+*nSamplesProcessed=iDone-iLost;//这是编译报错误的地方
+
+
+
+
+
+OK，修改完了，我们进行编译，这下成功了。你会发现在目录D:\DXSDK\Samples\C&#43;&#43;\DirectShow\BaseClasses\Debug_Unicode下有了一个库文件strmbasd.lib
+
+现在我们来得到其他三个库文件，打开配置管理器，我们上面的配置是这样的：
+
+活动解决方案配置为Debug Unicode，活动解决方案平台是Win32
+
+分别修改如下的三种模式分别编译：
+
+活动解决方案配置为Debug，活动解决方案平台是Win32
+
+活动解决方案配置为Release Unicode，活动解决方案平台是Win32
+
+活动解决方案配置为Release，活动解决方案平台是Win32
+
+这样我们就得到了4个库文件。
+
+D:\DXSDK\Samples\C&#43;&#43;\DirectShow\BaseClasses\Debug下有了一个库文件strmbasd.lib
+
+D:\DXSDK\Samples\C&#43;&#43;\DirectShow\BaseClasses\Debug_Unicode下有了一个库文件strmbasd.lib
+
+D:\DXSDK\Samples\C&#43;&#43;\DirectShow\BaseClasses\Release下有了一个库文件STRMBASE.lib
+
+D:\DXSDK\Samples\C&#43;&#43;\DirectShow\BaseClasses\Release_Unicode下有了一个库文件STRMBASE.lib
+
+现在大家再看看上面的那个红色的链接错误，知道怎么回事了吧。
+
+
+
+好了，我们现在回去编译AMCap这个工程吧，怎么样，搞定了吧！
+
+
+
+
+
+
+   附1：
+
+POINTER_64是一个宏，在64位编译下起作用，它包含在SDK目录下的BASETSD.H中（Microsoft Visual Studio 8\VC\PlatformSDK\Include\basetsd.h(23):#define POINTER_64 __ptr64），但DXSDK自己也带了一个basetsd.h，里面没有定义POINTER_64，从而导致出错。
+
+
+
+方法1：
+
+在Tools -&gt; Options -&gt; Projects and Solutions -&gt; VC&#43;&#43; Directories -&gt; Include Files里确保系统包含目录（以$打头的）在最前面，同时在 project properties下面的“C/C&#43;&#43; -&gt; General”中确保“Additional Include Directories”为空（因为它会被优先编译，这样就轮不到VC\PlatformSDK\Include\basetsd.h），所有的包含目录都应该在上面的include里面。这种方法不用改代码。
+
+
+
+方法2：
+
+在DXSDK自己的basetsd.h里自己定义#define POINTER_64 __ptr64
+
+
+
+附2：
+
+打开project-&gt;BaseClasses properties-&gt;configuration-&gt;C/C&#43;&#43; -&gt;Command Line，增加/wd4430选项
+
+
+   附3：
+
+C&#43;&#43;标准语法的问题，因为在之前在for循环内定义的变量可以在for之外的地方使用，即在第一个for里for(int i,...)，以后的for再使用i不必再声明，解决方法也很简单，打开project-&gt;BaseClasses properties-&gt;configuration-&gt;C/C&#43;&#43;-&gt;Language-&gt;Force Comformance in For Loop Scrope设置为No即可。
+
+
+
+
+
+
+
+相关资料：
+
+
+
+
+   1、DirectShow在VS2005中PVOID64问题和配置问题
+
+
+   2、DirectShow 在VS2005中环境配置

@@ -1,0 +1,75 @@
+车道检测问题探究（一）车道特征提取（上）车道检测问题研究了很长时间，本博客以此为主题进行一系列探究，包括别人论文以及实现结果，希望能够和广大计算机视觉研究者共同进步！
+
+
+   本文主要以左右车道检测方法中基于车道侧面连续的曲线拟合方法进行研究。
+
+
+   通常的车道检测方法分两步：（1）特征提取（2）车道几何模型的建立与匹配
+
+
+   首先我们来说说特征提取部分：
+
+
+   特征提取的目的是最大限度地：1.保留可能是车道的pixels2.去掉可能非车道的pixels
+
+
+   《On the design of a single lane-marking detectors regardless the on-board camera's position》提出了一种思想，基于假设“车道间距离和车道上的梯度在一个常区间范围内”,首先定义该算法中的几个参数：
+
+
+   S0：梯度阈&#20540;1.
+
+
+   只有当像素梯度&gt;S0时该像素点予以下一步提取考虑。为了不将所有可能成为车道的像素过滤掉，我们选用的S0应尽可能小。这一步其实可以用动态形状跟踪（dynamic shape tracking）做，但这样的问题是如果有一条新车道出现了就不work了。
+
+
+
+
+   
+
+
+   Uinit：梯度比S0大的第一个位置
+
+
+   Ucurrent：当前的像素点坐标
+
+
+   [S1,S2]：每一条（左或右）车道的width区间，相当于threshold，分别由Si=Ci·height&#43;Di得到，其中
+
+
+   height为图片的height，
+
+
+   Ci=Wi · cos(a)/h,
+
+
+   Di=-Wi · cos(a)/h-Wi · sin(a)/h
+
+，h为相机放置的高度，a为相机拍方向和地面所成角度，i=1,2。
+
+   算法实现过程如下：
+
+
+   对于图像的每一行 i进行以下步骤：
+
+
+   
+
+
+   变为灰度图 I
+for(Uinit=0; Uinit&lt;width; Uinit++)
+{
+计算该像素梯度（像素差）G(Uinit)
+if (G(Uinit)&gt;S0)
+	Ucurrent=Uinit+1;
+	Thres=I(Uinit)+G(Uinit)/2
+	while( I(Ucurrent)&gt;=Thres &amp;&amp; Ucurrent in [0,width])
+		Ucurrent++;
+	endwhile
+	if( Ucurrent in [S1,S2])
+		检测到Lane Mark坐标（i，(Uinit+Ucurrent)/2）;
+		return true;
+	endif
+	Ucurrent++;
+else
+	Uinit++;
+}	简单地说就是从一行的开始找起，只要该点Gradient&gt;S0就一直往后探测是否满足 I(Ucurrent)&gt;Threshold, 知道不满足-&gt;跳出。如果这两点之间距离在[S1,S2]之间则判断检测到车道线位置为其中点，否则将Uinit&#43;&#43;进行下一次检测。

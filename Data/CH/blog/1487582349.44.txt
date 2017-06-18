@@ -1,0 +1,98 @@
+opencv绘制灰度直方图代码之一
+
+
+   
+
+   #include &lt;cv.h&gt;
+#include &lt;highgui.h&gt;
+#pragma comment( lib, &quot;cv.lib&quot; )
+#pragma comment( lib, &quot;cxcore.lib&quot; )
+#pragma comment( lib, &quot;highgui.lib&quot; )
+int main()
+{
+  IplImage* src=cvLoadImage(&quot;lena.jpg&quot;,0);
+  int width=src-&gt;width;
+  int height=src-&gt;height;
+  int step=src-&gt;widthStep;
+  uchar* data=(uchar *)src-&gt;imageData;
+  int hist[256]={0};
+  for(int i=0;i&lt;height;i++)
+  {
+     for(int j=0;j&lt;width;j++)
+     {
+hist[data[i*step+j]]++;
+     }
+  }
+  int max=0;
+  for(i=0;i&lt;256;i++)
+  {
+     if(hist[i]&gt;max)
+     {
+max=hist[i];
+     }
+  }
+  IplImage* dst=cvCreateImage(cvSize(400,300),8,3);
+  cvSet(dst,cvScalarAll(255),0);
+  double bin_width=(double)dst-&gt;width/256;
+  double bin_unith=(double)dst-&gt;height/max;
+  for(i=0;i&lt;256;i++)
+  {
+     CvPoint p0=cvPoint(i*bin_width,dst-&gt;height);
+     CvPoint p1=cvPoint((i+1)*bin_width,dst-&gt;height-hist[i]*bin_unith);
+     cvRectangle(dst,p0,p1,cvScalar(0,255),-1,8,0);
+  }
+  cvNamedWindow(&quot;src&quot;,1);
+  cvShowImage(&quot;src&quot;,src);
+  cvNamedWindow(&quot;dst&quot;,1);
+  cvShowImage(&quot;dst&quot;,dst);
+  cvWaitKey(0);
+  cvDestroyAllWindows();
+  cvReleaseImage(&amp;src);
+  cvReleaseImage(&amp;dst);
+  return 0;
+}
+
+
+   
+
+
+
+
+
+   代码之二
+   
+#include &lt;cv.h&gt;
+#include &lt;highgui.h&gt;
+#pragma comment( lib, &quot;cv.lib&quot; )
+#pragma comment( lib, &quot;cxcore.lib&quot; )
+#pragma comment( lib, &quot;highgui.lib&quot; )
+int main()
+{
+  IplImage* src=cvLoadImage(&quot;lena.jpg&quot;,0);
+  int size=256;
+  float range[]={0,255};
+  float* ranges[]={range};
+  CvHistogram* hist=cvCreateHist(1,&amp;size,CV_HIST_ARRAY,ranges,1);
+  cvCalcHist(&amp;src,hist,0,NULL);
+  float max=0;
+  cvGetMinMaxHistValue(hist,NULL,&amp;max,NULL,NULL);
+  IplImage* dst=cvCreateImage(cvSize(400,300),8,3);
+  cvSet(dst,cvScalarAll(255),0);
+  double bin_width=(double)dst-&gt;width/size;
+  double bin_unith=(double)dst-&gt;height/max;
+  for(int i=0;i&lt;size;i++)
+  {
+     CvPoint p0=cvPoint(i*bin_width,dst-&gt;height);
+     CvPoint p1=cvPoint((i+1)*bin_width,dst-&gt;height-cvGetReal1D(hist-&gt;bins,i)*bin_unith);
+     cvRectangle(dst,p0,p1,cvScalar(0,255),-1,8,0);
+  }
+  cvNamedWindow(&quot;src&quot;,1);
+  cvShowImage(&quot;src&quot;,src);
+  cvNamedWindow(&quot;dst&quot;,1);
+  cvShowImage(&quot;dst&quot;,dst);
+  cvWaitKey(0);
+  cvDestroyAllWindows();
+  cvReleaseImage(&amp;src);
+  cvReleaseImage(&amp;dst);
+  return 0;
+}

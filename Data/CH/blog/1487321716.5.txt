@@ -1,0 +1,61 @@
+为什么一个磁盘的sector是512个字节磁盘分为磁道(track)，每条track上有若干sector，每个sector为512字节，为什么是512字节呢？这是1956年由industry trade organization, International Disk Drive Equipment和Materials Association三家机构确定的行业标准。
+
+
+    随着时代的发展512的sector大小明显太小了，由于每个sector还要存放很多其他信息【3】，因此增大sector size可以降低sector的数量，从而提高实际存储量，同时降低了差错校验等很多CPU计算量。但遗憾的是由于这个标准太根深低估很多代码开发都默认了这一size要想改势必登天【2】。
+
+
+   在sector的size很难修改的情况下，加快read的方式，可以选用disk readahead方式，增加预读的缓冲，从而在顺序读，且程序采用流水线时取得更好的性能【4】，但对随机读写是有害的。
+
+
+    # hdparm -a N /dev/hda （N为sector的数量，默认是8，即4k），可以调整到更大的size。通过实验调整到最优。
+
+
+    以上是hardware readahead,数值不宜调整过大。如果业务上随机读写在优化后依然较多，这个参数改了效果反而会有影响。
+
+
+   
+
+
+    在内核中可以对
+
+
+    /sys/block/sda/queue/read_ahead_kb
+
+
+    进行调整，默认值为128k，可以调节到1M，这个是software readahead，这个值需要是hardware readahead的倍数。 
+
+
+    
+
+
+    
+
+
+   ----------------------------以下节选自http://en.wikipedia.org/wiki/Disk_sector------------------------------------------------------
+
+
+   The standard sector size of 512 bytes for magnetic disks was established with the inception of the hard disk drive in 1956. Through a coordinated effort organized by the industry trade organization, International Disk Drive Equipment and Materials Association (IDEMA), leading hardware and software companies started work to define the implementation and standards that would govern sector size formats exceeding 512 bytes to accommodate future increases in data storage capacities.
+
+
+   Seven year later, hard disk drives supporting 1,024-byte sectors began to be integrated into consumer electronics devices. Portable media players and digital video cameras were the first products to utilize the larger sector format. By the end of 2007, Samsung and Toshiba began shipments of 1.8-inch hard disk drives with 4,096-byte sectors, the sector size designated as the next standard format for all hard drives.
+
+
+   
+
+
+   推荐阅读：
+
+
+   （1）http://www.dewassoc.com/kbase/hard_drives/hard_disk_sector_structures.htm
+
+
+   （2）http://www.ibm.com/developerworks/linux/library/l-4kb-sector-disks/index.html
+
+
+   （3）http://www.dewassoc.com/kbase/hard_drives/hard_disk_sector_structures.htm
+
+
+   （4）http://linuxgazette.net/issue79/punk.html
+
+
+   （5）http://insights.oetiker.ch/linux/raidoptimization/

@@ -1,0 +1,26 @@
+UnicodeDecodeError: &#39;ascii&#39; codec can&#39;t decode byte 0xe5 in position 0: ordinal not in range(128)python的编码问题一直是头痛，比如matplotlib画图只接受utf-8编码，如果没有设置就会在画图时报错。  有时间整整这个python编码；
+
+
+
+   如标题所示，解决方案：加入
+
+
+
+
+
+   import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

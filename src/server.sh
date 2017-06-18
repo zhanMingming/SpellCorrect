@@ -1,0 +1,1 @@
+g++ -g MutexLock.cc Condition.cc Epoller.cc ChToPinyin.cc Thread.cc MyThread.cc ThreadPool.cc Configure.cc Diction.cc Index.cc Query.cc Cache.cc MySplit.cc main.cc -o server -lpthread -lNLPIR -std=c++11

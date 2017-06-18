@@ -1,0 +1,117 @@
+大数阶乘-N的阶乘题目1076：N的阶乘
+
+
+
+   
+时间限制：3 秒
+
+
+   
+内存限制：128 兆
+
+
+   
+特殊判题：否
+
+
+   
+提交：924
+
+
+   
+解决：249
+
+
+
+
+
+
+题目描述：
+
+   
+输入一个正整数N，输出N的阶乘。
+
+
+
+
+输入：
+
+   
+正整数N(0&lt;=N&lt;=1000)
+
+
+
+
+输出：
+
+   
+输入可能包括多组数据，对于每一组输入数据，输出N的阶乘
+
+
+
+
+样例输入：
+
+   4
+5
+15
+
+
+
+样例输出：
+
+   24
+120
+1307674368000
+
+
+
+
+
+
+   #include &quot;iostream&quot;  
+#include &quot;stdio.h&quot;  
+#include &quot;math.h&quot;  
+#include &quot;vector&quot;  
+#include &quot;queue&quot;  
+#include &quot;memory.h&quot;  
+#include &quot;algorithm&quot;  
+#include &quot;string&quot;  
+using namespace std;  
+int n;
+int main()
+{
+	int a[10000];
+	int i,j;
+	while(scanf(&quot;%d&quot;,&amp;n)!=EOF)
+	{
+		if(!n)
+		{
+			printf(&quot;1\n&quot;);
+			continue;
+		}
+		memset(a,0,sizeof(a));
+		int len=1;
+		a[1]=1;
+		for(i=1;i&lt;=n;i++)
+		{
+			for(j=1;j&lt;=len;j++)
+				a[j]*=i;
+			for(j=1;j&lt;=len;j++)
+			{
+				if(a[j]&lt;10) continue;
+				int pos=j;
+				while (pos&lt;=len)
+				{
+					if(a[len]&gt;9)    len++;
+					a[pos+1]+=a[pos]/10;
+					a[pos]%=10;
+					pos++;
+				}
+			}
+		}
+		for(i=len;i&gt;=1;i--)
+			printf(&quot;%d&quot;,a[i]);
+		cout&lt;&lt;endl;
+	}
+}

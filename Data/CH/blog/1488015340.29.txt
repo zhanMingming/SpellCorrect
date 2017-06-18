@@ -1,0 +1,288 @@
+学习prototypejs中的继承实现机制(二)：让$super更像java中的super关键字上一篇博客&quot;Object.extend()、Class.create()、Class#addMethods()&quot;中详细地介绍了prototypejs库中与继承有关的方法的用法，那篇文章的开篇也引出了我想要解决的一个问题：
+
+
+   是不是和java中的继承有点像，我们居然可以使用$super来调用父类中的方法。不过有些差别：java中可以使用super调用父类中的任何公开的方法，但是在prototypejs里面$super只是一个方法，不是父对象。我们先研究下，prototypejs是如何做到$super，后面再看我们能不能改造它，让$super更像java中的super关键字。
+
+   
+
+
+   这篇博客，我们就来动动prototypejs库Class#addMethods源码，看看能不能实现我要的功能。先来看一段熟悉的代码，这个是$super的基本用法。后面我们用到的测试代码和这个差不多，所以一定要先熟悉下面这段代码。
+
+
+   var Base = Class.create({
+	initialize:function(){
+		this.logs = [];
+	},
+	showLog:function(tips){
+		console.log(&quot;parent[&quot;+ tips+&quot;],logs=&quot;+this.logs);
+	},
+	appendLog:function(msg){
+		this.logs.push(msg);
+	}
+});
+
+var Child = Class.create(Base,{
+	initialize:function($super, id){
+		$super(id);
+		this.fatal = [];
+	},
+	
+	showLog:function($super, tips){
+		$super(tips);
+		console.log(&quot;child[&quot;+ tips+&quot;],fatal=&quot;+this.fatal);
+	},
+	appendLog:function($super,msg){
+		if(msg.indexOf(&quot;fatal&quot;) != -1)
+		{
+			this.fatal.push(msg);
+		}
+		else
+		{
+			$super(msg);
+		}
+	}
+});
+
+var cobj = new Child(&quot;aty&quot;);
+cobj.showLog(&quot;cas&quot;);在OOP语言(如java)中，如果子类Child继承父类Base，那么编写某个子类方法的需求，无外乎下面几个：
+
+   
+
+
+   1.子类方法需要调用父类中的个同名方法(通过super关键字来调用)。
+
+
+   2.子类方法需要调用父类中的不同名方法(通过super关键字来调用)。
+
+
+   3.子类方法需要调用子类自身的其他方法(通过this关键字来调用)。
+
+
+   4.子类方法需要调用多个父类和子类自身的方法。
+
+
+   还有下面这种场景(姑且称为需求5)也是不支持的：上面的例子中Base类中的方法showLog和appendLog，子类Child覆盖了这2个方法的实现，Child#showLog是无法调用Base#appendLog的，同样Child#appendLog里面也无法调用Base#showLog。
+
+
+   
+
+
+
+
+   很容易验证：prototypejs库实现了需求1、需求2、需求3，需求4和需求5支持的没有那么好。这些需求在java等语言中统统可以满足，现在我们要做的就是提供类&#20284;java中的super关键字。prototypejs真的不能满足需求需求4和需求5吗？其实是可以的，只不过得费点手段，不像java那般直接。
+
+
+   var Base = Class.create({
+	initialize:function(){
+		this.logs = [];
+	},
+	showLog:function(tips){
+		console.log(&quot;parent[&quot;+ tips+&quot;],logs=&quot;+this.logs);
+	},
+	appendLog:function(msg){
+		this.logs.push(msg);
+	}
+});
+
+var Child = Class.create(Base,{
+	initialize:function($super,id){
+		$super(id);
+		this.fatal = [];
+	},
+	
+	showLog:function($super,  tips){
+		$super(tips);
+		console.log(&quot;child[&quot;+ tips+&quot;],fatal=&quot;+this.fatal);
+	},
+	appendLog:function($super, msg){
+		if(msg.indexOf(&quot;fatal&quot;) != -1)
+		{
+			this.fatal.push(msg);
+		}
+		else
+		{
+			$super(msg);
+		}
+		
+		// prototypejs将方法存在原型上
+		var parent = Child.superclass.prototype;
+		
+		// 调用父类中的2个方法
+		parent.appendLog.call(this, &quot;debug&quot;);
+		parent.showLog.call(this, &quot;call parent in child&quot;);
+		
+		this.showLog(&quot;call child self&quot;);
+	}
+});
+
+var cobj = new Child(&quot;aty&quot;);
+cobj.appendLog(&quot;fatal&quot;);这段代码完成能够正常运行，而且执行结果也完全符合我们的预期。执行结果如下：
+
+   
+
+
+   
+
+也就是说需求4和需求5，prototypejs库其实都是支持的，只不过写起来麻烦一下。上面这种方式，也是我阅读源码后才发现的。如果想实现类&#20284;java中的super，上面这段代码可以给我们很好的启示：其实就是将Child.superclass.prototype这个对象，像$super一样传递给子类的函数。也就是说我们可以按照下面的&#26684;式书写子类中的方法：
+
+
+   
+
+
+   var Child = Class.create(Base,{
+	showLog:function($super, _super, tips){
+		$super(tips);//prototypejs中的$super
+		_super.showLog(tips);//这种方式是不是很像java中super
+		console.log(&quot;child[&quot;+ tips+&quot;],fatal=&quot;+this.fatal);
+	}
+});为了实现上面这种_super的写法，我们需要修改prototypejs的源码来达到目的。其实就是Class#addMethods()方法，这个方法会将$super和_super注入到函数中。下面源码来自prototypejs-1.7.3版本，注释的位置就是我们需要修改的地方，是实现_super的关键。
+   function addMethods(source) {
+    var ancestor   = this.superclass &amp;&amp; this.superclass.prototype,
+ properties = Object.keys(source);
+
+    if (IS_DONTENUM_BUGGY) {
+      if (source.toString != Object.prototype.toString)
+ properties.push(&quot;toString&quot;);
+      if (source.valueOf != Object.prototype.valueOf)
+ properties.push(&quot;valueOf&quot;);
+    }
+
+    for (var i = 0, length = properties.length; i &lt; length; i++) {
+      var property = properties[i], value = source[property];
+      if (ancestor &amp;&amp; Object.isFunction(value) &amp;&amp;
+   value.argumentNames()[0] == &quot;$super&quot;) {
+ var method = value;
+		
+		/****这里将$super注入到子类函数****************/
+ value = (function(m) {
+   return function() { 
+			return ancestor[m].apply(this, arguments); 
+		};
+ })(property).wrap(method);
+		/****这里将$super注入到子类函数****************/
+		
+ value.valueOf = (function(method) {
+   return function() { return method.valueOf.call(method); };
+ })(method);
+
+ value.toString = (function(method) {
+   return function() { return method.toString.call(method); };
+ })(method);
+      }
+      this.prototype[property] = value;
+}
+
+下面这段是测试代码，我们要做的就是让这段代码能够正常运行。
+   var Base = Class.create({
+	initialize:function(){
+		this.logs = [];
+	},
+	showLog:function(tips){
+		console.log(&quot;parent[&quot;+ tips+&quot;],logs=&quot;+this.logs);
+	},
+	appendLog:function(msg){
+		this.logs.push(msg);
+	}
+});
+
+var Child = Class.create(Base,{
+	initialize:function($super, _super, id){
+		$super(id);
+		this.fatal = [];
+	},
+	
+	showLog:function($super, _super, tips){
+		$super(tips);
+		_super.showLog(tips);
+		_super.showLog.call(this, tips);
+		console.log(&quot;child[&quot;+ tips+&quot;],fatal=&quot;+this.fatal);
+	},
+	appendLog:function($super,  _super, msg){
+		if(msg.indexOf(&quot;fatal&quot;) != -1)
+		{
+			this.fatal.push(msg);
+		}
+		else
+		{
+			$super(msg);
+		}
+	}
+});
+
+var cobj = new Child(&quot;aty&quot;);
+cobj.appendLog(&quot;fatal&quot;);
+cobj.appendLog(&quot;debug&quot;);
+cobj.showLog(&quot;my_super&quot;);
+console.log(window.logs == undefined);正确的执行结果应该是下面这个样子：
+
+   
+
+
+   parent[my_super],logs=debug
+parent[my_super],logs=debug
+parent[my_super],logs=debug
+child[my_super],fatal=fatal
+true
+
+第一版改造的代码和执行结果如下：
+   value = (function(m, childMethod){
+	return function(){
+		// 将arguments对象转换成数组
+		var argsArray = Array.prototype.slice.call(arguments);
+		return childMethod.apply(this, [ancestor[m], ancestor].concat(argsArray));
+	};
+})(property, method);
+
+代码运行并没有什么异常，但是执行结果却不符合我们的期望。分析执行结果，可以看到log这个变量本来应该是在cobj这个对象中的，结果却被添加到全局对象window中。也就是说$super中的上下文对象this弄错了。
+
+   
+
+
+   
+
+第二版改造代码和执行结果如下：
+
+
+   value = (function(m, childMethod){
+	return function(){
+		// 将arguments对象转换成数组
+		var argsArray = Array.prototype.slice.call(arguments);
+		//使用了bind绑定正确的上下文
+		return childMethod.apply(this, [ancestor[m].bind(this), ancestor].concat(argsArray));
+	};
+})(property, method);
+
+可以看到已经快符合预期了，就是这种调用方式_super.showLog(tips)存在问题，不能访问到logs这个变量的&#20540;。
+
+   
+
+
+   
+
+
+
+
+   第三版改造的代码和执行结果如下：
+
+
+   value = (function(m, childMethod){
+	return function(){
+		// 将arguments对象转换成数组
+		var argsArray = Array.prototype.slice.call(arguments);
+		
+		//复制ancestor中所有方法,不能修改ancestor,原型对象是共享的,
+		//因为修改原型是一件很危险的事,
+		var copy = {};
+		for(var eachKey in ancestor)
+		{
+			var eachValue = ancestor[eachKey];
+			if(Object.isFunction(eachValue))
+			{
+				copy[eachKey] = eachValue.bind(this);
+			}
+		}
+		return childMethod.apply(this, [ancestor[m].bind(this), copy].concat(argsArray));
+	};
+})(property, method);
+
+可以看到执行结果跟我们的预期是完全一致的。改造中使用的技巧也很简单，无非就是使用bind方法改变函数中上下文对象(就是this)。很像java中的super关键字了吧，哈哈，改造至此结束。

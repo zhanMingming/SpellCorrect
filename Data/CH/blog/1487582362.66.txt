@@ -1,0 +1,432 @@
+hdu 1880 魔咒词典（多种方法）题目描述：
+ 哈利波特在魔法学校的必修课之一就是学习魔咒。据说魔法世界有100000种不同的魔咒，哈利很难全部记住，但是为了对抗强敌，他必须在危急时刻能够调用任何一个需要的魔咒，所以他需要你的帮助。
+
+
+
+ 给你一部魔咒词典。当哈利听到一个魔咒时，你的程序必须告诉他那个魔咒的功能；当哈利需要某个功能但不知道该用什么魔咒时，你的程序要替他找到相应的魔咒。如果他要的魔咒不在词典中，就输出“what?”
+
+
+
+
+输入：
+
+   
+ 首先列出词典中不超过100000条不同的魔咒词条，每条&#26684;式为：
+
+
+
+ [魔咒] 对应功能
+
+
+
+ 其中“魔咒”和“对应功能”分别为长度不超过20和80的字符串，字符串中保证不包含字符“[”和“]”，且“]”和后面的字符串之间有且仅有一个空&#26684;。词典最后一行以“@END@”结束，这一行不属于词典中的词条。
+
+ 词典之后的一行包含正整数N（&lt;=1000），随后是N个测试用例。每个测试用例占一行，或者给出“[魔咒]”，或者给出“对应功能”。
+
+
+
+
+输出：
+ 每个测试用例的输出占一行，输出魔咒对应的功能，或者功能对应的魔咒。如果魔咒不在词典中，就输出“what?”
+
+
+
+
+样例输入：
+
+   [expelliarmus] the disarming charm
+[rictusempra] send a jet of silver light to hit the enemy
+[tarantallegra] control the movement of one's legs
+[serpensortia] shoot a snake out of the end of one's wand
+[lumos] light the wand
+[obliviate] the memory charm
+[expecto patronum] send a Patronus to the dementors
+[accio] the summoning charm
+@END@
+4
+[lumos]
+the summoning charm
+[arha]
+take me to the sky
+
+
+
+样例输出：
+
+   light the wand
+accio
+what?
+what?
+
+
+
+提示：
+
+
+
+来源：
+
+   2008年浙江大学计算机及软件工程研究生机试真题
+
+
+   
+
+
+
+
+   
+
+
+   //二分查找（625ms）
+#include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 100010
+int cnt;
+
+struct DIC
+{
+	char a[25];
+	char b[85];
+}d[2][N];
+
+int comp1(const void *a,const void *b)
+{
+	struct DIC *A=(DIC*) a;
+	struct DIC *B=(DIC*)b;
+	return strcmp(A-&gt;a,B-&gt;a);
+}
+
+int comp2(const void *a,const void *b)
+{
+	struct DIC *A=(DIC*) a;
+	struct DIC *B=(DIC*)b;
+	return strcmp(A-&gt;b,B-&gt;b);
+}
+
+void Search(char*s, int dicset,int l,int r)
+{
+	int i;
+	int m=(l+r)&gt;&gt;1;
+	if(dicset==1)
+	{	
+		while(l&lt;=r)
+		{
+			m=(l+r)&gt;&gt;1;
+			if(strcmp(s,d[1][m].b)==0)
+			{	
+				for(i=1;i&lt;strlen(d[1][m].a)-1;i++)
+					printf(&quot;%c&quot;,d[1][m].a[i]);
+				cout&lt;&lt;endl;
+				return;
+			}
+			else if(strcmp(s,d[1][m].b)&gt;0)
+				l=m+1;
+			else 
+				r=m-1;
+		}
+		puts(&quot;what?&quot;);
+		return ;
+	}
+	else if(dicset==0)
+	{	
+		while(l&lt;=r)
+		{
+			m=(l+r)&gt;&gt;1;
+			if(strcmp(s,d[0][m].a)==0)
+			{
+				printf(&quot;%s\n&quot;,d[0][m].b);
+				return ;
+			}
+			else if(strcmp(s,d[0][m].a)&gt;0)
+				l=m+1;
+			else 
+				r=m-1;
+		}
+		puts(&quot;what?&quot;);
+		return;
+	}
+}
+
+
+int main()
+{
+	char str1[25],str2[85],str[120];
+	int i,j;
+	cnt=0;
+	while(gets(str))
+	{
+		if(strcmp(str,&quot;@END@&quot;)==0)
+			break;
+		i=j=0;
+		while(str[i-1]!=']')
+			str1[j++]=str[i++];
+		str1[j]='\0';
+
+		j=0,i++;
+		while(i&lt;strlen(str))
+			str2[j++]=str[i++];
+		str2[j]='\0';
+
+		strcpy(d[1][cnt].a,str1);
+		strcpy(d[1][cnt].b,str2);
+		strcpy(d[0][cnt].a,str1);
+		strcpy(d[0][cnt].b,str2);
+		cnt++;
+	}
+	qsort(d[0],cnt,sizeof(d[0][0]),comp1);
+	qsort(d[1],cnt,sizeof(d[1][0]),comp2);
+
+	int n;
+	scanf(&quot;%d&quot;,&amp;n);
+	getchar();
+	while(n--)
+	{
+		int dic_index=1;
+		gets(str2);
+		if(str2[0]=='[')
+			dic_index=0;
+		Search(str2,dic_index,0,cnt-1);
+	}
+}
+
+
+   #include &quot;iostream&quot;
+#include &quot;map&quot;
+#include&quot;string&quot;
+using namespace std;
+map&lt;string,string&gt;Dic;
+char a[30],b[100];
+string a1,b1;
+char c[130];
+
+int main()
+{
+    while (gets(c)&amp;&amp;c[0]!='@')
+    {
+ int i=1,x=1;
+ a[0]='[';
+ while (c[i-1]!=']')
+ {
+     a[x++]=c[i++];
+ }
+ a[x]='\0';
+ i++;
+ x=0;
+ while (c[i]!='\0')
+ {
+     b[x++]=c[i++];
+ }
+ b[x]='\0';
+ a1=a;
+ b1=b;
+ Dic[a1]=b1;
+ Dic[b1]=a1;
+    }
+    int n;
+    scanf(&quot;%d&quot;,&amp;n);
+    gets(a);
+    while(n--)
+    {
+ gets(a);
+ a1=a;
+ map&lt;string,string&gt;::iterator l1=Dic.find(a1);
+ if(l1 == Dic.end())
+     cout&lt;&lt;&quot;what?&quot;&lt;&lt;endl;
+ else
+ {
+     b1=l1-&gt;second;
+     if(b1[0]=='[')
+  b1=b1.substr(1,b1.length()-2);
+     cout&lt;&lt;b1&lt;&lt;endl;
+ }
+    }
+}
+
+
+
+
+   //AC-暴力2187ms）
+#include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 200010
+#define M 'z'-'['+10
+char dic[2][N][81];
+int cnt;
+
+int Search(char* s,int dicset)
+{
+	int i;
+	for(i=0;i&lt;cnt;i++)
+		if(strcmp(s,dic[dicset][i])==0)
+			return i;
+	if(i==cnt)
+		return -1;
+}
+
+int main()
+{
+	char str1[21],str2[81],str[120];
+	int i,j;
+	cnt=0;
+	while(gets(str))
+	{
+		if(strcmp(str,&quot;@END@&quot;)==0)
+			break;
+		i=j=0;
+		while(str[i-1]!=']')
+			str1[j++]=str[i++];
+		str1[j]='\0';
+
+		j=0,i++;
+		while(i&lt;strlen(str))
+			str2[j++]=str[i++];
+		str2[j]='\0';
+
+		strcpy(dic[0][cnt],str1);
+		strcpy(dic[1][cnt],str2);
+		cnt++;
+	}
+	int n;
+	scanf(&quot;%d&quot;,&amp;n);
+	getchar();
+	while(n--)
+	{
+		int dic_index=1;
+		gets(str2);
+		if(str2[0]=='[')
+			dic_index=0;
+		int index=Search(str2,dic_index);
+		if(index==-1)
+			puts(&quot;what?&quot;);
+		else
+		{
+			if(dic_index==0)
+				printf(&quot;%s\n&quot;,dic[1][index]);
+			else
+			{
+				for(i=1;i&lt;strlen(dic[0][index])-1;i++)
+					printf(&quot;%c&quot;,dic[0][index][i]);
+				cout&lt;&lt;endl;
+			}
+		}
+	}
+}
+
+
+
+
+   
+
+
+   
+
+
+
+
+   
+
+
+   //MLE CODE
+
+#include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+#define N 200010
+#define M 'z'-'['+10
+char dic[N][81];
+int cnt;
+
+struct Trie
+{
+	struct Trie* node[M];
+	int index;
+	Trie()
+	{
+		for(int i=0;i&lt;M;i++)
+			node[i]=NULL;
+		index=-1;
+	}
+};
+
+void Insert(Trie *root,char* s,char *stodic,int len)
+{
+	Trie *r=root;
+	for(int i=0;i&lt;len;i++)
+	{
+		int c=s[i]-'[';
+		if(s[i]==' ')
+			c='z'+1-'[';
+		if(r-&gt;node[c]==NULL)
+			r-&gt;node[c]=new Trie;
+		r=r-&gt;node[c];
+	}
+	strcpy(dic[cnt],stodic);
+	r-&gt;index=cnt++;
+}
+
+int main()
+{
+	char str1[21],str2[81];
+	int i,j;
+	cnt=0;
+	Trie *root,*r;
+	root=new Trie;
+	while(scanf(&quot;%s&quot;,str1)&amp;&amp;strcmp(str1,&quot;@END@&quot;))
+	{
+		getchar();
+		gets(str2);
+		Insert(root,str1,str2,strlen(str1));
+		Insert(root,str2,str1,strlen(str2));
+	}
+	int n;
+	scanf(&quot;%d&quot;,&amp;n);
+	getchar();
+	while(n--)
+	{
+		r=root;
+		bool indflag=false;
+		gets(str2);
+		if(str2[0]=='[')
+			indflag=true;
+		for(i=0;i&lt;strlen(str2)&amp;&amp;r;i++)
+		{
+			int c=str2[i]-'[';
+			if(str2[i]==' ')
+				c='z'+1-'[';
+			r=r-&gt;node[c];
+		}
+		if(i&lt;strlen(str2))
+			puts(&quot;what?&quot;);
+		else
+		{
+			if(indflag)
+				printf(&quot;%s\n&quot;,dic[r-&gt;index]);
+			else
+			{
+				for(i=1;i&lt;strlen(dic[r-&gt;index])-1;i++)
+					printf(&quot;%c&quot;,dic[r-&gt;index][i]);
+				cout&lt;&lt;endl;
+			}
+		}
+	}
+}

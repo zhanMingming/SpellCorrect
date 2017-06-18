@@ -1,0 +1,182 @@
+hdu 1861 游船出租-with tricks游船出租
+Time Limit: 1000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)
+
+Total Submission(s): 5533Accepted Submission(s): 1837
+
+
+
+
+Problem Description
+
+
+现有公园游船租赁处请你编写一个租船管理系统。当游客租船时，管理员输入船号并按下S键，系统开始计时；当游客还船时，管理员输入船号并按下E键，系统结束计时。船号为不超过100的正整数。当管理员将0作为船号输入时，表示一天租船工作结束，系统应输出当天的游客租船次数和
+
+平均租船时间。
+
+注意：由于线路偶尔会有故障，可能出现不完整的纪录，即只有租船没有还船，或者只有还船没有租船的纪录，系统应能自动忽略这种无效纪录。
+
+
+
+
+
+
+
+
+Input
+
+
+测试输入包含若干测试用例，每个测试用例为一整天的租船纪录，&#26684;式为
+
+船号（1~100） 键&#20540;（S或E） 发生时间（小时:分钟）
+
+每一天的纪录保证按时间递增的顺序给出。当读到船号为-1时，全部输入结束，相应的结果不要输出。
+
+
+
+
+
+
+
+
+Output
+
+
+对每个测试用例输出1行，即当天的游客租船次数和平均租船时间（以分钟为单位的精确到个位的整数时间）。
+
+
+
+
+
+
+Sample Input
+
+
+
+   1 S 08:10
+2 S 08:35
+1 E 10:00
+2 E 13:16
+0 S 17:00
+0 S 17:00
+3 E 08:10
+1 S 08:20
+2 S 09:00
+1 E 09:20
+0 E 17:00
+-1
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   2 196
+0 0
+1 60
+
+
+
+
+
+
+
+
+Source
+
+
+浙大计算机研究生复试上机考试-2007年
+
+
+
+
+
+
+   
+
+
+   
+
+
+
+
+   1. 游船可以重复租用
+
+
+   2, 对一条船来说，租用starttime以最后一次为准
+
+
+   3. 初始化
+
+
+   
+   #include &quot;iostream&quot;  
+#include &quot;stdio.h&quot;  
+#include &quot;math.h&quot;  
+#include &quot;vector&quot;  
+#include &quot;queue&quot;  
+#include &quot;memory.h&quot;  
+#include &quot;algorithm&quot;  
+#include &quot;string&quot;  
+using namespace std;  
+
+int cnt;
+double sum;
+
+struct BOAT
+{
+	int time;
+	bool status;
+}b[105];
+
+void Init()
+{
+	sum=0;
+	cnt=0;
+}
+
+int main()
+{
+	int ind=0,i,j;
+	int h,m;
+	char t[10];
+	char status;
+	Init();
+	for(i=1;i&lt;=100;i++)
+		b[i].status=false;
+	while(true)
+	{
+		scanf(&quot;%d&quot;,&amp;ind);
+		if(ind==-1)
+			break;
+		getchar();
+		status=getchar();
+		scanf(&quot;%d:%d&quot;,&amp;h,&amp;m);
+		if(ind==0)
+		{
+			if(cnt)
+				printf(&quot;%d %.0lf\n&quot;,cnt,sum/cnt);
+			else
+				printf(&quot;0 0\n&quot;);
+			Init();
+			continue;
+		}
+		if(status=='S')
+			b[ind].time=h*60+m,b[ind].status=true;
+
+		else
+		{
+			if(b[ind].status)
+			{
+				sum+=h*60+m-b[ind].time;
+				cnt++;
+				b[ind].status=false;
+			}
+		}	
+	}
+}

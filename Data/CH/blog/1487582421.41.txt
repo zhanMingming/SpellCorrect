@@ -1,0 +1,48 @@
+qsort原理 实现抄华哥的
+
+
+   #include &lt;iostream&gt;   
+#include &lt;stdlib.h&gt;   
+#include &lt;ctime&gt;   
+using namespace std;   
+int partition(int *A,int p,int r)   
+{   
+    int i,j,x;   
+    x=A[r];   
+    i=p-1;   
+    for(j=p;j&lt;r;j++)   
+ if(A[j] &lt;= x)   
+ {   
+     i++;   
+     swap&lt;int&gt;(A[i],A[j]);   
+ }   
+    swap&lt;int&gt;(A[i+1],A[r]);   
+    return i+1;   
+}   
+void quicksort(int *A,int p,int r)   
+{   
+    if(p &gt;= r)   
+ return ;   
+    int q=partition(A,p,r);   
+    quicksort(A,p,q-1);   
+    quicksort(A,q+1,r);   
+}   
+void Show(int *A,int p,int r)   
+{   
+    for(int i=p;i&lt;=r;i++)   
+ cout&lt;&lt;A[i]&lt;&lt;" ";   
+    cout&lt;&lt;endl;   
+}   
+int main()   
+{   
+    int i;   
+    int A[10];   
+    srand((unsigned int)time(NULL));   
+    for(i=0;i&lt;10;i++)   
+ A[i]=rand()%20;   
+    Show(A,0,9);   
+    quicksort(A,0,9);   
+    Show(A,0,9);   
+    system("pause");   
+    return 0;   
+}

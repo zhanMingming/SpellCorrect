@@ -1,0 +1,382 @@
+valgrind 检查内存泄漏内存泄漏是coding中经常容易出现的问题， 而且很难查。 本文中总结了几个常见的内存泄漏问题， 分别举例实现， 并列出用代码分析工具——valgrind中memcheck检查的结果， 一 一对错误进行排查。
+
+
+
+   本文围绕工程valgrind-sample进行讲解。 先看下工程结构：
+
+
+
+   
+ 
+
+ 
+
+
+   
+
+
+
+   methods类写了几个可能存在内存操作问题的函数， main.cpp调用methods类函数： 
+
+
+ 
+
+methods.h:
+
+
+
+
+
+   #ifndef  VALGRIND_METHODS_H 
+#define  VALGRIND_METHODS_H 
+
+namespace sample{    
+    void printx();   
+    void access_violation();
+    void mem_overlap();     
+    void nonfree();  
+}      
+#endif  //VALGRIND_METHODS_H
+
+
+   main.cpp:
+
+
+
+
+
+   #include &lt;iostream&gt; 
+#include "methods.h"
+#include &lt;string.h&gt; 
+
+int main(int argc, char *argv[]){ 
+    sample::printx();    
+    sample::access_violation(); 
+    sample::mem_overlap(); 
+    sample::nonfree();   
+}     
+
+
+
+
+   下面分别看这几个函数可能会遇到什么问题。
+
+
+
+
+1. sample::printx()
+
+
+
+
+   void printx(){ 
+    int x;     
+    if (x == 0)
+    {   
+ printf("X is zero"); 
+    }   
+}
+
+
+   问题显而易见， 变量赋值前引用， 但C编译器并不会报错。
+
+
+
+   valgrind ./valgrind-sample:
+
+
+
+  
+   ==17495== Conditional jump or move depends on uninitialised value(s) 
+
+  ==17495==    at 0x400D10: sample::printx() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==17495==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples)
+
+
+
+
+   
+
+
+
+
+
+2. sample::access_violation()
+
+
+
+
+   void access_violation(){
+    int len = 5; 
+    int *pt = (int*)malloc(len*sizeof(int)); //problem1: not freed
+    int *p = pt; 
+    for (int i = 0; i &lt; len; i++){    
+ p++;     
+    }     
+    *p = 5; //problem2: heap block overrun   
+    printf("%d\n", *p); //problem3: heap block overrun     
+}  
+
+
+   问题如code所示，  
+
+line3: 指针pt申请了空间，但是没有释放; 
+
+line8: pt申请了5个int的空间，p经过4次循环（i=3时）已达到最后申请的p[4], 在i=4时p所指向的空间没有申请过; (下面valgrind报告中 Invalid write of size 4) 
+
+line9: 同line8 (下面valgrind报告中 Invalid read of size 4 )
+
+
+
+   valgrind ./valgrind-sample:
+
+
+
+  
+   ==21058== Invalid write of size 4 
+
+  ==21058==    at 0x400D74: sample::access_violation() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==  Address 0x4b32054 is 0 bytes after a block of size 20 alloc’d 
+
+  ==21058==    at 0x490514E: malloc (vg_replace_malloc.c:195) 
+
+  ==21058==    by 0x400D44: sample::access_violation() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==  
+
+  ==21058== Invalid read of size 4 
+
+  ==21058==    at 0x400D7E: sample::access_violation() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==  Address 0x4b32054 is 0 bytes after a block of size 20 alloc’d 
+
+  ==21058==    at 0x490514E: malloc (vg_replace_malloc.c:195) 
+
+  ==21058==    by 0x400D44: sample::access_violation() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==21058== 
+
+
+
+
+   
+
+
+
+3. sample::mem_overlap()
+
+
+
+
+   void mem_overlap(){
+    char str[11];  
+    for (int i = 0; i &lt; 11; i++){
+ str[i] = i;
+    }
+    memcpy(str + 1, str, 5);     
+
+    char x[5] = "abcd";   
+    strncpy(x + 2, x, 3); 
+}    
+
+
+   问题出在memcpy上， 将str指针位置开始copy 5个char到str+1所指空间，会造成内存覆盖。strncpy也是同理。
+
+
+
+   valgrind ./valgrind-sample:
+
+
+
+  
+   ==27473== Source and destination overlap in memcpy(0x7feffedc1, 0x7feffedc0, 5) 
+
+  ==27473==    at 0x4907566: memcpy (mc_replace_strmem.c:482) 
+
+  ==27473==    by 0x400DD1: sample::mem_overlap() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==27473==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==27473==  
+
+  ==27473== Source and destination overlap in strncpy(0x7feffeda5, 0x7feffeda3, 3) 
+
+  ==27473==    at 0x490737B: strncpy (mc_replace_strmem.c:329) 
+
+  ==27473==    by 0x400DFA: sample::mem_overlap() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==27473==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples)
+
+
+
+
+   
+
+
+
+
+
+4. sample::nonfree()
+
+
+
+
+   void nonfree(){   
+    char* str = (char*)malloc(5*sizeof(char));
+    char* ptr = str;     
+    delete [] ptr; //problem&lt;mismatch&gt;: delete - new; malloc - free
+    free(str); //problem&lt;invalid&gt;: release freed memory     
+    ptr[1] = 'a'; //problem&lt;invalid&gt;: use released memory   
+}   
+
+
+   问题如code所示。  
+
+line 4: 用malloc申请空间的指针用free释放；用new申请的空间用delete释放 (valgrind中Mismatched free() / delete / delete [])； 
+
+line 5: 由于ptr=str, ptr已被释放，str无需再释放，此处释放了已经被释放的内存（valgrind中 Invalid free() / delete / delete[]）； 
+
+line 6: 用到了已经被释放的内存（valgrind中Invalid write of size 1）；
+
+
+
+   valgrind ./valgrind-sample:
+
+
+
+  
+   ==29210== Mismatched free() / delete / delete [] 
+
+  ==29210==    at 0x4906510: operator delete (vg_replace_malloc.c:368) 
+
+  ==29210==    by 0x400E2B: sample::nonfree() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==  Address 0x4b32040 is 0 bytes inside a block of size 5 alloc’d 
+
+  ==29210==    at 0x490514E: malloc (vg_replace_malloc.c:195) 
+
+  ==29210==    by 0x400E0F: sample::nonfree() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==  
+
+  ==29210== Invalid free() / delete / delete[] 
+
+  ==29210==    at 0x4905E72: free (vg_replace_malloc.c:325) 
+
+  ==29210==    by 0x400E34: sample::nonfree() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==  Address 0x4b32040 is 0 bytes inside a block of size 5 free’d 
+
+  ==29210==    at 0x4906510: operator delete (vg_replace_malloc.c:368) 
+
+  ==29210==    by 0x400E2B: sample::nonfree() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==  
+
+  ==29210== Invalid write of size 1 
+
+  ==29210==    at 0x400E3C: sample::nonfree() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==  Address 0x4b32041 is 1 bytes inside a block of size 5 free’d 
+
+  ==29210==    at 0x4906510: operator delete (vg_replace_malloc.c:368) 
+
+  ==29210==    by 0x400E2B: sample::nonfree() (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples) 
+
+  ==29210==    by 0x400B4B: main (in /home/zhangruiqing01/disk2/study/code/valgrind-samples/valgrind-samples)
+
+
+
+
+   
+
+
+
+
+
+
+   最后，整个methods.cpp文件如下：
+
+
+
+   methods.cpp:
+
+
+
+   #include &lt;iostream&gt; 
+#include &lt;stdio.h&gt;  
+#include &lt;string.h&gt; 
+#include "methods.h"
+
+namespace sample{   
+    void printx(){  
+ int x;      
+ if (x == 0) 
+ {    
+     printf("X is zero");  
+ }    
+    } 
+
+    void access_violation(){      
+ int len = 5;
+ int *pt = (int*)malloc(len*sizeof(int)); //problem1: not freed      
+ int *p = pt;
+ for (int i = 0; i &lt; len; i++){   
+     p++;    
+ }    
+ *p = 5; //problem2: heap block overrun  
+ printf("%d\n", *p); //problem3: heap block overrun    
+    } 
+
+    void mem_overlap(){    
+ char str[11];      
+ for (int i = 0; i &lt; 11; i++){    
+     str[i] = i;    
+ }    
+ memcpy(str + 1, str, 5);  
+
+ char x[5] = "abcd";
+ strncpy(x + 2, x, 3);     
+    } 
+
+    void nonfree(){ 
+ char* str = (char*)malloc(5*sizeof(char));     
+ char* ptr = str;   
+ delete [] ptr; //problem&lt;mismatch&gt;: delete - new; malloc - free     
+ free(str); //problem&lt;invalid&gt;: release freed memory   
+ ptr[1] = 'a'; //problem&lt;invalid&gt;: use released memory 
+    } 
+}     
+
+ 
+     $(function () {
+  $('pre.prettyprint code').each(function () {
+      var lines = $(this).text().split('\n').length;
+      var $numbering = $('').addClass('pre-numbering').hide();
+      $(this).addClass('has-numbering').parent().append($numbering);
+      for (i = 1; i <= lines; i++) {
+   $numbering.append($('').text(i));
+      };
+      $numbering.fadeIn(1700);
+  });
+     });

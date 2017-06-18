@@ -1,0 +1,110 @@
+JDK8新特性：接口的静态方法和默认方法在jdk8之前，interface之中可以定义变量和方法，变量必须是public、static、final的，方法必须是public、abstract的。由于这些修饰符都是默认的，所以在JDK8之前，下面的写法都是等价的。
+
+
+   public interface JDK8BeforeInterface {
+    public static final int field1 = 0;
+
+    int field2 = 0;
+
+    public abstract void method1(int a) throws Exception;
+
+    void method2(int a) throws Exception;
+}
+
+   
+
+
+   
+
+
+
+JDK8及以后，允许我们在接口中定义static方法和default方法。
+   public interface JDK8Interface {
+
+    // static修饰符定义静态方法
+    static void staticMethod() {
+ System.out.println(&quot;接口中的静态方法&quot;);
+    }
+
+    // default修饰符定义默认方法
+    default void defaultMethod() {
+ System.out.println(&quot;接口中的默认方法&quot;);
+    }
+}
+
+再定义一个接口的实现类：
+   public class JDK8InterfaceImpl implements JDK8Interface {
+    //实现接口后，因为默认方法不是抽象方法，所以可以不重写，但是如果开发需要，也可以重写
+}
+
+   
+
+
+   
+
+
+
+静态方法，只能通过接口名调用，不可以通过实现类的类名或者实现类的对象调用。default方法，只能通过接口实现类的对象来调用。
+
+
+   public class Main {
+    public static void main(String[] args) {
+ // static方法必须通过接口类调用
+ JDK8Interface.staticMethod();
+
+ //default方法必须通过实现类的对象调用
+ new JDK8InterfaceImpl().defaultMethod();
+    }
+}
+
+当然如果接口中的默认方法不能满足某个实现类需要，那么实现类可以覆盖默认方法。
+   public class AnotherJDK8InterfaceImpl implements JDK8Interface {
+    
+    // 签名跟接口default方法一致,但是不能再加default修饰符
+    @Override
+    public void defaultMethod() {
+ System.out.println(&quot;接口实现类覆盖了接口中的default&quot;);
+    }
+}
+
+
+
+
+   
+
+
+   由于java支持一个实现类可以实现多个接口，如果多个接口中存在同样的static和default方法会怎么样呢？如果有两个接口中的静态方法一模一样，并且一个实现类同时实现了这两个接口，此时并不会产生错误，因为jdk8只能通过接口类调用接口中的静态方法，所以对编译器来说是可以区分的。但是如果两个接口中定义了一模一样的默认方法，并且一个实现类同时实现了这两个接口，那么必须在实现类中重写默认方法，否则编译失败。
+
+
+   public interface JDK8Interface1 {
+
+    // static修饰符定义静态方法
+    static void staticMethod() {
+ System.out.println(&quot;JDK8Interface1接口中的静态方法&quot;);
+    }
+
+    // default修饰符定义默认方法
+    default void defaultMethod() {
+ System.out.println(&quot;JDK8Interface1接口中的默认方法&quot;);
+    }
+
+}
+
+
+   public class JDK8InterfaceImpl implements JDK8Interface,JDK8Interface1 {
+
+	// 由于JDK8Interface和JDK8Interface1中default方法一样,所以这里必须覆盖
+    @Override
+    public void defaultMethod() {
+ System.out.println(&quot;接口实现类覆盖了接口中的default&quot;);
+    }
+}
+
+
+   public class Main {
+    public static void main(String[] args) {
+ JDK8Interface.staticMethod();
+ JDK8Interface1.staticMethod();
+ new JDK8InterfaceImpl().defaultMethod();
+    }
+}

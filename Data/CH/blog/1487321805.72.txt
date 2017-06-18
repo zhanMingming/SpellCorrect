@@ -1,0 +1,76 @@
+信息检索资料索引斯坦福大学，信息实验室公开论文：
+
+
+   http://infolab.stanford.edu/pub/
+
+
+   
+
+
+   斯坦福大学，数据库系统实现课程主页，包含课件等相关资料：
+
+
+   http://infolab.stanford.edu/~ullman/dbsi.html
+
+
+   
+
+
+   Introduction to Information Retrieval电子书和相关资料：
+
+
+   http://www-csli.stanford.edu/~hinrich/information-retrieval-book.html
+
+
+   
+
+
+   The Geometry of Information Retrieval电子书下载：
+
+
+   http://rs61cg2.rapidshare.com/files/73699957/942482/The_Geometry_of_Information_Retrieval.pdf
+
+
+   
+
+
+   Foundations of Statistical Natural Language Processing电子书下载：
+
+
+   http://xbean.cs.ccu.edu.tw/~dan/NLP/foundations_of_statistical_natural_language_processing.pdf
+
+
+   
+
+
+   北大整理的信息检索资料索引：
+
+
+   http://sewm.pku.edu.cn/IR-Guide.txt
+
+
+   
+
+
+   斯坦福大学信息检索资源汇总：
+
+
+   http://www-csli.stanford.edu/~hinrich/information-retrieval.html
+
+
+   
+
+
+   yahoo research publications:
+
+
+   http://research.yahoo.com/publication
+
+
+   
+
+
+   Modeling the Internet and the Web 【2003年出版的一本书】
+
+
+   http://ibook.ics.uci.edu/slides.html

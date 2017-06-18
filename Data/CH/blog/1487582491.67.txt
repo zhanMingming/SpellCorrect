@@ -1,0 +1,19 @@
+结构体的部分初始化struct AA
+{
+ size_t leng;
+ int x;
+ int y;
+ int z;
+};
+
+
+   
+
+
+   AA a = {sizeof(AA)};
+
+
+   
+
+
+   这个初始化语句会将a的第一个元素设为sizeof(AA),然后将x,y,z设为默认值0.

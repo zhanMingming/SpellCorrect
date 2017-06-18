@@ -1,0 +1,263 @@
+Mac+MySQL+Xcode数据库配置Mac下的数据库配置讲解很少，本文列出了我配置过程中的大多数可能错误和注意事项。
+
+   
+
+   
+
+   
+
+   
+
+   --------------------------------------------------------
+
+   一、 Mac上配置MySQL Connector/C++
+
+   
+
+   
+
+   1. 打开mysql-5.6.14-osx10.7-x86_64.dmg(http://dev.mysql.com/downloads/mysql/)
+
+    1.1. 安装mysql
+
+    1.2. 安装MySQLStartupItem.pkg
+
+    1.3. 打开MySQL.prePane系统设置
+
+   
+
+   2. 设置用户名密码in terminal
+
+   
+
+   alias mysql=/usr/local/mysql/bin/mysql
+alias mysqladmin=/usr/local/mysql/bin/mysqladmin
+mysqladmin -u root password 123456(root和123456可以自己改)
+
+   
+
+   3. 安装MySQL数据库管理软件sequel-pro-1.0.2.dmg(http://www.sequelpro.com/download)
+
+   输入用户名root密码123456（同上命令行就好），host: 127.0.0.1
+
+   
+
+   4. Build mysql connector/c++ from source on Mac
+
+   官方参考：http://dev.mysql.com/doc/refman/5.6/en/connector-cpp-installation-source-unix.html
+
+   
+
+    4.1 下载MySQL Connectors(http://dev.mysql.com/downloads/connector/),这里我用C++，就Connector/C++好啦。但是注意！这里MySQL有个非常非常不人性化的设计，在下载版本的时候（http://dev.mysql.com/downloads/connector/cpp/），它会给你检测出系统(Platform), 但是我们是需要编译的，所以要在Platform选择SourceCode再下载，不然在4.3步会出现The source directory &quot;***/mysql-connector-c++***/include&quot; does not appear to contain CMakeLists.txt.
+
+   
+
+    4.2 安装cmake(http://www.cmake.org/cmake/resources/software.html)
+
+    4.3 安装boost库（http://www.boost.org/）
+
+       不需要用macports去下boost，直接到boost官网上下好，比如我下的boost_1_55_0, 到目录下运行sh bootstrap.sh安装boost      
+
+       
+
+    4.3 编译MySQL Connector
+
+       4.3.1 cd到4.1的mysql-connector-c++/下，执行
+
+   
+
+   cmake . -DBOOST_ROOT:STRING=/Users/mba/Downloads/boost_1_55_0/ 
+
+   
+
+   其中 /Users/mba/Downloads/boost_1_55_0/ 这块是你下载后解压文件夹所在位置。执行后现在成功了，末尾显示
+
+   -- Generating done
+
+   -- Build files have been written to: /Users/mba/Downloads/mysql-connector-c++-1.1.3
+
+   
+
+       4.3.1 然后就和官网上（http://dev.mysql.com/doc/refman/5.6/en/connector-cpp-installation-source-unix.html）写的一样了, 依次执行：
+
+   shell&gt; make clean
+
+   shell&gt; make
+
+   第三步 官网的 shell&gt; make install又来了问题：
+
+   在[100%]之后是如下错误：
+
+   
+
+   
+
+   -- Install configuration: &quot;&quot;
+-- Installing: /usr/local/./README
+CMake Error at cmake_install.cmake:31 (FILE):
+  file INSTALL cannot copy file
+  &quot;/Users/mba/Downloads/mysql-connector-c++-1.1.3/README&quot; to
+  &quot;/usr/local/./README&quot;.这里注意要加superuser权限：
+   
+
+   shell&gt; sudo make install
+
+   
+
+       执行成功后，头文件mysql_connection.h和mysql_driver.h就会给拷贝到目录/usr/local/include下; dynamic library libmysqlcppconn.so, 和 static library libmysqlcppconn-static.a.拷贝到了/usr/local/lib下，此外还有两个扩展动态库可以自行检查。
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   -----------------------------------------------------------
+
+   二、测试MySQL Connector/C++
+
+   
+
+   1. 官方测试1（命令行版）
+
+   
+
+   运行example, 如examples/standalone_example.cpp
+
+   按照官网的测试，编译下面这句
+
+   
+
+   g++ -o test_install   -I/usr/local/include -I/usr/local/include/cppconn   -Wl,-Bdynamic -lmysqlcppconn standalone_example.cpp
+但是这句在mac上会有问题，要《一增二减》
+   
+
+   因为就像上面我指定了Boost文件夹地址一样，如果不将Boost文件夹include进来就找不到boost相关头文件。所以include加上boost目录。再有，上面这句话是linux下的，而windows和max进行动态链接都不需要-Wl, -Bdynamic，加上会识别不出来，所以把这两个删掉，最后应该用这句：（其中boost目录自己改）
+
+   
+
+   g++ -o test_install   -I/usr/local/include -I/usr/local/include/cppconn -I/Users/mba/Documents/Download_dmgs/boost_1_55_0  -lmysqlcppconn standalone_example.cpp但是运行了后面两句之后发现还有问题，找不到动态链接库:
+   
+
+   dyld: Library not loaded: libmysqlclient.18.dylib
+
+   查了发现需要加个软链接给lib：
+
+   加下面这句：
+
+   
+
+   sudo ln -s /usr/local/mysql/lib/libmysqlclient.18.dylib /usr/lib/libmysqlclient.18.dylib
+   
+
+   
+
+   再run下面两句分别输出动态链接库路径和执行
+
+   
+
+   
+
+   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+./test_install localhost root password database (遵照本机上的修改)
+   
+
+   结果正确为：
+
+   
+
+   Connector/C++ standalone program example...
+
+... running 'SELECT 'Welcome to Connector/C++' AS _message'
+... MySQL replies: Welcome to Connector/C++
+... say it again, MySQL
+....MySQL replies: Welcome to Connector/C++
+
+... find more at http://www.mysql.com
+   
+
+   
+
+   2. 我的测试2（XCode+Mac+MySQL版）
+
+   1. 新建Command Line Tool工程mysqlTest
+
+   2. 给出测试代码in main.cpp:
+
+   
+
+   #include &lt;stdio.h&gt;
+#include &lt;mysql.h&gt;
+
+
+
+int main (int argc, const char * argv[])
+{
+    MYSQL *connection, mysql;
+    mysql_init(&amp;mysql);
+    connection = mysql_real_connect(&amp;mysql,&quot;127.0.0.1&quot;,&quot;root&quot;,&quot;psw&quot;,&quot;database&quot;,0,0,0);
+    if (connection == NULL)
+    {
+ //unable to connect
+ printf(&quot;Oh Noes!\n&quot;);
+    }
+    else
+    {
+ printf(&quot;Connected.\n&quot;);
+    }
+    return 0;
+}
+
+   
+
+   3.项目配置
+
+   3.1 Header Search Paths加
+
+    /usr/local/include
+
+    /usr/local/mysql/include
+
+   
+
+   3.2 Library Search Paths加
+
+    /usr/local/lib
+
+    /usr/local/mysql/lib
+
+   
+
+   3.1 Other Linker Flags加
+
+    -lmysqlcppconn -lm -lmysqlclient -lz
+
+   
+
+   
+
+   
+
+   4. Build Phases加入lib
+
+   
+
+   5. 运行
+
+   
+
+   
+
+   
+
+   好了，至此，本文大概列举了我在mac上配置mysql的全过程及错误。希望对大家有所帮助。
+
+   
+
+   欢迎关注本博客和新浪微博Rachel____Zhang

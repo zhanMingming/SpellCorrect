@@ -1,0 +1,156 @@
+ASP.NET2.0 文本编辑器FCKeditor使用方法详解FCKeditor是目前最好的html文本编辑器，如果还不明白的话看了下图就知道了效果图:
+
+
+   那么为什么说是FCKeditor的冰冷之心呢？这不是哗众取宠，主要是说它使用起来有点麻烦，下文就详细说明如何搞定这玩意儿。
+
+
+   1.FCKeditor的官方网站是：http://www.fckeditor.net/download 目前最新的FCKeditor 2.4.2版本。请在此页下载：http://sourceforge.net/project/showfiles.php?group_id=75348如图所示：要下载FCKeditor2.4.2.zip和 FCKeditor.NET版的2个zip包。
+
+
+   说明：FCKeditor2.4.2.zip是其最新的Javascript文件和图片什么的；FCKeditor.NET.zip是ASP.NET调用的DLL在里面。
+
+
+   2.分别解压后把FCKeditor2.4.2.zip里的fckeditor目录整个复制到网站中。
+
+
+   3.解压FCKeditor.NET.zip包后在FCKeditor.Net_2.2/bin/Debug目录里找到FredCK.FCKeditorV2.dll。其他文件没用，把FredCK.FCKeditorV2.dll复制到我们的网站，建立一个Bin目录。
+
+
+   4.引用FredCK.FCKeditorV2.dll。第一步：
+
+
+   
+
+
+   第二步：
+
+
+   5.导入工具箱。在&ldquo;工具箱&rdquo;下右键点击&ldquo;选择项&rdquo;。弹出如图窗口：点击浏览,找到dll所在目录。
+
+
+   这时发现工具箱里多出FCKeditor控件。
+
+
+   
+
+
+   6.拖拽FCKeditor到页面上
+
+
+   7.配置WebConfig&lt;?xml version="1.0"?&gt;&lt;!-- 注意: 除了手动编辑此文件以外，您还可以使用 Web 管理工具来配置应用程序的设置。可以使用 Visual Studio 中的&ldquo;网站&rdquo;-&gt;&ldquo;Asp.Net 配置&rdquo;选项。设置和注释的完整列表在 machine.config.comments 中，该文件通常位于 /Windows/Microsoft.Net/Framework/v2.x/Config 中--&gt;&lt;configuration&gt;&lt;appSettings&gt;
+
+
+   &lt;add key="FCKeditor:BasePath" value="~/fckeditor/"/&gt;
+
+
+   &lt;add key="FCKeditor:UserFilesPath" value="/Files/" /&gt;
+
+
+   &lt;/appSettings&gt;
+
+
+   &lt;connectionStrings/&gt;&lt;system.web&gt;
+
+
+   说明：BasePath是fckeditor所在路径，fckeditor由于我们直接放网站目录下这样写就可以，如果您的网站多放几层适当调整即可。UserFilesPath是所有上传的文件的所在目录。为什么要设置成/Files这样而不是~/Files，因为FCKeditor使用这个值来返回你上传后的文件的相对路径到客户端。否则的话客户访问的时候就会取客户的机器目录而不是http形式的目录。
+
+
+   建议：Files要单独做wwwroot目录下的一个站点比较好，和我们的站点FCKEditor平行。不要把它放FCKEditor里，为什么呢？因为Files是要让客户有写的权限的，如果放FCKEditor下很危险。
+
+
+   8.Files目录要有写的权限。你根据自己网站需求设置那个帐号，本文为方便设置User实际中你可能用ASP.NET帐号更合理。
+
+
+   
+
+
+   9.修改fckeditor/fckconfig.js文件在第182行的位置var _FileBrowserLanguage = 'asp' ; // asp | aspx | cfm | lasso | perl | php | pyvar _QuickUploadLanguage = 'asp' ; // asp | aspx | cfm | lasso | php改为var _FileBrowserLanguage = 'aspx' ; // asp | aspx | cfm | lasso | perl | php | pyvar _QuickUploadLanguage = 'aspx' ; // asp | aspx | cfm | lasso | php
+
+
+   10.FCKeditor给其瘦身。以_打头的的都是范例文件或源文件，不过建议小心。
+
+
+   11.下面以上传图片示例说明如何使用，
+
+
+   点击&ldquo;浏览服务器&rdquo;。
+
+
+   
+
+
+   弹出窗口很容易报错
+
+
+   
+
+
+   如果报错XML request error: Internal Server Error(500)，很可能就是目录路径不对和写权限没有。
+
+
+   选择图像最后效果
+
+
+   前台代码：
+
+
+   &lt;%@ Page Language="C#" validateRequest=false AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" %&gt;
+
+
+   &lt;%@ Register Assembly="FredCK.FCKeditorV2" Namespace="FredCK.FCKeditorV2" TagPrefix="FCKeditorV2" %&gt;
+
+
+   &lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+
+
+   &lt;html xmlns="http://www.w3.org/1999/xhtml" &gt;&lt;head runat="server"&gt;&lt;title&gt;FCKeditor文本编辑器&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;form id="form1" runat="server"&gt;&lt;div&gt;&lt;fckeditorv2:fckeditor id="FCKeditor1" runat="server" DefaultLanguage="zh-cn" Height="400px" Width="660px" &gt;&lt;/fckeditorv2:fckeditor&gt;&lt;/div&gt;&lt;/form&gt;&lt;/body&gt;&lt;/html&gt;
+
+
+   怎么样获取结果呢？FCKeditor1.Value就是。
+
+
+   
+
+
+   容易遇到的错误：
+
+
+   
+
+
+   1.this connector is disabled错误的解决方法
+
+
+   打开editor/filemanager/connectors/aspx/config.ascx修改CheckAuthentication()方法，返回true 
+
+
+   C# code 
+
+
+   private bool CheckAuthentication(){// WARNING : DO NOT simply return "true". By doing so, you are allowing// "anyone" to upload and list the files in your server. You must implement// some kind of session validation here. Even something very simple as...//// return ( Session[ "IsAuthorized" ] != null &amp;&amp; (bool)Session[ "IsAuthorized" ] == true );//// ... where Session[ "IsAuthorized" ] is set to "true" as soon as the// user logs in your system. 
+
+
+    return true;} 
+
+
+   随便看了一下config.ascx里的内容，发现如果想让对每个用户进行不同的配置，FCKeditor支持的更好了。
+
+
+   
+
+
+   
+
+
+   2.
+
+
+   
+
+FckEditor-未能映射路径"/UserFiles/image/" 
+
+
+   该错误需要从web.config配置文件中的configuration结点下添加FckEditor相对应的配置信息如下：&lt;appSettings&gt; &lt;add key="FCKeditor:BasePath" value="~/fckeditor/"/&gt; &lt;add key ="FCKeditor:UserFilesPath" value="/项目名/Files/"/&gt;//注意，别忘了在项目文件夹下新建Files文件夹哦
+
+
+   &lt;/appSettings&gt;

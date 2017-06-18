@@ -1,0 +1,89 @@
+模板[点在多边形内的判断]#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#define INF 10000
+#define eps 1e-8
+#define zero(x) (((x)&gt;0?(x):-(x))&lt;eps)
+struct point
+{
+	double x,y;
+};
+struct LINE
+{
+	point a,b;
+};
+
+double xmult(point p1,point p2,point p0)
+{
+ return (p1.x-p0.x)*(p2.y-p0.y)-(p2.x-p0.x)*(p1.y-p0.y);
+}
+
+int pinplg(int n,point q,point* p)
+{
+ point q2;
+ int i=0,count;
+ while (i&lt;n)
+  for (count=i=0,q2.x=rand()+INF,q2.y=rand()+INF;i&lt;n;i++)
+   if (zero(xmult(q,p[i],p[(i+1)%n]))&amp;&amp;(p[i].x-q.x)*(p[(i+1)%n].x-q.x)&lt;eps&amp;&amp;(p[i].y-q.y)*(p[(i+1)%n].y-q.y)&lt;eps)
+    return 1;
+   else if (zero(xmult(q,q2,p[i])))
+    break;
+   else if (xmult(q,p[i],q2)*xmult(q,p[(i+1)%n],q2)&lt;-eps&amp;&amp;xmult(p[i],q,p[(i+1)%n])*xmult(p[i],q2,p[(i+1)%n])&lt;-eps)
+    count++;
+ return count&amp;1;
+}
+point p[110],q;
+int main()
+{
+ int cas;
+ scanf("%d",&amp;cas);
+ int n;
+ while(cas--)
+ {
+  scanf("%d",&amp;n);
+  int i;
+  scanf("%lf%lf",&amp;q.x,&amp;q.y);
+  for(i=0;i&lt;n;++i)
+   scanf("%lf%lf",&amp;p[i].x,&amp;p[i].y);
+  int t;
+  if(pinplg(n,q,p))
+   printf("yes/n");
+  else
+   printf("no/n");
+ }
+ return 0;
+}
+ 
+
+
+   
+
+
+   Sample Input
+
+
+   15100 7655 118119 114147 66123 3368 56
+
+
+   Sample Output
+
+
+   yes
+
+
+   
+
+
+   
+
+
+   Input
+
+
+   The first line of input is a integer t(1&lt;=t&lt;=100),the number of test cases.The first line of each test case contains a integer n(1&lt;=n&lt;=100), the number of vertexes of the fencing.The second line contains the position of the tiger followed by n vertexes of the fencing in counter-closewise order.All numbers are integers in interval[0,10000].
+
+
+   Output
+
+
+   Print "yes" if the tiger is in the fencing or at the border,print "no" if not.

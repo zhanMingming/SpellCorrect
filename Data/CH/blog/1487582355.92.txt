@@ -1,0 +1,130 @@
+N皇后问题N皇后问题
+Time Limit: 2000/1000 MS (Java/Others)Memory Limit: 32768/32768 K (Java/Others)
+
+Total Submission(s): 2414Accepted Submission(s): 1117
+
+
+
+
+Problem Description
+
+
+在N*N的方&#26684;棋盘放置了N个皇后，使得它们不相互攻击（即任意2个皇后不允许处在同一排，同一列，也不允许处在与棋盘边框成45角的斜线上。
+
+你的任务是，对于给定的N，求出有多少种合法的放置方法。
+
+
+
+
+
+
+
+
+
+
+Input
+
+
+共有若干行，每行一个正整数N≤10，表示棋盘和皇后的数量；如果N=0，表示结束。
+
+
+
+
+
+
+Output
+
+
+共有若干行，每行一个正整数，表示对应输入行的皇后的不同放置数量。
+
+
+
+
+
+
+Sample Input
+
+
+
+   1
+8
+5
+0
+
+
+
+
+
+
+
+
+Sample Output
+
+
+
+   1
+92
+10
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+   
+   #include &quot;iostream&quot;
+#include &quot;stdio.h&quot;
+#include &quot;math.h&quot;
+#include &quot;vector&quot;
+#include &quot;queue&quot;
+#include &quot;memory.h&quot;
+#include &quot;algorithm&quot;
+#include &quot;string&quot;
+using namespace std;
+ 
+int n;
+bool row[12],dia1[25],dia2[25];
+int ans[12];
+
+int Dfs(int q,int r)
+{   
+    if(q==n+1)    return 1;
+    if(row[r]==false)   return 0;
+    if(dia1[r+q]==false||dia2[n-q+r]==false)    return 0;
+
+    row[r]=dia1[r+q]=dia2[n-q+r]=false;
+    int res=0;
+    for(int i=1;i&lt;=n;i++)
+    {
+ res+=Dfs(q+1,i);
+ if(q==n)  break;
+    }
+    row[r]=dia1[r+q]=dia2[n-q+r]=true;
+    return res;
+}
+
+int main()
+{
+    memset(ans,0,sizeof(ans));
+    for(n=1;n&lt;=10;n++)
+    {
+ memset(row,true,sizeof(row));
+ memset(dia1,true,sizeof(dia1));
+ memset(dia2,true,sizeof(dia2));
+ for(int i=1;i&lt;=n;i++)
+ {
+     ans[n]+=Dfs(1,i);
+ }
+    }
+    
+    while(scanf(&quot;%d&quot;,&amp;n)!=EOF&amp;&amp;n)
+ printf(&quot;%d\n&quot;,ans[n]);
+}

@@ -1,0 +1,209 @@
+使用ionic框架的&lt;ion-scroll&gt;进行水平滚动时，导致页面难以上下滑动的解决方案混合app开发使用ionic框架的&lt;ion-scroll&gt;指令能够方便地实现水平滚动和垂直滑动。比如我们想实现一个能够水平滑动的画廊，可以使用下面这段代码。
+
+
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+	&lt;style&gt;
+	/*nowrap不让img换行*/
+	.picturesholder{
+		background-color:#fff;
+		margin:20px;
+		width:400px;
+		height:80px;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	
+	/**图片占满画廊*/
+	.picturesholder img{
+		width:100px;
+		height:81px;
+	}
+	&lt;/style&gt;
+
+	&lt;script&gt;
+	var testModule = angular.module(&#39;testApp&#39;, [&#39;ionic&#39;]);
+	testModule.controller(&#39;MyController&#39;, function($scope, $ionicScrollDelegate) {
+		$scope.pictures=[&quot;imgs/1.png&quot;,&quot;imgs/2.png&quot;,&quot;imgs/3.png&quot;,&quot;imgs/4.png&quot;,&quot;imgs/5.png&quot;,&quot;imgs/6.png&quot;,&quot;imgs/7.png&quot;,&quot;imgs/8.png&quot;];
+	});
+    
+	$(function(){
+		angular.bootstrap($(&quot;#body&quot;), [&quot;testApp&quot;]);	
+	})
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+  
+	&lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+		&lt;h1 class=&quot;title&quot;&gt;bar-positive&lt;/h1&gt;
+	&lt;/ion-header-bar&gt;
+  
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+	
+		&lt;div class=&quot;picturesholder&quot;&gt;
+			&lt;ion-scroll direction=&quot;x&quot;&gt;
+				&lt;img ng-src=&quot;{{each}}&quot; ng-repeat=&quot;each in pictures&quot;&gt;&lt;/img&gt;
+			&lt;/ion-scroll&gt;			
+		&lt;/div&gt;
+		
+	&lt;/ion-content&gt;
+	
+	&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/ion-footer-bar&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+	
+
+
+
+
+
+   
+
+
+   单看这一个水平画廊是没有什么问题的，功能和操作都很正常。但是我们项目中遇到一个问题：一个页面很大，有多个画廊控件，我们的页面很难上下滑动，滑动非常吃力，这是为什么呢？举个例子：如果你的页面放的全都是input输入控件，那么这个页面一样很难滑动，因为当我们在手机屏幕上滑动的时候，一不小心很容易就会点中这些输入框，当输入框获得焦点，页面就不能滑动了。使用&lt;ion-scroll&gt;一样有这个问题，当页面全是画廊控件的时候，滑动也十分费劲。
+
+
+   
+
+
+
+
+   从ionic文档中也没有找到好的解决办法，最后解决方法是：不使用&lt;ion-scroll&gt;指令，自己实现左右滑动。利用HTML5中的touchmove和touchstart事件实现滚动：
+
+
+   // do for left-right scroll
+var startX = 0;
+var startY = 0;
+var $gallery = $(&quot;.picturesholder&quot;);
+
+$gallery.on(&quot;touchstart&quot;, function(e) {
+	 startX = e.originalEvent.changedTouches[0].pageX,
+	 startY = e.originalEvent.changedTouches[0].pageY;
+});
+
+$gallery.on(&quot;touchmove&quot;, function(e) {
+	var X = e.originalEvent.changedTouches[0].pageX - startX;
+	var Y = e.originalEvent.changedTouches[0].pageY - startY;
+	 
+	if ( Math.abs(X) &gt; Math.abs(Y) &amp;&amp; X &gt; 0 ) {
+		var cur_scroll = $(this).scrollLeft();
+		$(this).scrollLeft(parseInt(cur_scroll) - X);
+		e.preventDefault();
+		e.stopPropagation();
+	}
+	else if ( Math.abs(X) &gt; Math.abs(Y) &amp;&amp; X &lt; 0 ) {
+		var cur_scroll = $(this).scrollLeft();
+		$(this).scrollLeft(parseInt(cur_scroll) - X);
+		e.preventDefault();
+		e.stopPropagation();
+	}
+	else if ( Math.abs(Y) &gt; Math.abs(X) &amp;&amp; Y &gt; 0) {
+	}
+	else if ( Math.abs(Y) &gt; Math.abs(X) &amp;&amp; Y &lt; 0 ) {
+	}
+	else{
+	}
+});
+// do for left-right scroll
+
+web浏览器没有上面2个事件，我们可以用mousedown和mousemove模拟，下面代码一样可以左右滑动。
+   &lt;html&gt;
+  &lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+	&lt;script src=&quot;jquery-1.11.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;./1.1.1-release/js/ionic.bundle.js&quot;&gt;&lt;/script&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;./1.1.1-release/css/ionic.css&quot; /&gt;
+	&lt;style&gt;
+	/*nowrap不让img换行*/
+	.picturesholder{
+		background-color:#fff;
+		margin:20px;
+		width:400px;
+		height:80px;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	
+	/**图片占满画廊*/
+	.picturesholder img{
+		width:100px;
+		height:81px;
+	}
+	&lt;/style&gt;
+
+	&lt;script&gt;
+	var testModule = angular.module(&#39;testApp&#39;, [&#39;ionic&#39;]);
+	testModule.controller(&#39;MyController&#39;, function($scope, $ionicScrollDelegate) {
+		$scope.pictures=[&quot;imgs/1.png&quot;,&quot;imgs/2.png&quot;,&quot;imgs/3.png&quot;,&quot;imgs/4.png&quot;,&quot;imgs/5.png&quot;,&quot;imgs/6.png&quot;,&quot;imgs/7.png&quot;,&quot;imgs/8.png&quot;];
+	});
+    
+	$(function(){
+		angular.bootstrap($(&quot;#body&quot;), [&quot;testApp&quot;]);	
+		
+		// do for left-right scroll
+		var startX = 0;
+		var startY = 0;
+		var $pictures = $(&quot;.picturesholder&quot;);
+		
+		$pictures.on(&quot;mousedown&quot;, function(e) {
+			 startX = e.originalEvent.pageX,
+			 startY = e.originalEvent.pageY;
+		});
+		
+		$pictures.on(&quot;mousemove&quot;, function(e) {
+			var X = e.originalEvent.pageX - startX;
+		    var Y = e.originalEvent.pageY - startY;
+		     
+		    if ( Math.abs(X) &gt; Math.abs(Y) &amp;&amp; X &gt; 0 ) {
+		 var cur_scroll = $(this).scrollLeft();
+		 $(this).scrollLeft(parseInt(cur_scroll) - X);
+		 e.preventDefault();
+		 e.stopPropagation();
+		    }
+		    else if ( Math.abs(X) &gt; Math.abs(Y) &amp;&amp; X &lt; 0 ) {
+		 var cur_scroll = $(this).scrollLeft();
+		 $(this).scrollLeft(parseInt(cur_scroll) - X);
+		 e.preventDefault();
+		 e.stopPropagation();
+		    }
+		    else if ( Math.abs(Y) &gt; Math.abs(X) &amp;&amp; Y &gt; 0) {
+		    }
+		    else if ( Math.abs(Y) &gt; Math.abs(X) &amp;&amp; Y &lt; 0 ) {
+		    }
+		    else{
+		    }
+		});
+		// do for left-right scroll
+	})
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body id=&quot;body&quot; ng-controller=&quot;MyController&quot;&gt;
+  
+	&lt;ion-header-bar class=&quot;bar-positive&quot;&gt;
+		&lt;h1 class=&quot;title&quot;&gt;bar-positive&lt;/h1&gt;
+	&lt;/ion-header-bar&gt;
+  
+	&lt;ion-content class=&quot;has-header&quot; style=&quot;background-color: #ebebeb;&quot;&gt;
+	
+		&lt;div class=&quot;picturesholder&quot;&gt;
+			&lt;!--&lt;ion-scroll direction=&quot;x&quot;&gt;--&gt;
+				&lt;img ng-src=&quot;{{each}}&quot; ng-repeat=&quot;each in pictures&quot;&gt;&lt;/img&gt;
+			&lt;!--&lt;/ion-scroll&gt;--&gt;	
+		&lt;/div&gt;
+		
+	&lt;/ion-content&gt;
+	
+	&lt;ion-footer-bar class=&quot;bar-balanced&quot;&gt;
+		&lt;div class=&quot;title&quot;&gt;Footer&lt;/div&gt;
+	&lt;/ion-footer-bar&gt;
+&lt;/body&gt;
+&lt;/html&gt;

@@ -1,0 +1,272 @@
+排列组合（permutation）系列解题报告本文讲解4道关于permutation的题目:
+
+   1. Permutation：输出permutation——基础递归2. Permutation Sequence: 输出字典序排列的第k个permutation——推理3. Next Permutation：给定一个permutation中的序列，求字典序它的下一个permutation是什么——逻辑推理4. Permutation II：和第一题有细微的差别: 对于一个可能有重复元素的数组输出所有permutation——有条件dfs
+
+   
+
+   
+
+   
+                                              
+
+
+
+   
+
+   
+
+   1. Permutation：输出permutation
+
+   ——基础递归
+
+   
+
+    class Solution{
+     private:
+  vector&lt;vector&lt;int&gt; &gt; L;
+  vector&lt;int&gt; Nums;
+  int l;
+  vector&lt;bool&gt; visited;
+     public:
+  void perm(vector&lt;int&gt;&amp; list){
+      if(list.size()==l){
+   L.push_back(list);
+   return;
+      }
+      for(int i=0; i&lt;l; i++){
+   if(!visited[i]){
+list.push_back(Nums[i]);
+visited[i] = true;
+perm(list);
+list.pop_back();
+visited[i] = false;
+   }
+      }
+  }
+ 
+ 
+  vector&lt;vector&lt;int&gt; &gt; permute(vector&lt;int&gt; &amp;num){
+      int i;
+      Nums = num;
+      l = Nums.size();
+      for(i=0;i&lt;l;i++)
+   visited.push_back(false);
+      vector&lt;int&gt;list;
+      perm(list);
+ 
+      //for(i=0;i&lt;L.size();i++){
+      //    for(int j = 0;j&lt;l;j++)
+      // cout&lt;&lt;L[i][j];
+      //    cout&lt;&lt;endl;
+      //}
+      return L;
+  }
+ };
+
+   
+
+   
+                                              
+
+
+   
+
+   2. Permutation Sequence: 输出字典序排列的第k个permutation
+
+   ——逻辑推理
+
+   酱想，n位的permutation有n！个，那么第k个permutation如果满足n!&lt;k&lt;(n+1)!就一定有，
+
+   a = k/n!
+
+   b = k%n!
+
+   取集合里的第a位做下一位，下一次分析剩下的字符组成的第b个permutation
+
+   ------------------------
+
+   e.g.求[1,2,3,4]组合的第10个
+
+   ①求[1,2,3,4]组合的第10个
+
+   10/3! = 1…4 ---&gt;找到[1,2,3,4]中第(1+1)个数(2)做下一位，留下[1,3,4]
+
+   ②求[1,3, 4]组合的第10-3! * 1 = 4个
+
+   4/2! = 2…0 ---&gt;找到[1,3,4]中第2个数(3)做下一位, 留下[1,4]
+
+   ③余零，说明是permutation里的最后一个 -&gt; 剩下的逆序输出
+
+   
+
+   ---&gt;2341
+
+   
+
+   
+
+   class Solution {
+public:
+    string getPermutation(int n, int k) {
+ int i,j,sum = 1;
+ //sum = (n-1)!
+ for (i=2; i&lt;n; i++) {
+     sum *= i;
+ }
+ bool visited[n+2];
+ memset(visited, false, sizeof(visited));
+ string str;
+ for(i=1;i&lt;n;i++){
+     int nextidx = k/sum;
+     k = k%sum;
+     if(k==0)
+  nextidx -- ;
+     sum/=(n-i);
+     int cnt = 0;
+     for (j=0; j&lt;n; j++) {
+  if (!visited[j]) {
+      if (cnt == nextidx){
+   visited[j] = true;
+   str += '0' +j+1;
+   break;
+      }
+      cnt ++;
+  }
+     }
+ }
+ for(j=n-1;j&gt;=0;j--){
+     if (!visited[j]) {
+  str += '0' + j+1;
+     }
+ }
+ return str;
+ 
+    }
+};
+   
+
+   
+
+   
+                                              
+
+
+   
+
+   
+
+   3. Next Permutation
+
+   给定一个permutation中的序列，求字典序它的下一个permutation是什么。
+
+   ——逻辑推理
+
+   可以发现，下一个permutation可以这么得来：
+
+   ①当前permutation从后往前找到一直上升的子序列，假如一直上升到index_i
+
+   ②找到index为i到end中最小的，比num[i-1]大的数字,记index为j，交换num[i-1],num[j]
+
+   ③对num[i]~num[end]从小到大排序
+
+   PS：要注意有重复元素的情况e.g{1,5,1};
+
+   code：
+
+   
+
+   class Solution {
+public:
+    void nextPermutation(vector&lt;int&gt; &amp;num) {
+ size_t n = num.size();
+ int i = (int)n-1;
+ int j=0;//find the position that stops increasing from tail
+ while(num[i]&lt;=num[i-1] &amp;&amp; i&gt;0)
+     i--;
+ 
+ sort(num.begin()+i, num.end());
+ //find the digit that substitute(swap with) i
+ for(j=i;j&lt;n;j++){
+     if (num[j]&gt;num[i-1]) {
+  break;
+     }
+ }
+ if(i&gt;0 &amp;&amp; j&lt;n)
+     swap(num[i-1], num[j]);
+    }
+};
+
+   
+
+   
+
+   
+                                              
+
+
+
+   4. Permutation II
+
+   和第一题有细微的差别: 对于一个可能有重复元素的数组输出所有permutation。
+
+   ——有条件dfs
+
+   
+
+   想一下递归条件：
+
+   肯定还是递归，递归条件应该是如果当前list中已经出现过这几个元素排列，就不要再加进去。
+
+   
+
+   所以在第一题基础上只加两点：
+
+   1）对数组里所有元素排序
+
+   2）对于上一次加到过list的相同元素（必然是在排序后数组中与上一个相邻元素相同的）不要再加
+
+   
+
+   
+
+   class Solution{
+private:
+    vector&lt;vector&lt;int&gt; &gt; L;
+    vector&lt;int&gt; Nums;
+    int l;
+    vector&lt;bool&gt; visited;
+public:
+    void perm(vector&lt;int&gt;&amp; list){
+ if(list.size()==l){
+     L.push_back(list);
+     return;
+ }
+ for(int i=0; i&lt;l; i++){
+     if(!visited[i]){
+  list.push_back(Nums[i]);
+  visited[i] = true;
+  perm(list);
+  list.pop_back();
+  visited[i] = false;
+ 
+  while (i&lt;l &amp;&amp; Nums[i+1]==Nums[i]) {
+      i++;
+  }
+     }
+ }
+    }
+    
+    
+    vector&lt;vector&lt;int&gt; &gt; permuteUnique(vector&lt;int&gt; &amp;num){
+ int i;
+ Nums = num;
+ l = Nums.size();
+ sort(Nums.begin(),Nums.end());
+ for(i=0;i&lt;l;i++)
+     visited.push_back(false);
+ vector&lt;int&gt;list;
+ perm(list);
+ 
+ return L;
+    }
+};

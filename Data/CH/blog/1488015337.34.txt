@@ -1,0 +1,115 @@
+requireJS&amp;seaJS模块加载器原理：&lt;script&gt;标签加载外部js文件用到的onload、onerror和onreadystatechange事件之前学习了requireJS框架，最近在学习seaJS框架，两者都是js模块文件的加载器，做的事情大致是相同的。这篇文章学习下&lt;script&gt;标签的一些特性，了解框架是如何加载js文件的。requireJS和seaJS其实都是通过动态创建&lt;script&gt;标签，设置好&lt;script&gt;标签的相关属性，然后再将&lt;script&gt;标签插入到&lt;head&gt;节点下。最终生成的&lt;script&gt;标签，大致形式如下：
+
+
+   &lt;script type=&quot;text/javascript&quot; charset=&quot;UTF-8&quot; async=&quot;true&quot;
+	src=&quot;modules/bModule.js&quot; 
+	onload=&quot;console.log(&#39;onload&#39;)&quot; onerror=&quot;console.log(&#39;onerror&#39;)&quot; 
+	onreadystatechange=&quot;console.log(&#39;state=&#39;+this.readyState);&quot;&gt;
+&lt;/script&gt;
+
+
+   这跟我们平时自己在html文件中，通过&lt;script&gt;标签加载外部js文件没有什么特别的，唯独多了onload、onerror等事件。其实这些事件，浏览器本身就是支持的，只不过我们平时没有用到，但是作为框架却需要使用这些高级特性。现在我们通过一个例子，看看这3个事件的使用，有图有真相。
+
+
+   demo.html代码如下：
+
+
+   &lt;head&gt;
+	&lt;script type=&quot;text/javascript&quot; charset=&quot;UTF-8&quot; async=&quot;true&quot; src=&quot;modules/bModule.js&quot;
+		onload=&quot;console.log(&#39;onload&#39;)&quot; onerror=&quot;&quot; 
+		onreadystatechange=&quot;console.log(&#39;state=&#39;+this.readyState);&quot;&gt;
+	&lt;/script&gt;
+&lt;/head&gt;
+
+
+&lt;body&gt;
+
+&lt;button&gt;show&lt;/button&gt;
+
+&lt;/body&gt;
+
+bModule.js代码如下：
+   var begin = new Date().getTime();
+var end = new Date().getTime();
+
+// 模仿:脚本初始化执行时间长
+while((end - begin) &lt; 10 * 1000)
+{
+	end = new Date().getTime();
+}
+
+var nameInB = 20;
+
+console.log(&quot;hi,b!&quot;);
+
+将上面2个文件部署在tomcat下，通过浏览器访问demo.html，用F12观察运行结果。
+
+   
+
+
+   chrome下的执行结果是：
+
+
+   
+
+
+
+
+   IE10下的执行结果：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   IE8下的执行结果：
+
+
+   
+
+
+
+
+   
+
+
+
+
+   可以看到，不同的浏览器对这3个事件的支持是有差异的:
+
+
+   chrome支持onload、不支持onreadystatechange；
+
+
+   IE8支持onreadystatechange，不支持onload；
+
+
+   IE10则既支持onload，也支持onreadystatechange；
+
+
+   
+
+
+
+
+   onload：当js文件下载完成，并且执行结束(脚本初始化)后，会触发。
+
+
+   onerror：当加载js文件报错的时候会被调用，比如文件路径错误、网络不可用等情况。
+
+
+   onreadystatechange：则是IE特有的，不同的版本支持情况还不一样。
+
+
+   
+
+
+
+
+   seaJS和requireJS在源码中做了大量的判断，目的就是为了兼容不同厂家、不同版本的浏览器，或者是为了规避某些bug。不顾核心就是上面这2个事件回调。

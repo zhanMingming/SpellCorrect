@@ -1,0 +1,28 @@
+Vs2005 auto_ptr的一个bug我们看看以下代码：
+
+
+   
+
+
+
+
+   auto_ptr&lt;TESTCLASS&gt; s;
+
+
+   
+
+
+
+
+   s = new TESTCLASS();
+
+
+   
+
+
+
+
+   vs2005对这段代码不报错，但是运行的时候会crash。
+
+
+   这是vs2005的一个bug，visual Studio 开发组也承认了这个问题，但是只是fix在2008及;

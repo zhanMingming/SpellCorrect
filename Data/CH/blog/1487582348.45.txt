@@ -1,0 +1,67 @@
+OPENCV中 RGB 转换到 HSI空间本文实现了RGB空间转换到HSI空间，并分别求出S分量（饱和度）、I分量（亮度、光强）
+
+
+   
+
+
+
+
+   
+   #include &quot;stdafx.h&quot;
+#include &quot;highgui.h&quot;
+#include&quot;cv.h&quot;
+
+int main(int argc, char *argv[])
+{ 
+ IplImage *img = cvLoadImage(&quot;G:\\huo.jpg&quot;);
+
+ IplImage *r  = cvCreateImage( cvGetSize(img), img-&gt;depth, 1);
+ IplImage *g  = cvCreateImage( cvGetSize(img), img-&gt;depth, 1);
+ IplImage *b  = cvCreateImage( cvGetSize(img), img-&gt;depth, 1);
+
+
+ CvMat *rmat = cvCreateMat( img-&gt;height, img-&gt;width, CV_32FC1);
+ CvMat *gmat = cvCreateMat( img-&gt;height, img-&gt;width, CV_32FC1);
+ CvMat *bmat = cvCreateMat( img-&gt;height, img-&gt;width, CV_32FC1);
+ CvMat *temp1 = cvCreateMat( img-&gt;height, img-&gt;width, CV_32FC1);
+ CvMat *temp2 = cvCreateMat( img-&gt;height, img-&gt;width, CV_32FC1);
+ CvMat *temp3 = cvCreateMat( img-&gt;height, img-&gt;width, CV_32FC1);
+
+ cvNamedWindow(&quot;saturation&quot;, 1);
+ cvNamedWindow(&quot;intensity&quot;, 1);
+ cvSplit( img, b, g, r, NULL);
+ cvConvert(b, bmat);
+ cvConvert(g, gmat);
+ cvConvert(r, rmat);
+
+ //计算饱和度S
+
+ cvMin( bmat, gmat, temp1);
+ cvMin( rmat, temp1, temp1);
+ cvAdd( bmat, gmat, temp2 );
+ cvAdd( temp2, rmat, temp2);
+
+ cvDiv( temp1, temp2, temp3, 765.0);
+ cvAbsDiffS( temp3, temp3, cvScalarAll( 255.0 ));
+ cvConvert( temp3, r );
+
+
+ //计算亮度I
+
+
+ cvAddWeighted( bmat, 1.0/3.0, rmat, 1.0/3.0, 0.0, bmat );
+ cvAddWeighted( bmat, 1.0, gmat, 1.0/3.0, 0.0, bmat);
+ cvConvert( bmat, g );
+
+ 
+
+ cvShowImage(&quot;saturation&quot;, r);
+ cvShowImage( &quot;intensity&quot;, g);
+ cvWaitKey(0);
+ cvReleaseImage(&amp;img);
+ cvDestroyWindow(&quot;saturation&quot;);
+ cvDestroyWindow(&quot;intensity&quot;);
+ 
+ 
+ return 0;
+}

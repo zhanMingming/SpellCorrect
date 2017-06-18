@@ -1,0 +1,474 @@
+PForDelta索引压缩算法的实现前日一个朋友给我发来了一个索引压缩算法，写得非常漂亮而且简洁，压缩比和解压性能方面大大超过目前已知的一些字节对齐的算法和Pfordelta这样的非字节对齐的算法，让人叹为观止，这是我看到的最好的压缩算法，他将会以论文的形式发表，相信必将震惊世界，我之前也写了很多Pfordelta的博客，大家对这个算法的具体实现很好奇，有几个难点，一个是bit pack和unpack，一个是关于exception的占位符在做链接的时候如果间隔超过了2的b次方如何处理等等，在以前的博客中曾应用了一个日本开发者开发的算法，但目前已经不开源了，我昨天又读了一遍pfordelta实现方面的论文【Super-Scalar
+ RAM-CPU Cache compression】，今天一天写了个大概，bit pack和unpack在1，2，4，8，16...这种2的幂是比较容易处理的，其余的比较困难，我这里只实现了pack3和unpack3，论文【Balancing Vectorized Query Execution with Bandwidth-optimized Storage】中给出了unpack12的参考代码，理论上应该实现从pack3到pack16的全部方法，限于博客篇幅不全写了，有兴趣读者朋友依葫芦画瓢可以继续完成。
+
+
+   &#20540;得注意的是：（1）PFORDelta可以对0&#20540;进行压缩，这是非常有利的。（2）pack和unpack的函数指针数组也比较有特色，PACK[bitwidth](code,data,MAX);通过bitwidth&#20540;来取相应的pack和unpack函数，提高CPU流水线的通畅性。
+
+
+    算法本博客不做过多解释，有兴趣的朋友可以参见我此前的博客：
+
+
+   http://blog.csdn.net/pennyliang/archive/2010/09/25/5905691.aspx
+
+
+    另外，我这位朋友想让我做一个最快的Pfordelta算法来PK一下，会输多少，我知道肯定会输，而且会很大，只是想尽可能做个最合&#26684;的对手，如果有读者朋友有更好的实现，也请发给我参考，非常感谢。
+
+
+   
+
+
+   #include&lt;stdio.h&gt;
+
+#include&lt;stdlib.h&gt;
+
+#include &lt;stddef.h&gt;
+
+#include &lt;stdint.h&gt;
+
+const int N = 64;
+
+const int MAX = 64;
+
+uint32_t MAXCODE[]={0,
+
+ 1,//1U&lt;&lt;0 - 1
+
+ 3,//1u&lt;&lt;1 - 1
+
+ (1U&lt;&lt;3) - 1,
+
+ (1U&lt;&lt;4) - 1,
+
+ (1U&lt;&lt;5) - 1,
+
+ (1U&lt;&lt;6) - 1,
+
+ (1U&lt;&lt;7) - 1,
+
+ (1U&lt;&lt;8) - 1,
+
+ (1U&lt;&lt;9) - 1,
+
+ (1U&lt;&lt;10) - 1,
+
+ (1U&lt;&lt;11) - 1,
+
+ (1U&lt;&lt;12) - 1,
+
+ (1U&lt;&lt;13) - 1,
+
+ (1U&lt;&lt;14) - 1,
+
+ (1U&lt;&lt;15) - 1,
+
+ (1U&lt;&lt;16) - 1,
+
+ (1U&lt;&lt;17) - 1,
+
+ (1U&lt;&lt;18) - 1,
+
+ (1U&lt;&lt;19) - 1,
+
+ (1U&lt;&lt;20) - 1,
+
+ (1U&lt;&lt;21) - 1,
+
+ (1U&lt;&lt;22) - 1,
+
+ (1U&lt;&lt;23) - 1,
+
+ (1U&lt;&lt;24) - 1,
+
+ (1U&lt;&lt;25) - 1,
+
+ (1U&lt;&lt;26) - 1,
+
+ (1U&lt;&lt;27) - 1,
+
+ (1U&lt;&lt;28) - 1,
+
+ (1U&lt;&lt;29) - 1,
+
+ (1U&lt;&lt;30) - 1,
+
+ 0x7FFFFFFF,
+
+ 0xFFFFFFFF,
+
+ }; 
+
+typedef void(*pattern_fun)(uint32_t* code,uint32_t* data,size_t n);
+
+
+   
+
+
+   void PACK3(uint32_t* code,uint32_t* data,size_t n)
+
+{ 
+
+ for(int i=0,j=0;j&lt;n;i&#43;=3,j&#43;=32)
+
+ { 
+
+ code[i] = 0;code[i&#43;1]=0;code[i&#43;2]=0;
+
+ code[i] |= data[j&#43;0]&lt;&lt;0; 
+
+ code[i] |= data[j&#43;1]&lt;&lt;3;
+
+ code[i] |= data[j&#43;2]&lt;&lt;6; 
+
+ code[i] |= data[j&#43;3]&lt;&lt;9; 
+
+ code[i] |= data[j&#43;4]&lt;&lt;12;
+
+ code[i] |= data[j&#43;5]&lt;&lt;15;
+
+ code[i] |= data[j&#43;6]&lt;&lt;18;
+
+ code[i] |= data[j&#43;7]&lt;&lt;21;
+
+ code[i] |= data[j&#43;8]&lt;&lt;24;
+
+ code[i] |= data[j&#43;9]&lt;&lt;27;
+
+ code[i] |= (data[j&#43;10]&amp;0x00000003)&lt;&lt;30;
+
+ code[i&#43;1] |= (data[j&#43;10]&amp;0x00000004)&gt;&gt;2;
+
+ code[i&#43;1] |= data[j&#43;11]&lt;&lt;1;
+
+ code[i&#43;1] |= data[j&#43;12]&lt;&lt;4;
+
+ code[i&#43;1] |= data[j&#43;13]&lt;&lt;7;
+
+ code[i&#43;1] |= data[j&#43;14]&lt;&lt;10;
+
+ code[i&#43;1] |= data[j&#43;15]&lt;&lt;13;
+
+ code[i&#43;1] |= data[j&#43;16]&lt;&lt;16; 
+
+ code[i&#43;1] |= data[j&#43;17]&lt;&lt;19;
+
+ code[i&#43;1] |= data[j&#43;18]&lt;&lt;22;
+
+ code[i&#43;1] |= data[j&#43;19]&lt;&lt;25;
+
+ code[i&#43;1] |= data[j&#43;20]&lt;&lt;28;
+
+ code[i&#43;1] |= (data[j&#43;21]&amp;0x00000001)&lt;&lt;31;
+
+ code[i&#43;2] |= (data[j&#43;21]&amp;0x00000006)&gt;&gt;1;
+
+ code[i&#43;2] |= data[j&#43;22]&lt;&lt;2;
+
+ code[i&#43;2] |= data[j&#43;23]&lt;&lt;5;
+
+ code[i&#43;2] |= data[j&#43;24]&lt;&lt;8;
+
+ code[i&#43;2] |= data[j&#43;25]&lt;&lt;11;
+
+ code[i&#43;2] |= data[j&#43;26]&lt;&lt;14;
+
+ code[i&#43;2] |= data[j&#43;27]&lt;&lt;17;
+
+ code[i&#43;2] |= data[j&#43;28]&lt;&lt;20;
+
+ code[i&#43;2] |= data[j&#43;29]&lt;&lt;23;
+
+ code[i&#43;2] |= data[j&#43;30]&lt;&lt;26;
+
+ code[i&#43;2] |= data[j&#43;31]&lt;&lt;29;
+
+ }
+
+}
+
+
+   
+
+
+   void UNPACK3(uint32_t* data,uint32_t* code,size_t n)
+
+{
+
+ for(int i=0,j=0;i&lt;n;i&#43;=32,j&#43;=3)
+
+ {
+
+ data[i&#43;0] = ((code[j&#43;0] &amp; 0x00000007)&gt;&gt;0); // 000......111
+
+ data[i&#43;1] = ((code[j&#43;0] &amp; 0x00000038)&gt;&gt;3); // 000...111000
+
+ data[i&#43;2] = ((code[j&#43;0] &amp; 0x000001C0)&gt;&gt;6);
+
+ data[i&#43;3] = ((code[j&#43;0] &amp; 0x00000E00)&gt;&gt;9);
+
+ data[i&#43;4] = ((code[j&#43;0] &amp; 0x00007000)&gt;&gt;12); // 
+
+ data[i&#43;5] = ((code[j&#43;0] &amp; 0x00038000)&gt;&gt;15); // 
+
+ data[i&#43;6] = ((code[j&#43;0] &amp; 0x001C0000)&gt;&gt;18);
+
+ data[i&#43;7] = ((code[j&#43;0] &amp; 0x00E00000)&gt;&gt;21);
+
+ data[i&#43;8] = ((code[j&#43;0] &amp; 0x07000000)&gt;&gt;24); // 
+
+ data[i&#43;9] = ((code[j&#43;0] &amp; 0x38000000)&gt;&gt;27); // 
+
+
+    data[i&#43;10] = ((code[j&#43;0] &amp; 0xC0000000)&gt;&gt;30) | (code[j&#43;1] &amp; 0x00000001)&lt;&lt;2;
+
+
+    data[i&#43;11] = ((code[j&#43;1] &amp; 0x0000000E)&gt;&gt;1);
+
+ data[i&#43;12] = ((code[j&#43;1] &amp; 0x00000070)&gt;&gt;4);
+
+ data[i&#43;13] = ((code[j&#43;1] &amp; 0x00000380)&gt;&gt;7);
+
+ data[i&#43;14] = ((code[j&#43;1] &amp; 0x00001C00)&gt;&gt;10);
+
+ data[i&#43;15] = ((code[j&#43;1] &amp; 0x0000E000)&gt;&gt;13);
+
+ data[i&#43;16] = ((code[j&#43;1] &amp; 0x00070000)&gt;&gt;16);
+
+ data[i&#43;17] = ((code[j&#43;1] &amp; 0x00380000)&gt;&gt;19);
+
+ data[i&#43;18] = ((code[j&#43;1] &amp; 0x01C00000)&gt;&gt;22);
+
+ data[i&#43;19] = ((code[j&#43;1] &amp; 0x0E000000)&gt;&gt;25);
+
+ data[i&#43;20] = ((code[j&#43;1] &amp; 0x70000000)&gt;&gt;28);
+
+
+    data[i&#43;21] = ((code[j&#43;1] &amp; 0x80000000)&gt;&gt;31) | (code[j&#43;2] &amp; 0x00000003)&lt;&lt;1;
+
+
+    data[i&#43;22] = ((code[j&#43;2] &amp; 0x0000001C)&gt;&gt;2);
+
+ data[i&#43;23] = ((code[j&#43;2] &amp; 0x000000E0)&gt;&gt;5);
+
+ data[i&#43;24] = ((code[j&#43;2] &amp; 0x00000700)&gt;&gt;8);
+
+ data[i&#43;25] = ((code[j&#43;2] &amp; 0x00003800)&gt;&gt;11);
+
+ data[i&#43;26] = ((code[j&#43;2] &amp; 0x0001C000)&gt;&gt;14);
+
+ data[i&#43;27] = ((code[j&#43;2] &amp; 0x000E0000)&gt;&gt;17);
+
+ data[i&#43;28] = ((code[j&#43;2] &amp; 0x00700000)&gt;&gt;20);
+
+ data[i&#43;29] = ((code[j&#43;2] &amp; 0x03800000)&gt;&gt;23);
+
+ data[i&#43;30] = ((code[j&#43;2] &amp; 0x1C000000)&gt;&gt;26);
+
+ data[i&#43;31] = ((code[j&#43;2] &amp; 0xE0000000)&gt;&gt;29);
+
+ }
+
+}
+
+pattern_fun PACK[]={NULL,NULL,NULL,PACK3};
+
+pattern_fun UNPACK[]={NULL,NULL,NULL,UNPACK3};
+
+
+   
+
+
+   int compress(size_t n, int bitwidth,uint32_t * input,uint32_t* code, uint32_t* exception,uint32_t* f_e)
+
+{
+
+ uint32_t miss[N],data[N],prev = 0;int j = 0;int last_e = -1;
+
+
+    for(int i = 0;i&lt;MAX;i&#43;&#43;)
+
+ {
+
+ int val = input[i];
+
+ data[i] = val;
+
+ miss[j] = i;
+
+ if ((val&gt;MAXCODE[bitwidth]))
+
+ {
+
+ j&#43;&#43;;
+
+ last_e = i;
+
+ }
+
+ else if(last_e&gt;=0&amp;&amp;((i-last_e))&gt;MAXCODE[bitwidth])
+
+ {
+
+ j&#43;&#43;;
+
+ last_e = i;
+
+ }
+
+ else{}
+
+
+    }
+
+ if(j&gt;0)
+
+ {
+
+ *f_e = miss[0];
+
+ prev = miss[0];
+
+ exception[0] = input[prev];
+
+ for(int i =1; i&lt;j;i&#43;&#43;)
+
+ {
+
+ int cur = miss[i];
+
+ exception[i] = input[cur];
+
+ data[prev] = (cur-prev)-1;
+
+ prev = cur;
+
+ }
+
+ }
+
+ PACK[bitwidth](code,data,MAX);
+
+ return j;
+
+};
+
+
+   int decompress(size_t exception_cnt, int bitwidth,uint32_t * output,uint32_t* input, uint32_t* exception,uint32_t* f_e)
+
+{
+
+ uint32_t next,code[N],cur = *f_e;
+
+ UNPACK[bitwidth](code,input,MAX);
+
+ for(int i = 0;i&lt;MAX;&#43;&#43;i)
+
+ {
+
+ output[i] = code[i];
+
+ }
+
+ if(cur!=MAX&amp;&amp;exception_cnt&gt;0)
+
+
+    {
+
+ cur = *f_e;
+
+ next = output[cur];
+
+ output[cur] = exception[0];
+
+ cur &#43;= next &#43; 1;
+
+ for(int i = 1,j=1;cur&lt;MAX&amp;&amp;j&lt;exception_cnt;i&#43;&#43;,j&#43;&#43;)
+
+ {
+
+ next = cur &#43; code[cur]&#43;1 ;
+
+ output[cur] = exception[i];
+
+ cur = next;
+
+ }
+
+ }
+
+ return MAX;
+
+}
+
+
+   int main(void)
+
+{
+
+ uint32_t input[]={10,13,14,16,20,22,25,30,37,40,44,47,48,50,54,56,58,63,70,73,74,77,78,80,84,86,89,94,101,104,106,109,110,112,115,117,120,121,123,133,141,151,152,157,158,166,168,178,186,195,196,202,203,209,299,301,304,329, 336,339,352,354,357,359};
+
+ uint32_t* code = (uint32_t*)malloc(1024*sizeof(uint32_t));
+
+ uint32_t* output = (uint32_t*)malloc(1024*sizeof(uint32_t));
+
+ uint32_t* exception = code&#43;6;
+
+ uint32_t first_exception = MAX;
+
+ uint32_t compressed_temp_arr[MAX]={0};
+
+ compressed_temp_arr[0]=input[0];
+
+ for(int i = 1;i&lt;MAX;&#43;&#43;i)
+
+ {
+
+ compressed_temp_arr[i]=input[i]-input[i-1]-1;
+
+ }
+
+ int j = compress(MAX,3,compressed_temp_arr,code,exception,&amp;first_exception);
+
+
+    decompress(j,3,output,code,exception,&amp;first_exception);
+
+
+    for(int i=1;i&lt;MAX;&#43;&#43;i)
+
+ {
+
+ output[i]= output[i]&#43;output[i-1]&#43;1;
+
+ }
+
+
+    for(int i = 0;i&lt;MAX;&#43;&#43;i)
+
+ {
+
+ printf(&quot;%d,&quot;,output[i]);
+
+ }
+
+ printf(&quot;/n&quot;);
+
+ for(int i = 0;i&lt;MAX;&#43;&#43;i)
+
+ {
+
+ printf(&quot;%d,&quot;,input[i]);
+
+ }
+
+ printf(&quot;/n&quot;);
+
+ int ori_size = sizeof(input)/sizeof(uint32_t)*32;
+
+ int com_size = j&#43;MAX*3;
+
+ float ratio = ori_size / com_size;
+
+ printf(&quot;original size:%d bit,compressed size:%d bit,compressed ratio:%f/n,bit per docid:%f&quot;,ori_size,com_size,ratio,com_size*1.0f/64);
+
+ return 0;
+
+}

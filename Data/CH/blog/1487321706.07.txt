@@ -1,0 +1,52 @@
+关于高维数组计算的一些优化这方面我刚刚开始了解一些这方面的内容，还没有清楚地整理出来，下面是我推荐的一些阅读。
+
+
+    后续还将陆续补充一些内容，最后完成一篇博客来完整的论述这一块的内容。
+
+
+   
+
+
+   推荐阅读：
+
+
+   http://www.cs.umd.edu/class/spring2003/cmsc311/Notes/Memory/set.html
+
+
+   cache的direct-map 2way,4way的相联方式的揭示，非常简单明了。
+
+
+   -------------------------------------------------------------------------------------------------------------------------------
+
+
+   http://en.wikibooks.org/wiki/Optimizing_C%2B%2B/Code_optimization/Faster_operations：
+
+
+   提到了在高维数组中高维度要避免是2的幂
+
+
+   Ensure that the size (resulting from the sizeof operator) of non-large cells of arrays or of vectors be a power of two, and that the size of large cells of arrays or of vectors be not a power of two.
+
+
+   -----------------------------------------------------------------------------------------------------------
+
+
+   
+
+
+   Data Transformations for Eliminating Conflict Misses：
+
+
+   详细了论述了结构间padding和结构内padding的方法和实验
+
+
+   同时也解释了为什么数组得高维要避免时2的幂的原因。
+
+
+   ---------------------------------------------------------------------------------------------------------------------------------
+
+
+   Array Data Layout for the Reduction of Cache Conflicts
+
+
+   提出了cache partition技术，该技术通过控制数组得layout来获得cache的partition

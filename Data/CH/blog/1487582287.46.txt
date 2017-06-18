@@ -1,0 +1,127 @@
+Distinct Subsequences 解题报告题目：给两个字符串S和T，判断T在S中出现的次数。
+
+   
+
+   A subsequence of a string is a new string which is formed from the original string by deleting some (can be none) of the characters without disturbing the relative positions of the remaining characters. (ie,&quot;ACE&quot;is a subsequence of&quot;ABCDE&quot;while&quot;AEC&quot;is not).
+
+   Here is an example:S=&quot;rabbbit&quot;,T=&quot;rabbit&quot;
+
+   Return3.
+
+   
+
+   
+
+   
+
+   -----------------------------------------------------
+
+   
+
+   
+
+   
+思路1：递归（TLE）
+   如果当前字符相同，结果加上S和T在该index之后的匹配方法数
+
+   如果当前字符不同，将S的指针向后移，递归计算
+
+   
+
+   class Solution {
+private:
+    int cnt;
+    int len_s;
+    int len_t;
+public:
+    Solution():cnt(0){}
+    void Count(string S,string T, int idx_ss, int idx_ts){
+ if(idx_ts == len_t){
+     cnt++;
+     return;
+ }
+ int i,j,k;
+ for (i=idx_ss; i&lt;len_s; i++) {
+     if (S[i] == T[idx_ts]) {
+  Count(S, T, i + 1, idx_ts + 1);
+     }
+ }
+    }
+    
+    int numDistinct(string S, string T) {
+ len_s = S.length();
+ len_t = T.length();
+ Count(S, T, 0, 0);
+ return cnt;
+    }
+};
+   
+
+   
+
+   
+
+   
+
+   
+
+   
+
+   -----------------------------------------------------
+
+   
+
+   思路2：DP
+
+   
+
+   如果当前字符相同，dp[i][j]结果等于用S[i](dp[i-1][j-1])和不用S[i](dp[i-1][j])方法数求和
+
+   如果当前字符不同，dp[i][j] = dp[i-1][j]
+
+   
+
+   class Solution {
+private:
+    int len_s;
+    int len_t;
+public:
+    int Count(string S,string T){
+ int i,j;
+ int dp[len_s][len_t];
+ memset(dp, 0, sizeof(dp));
+ 
+ if (S[0]==T[0]) {
+     dp[0][0] = 1;
+ }
+ 
+ for(i=1;i&lt;len_s;i++){
+     dp[i][0] = dp[i-1][0];
+     if (T[0]==S[i]) {
+  dp[i][0]++;
+     }
+ }
+  
+ for (i=1; i&lt;len_s; i++) {
+     for (j=1; j&lt;len_t &amp;&amp; j&lt;=i; j++) {
+  if (S[i]!=T[j]) {
+      dp[i][j] = dp[i-1][j];
+      //cout&lt;&lt;dp[i-1][j]&lt;&lt;endl;
+  }
+  else{
+      dp[i][j] = dp[i-1][j-1] + dp[i-1][j];
+      //dp[i-1][j-1]: use S[i], as S[i]==T[j]
+      //dp[i-1][j]  : don't use S[i]
+      //cout&lt;&lt;dp[i][j]&lt;&lt;endl;
+  }
+     }
+ }
+ return dp[len_s-1][len_t-1];
+    }
+    
+    int numDistinct(string S, string T) {
+ len_s = S.length();
+ len_t = T.length();
+ return Count(S, T);
+    }
+};

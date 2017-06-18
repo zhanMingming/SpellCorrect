@@ -1,0 +1,409 @@
+Review-DPLargest Rectangle in a Histogram
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:32 Accepted:16 
+
+
+   Description 
+
+
+   A histogram is a polygon composed of a sequence of rectangles aligned at a common base line. The rectangles have equal widths but may have different heights. For example, the figure on the left shows the histogram that consists of rectangles with the heights 2, 1, 4, 5, 1, 3, 3, measured in units where 1 is the width of the rectangles:  Usually, histograms are used to represent discrete distributions, e.g., the frequencies of characters in texts. Note that the order of the rectangles, i.e., their heights, is important. Calculate the area of the largest rectangle in a histogram that is aligned at the common base line, too. The figure on the right shows the largest aligned rectangle for the depicted histogram. 
+
+
+   Input 
+
+
+   The input contains several test cases. Each test case describes a histogram and starts with an integer n, denoting the number of rectangles it is composed of. You may assume that 1 &lt;= n &lt;= 100000. Then follow n integers h1, ..., hn, where 0 &lt;= hi &lt;= 1000000000. These numbers denote the heights of the rectangles of the histogram in left-to-right order. The width of each rectangle is 1. A zero follows the input for the last test case. 
+
+
+   Output 
+
+
+   For each test case output on a single line the area of the largest rectangle in the specified histogram. Remember that this rectangle must be aligned at the common base line. 
+
+
+   Sample Input 
+
+
+   
+
+   7 2 1 4 5 1 3 3
+4 1000 1000 1000 1000
+0
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   8
+4000
+
+
+
+   #include&lt;stdio.h&gt;
+
+__int64 temp,max;
+int hei[100010],l[100010],r[100010]; //record subscript of left and right
+int i,n;
+
+int main()
+{
+//	freopen("1.out","r",stdin);
+//	freopen("1.in","w",stdout);
+    while(scanf("%ld",&amp;n)&amp;&amp;n)
+    {
+ for(i=0;i&lt;n;i++)
+ {
+     scanf("%d",&amp;hei[i]);
+     l[i]=r[i]=i;
+ }
+ 
+ for(i=1;i&lt;n;i++)
+ {
+     while(l[i]&gt;0&amp;&amp;hei[l[i]-1]&gt;=hei[i])
+  l[i]=l[l[i]-1];
+ }
+ for(i=n-2;i&gt;=0;i--)
+ {
+     while(r[i]&lt;n-1&amp;&amp;hei[r[i]+1]&gt;=hei[i])
+  r[i]=r[r[i]+1];
+ }
+ max=0;
+ for(i=0;i&lt;n;i++)
+ {
+     temp=(__int64)hei[i]*(r[i]-l[i]+1);
+  if(temp&gt;max)
+      max=temp;
+ }
+ printf("%I64d/n",max);
+    }
+    return 0;
+} 
+
+
+   
+
+
+   City Game
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:16 Accepted:14 
+
+
+   Description 
+
+
+   Bob is a strategy game programming specialist. In his new city building game the gaming environment is as follows: a city is built up by areas, in which there are streets, trees,factories and buildings. There is still some space in the area that is unoccupied. The strategic task of his game is to win as much rent money from these free spaces. To win rent money you must erect buildings, that can only be rectangular, as long and wide as you can. Bob is trying to find a way to build the biggest possible building in each area. But he comes across some problems &ndash; he is not allowed to destroy already existing buildings, trees, factories and streets in the area he is building in. Each area has its width and length. The area is divided into a grid of equal square units.The rent paid for each unit on which you're building stands is 3$. Your task is to help Bob solve this problem. The whole city is divided into K areas. Each one of the areas is rectangular and has a different grid size with its own length M and width N.The existing occupied units are marked with the symbol R. The unoccupied units are marked with the symbol F. 
+
+
+   Input 
+
+
+   The first line of the input contains an integer K &ndash; determining the number of datasets. Next lines contain the area descriptions. One description is defined in the following way: The first line contains two integers-area length M&lt;=1000 and width N&lt;=1000, separated by a blank space. The next M lines contain N symbols that mark the reserved or free grid units,separated by a blank space. The symbols used are: R &ndash; reserved unit F &ndash; free unit In the end of each area description there is a separating line. 
+
+
+   Output 
+
+
+   For each data set in the input print on a separate line, on the standard output, the integer that represents the profit obtained by erecting the largest building in the area encoded by the data set. 
+
+
+   Sample Input 
+
+
+   
+
+   2
+5 6
+R F F F F F
+F F F F F F
+R R R F F F
+F F F F F F
+F F F F F F
+
+5 5
+R R R R R
+R R R R R
+R R R R R
+R R R R R
+R R R R R
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   45
+0
+
+
+
+   
+
+
+   Source 
+
+
+   
+
+
+   
+
+
+   #include&lt;stdio.h&gt;
+#include&lt;string.h&gt;
+#define M 1005
+int a[M][M], l[M], r[M]; 
+
+int main() 
+{
+//	freopen("1.out","r",stdin);
+//	freopen("1.in","w",stdout);
+    int t, i, j, res, ans, n, m;
+    char str[10];
+    scanf("%d", &amp;t);
+    while (t-- &amp;&amp; scanf("%d %d", &amp;n, &amp;m)) 
+    {
+ memset(a[0], 0, sizeof (a[0]));
+ for (i=1;i&lt;=n;i++)
+     for (j=1; j&lt;=m;j++)
+     {
+  scanf("%s", str);
+  if (str[0] == 'F')a[i][j] = a[i - 1][j] + 1;
+  else a[i][j] = 0;
+     }
+     ans = -1;
+     for (i = 1; i &lt;= n; i++)
+     {
+  for (j = 1; j &lt;= m; j++)l[j] = r[j] = j;
+  a[i][0] = a[i][m + 1] = -1;
+  for (j = 2; j &lt;= m; j++) 
+  {
+      while (a[i][j] &lt;= a[i][l[j] - 1])
+   l[j] = l[l[j] - 1];
+  }
+  for (j = m - 1; j &gt;= 1; j--) 
+  {
+      while (a[i][j] &lt;= a[i][r[j] + 1])
+   r[j] = r[r[j] + 1];
+  }
+  for (j = 1; j &lt;= m; j++) 
+				{
+      res = a[i][j]*(r[j] - l[j] + 1);
+      if (res &gt; ans)ans = res;
+  }
+     }
+     printf("%d/n", ans * 3);
+    }
+    return 0;
+}
+ 
+
+
+   
+
+
+   小毛驴历险记
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:142 Accepted:44 
+
+
+   Description 
+
+
+   一天， 小毛驴想见老毛驴。但是，他必须通过一条死亡的隧道，每到一个点，他就会损失相应的血量。出门前，一个好心的女巫送了他一个神奇的法杖，这个法杖可以让他瞬间向前移动1、2、3、4、5、6点。于是小毛驴出发了。 
+
+
+   Input 
+
+
+   输入的第一行是一个整数T( 1 &lt;= T &lt;= 100 )，表示有几组输入数据。 每组输入的第一行两个整数K（ 0 &lt; K &lt; 100000）、N（ 0&lt; N &lt; 1000），分别代表小毛驴的血量和隧道的长度。第二行是N个数，第I个数代表小毛驴移动到隧道第I点会损失的血量。开始点和终点不在隧道上。 
+
+
+   Output 
+
+
+   对应每组输入，如果小毛驴能在血掉光之前通过这样隧道，则输出YES，否则输出NO。 
+
+
+   Sample Input 
+
+
+   
+
+   3
+4 7
+1 2 3 4 5 6 7
+4 7
+1 6 5 4 5 6 1
+4 7
+1 6 5 4 5 6 7
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   YES
+YES
+NO
+
+
+
+
+   
+
+
+   Hint 
+
+
+   1. 路径：起点---&gt;第 1 点----&gt; 出口 2. 路径：起点---&gt;第 1 点----&gt;第 7 点 ----&gt;出口 3. 无法通过 
+
+
+   
+
+
+   #include &lt;stdio.h&gt;
+#define INF 100000000
+void main()
+{
+	int min[1001],t,i,b,j,k,n,a[1001];
+	scanf("%d",&amp;t);
+	for(b=1;b&lt;=t;b++)
+	{
+		scanf("%d%d",&amp;k,&amp;n);
+		for(i=1;i&lt;=n;i++)
+			scanf("%d",&amp;a[i]);
+		a[n+1]=0;
+		min[0]=k;
+		for(i=1;i&lt;=n+1;i++)
+		{
+			int temp=0;
+			for(j=1;j&lt;=6&amp;&amp;j&lt;=i;j++)
+			{
+				temp=temp&gt;min[i-j]?temp:min[i-j];
+			}
+			min[i]=temp-a[i];
+		}
+		if(min[n+1]&lt;=0)
+			printf("NO/n");
+		else
+			printf("YES/n");		
+	}
+} 
+
+
+   
+
+
+   LITTLE SHOP OF FLOWERS
+
+
+   Time Limit:1000MS Memory Limit:65536KTotal Submit:25 Accepted:13 
+
+
+   Description 
+
+
+   You want to arrange the window of your flower shop in a most pleasant way. You have F bunches of flowers, each being of a different kind, and at least as many vases ordered in a row. The vases are glued onto the shelf and are numbered consecutively 1 through V, where V is the number of vases, from left to right so that the vase 1 is the leftmost, and the vase V is the rightmost vase. The bunches are moveable and are uniquely identified by integers between 1 and F. These id-numbers have a significance: They determine the required order of appearance of the flower bunches in the row of vases so that the bunch i must be in a vase to the left of the vase containing bunch j whenever i &lt; j. Suppose, for example, you have bunch of azaleas (id-number=1), a bunch of begonias (id-number=2) and a bunch of carnations (id-number=3). Now, all the bunches must be put into the vases keeping their id-numbers in order. The bunch of azaleas must be in a vase to the left of begonias, and the bunch of begonias must be in a vase to the left of carnations. If there are more vases than bunches of flowers then the excess will be left empty. A vase can hold only one bunch of flowers. Each vase has a distinct characteristic (just like flowers do). Hence, putting a bunch of flowers in a vase results in a certain aesthetic value, expressed by an integer. The aesthetic values are presented in a table as shown below. Leaving a vase empty has an aesthetic value of 0. According to the table, azaleas, for example, would look great in vase 2, but they would look awful in vase 4. To achieve the most pleasant effect you have to maximize the sum of aesthetic values for the arrangement while keeping the required ordering of the flowers. If more than one arrangement has the maximal sum value, any one of them will be acceptable. You have to produce exactly one arrangement. 
+
+
+   Input 
+
+
+   .The first line contains two numbers: F, V. .The following F lines: Each of these lines contains V integers, so that Aij is given as the jth number on the (i+1)st line of the input file. 
+
+
+   .1 &lt;= F &lt;= 100 where F is the number of the bunches of flowers. The bunches are numbered 1 through F. .F &lt;= V &lt;= 100 where V is the number of vases. .-50 &lt;= Aij &lt;= 50 where Aij is the aesthetic value obtained by putting the flower bunch i into the vase j.
+
+
+   Output 
+
+
+   The first line will contain the sum of aesthetic values for your arrangement. 
+
+
+   Sample Input 
+
+
+   
+
+   3 5
+7 23 -5 -24 16
+5 21 -4 10 23
+-21 5 -4 -20 20
+
+
+
+
+   
+
+
+   Sample Output 
+
+
+   
+
+   53
+
+
+
+   
+
+
+   Source 
+
+
+   IOI 1999
+
+
+   
+
+
+   
+
+
+   #include&lt;iostream&gt;
+using namespace std;
+#define M 101
+int score[M][M],dp[M][M];
+
+int F,V;
+int main()
+{
+	int i,j;
+	while(scanf("%d%d",&amp;F,&amp;V)!=EOF)
+	{
+		for(i=0;i&lt;F;i++)
+			for(j=0;j&lt;V;j++)
+				scanf("%d",&amp;score[i][j]);
+		dp[0][0]=score[0][0];
+		for(i=1;i&lt;F;i++)
+			dp[i][i]=dp[i-1][i-1]+score[i][i];
+		for(i=1;i&lt;V;i++)//deal with the first line
+			dp[0][i]=dp[0][i-1]&gt;score[0][i]?dp[0][i-1]:score[0][i];
+		for(i=1;i&lt;F;i++)
+			for(j=i+1;j&lt;V;j++)
+				dp[i][j]=dp[i][j-1]&gt;dp[i-1][j-1]+score[i][j]?dp[i][j-1]:dp[i-1][j-1]+score[i][j];
+		printf("%d/n",dp[F-1][V-1]);
+	}
+	return 0;
+}

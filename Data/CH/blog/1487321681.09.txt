@@ -1,0 +1,13 @@
+贴一个读者来信读者hasae前不久来信指出了关于此前一篇博客http://blog.csdn.net/pennyliang/archive/2010/10/28/5971059.aspx的错误。开始我并没有意识到，虽然仔细考虑了一下，后来他设计了一个实验，快速证明了我的错误，我觉得他的实验写得很好，我贴了出来。我这篇博客的错误在于混用了计算斐波那契的下标和展开的层数这两个变量，我已经在博客中做了修改。
+
+
+    读者hasae的来信也有点小错误F=F[i-1]+F[i-2]; -&gt;F[i] = F[i-1]+F[i-1]。大家可以用改过的方法继续实验怎样的展开层数是当前机器最佳的。我试了下发现我的测试机比hasae的强好多啊。
+
+
+   以上错误感谢读者hasae的指出，非常感谢。
+
+
+   ///////////////////////////////以下是读者hasae来信的节选/////////////////////////
+
+
+   我将 M_3部分修改如下：  #ifdef M_3  int r= Fx%16;  int idx = Fx/16;  int i=2;  int spread_count = 0;  for(;i&lt;idx;)  {      DO16(F=F[i-1]+F[i-2];i++;spread_count++;); //展开成16段代码  }  printf("After spreading spread_count=%d/n", spread_count);  int loop_count = 0;  for(;i&lt;Fx;i++)  {      F=F[i-1]+F[i-2];      loop_count++;  }  printf("loop_count=%d/n", loop_count);  #endif编译为方式为：g++ main.cpp-g -o test-D M_3测试方式为：./test35结果为：After spreading spread_count=0LoopCount=33run tick count:74996043ret:9227465bug原因：  for(;i&lt;idx;)  {      DO16(F=F[i-1]+F[i-2];i++;spread_count++;); //展开成16段代码  }  你的本意为每展开16次，指示变量i只能+1，但是由于i也用于循环展开，故每展开一次，  i的值增加16，例如测试数量为时，idx=2.  此外，此程序在测试数量为17时，idx=1,i&lt;idx不成立(i=2)，计算根本就没展开。  此种思路的修改方式为：另设一指示变量j  int j=0;  int idx = (Fx-2)/16;//必须-2，否则可能出现内存问题，如N=MAX时。  for(; j&lt;idx; ++j)  {      DO16(F=F[i-1]+F[i-2];i++;spread_count++;); //展开成16段代码  }  我认为最好的修改方式为：  #ifdef M_3  ... ...  int idx = Fx-16-2;//仅修改此处即可，也不用作除法  ... ...  #endif*/

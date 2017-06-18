@@ -1,0 +1,91 @@
+Linux下安装matlab命令How to load iso file and install matlab on linux
+
+
+   
+
+
+
+
+   由于要跑一个程序，需要matlab和C&#43;&#43;的混合编程，我在linux上安装了matlab，由于对linux系统不太熟悉，所以特地让霆霆帮我弄的，特此感谢，并将按转过程详细描述如下，希望帮助以后要安装的朋友。
+
+
+   
+
+
+
+
+   1.下载 matlab for linux: 各大网站均有资源(我这里下载的是名为matl12au.iso的ISO文件,R2012a 版本)
+
+
+   2.将iso文件挂载到文件夹
+
+
+    打开terminal：
+
+sophia@ubuntu:~$ cd Desktop/
+
+sophia@ubuntu:~/Desktop$ mkdir iso
+
+sophia@ubuntu:~/Desktop$ sudo mount -t auto -o loop matl12au.iso iso
+
+[sudo] password for sophia: 输入你的密码
+
+mount: warning: iso seems to be mounted read-only.
+
+   首先建立iso文件夹，然后sudo mount -t auto -o loop matl12au.iso iso进行挂载，sudo表示 super user do,输入密码后有个warning不用管，然后就挂载上了，你可以打开iso文件夹看，就会有matl12au.iso文件中的内容。
+
+
+   3. 运行安装文件
+
+
+   sophia@ubuntu:~/Desktop$ cd iso/
+
+sophia@ubuntu:~/Desktop/iso$ ls
+
+activate.ini crack install install_guide.pdf sys
+
+archives etc installer_input.txt java version.txt
+
+bin help InstallForMacOSX.app readme.txt
+
+sophia@ubuntu:~/Desktop/iso$ sudo ./install
+
+Preparing installation files ...
+
+Installing ...
+
+
+   这里，打开iso文件夹，运行sudo ./install文件即可
+
+
+   4. 安装界面出现
+
+
+   5.注意点，由于用的是盗版，这里有一个序列号和一个licence文件，存于iso文件夹中的crack文件夹中，人家问你要序列号什么的时候，别忘了到crack中去找哦（*_*）
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+   
+
+
+   
+关于Linux更多的学习资料将继续更新，敬请关注本博客和新浪微博Sophia_qing。

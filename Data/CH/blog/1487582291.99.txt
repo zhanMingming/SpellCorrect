@@ -1,0 +1,40 @@
+子文件夹引用numpy出错 解决方案Problem: how to import numpy in subdirectory? Import error of numpy within subfolder.
+
+   错误信息：
+
+   
+   &gt;&gt;&gt; import numpy
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+  File &quot;/usr/local/lib/python2.7/dist-packages/numpy/__init__.py&quot;, line 153, in &lt;module&gt;
+    from . import add_newdocs
+  File &quot;/usr/local/lib/python2.7/dist-packages/numpy/add_newdocs.py&quot;, line 13, in &lt;module&gt;
+    from numpy.lib import add_newdoc
+  File &quot;/usr/local/lib/python2.7/dist-packages/numpy/lib/__init__.py&quot;, line 18, in &lt;module&gt;
+    from .polynomial import *
+  File &quot;/usr/local/lib/python2.7/dist-packages/numpy/lib/polynomial.py&quot;, line 19, in &lt;module&gt;
+    from numpy.linalg import eigvals, lstsq, inv
+  File &quot;/usr/local/lib/python2.7/dist-packages/numpy/linalg/__init__.py&quot;, line 50, in &lt;module&gt;
+    from .linalg import *
+  File &quot;/usr/local/lib/python2.7/dist-packages/numpy/linalg/linalg.py&quot;, line 29, in &lt;module&gt;
+    from numpy.linalg import lapack_lite, _umath_linalg
+ImportError: libatlas.so.3gf: cannot open shared object file: No such file or directory
+
+
+   
+
+   可能原因：
+
+   1. 子文件夹下有自己建的numpy.py文件
+
+   2. 看最后一行的错误，找不到libatlas.so.3gf. 将其所在文件夹引入/etc/ld.so.conf,缺啥补啥
+
+   $ sudo gedit /etc/ld.so.conf
+
+   写入/usr/lib/atlas-base
+
+   $ sudo ldconfig
+
+   
+
+   see me @ Rachel Zhang :)

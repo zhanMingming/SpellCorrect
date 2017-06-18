@@ -1,0 +1,186 @@
+如何理解naive Bayes原理：
+
+
+   已知有两个类class0,class1，已知文档docx，现在需要判断该文档属于哪一个类。
+
+
+   将其转化为概率问题
+
+
+   即求P(class0|docx)和P(class1|docx)这两个&#20540;，然后比大小
+
+
+   由bayes公式，P(class0|docx)P(docx) = P(docx|class0)*P(class0)。同理class1
+
+
+   P(class0|docx):docx属于class0的概率
+
+
+
+
+   P(docx):产生出docx的概率
+
+
+   P(class0):表示class0的先验概率，例如分类体育类，财经类，任意拿了1万个语料，体育类8000个，财经类2000个，那么体育类先验的就是80%。
+
+
+   P(docx|class0):表示class0生成出docx的概率
+
+
+   由于比大小P(docx)是完全一致的，因此略去
+
+
+   则计算的是P(docx|class0)*P(class0)，其中P(class0)可以从语料中观测到。
+
+
+   现在就归结到计算P(docx|class0)
+
+
+   在词袋模型的假设下，docx可以由独立同分布的词向量构成，即docx={term1,term2,term3...termn}。
+
+
+   即P(docx|class0) = P( {x1,x2,x3,..xn} |class0)，其中x1表示term1出现的次数，第一维表示term1
+
+
+   由独立假设
+
+
+   P( {x1,x2,x3,..xn} |class0)=P({x1,0,0,...0}|class0)*P({0,x2,0,0,...}|class0)
+
+
+
+
+                         =(y1^x1)*(y2^x2)...  y1表示term1在class0的概率。即class0的全部文档看作是1个文档，计算term1的出现概率。
+
+
+   两边取对数
+
+
+                        =x1log(y1)&#43;x2log(y2)....
+
+
+   如果对整个P(docx|class0)*P(class0)取对数，在求负数，相当用用f(x) = -log(x)作用一下x，则有
+
+
+                         -log(P(docx|class0)*P(class0)) = -log(P(class0)) &#43; - x1log(y1)&#43; -x2log(y2).... 其中x1表示在docx中term1出现的次数
+
+
+   至此我们可以将公式看作一个docx对class0提供的信息量的累加，在什么信息都没有的情况下，是class0的信息量是 -log(P(class0)，在term1出现了x1次以后，信息量增加了-x1log(y1)，依次往复，相当于docx用class0这个model能压缩的最小物理空间XXbit。也就是说，借助class0的分布，只用XXbit就可以表示docx。从压缩上想不难理解，class0提供了一个特征的概率分布特点，用香浓公式来对每个特征按照概率编码。
+
+
+        
+
+
+   举个计算过程的例子
+
+
+   1）训练语料如下
+
+
+      term1  term2 term3 term4  class
+
+doc1  0    1      1      1     1 
+
+doc2  1    1      0      0     0
+
+doc3  2    3      1      0     0  
+
+doc4  2    2      0      1     0 
+
+doc5  1    0      2      3     1
+
+2）计算model parameter
+
+
+   w0(1) = log(2/5)  w0(0) = log(3/5)   [在5个样本中，label 1有2个，lable 0有3个]
+
+
+   w1(1) = log(1/9)  w1(0) = log(5/13)  [term1 在label为0的标签的3个样本中，出现了5次，label为0的标签的3个样本中共计各种term出现了13次]
+
+
+   w2(1) = log(1/9)  w2(0) = log(6/13)  
+
+
+   w3(1) = log(3/9)  w3(0) = log(1/13)
+
+
+   w4(1) = log(4/9)  w4(0) = log(1/13)
+
+
+   
+
+
+
+
+   3）given test sample
+
+docx (1,3,2,0,1) {1表示我是一个文档，3表示term1出现了3次，2表示term2出现了2次...}
+
+
+   4）计算属于哪个类
+
+
+   p(1|docx) = -（1*log(2/5)&#43;3*log(1/9)&#43;2*log(1/9)&#43;0*log(3/9)&#43;1*log(4/9)） = 6.4755775834193
+
+p(0|docx) = -（1*log(3/5)&#43;3*log(5/13)&#43;2*log(6/13)&#43;0*log(1/13)&#43;1*log(1/13) ）= 3.6672696976529
+
+
+
+so docx is class 0，用class0的分布表示docx，只需要3.66比特，docx和class0更具有分布上的一致性。
+
+
+   
+
+
+
+
+   5）理解
+
+w0(0)，w1(0)表示docx一个term都不含的时候，直接用类上的比例来推测可能得分类。比如某个docx为空文档。
+
+
+
+wi(0)的物理含义 tf向量，表示class0生成termi的能力。
+
+wi(1)的物理含义 tf向量，表示class1生成termi的能力。
+
+w(0)可以看作是一个指向label为0的samples的向量。
+
+w(1)可以看做是一个指向label为1的samples的向量。
+
+docx*w(0) &gt; docx*w(1) 表示docx的类为0
+
+docx*w(1) &gt; docx*w(0) 表示docx的类是1
+
+
+   docx*w(0) = docx*w(0) 表示docx恰好距离类0和类1相同。也可理解为夹角相同，如果同除以docx和w的模就可以理解为夹角。
+
+
+   6）最后训练出的model是什么？
+
+
+   就是训练语料每个term出现多少次，而总次数可以将这些数字加和得到，不需存储。
+
+
+   因此
+
+
+   class 0的model就是
+
+
+    term1 5
+
+
+    term2 6
+
+
+    term3 1
+
+
+    term4 1
+
+
+   在加上每个class的数目。
+
+
+   完毕，就是一个数数过程。

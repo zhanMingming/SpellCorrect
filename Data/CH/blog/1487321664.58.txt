@@ -1,0 +1,221 @@
+C++内嵌代码使用压缩的方法(compress和uncompress函数）需要有zlib，编译时加-lz转自：http://blog.csdn.net/Solstice/archive/2003/04/04/2061.aspx
+
+
+   以下全文转：
+
+
+   使用zlib库里的compress函数与uncompress函数
+
+
+
+
+   zlib 是通用的压缩库，提供了一套 in-memory 压缩和解压函数，并能检测解压出来的数据的完整性(integrity)。zlib 也支持读写 gzip (.gz) 格式的文件。下面介绍两个最有用的函数&mdash;&mdash;compress 和 uncompress。
+
+
+   
+
+
+
+   int compress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
+
+
+
+
+   compress函数将 source 缓冲区中的内容压缩到 dest 缓冲区。 sourceLen 表示source 缓冲区的大小(以字节计)。注意函数的第二个参数 destLen 是传址调用。当调用函数时，destLen表示 dest 缓冲区的大小，destLen &gt; (sourceLen + 12)*100.1%。当函数退出后，destLen 表示压缩后缓冲区的实际大小。此时 destLen / sourceLen 正好是压缩率。
+
+
+   compress 若成功，则返回 Z_OK；若没有足够内存，则返回 Z_MEM_ERROR；若输出缓冲区不够大，则返回 Z_BUF_ERROR。
+
+
+   
+
+
+
+   int uncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen);
+
+
+
+
+   uncompress 函数将 source 缓冲区的内容解压缩到 dest 缓冲区。sourceLen 是 source 缓冲区的大小(以字节计)。注意函数的第二个参数 destLen 是传址调用。当调用函数时，destLen 表示 dest 缓冲区的大小， dest 缓冲区要足以容下解压后的数据。在进行解压缩时，需要提前知道被压缩的数据解压出来会有多大。这就要求在进行压缩之前，保存原始数据的大小(也就是解压后的数据的大小)。这不是 zlib 函数库的功能，需要我们做额外的工作。当函数退出后， destLen 是解压出来的数据的实际大小。
+
+
+   uncompress 若成功，则返回 Z_OK ；若没有足够内存，则返回 Z_MEM_ERROR；若输出缓冲区不够大，则返回 Z_BUF_ERROR。若输入数据有误，则返回 Z_DATA_ERROR。
+
+
+   zlib 带的 example.c 是个很好的学习范例，值得一观。我们写个程序，验证 zlib 的压缩功能。所写的测试程序保存为 testzlib.cpp ，放在 zlib-1.1.4 目录下。程序源代码：
+
+
+
+   // testzlib.cpp 简单测试 zlib 的压缩功能
+
+
+   #include &lt;cstring&gt;
+
+
+   #include &lt;cstdlib&gt;
+
+
+   #include &lt;iostream&gt;
+
+
+   #include "zlib.h"
+
+
+   
+
+
+   using namespace std;
+
+
+   
+
+
+   int main()
+
+
+   {
+
+
+    int err;
+
+
+    Byte compr[200], uncompr[200]; // big enough
+
+
+    uLong comprLen, uncomprLen;
+
+
+    const char* hello = "12345678901234567890123456789012345678901234567890";
+
+
+   
+
+
+    uLong len = strlen(hello) + 1;
+
+
+    comprLen = sizeof(compr) / sizeof(compr[0]);
+
+
+   
+
+
+    err = compress(compr, &amp;comprLen, (const Bytef*)hello, len);
+
+
+   
+
+
+    if (err != Z_OK) {
+
+
+    cerr &lt;&lt; "compess error: " &lt;&lt; err &lt;&lt; '/n';
+
+
+    exit(1);
+
+
+    }
+
+
+    cout &lt;&lt; "orignal size: " &lt;&lt; len
+
+
+    &lt;&lt; " , compressed size : " &lt;&lt; comprLen &lt;&lt; '/n';
+
+
+   
+
+
+    strcpy((char*)uncompr, "garbage");
+
+
+   
+
+
+    err = uncompress(uncompr, &amp;uncomprLen, compr, comprLen);
+
+
+   
+
+
+    if (err != Z_OK) {
+
+
+    cerr &lt;&lt; "uncompess error: " &lt;&lt; err &lt;&lt; '/n';
+
+
+    exit(1);
+
+
+    }
+
+
+    cout &lt;&lt; "orignal size: " &lt;&lt; len
+
+
+    &lt;&lt; " , uncompressed size : " &lt;&lt; uncomprLen &lt;&lt; '/n';
+
+
+   
+
+
+    if (strcmp((char*)uncompr, hello)) {
+
+
+    cerr &lt;&lt; "BAD uncompress!!!/n";
+
+
+    exit(1);
+
+
+    } else {
+
+
+    cout &lt;&lt; "uncompress() succeed: /n" &lt;&lt; (char *)uncompr;
+
+
+    }
+
+
+   }
+
+
+
+
+   编译执行这个程序，输出应该是
+
+
+
+   D:/libpng/zlib-1.1.4&gt;bcc32 testzlib.cpp zlib.lib
+
+
+   
+
+
+   D:/libpng/zlib-1.1.4&gt;testzlib
+
+
+   orignal size: 51 , compressed size : 22
+
+
+   orignal size: 51 , uncompressed size : 51
+
+
+   uncompress() succeed:
+
+
+   12345678901234567890123456789012345678901234567890
+
+
+   
+
+
+
+
+
+
+
+
+
+PS：这两个函数的一个很好的用处便是当需要将一个很占内存的变量写入文件以节省内存时，可以先压缩一下，然后写入文件，当需要使用时再从文件中读出，然后解压缩，以便节省IO时间。此外，有些情况可能还要序列化一下，当要压缩的内存不是一段连续的内存的时候。

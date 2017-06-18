@@ -1,0 +1,222 @@
+Gone Swimming zju 3372 simulationGone Swimming
+
+Time Limit: 1 Second  Memory Limit: 32768 KB  Special Judge 
+
+
+
+   Macrohard head Bill Hates has recently decided to build the new swimming pool at his villa. He called his designer and asked him to design the pool. Since there are many people in Bill's family, the pool must have several sections of different depths. 
+
+
+   Today the construction of the pool is completed. It has the form of a rectangle and consists of several rectangular sections. Sections are separated by the borders, top side of each border is on the ground level. Each section has some depth. 
+
+
+   Now Bill wants to fill the pool with water. The water gets to the pool from the source located in some section. It brings s liters of water per minute to the pool. When the section is filled with water, the waters starts to flow to the adjacent sections. The amount of water flowing over the border is proportional to its length. When several adjacent sections are filled, they act as one section, i.e. as if there were no border between them. The water flowing over the outer border of the pool is carried away by a special system of the pipes, thus it leaves the pool. 
+
+
+   Bill wants to know, what is the time required to fill the pool, if it's initially empty. Help him! 
+
+
+
+
+   For example, let the pool be designed as shown on the picture, number in each section specifies its depth in centimeters, source is located in the center section of the pool. Let the amount of water getting from the source be 1000 liters per minute. The center section is filled after 6 minutes and the water starts to flow to adjacent sections. The section on the top left gets 125 liters per minute, the section on the top right gets 250 liters per minute and the section on the bottom gets 375 liters per minute. Another 250 liters per minute flow over the outer borders. 
+
+
+   In 8 minutes the section on the top right gets filled. Now it is joined with the center section, their common border length is 10 meters, so 200 liters per minute flows to the section on the top left, and 300 to the section on the bottom. 500 liters per minute flows over the outer pool borders. 
+
+
+   Another 5 minutes are required for the bottom section to get filled. Now the bottom section is joined with the main section and they act as the whole. The border length is 12 meters, so now 166.67 liters per minute gets to the top right section. It takes another 6 minutes to fill it completely. 
+
+Input
+
+   The first line of the input file contains n, x, y, p and s --- the number of sections of the pool, its size x * y in meters, the number of the section where the water source is located, and the number of liters getting out of the source per minute (1 &le; n &le; 100, 1 &le; x, y &le; 100, 1 &le; s &le; 100000). 
+
+
+   The following n lines contain descriptions of the sections: each section is described with five integer numbers: x1, y1, x2, y2 and d --- the coordinates of its bottom-left and top-right corner in meters and its depth in centimeters (1 &le; d &le; 1000). Sections do not overlap and cover the whole pool. 
+
+
+   There are multiple cases. Process to the end of file. 
+
+Output
+
+   Output a real number --- the number of minutes required to fill the whole pool with water. Your answer must be accurate up to 10-4. 
+
+Sample Input
+
+   4 3 3 2 1000
+0 0 3 1 150
+0 1 3 2 200
+0 2 1 3 300
+1 2 3 3 100
+
+Sample Output
+
+   25.000000
+
+
+
+
+   Author: Andrew StankevichSource: Andrew Stankevich's Contest #11
+
+
+   
+
+
+   优先队列，以需要填满剩下体积的时间为key
+
+
+   ,每次出队的是第一个要填满的,然后每次计算填满的池子的周长和每一个队列里元素与填满部分的公共边长
+
+
+   分别更新剩下的体积，流量和时间#include &lt;iostream&gt;
+#include&lt;cmath&gt;
+#include &lt;vector&gt;
+#include&lt;queue&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+#define M 128
+#define INF 1000000000
+#define eps 1e-8
+
+int n,x,y,p;//p:water source num;  s:flow each minute
+double s;
+
+struct Rectangle 
+{
+	int x1, y1, x2, y2;
+	int index;
+	int len;//zhouchang
+	double area;//mianji
+	double t;
+	double flow;//liuru
+	int depth;
+	bool full;
+	double havecover;//area have been covered
+
+	bool operator&lt;(const Rectangle &amp;a )const
+	{
+		return a.t&lt;t;
+	}
+} rect[M],now,temp;
+
+inline int cut(int x1,int x2,int x3,int x4)
+{
+	int seq[4]={x1,x2,x3,x4};
+	sort(seq,seq+4);
+	return seq[2]-seq[1];
+}
+
+int adjacent(Rectangle a,Rectangle b)
+{
+	if(a.x2==b.x1 &amp;&amp; !(a.y1&gt;=b.y2||a.y2&lt;=b.y1))
+		return cut(a.y1,a.y2,b.y1,b.y2);
+
+	if(a.y1==b.y2 &amp;&amp; !(a.x2&lt;=b.x1||a.x1&gt;=b.x2))
+		return cut(b.x1,b.x2,a.x1,a.x2);
+
+	if(a.x1==b.x2 &amp;&amp; !(a.y2&lt;=b.y1||a.y1&gt;=b.y2))
+		return cut(a.y1,a.y2,b.y1,b.y2);
+
+	if(a.y2==b.y1 &amp;&amp; !(a.x1&gt;=b.x2||a.x2&lt;=b.x1))
+		return cut(b.x1,b.x2,a.x1,a.x2);
+
+	return 0;
+}
+
+int Calculatelen()
+{
+	int l=0;
+	for(int i=1;i&lt;=n;i++)
+	{
+		if(rect[i].full)
+		{
+			l+=rect[i].len;
+			for(int j=1;j&lt;=n;j++)
+			{
+				if(rect[j].full)
+				{
+					int cur=adjacent(rect[i],rect[j]);
+					if(cur&gt;0)
+						l-=cur;
+				}
+			}
+		}
+	}
+	return l;
+}
+
+double bfs()
+{
+	int i,j,cover;
+	double time=0;
+	int rectlen=0;//current rectangle circle length
+	priority_queue&lt;Rectangle&gt;Q;
+	queue&lt;Rectangle&gt;Q1;
+	for(i=1;i&lt;=n;i++)
+		Q.push(rect[i]);
+
+	while(!Q.empty())
+	{
+		now=Q.top();//the cell which is full
+		Q.pop();
+		time+=now.t;
+		rect[now.index].full=true;
+		rectlen=Calculatelen();
+
+		while(!Q.empty())
+		{
+			temp=Q.top();
+			Q.pop();
+			if(fabs(temp.t-now.t)&lt;eps)
+			{
+				rect[temp.index].full=true;
+				rectlen=Calculatelen();
+				continue;
+			}
+			else
+			{
+				cover=0;
+				int lens=0;
+				for(i=1;i&lt;=n;i++)
+					if(rect[i].full)
+						cover+=adjacent(temp,rect[i]);
+				//cover=adjacent(temp,now);
+				temp.havecover=now.t*temp.flow;//in the time fullfill now
+				temp.area-=temp.havecover;
+				if(cover!=0 &amp;&amp; !temp.full)
+				{
+					temp.flow=s*1.0/rectlen*cover;//update flow
+					temp.t=temp.area*1.0/temp.flow;
+				}
+				Q1.push(temp);
+			}
+		}
+			while(!Q1.empty())
+			{
+				now=Q1.front();
+				Q1.pop();
+				Q.push(now);
+			}
+	}
+	return time;
+}
+int main()
+{
+	int i,j;
+	while(cin&gt;&gt;n&gt;&gt;x&gt;&gt;y&gt;&gt;p&gt;&gt;s)
+	{
+		for(i=1;i&lt;=n;i++)
+		{
+			cin&gt;&gt;rect[i].x1&gt;&gt;rect[i].y1&gt;&gt;rect[i].x2&gt;&gt;rect[i].y2&gt;&gt;rect[i].depth;
+			rect[i].area=(rect[i].x2-rect[i].x1)*(rect[i].y2-rect[i].y1)*rect[i].depth;
+			rect[i].len=2*(rect[i].x2-rect[i].x1+rect[i].y2-rect[i].y1);
+			rect[i].index=i;
+			rect[i].flow=0;
+			rect[i].t=INF;
+			rect[i].full=false;
+		}
+		rect[p].flow=s;
+		rect[p].t=rect[p].area*1.0/rect[p].flow;
+		rect[p].havecover=rect[p].area;
+		printf("%.8lf/n",bfs()*10.0);
+	}
+}
