@@ -1,0 +1,13 @@
+*~
+*.o
+*.so*
+*.test
+*#
+.deps
+*.pb.*
+.cproject
+.project
+Debug/*
+main
+server
+a.out
